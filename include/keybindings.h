@@ -16,9 +16,15 @@ typedef struct PlayerKeybind player_keybind;
 
 struct PlayerSetting {
     char* name;
-    double setting;
+    double value;
     struct PlayerSetting* next;
 };
 
 typedef struct PlayerSetting player_setting;
+
+enum param_type {
+    PlayerKeybind,
+    PlayerSetting
+};
+
 #endif
