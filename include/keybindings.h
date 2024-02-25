@@ -3,18 +3,22 @@
 
 #include <SDL2/SDL.h>
 #include <stdbool.h>
+#include <stdio.h>
 
-struct PlayerSettings {
-    SDL_Keycode MOVE_FORWARD;
-    SDL_Keycode MOVE_BACKWARD;
-    SDL_Keycode MOVE_LEFT;
-    SDL_Keycode MOVE_RIGHT;
-    SDL_Keycode ATTACK;
-    SDL_Keycode INTERACT;
-    double MOUSE_SENS;
-    bool INVERT_MOUSE;
-    double FOV;
+
+struct PlayerKeybind {
+    char* name;
+    SDL_Keycode key;
+    struct PlayerKeybind* next;
 };
 
-typedef struct PlayerSettings player_settings;
+typedef struct PlayerKeybind player_keybind;
+
+struct PlayerSetting {
+    char* name;
+    double setting;
+    struct PlayerSetting* next;
+};
+
+typedef struct PlayerSetting player_setting;
 #endif
