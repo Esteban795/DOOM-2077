@@ -9,9 +9,7 @@
 #include "header.h"
 #include "linedef.h"
 #include "node.h"
-#include "sector.h"
 #include "segment.h"
-#include "sidedef.h"
 #include "subsector.h"
 #include "thing.h"
 #include "vertex.h"
@@ -29,16 +27,12 @@ struct WADData {
   segment *segments;
   thing *things;
   blockmap *blockmap;
-  sector *sectors;
-  sidedef *sidedefs;
   int len_vertexes;
   int len_linedefs;
   int len_nodes;
   int len_subsectors;
   int len_segments;
   int len_things;
-  int len_sectors;
-  int len_sidedefs;
 };
 
 typedef struct WADData wad_data;

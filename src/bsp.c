@@ -1,5 +1,11 @@
 #include "../include/bsp.h"
 
+#define M_PI 3.14159265358979323846
+#define FOV 90.0
+#define HALF_FOV (FOV / 2.0)
+
+double rad_to_deg(double rad) { return rad * (180 / M_PI); }
+
 bsp *bsp_init(engine *e, player *p) {
   bsp *b = malloc(sizeof(bsp));
   b->engine = e;
@@ -9,6 +15,13 @@ bsp *bsp_init(engine *e, player *p) {
   b->segments = e->wData->segments;
   b->root_node_id = e->wData->len_nodes - 1;
   return b;
+}
+
+float norm(double angle) { return fmod((angle + 360.0), 360.0); }
+
+double point_to_angle(vec2 p1, vec2 p2) {
+  vec2 delta = {p2.x - p1.x, p2.y - p1.y};
+  return rad_to_deg(atan2(delta.y, delta.x));
 }
 
 /*
@@ -99,34 +112,29 @@ static bool check_if_bbox_visible(bbox bb, player *p) {
   return false;
 }
 
-// returns true if the segment is in the player's field of view, and sets x1 and
-// x2 to the x position of the segment for the screen
-bool is_segment_in_fov(player *p, segment seg, int *x1, int *x2) {
+vertex get_vertex_from_segment(engine* e,i16 vertex_id){
+  return e->wData->vertexes[vertex_id];
+}
+
+bool is_segment_in_fov(player* p,segment seg){
   vec2 player = {.x = p->x, .y = p->y};
-  vertex v1 = seg.start_vertex;
-  vertex v2 = seg.end_vertex;
+  vertex v1 = get_vertex_from_segment(p->engine, seg.start_vertex_id);
+  vertex v2 = get_vertex_from_segment(p->engine, seg.end_vertex_id);
   vec2 v1v = {.x = v1.x, .y = v1.y};
   vec2 v2v = {.x = v2.x, .y = v2.y};
-  double angle1 = point_to_angle(player, v1v); // angle from player to v1
-  double angle2 = point_to_angle(player, v2v); // angle from player to v2
+  double angle1 = point_to_angle(player, v1v);
+  double angle2 = point_to_angle(player, v2v);
   double span = norm(angle1 - angle2);
-  if (span >= 180.0)
-    return false;
-  angle1 += p->angle;
-  angle2 += p->angle;
-  double span1 = norm(angle1 + HALF_FOV);
-  if (span1 > FOV) {
-    if (span1 >= span + FOV)
-      return false;
+  bool res = span >= 180.0 ? false : true;
+  if (res) {
+    angle1 += p->angle;
+    double span1 = norm(angle1 + HALF_FOV);
+    if (span1 > FOV) {
+      if (span1 >= span + FOV)
+        return false;
+    }
   }
-  double span2 = norm(HALF_FOV - angle2);
-  if (span2 > FOV) {
-    if (span2 >= span + FOV)
-      return false;
-  }
-  *x1 = angle_to_x_pos(angle1);
-  *x2 = angle_to_x_pos(angle2);
-  return true;
+  return res;
 }
 
 static bool is_on_back_side(bsp *b, node n) {
@@ -140,11 +148,10 @@ void render_bsp_node(bsp *b, size_t node_id) {
     i16 subsector_id = node_id - SUBSECTOR_IDENTIFIER;
     subsector ss = b->engine->wData->subsectors[subsector_id];
     SDL_SetRenderDrawColor(b->engine->map_renderer->renderer, 0, 255, 0, 255);
-    int x1, x2;
     for (i16 i = 0; i < ss.num_segs; i++) {
-      segment seg = ss.segs[i];
-      if (is_segment_in_fov(b->player, seg, &x1, &x2)) {
-        draw_vertical_lines(b->engine->map_renderer, x1, x2, subsector_id);
+      segment seg = b->engine->wData->segments[ss.first_seg_id + i];
+      if (is_segment_in_fov(b->player, seg)) {
+        draw_segment(b->engine->map_renderer, seg);
       }
     }
   } else {

@@ -26,13 +26,13 @@ int update_engine(engine *e) {
   SDL_GetRelativeMouseState(&mouse_x, &mouse_y);
   SDL_SetRenderDrawColor(e->map_renderer->renderer, 0, 0, 0, 255);
   SDL_RenderClear(e->map_renderer->renderer);
-  // draw_linedefs(
-  //     e->map_renderer->renderer, e->wData->linedefs, e->wData->len_linedefs,
-  //     e->map_renderer
-  //         ->vertexes); // to make it visible what we are actually seeing
+  draw_linedefs(
+      e->map_renderer->renderer, e->wData->linedefs, e->wData->len_linedefs,
+      e->map_renderer
+          ->vertexes); // to make it visible what we are actually seeing
   update_player(e->p, mouse_x, e->keys);
   update_bsp(e->bsp);
-  // draw(e->map_renderer);
+  draw(e->map_renderer);
   SDL_RenderPresent(e->map_renderer->renderer);
   return 0;
 }

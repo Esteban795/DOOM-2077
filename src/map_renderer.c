@@ -8,11 +8,6 @@ int max(int a, int b) { return a > b ? a : b; }
 
 int min(int a, int b) { return a < b ? a : b; }
 
-color get_random_color(i16 seed) {
-  srand(seed);
-  return (color){.r = rand() % 255, .g = rand() % 255, .b = rand() % 255};
-}
-
 // code stolen from the internet, I just needed to draw a circle for the
 // vertexes.
 static void DrawCircle(SDL_Renderer *renderer, int32_t centreX, int32_t centreY,
@@ -99,11 +94,12 @@ vertex *remap_vertexes(vertex *vertexes, int len, int *map_bounds) {
   return remapped_vertexes;
 }
 
-void draw_linedefs(SDL_Renderer *renderer, linedef *linedefs, int len) {
+void draw_linedefs(SDL_Renderer *renderer, linedef *linedefs, int len,
+                   vertex *vertexes) {
   SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
   for (int i = 0; i < len; i++) {
-    vertex p1 = linedefs[i].start_vertex;
-    vertex p2 = linedefs[i].end_vertex;
+    vertex p1 = vertexes[linedefs[i].start_vertex_id];
+    vertex p2 = vertexes[linedefs[i].end_vertex_id];
     SDL_RenderDrawLine(renderer, p1.x, p1.y, p2.x, p2.y);
   }
 }
@@ -153,8 +149,8 @@ static void draw_player(map_renderer *mr) {
 }
 
 void draw_segment(map_renderer *mr, segment seg) {
-  vertex v_start = seg.start_vertex;
-  vertex v_end = seg.end_vertex;
+  vertex v_start = mr->vertexes[seg.start_vertex_id];
+  vertex v_end = mr->vertexes[seg.end_vertex_id];
   SDL_RenderDrawLine(mr->renderer, v_start.x, v_start.y, v_end.x, v_end.y);
 }
 
@@ -162,16 +158,9 @@ void draw_subsector(map_renderer *mr, i16 subsector_id) {
   subsector ss = mr->wData->subsectors[subsector_id];
   SDL_SetRenderDrawColor(mr->renderer, 0, 255, 0, 255);
   for (i16 i = 0; i < ss.num_segs; i++) {
-    segment seg = ss.segs[i];
+    segment seg = mr->wData->segments[ss.first_seg_id + i];
     draw_segment(mr, seg);
   }
-}
-
-void draw_vertical_lines(map_renderer *mr, int x1, int x2, i16 subsector_id) {
-  color c = get_random_color(subsector_id);
-  SDL_SetRenderDrawColor(mr->renderer, c.r, c.g, c.b, 255);
-  SDL_RenderDrawLine(mr->renderer, x1, 0, x1, HEIGHT);
-  SDL_RenderDrawLine(mr->renderer, x2, 0, x2, HEIGHT);
 }
 
 void draw_fov(map_renderer *mr) {
@@ -195,8 +184,8 @@ void draw(map_renderer *mr) {
   // draw_vertexes(mr->renderer, mr->vertexes, mr->wData->len_vertexes);
   // draw_linedefs(mr->renderer, mr->wData->linedefs, mr->wData->len_linedefs,
   // mr->vertexes);
-  // draw_player(mr);
-  // draw_fov(mr);
+  draw_player(mr);
+  draw_fov(mr);
 }
 
 map_renderer *map_renderer_init(engine *e, SDL_Renderer *renderer) {

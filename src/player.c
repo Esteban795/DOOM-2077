@@ -1,12 +1,17 @@
 #include "../include/player.h"
 
+#define M_PI 3.14159265358979323846
+#define HALF_M_PI 1.57079632679489661923
+
+double deg_to_rad(double deg) { return deg * (M_PI / 180); }
+
 player *player_init(engine *e) {
   player *p = malloc(sizeof(player));
   p->engine = e;
   p->thing = e->wData->things[0];
   p->x = (double)p->thing.x;
   p->y = (double)p->thing.y;
-  p->angle = (double)-p->thing.angle;
+  p->angle = (double)p->thing.angle;
   return p;
 }
 
@@ -46,11 +51,9 @@ void update_player(player *p, int mouse_x, const uint8_t *keyboard_state) {
   }
   p->x += vec[0];
   p->y += vec[1];
-  if (SDL_WINDOW_INPUT_FOCUS) {
-    p->angle += rot_speed * mouse_x;
-    p->angle = fmod(p->angle, 360);
-    p->angle = p->angle < 0 ? 360 + p->angle : p->angle;
-  }
+  p->angle += rot_speed * mouse_x;
+  p->angle = fmod(p->angle, 360);
+  p->angle = p->angle < 0 ? 360 + p->angle : p->angle;
 }
 
 void player_free(player *p) { free(p); }

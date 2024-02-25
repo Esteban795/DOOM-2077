@@ -60,12 +60,3 @@ char *read_string(FILE *f, int offset, int num_bytes) {
   free(bytes);
   return str;
 }
-
-void read_texture_name(FILE *f, int offset, int8_t *texture_name) {
-  fseek(f, offset, 0);
-  int bytes_read = (int)fread(texture_name, sizeof(int8_t), 8, f);
-  if (bytes_read < 8) {
-    printf("Error while reading bytes : got fewer bytes than expected");
-    exit(1);
-  }
-}
