@@ -30,8 +30,8 @@ static block read_block(FILE *f, int lump_offset, int block_offset,
   b.nlinedefs = find_number_of_linedefs(f, lump_offset, block_offset);
   int offset = lump_offset + block_offset + 2; // Skip BLOCK_START
   b.linedefs = malloc(sizeof(linedef) * b.nlinedefs);
-  for (size_t i = 1; i < b.nlinedefs; i++) {
-    linedef l = linedefs[read_i16(f, offset)];
+  for (size_t i = 0; i < b.nlinedefs; i++) {
+    linedef l = linedefs[read_i16(f,  2 *i + offset)];
     b.linedefs[i] = l;
   }
   return b;
