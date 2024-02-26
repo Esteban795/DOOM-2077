@@ -50,6 +50,7 @@ blockmap *read_blockmap(FILE *f, int lump_offset, linedef *linedefs) {
   for (size_t i = 0; i < bm->nblocks; i++) {
     bm->blocks[i] = read_block(f, lump_offset, block_offsets[i], linedefs);
   }
+  free(block_offsets);
   return bm;
 }
 

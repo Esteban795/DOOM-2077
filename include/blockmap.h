@@ -39,6 +39,4 @@ blockmap *read_blockmap_from_lump(FILE *f, lump *directory, int lump_index,
                                   linedef *linedefs);
 
 void blockmap_free(blockmap *bm);
-
-int blockmap_get_block_index(blockmap *bm, int x, int y);
 #endif
