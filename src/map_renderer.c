@@ -104,13 +104,13 @@ void draw_linedefs(SDL_Renderer *renderer, linedef *linedefs, int len,
   }
 }
 
-// static void draw_vertexes(SDL_Renderer *renderer, vertex *vertexes, int len)
-// {
-//   SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-//   for (int i = 0; i < len; i++) {
-//     DrawCircle(renderer, vertexes[i].x, vertexes[i].y, 5);
-//   }
-// }
+static void draw_vertexes(SDL_Renderer *renderer, vertex *vertexes, int len)
+{
+  SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+  for (int i = 0; i < len; i++) {
+    DrawCircle(renderer, vertexes[i].x, vertexes[i].y, 5);
+  }
+}
 
 static void draw_bbox(map_renderer *mr, bbox b, color c) {
   SDL_SetRenderDrawColor(mr->renderer, c.r, c.g, c.b, 255);
@@ -180,10 +180,32 @@ void draw_fov(map_renderer *mr) {
   SDL_RenderDrawLine(mr->renderer, x, y, x3, y3);
 }
 
+void draw_active_block(map_renderer *mr) {
+  SDL_SetRenderDrawColor(mr->renderer, 255, 255, 255, 255);
+  int block_index = blockmap_get_block_index(mr->engine->wData->blockmap, mr->engine->p->x, mr->engine->p->y);
+
+  //routine that just draws the box of the block
+  int block_bound_tl_x = mr->engine->wData->blockmap->header->x + (block_index % mr->engine->wData->blockmap->header->ncols) * 128;
+  int block_bound_tl_y = mr->engine->wData->blockmap->header->y + (block_index / mr->engine->wData->blockmap->header->ncols) * 128;
+
+  int x1 = remap_x(block_bound_tl_x, mr->map_bounds.left, mr->map_bounds.right);
+  int y1 = remap_y(block_bound_tl_y, mr->map_bounds.top, mr->map_bounds.bottom);
+  int x2 = remap_x(block_bound_tl_x + 128, mr->map_bounds.left, mr->map_bounds.right);
+  int y2 = remap_y(block_bound_tl_y + 128, mr->map_bounds.top, mr->map_bounds.bottom);
+  SDL_Rect rect = {.x = x1, .y = y1, .w = x2 - x1, .h = y2 - y1};
+  SDL_RenderDrawRect(mr->renderer, &rect);
+
+  //and now drawing the linedefs, let's go baby
+  SDL_SetRenderDrawColor(mr->renderer, 255, 0, 255, 255);
+  draw_linedefs(mr->renderer, mr->engine->wData->blockmap->blocks[block_index].linedefs,
+                (int) (mr->engine->wData->blockmap->blocks[block_index].nlinedefs), mr->vertexes);
+}
+
 void draw(map_renderer *mr) {
-  // draw_vertexes(mr->renderer, mr->vertexes, mr->wData->len_vertexes);
+  draw_vertexes(mr->renderer, mr->vertexes, mr->wData->len_vertexes);
   // draw_linedefs(mr->renderer, mr->wData->linedefs, mr->wData->len_linedefs,
   // mr->vertexes);
+  draw_active_block(mr);
   draw_player(mr);
   draw_fov(mr);
 }

@@ -67,3 +67,9 @@ void blockmap_free(blockmap *bm) {
   free(bm->blocks);
   free(bm);
 }
+
+int blockmap_get_block_index(blockmap *bm, int x, int y) {
+  int col = (x - bm->header->x) / 128;
+  int row = (y - bm->header->y) / 128;
+  return row * bm->header->ncols + col;
+}
