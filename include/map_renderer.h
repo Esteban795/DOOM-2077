@@ -24,7 +24,8 @@ void draw_node(map_renderer *mr, int node_id);
 
 void draw_segment(map_renderer *mr, segment seg);
 
-void draw_linedefs(SDL_Renderer *renderer, linedef *linedefs, int len);
+
+void draw_linedefs(SDL_Renderer *renderer, linedef *linedefs, int len,vertex *vertexes);
 
 void draw(map_renderer *mr);
 
