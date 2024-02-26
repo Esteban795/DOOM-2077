@@ -25,4 +25,11 @@ sidedef *get_sidedefs_from_lump(FILE *f, lump *directory, int lump_index,
   return sidedefs;
 }
 
-void sidedef_free(sidedef *s) { free(s); }
+void sidedefs_free(sidedef *sidedefs, int len_sidedefs) {
+  for (int i = 0; i < len_sidedefs; i++) {
+    free(sidedefs[i].upper_texture);
+    free(sidedefs[i].lower_texture);
+    free(sidedefs[i].middle_texture);
+  }
+  free(sidedefs);
+}

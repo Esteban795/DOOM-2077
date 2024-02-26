@@ -4,8 +4,10 @@
 #include "byte_reader.h"
 #include "lump.h"
 #include "vertex.h"
+#include "sidedef.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 struct Linedef {
   vertex start_vertex;
@@ -13,15 +15,16 @@ struct Linedef {
   u16 flag;
   u16 line_type;
   u16 sector_tag;
-  u16 front_sidedef_id;
-  u16 back_sidedef_id;
+  sidedef front_sidedef;
+  sidedef back_sidedef;
+  bool has_back_sidedef;
 };
 
 typedef struct Linedef linedef;
 
-linedef read_linedef(FILE *f, int offset, vertex *vertexes);
+linedef read_linedef(FILE *f, int offset, vertex *vertexes,sidedef *sidedefs);
 
 linedef *get_linedefs_from_lump(FILE *f, lump *directory, int lump_index,
                                 int num_bytes, int header_length,
-                                int len_linedefs, vertex *vertexes);
+                                int len_linedefs, vertex *vertexes,sidedef *sidedefs);
 #endif
