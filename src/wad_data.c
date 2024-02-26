@@ -47,7 +47,7 @@ wad_data *init_wad_data(const char *path) {
   wd->sectors = get_sectors_from_lump(
       file, wd->directory, wd->map_index + SECTORS, 26, 0, wd->len_sectors);
   wd->sidedefs = get_sidedefs_from_lump(
-      file, wd->directory, wd->map_index + SIDEDEFS, 30, 0, wd->len_sidedefs);
+      file, wd->directory, wd->map_index + SIDEDEFS, 30, 0, wd->len_sidedefs,wd->sectors);
   return wd;
 }
 
