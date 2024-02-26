@@ -6,7 +6,6 @@
 #include "keybindings.h"
 #include "wad_data.h"
 
-
 struct Player;
 struct BSP;
 struct Engine;
@@ -18,7 +17,8 @@ struct Player {
   double x;
   double y;
   double angle;
-  struct PlayerSettings settings;
+  struct PlayerSetting *settings;
+  struct PlayerKeybind *keybinds;
 };
 
 struct Engine {
