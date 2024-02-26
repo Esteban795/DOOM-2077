@@ -9,8 +9,8 @@ player *player_init(engine *e) {
   player *p = malloc(sizeof(player));
   p->engine = e;
   p->thing = e->wData->things[0];
-  p->x = (double)p->thing.x;
-  p->y = (double)p->thing.y;
+  p->pos.x = (double)p->thing.x;
+  p->pos.y = (double)p->thing.y;
   p->angle = (double)p->thing.angle;
   return p;
 }
@@ -49,8 +49,8 @@ void update_player(player *p, int mouse_x, const uint8_t *keyboard_state) {
     vec[0] *= DIAGONAL_CORRECTION;
     vec[1] *= DIAGONAL_CORRECTION;
   }
-  p->x += vec[0];
-  p->y += vec[1];
+  p->pos.x += vec[0];
+  p->pos.y += vec[1];
   p->angle += rot_speed * mouse_x;
   p->angle = fmod(p->angle, 360);
   p->angle = p->angle < 0 ? 360 + p->angle : p->angle;

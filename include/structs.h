@@ -4,6 +4,7 @@
 #include <SDL2/SDL.h>
 
 #include "wad_data.h"
+#include "vec2.h"
 
 struct Player;
 struct BSP;
@@ -13,8 +14,7 @@ struct MapRenderer;
 struct Player {
   struct Engine *engine;
   thing thing;
-  double x;
-  double y;
+  vec2 pos;
   double angle;
 };
 

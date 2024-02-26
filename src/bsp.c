@@ -44,8 +44,8 @@ static bool check_if_bbox_visible(bbox bb, player *p) {
   vec2 c = {.x = bb.right, .y = bb.top};
   vec2 d = {.x = bb.right, .y = bb.bottom};
   vec2 possibly_visible_bb_sides[4];
-  double x = p->x;
-  double y = p->y;
+  double x = p->pos.x;
+  double y = p->pos.y;
   size_t counter = 0;
   if (x < bb.left) {
     if (y > bb.top) {
@@ -95,7 +95,7 @@ static bool check_if_bbox_visible(bbox bb, player *p) {
     } else
       return true; // we are inside the box
   }
-  vec2 player_pos = {.x = p->x, .y = p->y};
+  vec2 player_pos = p->pos;
   for (size_t i = 0; i < 2 * counter; i += 2) {
     double angle1 = point_to_angle(player_pos, possibly_visible_bb_sides[i]);
     double angle2 =
@@ -117,7 +117,7 @@ vertex get_vertex_from_segment(engine* e,i16 vertex_id){
 }
 
 bool is_segment_in_fov(player* p,segment seg){
-  vec2 player = {.x = p->x, .y = p->y};
+  vec2 player = p->pos;
   vertex v1 = get_vertex_from_segment(p->engine, seg.start_vertex_id);
   vertex v2 = get_vertex_from_segment(p->engine, seg.end_vertex_id);
   vec2 v1v = {.x = v1.x, .y = v1.y};
@@ -138,8 +138,8 @@ bool is_segment_in_fov(player* p,segment seg){
 }
 
 static bool is_on_back_side(bsp *b, node n) {
-  i16 dx = b->player->x - n.x_partition;
-  i16 dy = b->player->y - n.y_partition;
+  i16 dx = b->player->pos.x - n.x_partition;
+  i16 dy = b->player->pos.y - n.y_partition;
   return dx * n.dy_partition - dy * n.dx_partition <= 0;
 }
 
