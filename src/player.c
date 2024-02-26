@@ -3,7 +3,8 @@
 #define M_PI 3.14159265358979323846
 #define HALF_M_PI 1.57079632679489661923
 
-#define SIGN(x) (x > 0) ? 1 : ((x < 0) ? -1 : 0)
+#define SIGN(x) (int) (x > 0) ? 1 : ((x < 0) ? -1 : 0)
+#define DOT(a,b) (a.x * b.x) + (a.y * b.y)
 
 double deg_to_rad(double deg) { return deg * (M_PI / 180); }
 
@@ -31,7 +32,7 @@ linedef* get_linedefs_in_active_blocks(player* p, double* velocity, int* nlinede
   }
 
   //gather up all the linedefs
-  linedef* linedefs = malloc(sizeof(linedef) * (*nlinedefs)); //! free this when you're done you plonk!
+  linedef* linedefs = malloc(sizeof(linedef) * (*nlinedefs));
   for (int i = 0; i < (int)bmap->blocks[block_index_current].nlinedefs; i++){
     linedefs[i] = bmap->blocks[block_index_current].linedefs[i];
   }
@@ -52,20 +53,89 @@ double cross_pos_linedef(linedef* line, vec2 pos, vertex* vertexes){
   return (a.y * b.x) - (a.x * b.y);
 }
 
-void move_and_slide(player* p, double* velocity){
-  int nlinedefs;
-  linedef* linedefs = get_linedefs_in_active_blocks(p, velocity, &nlinedefs);
+double dot_pos_linedef(linedef* line, vec2 pos, vertex* vertexes){
+  vertex v1 = vertexes[line->start_vertex_id];
+  vertex v2 = vertexes[line->end_vertex_id];
+  vec2 a = {.x = v2.x - v1.x, .y = v2.y - v1.y};
+  vec2 b = {.x = pos.x - v1.x, .y = pos.y - v1.y};
+  return DOT(a,b);
+}
 
+double get_wall_length_squared(linedef* line, vertex* vertexes){
+  vertex v1 = vertexes[line->start_vertex_id];
+  vertex v2 = vertexes[line->end_vertex_id];
+  vec2 a = {.x = v2.x - v1.x, .y = v2.y - v1.y};
+  return DOT(a,a);
+}
+
+void get_projections(linedef* line, vec2 pos, vertex* vertexes, vec2* projected, vec2* projected_hitbox){
+  vertex v1 = vertexes[line->start_vertex_id];
+  vertex v2 = vertexes[line->end_vertex_id];
+
+  vec2 l = {.x = (double)v2.x - (double)v1.x, .y = (double)v2.y - (double)v1.y};
+  vec2 pmv1 = {.x = pos.x - (double)v1.x, .y = pos.y - (double)v1.y};
+
+  double projection_factor = (DOT(pmv1, l))/(DOT(l,l));
+  projected->x = (double)v1.x + projection_factor * l.x;
+  projected->y = (double)v1.y + projection_factor * l.y;
+
+  if (!projected_hitbox){return;}
+  double norm_projection = sqrt(pow((projected->x - pos.x),2) + pow((projected->y - pos.y),2));
+
+  projected_hitbox->x = pos.x + ((projected->x - pos.x)/norm_projection) * PLAYER_RADIUS;
+  projected_hitbox->y = pos.y + ((projected->y - pos.y)/norm_projection) * PLAYER_RADIUS;
+
+  // printf("projecting...\n");
+  // printf("po: x=%f,y=%f\n", pos.x, pos.y);
+  // printf("v1: x=%f,y=%f\n", (double)v1.x, (double)v1.y);
+  // printf("v2: x=%f,y=%f\n", (double)v2.x, (double)v2.y);
+  // printf("pr: x=%f,y=%f\n", projected->x, projected->y);
+  // printf("no: %f\n", norm_projection);
+  // printf("ph: x=%f,y=%f\n", projected_hitbox->x, projected_hitbox->y);
+}
+
+void slide_against_wall(vec2* pos_inside_wall, vec2 projected){
+  double norm = sqrt(pow((projected.x - pos_inside_wall->x),2) + pow((projected.y - pos_inside_wall->y),2));
+  pos_inside_wall->x = projected.x - ((projected.x - pos_inside_wall->x)/norm) * (PLAYER_RADIUS + 1);
+  pos_inside_wall->y = projected.y - ((projected.y - pos_inside_wall->y)/norm) * (PLAYER_RADIUS + 1);
+}
+
+void move_and_slide(player* p, double* velocity){
+  int nlinedefs = 0;
+  linedef* linedefs = get_linedefs_in_active_blocks(p, velocity, &nlinedefs);
   vec2 next_pos = {.x = p->pos.x + velocity[0], .y = p->pos.y + velocity[1]};
 
   for (int i = 0; i < nlinedefs; i++){
-    double cp_before = cross_pos_linedef(linedefs+i, p->pos, p->engine->wData->vertexes);
-    double cp_after = cross_pos_linedef(linedefs+i, next_pos, p->engine->wData->vertexes);
+    vec2 p_b; //projection before moving
+    vec2 ph_b; //projection hitbox before moving
+    vec2 p_a; //projection after moving
 
-    if (SIGN(cp_before) != SIGN(cp_after)){
+    get_projections(linedefs+i, p->pos, p->engine->wData->vertexes, &p_b, &ph_b);
+
+    // check if the player can actually collide with the wall in directions parallel to the wall
+    double d = dot_pos_linedef(linedefs+i, p->pos, p->engine->wData->vertexes);
+    if (d < 0 || d > get_wall_length_squared(linedefs+i, p->engine->wData->vertexes)){
+      continue;
+    }
+
+    get_projections(linedefs+i, next_pos, p->engine->wData->vertexes, &p_a, 0);
+
+    vec2 ph_bpm = {.x = ph_b.x + (next_pos.x - p->pos.x), .y = ph_b.y + (next_pos.y - p->pos.y)}; //projection before moving + velocity
+
+    double cp_before = cross_pos_linedef(linedefs+i, ph_b, p->engine->wData->vertexes);
+    double cp_after = cross_pos_linedef(linedefs+i, ph_bpm, p->engine->wData->vertexes);
+
+    if ((SIGN(cp_before)) != (SIGN(cp_after))){
       //collision happened
+      //TODO: implement floor and height logic
+      //TODO: add a step height
+      //TODO: make sure the sector is tall enough for you to fit in
+      slide_against_wall(&next_pos, p_a);
     }
   }
+
+  p->pos.x = next_pos.x;
+  p->pos.y = next_pos.y;
 
   free(linedefs);
 }
@@ -104,8 +174,8 @@ void update_player(player *p, int mouse_x, const uint8_t *keyboard_state) {
     vec[0] *= DIAGONAL_CORRECTION;
     vec[1] *= DIAGONAL_CORRECTION;
   }
-  p->pos.x += vec[0];
-  p->pos.y += vec[1];
+  //p->pos.x += vec[0];
+  //p->pos.y += vec[1];
   move_and_slide(p, vec);
   p->angle += rot_speed * mouse_x;
   p->angle = fmod(p->angle, 360);

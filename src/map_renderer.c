@@ -145,7 +145,7 @@ static void draw_player(map_renderer *mr) {
   SDL_SetRenderDrawColor(mr->renderer, 0, 0, 255, 255);
   i16 x = remap_x(mr->engine->p->pos.x, mr->map_bounds.left, mr->map_bounds.right);
   i16 y = remap_y(mr->engine->p->pos.y, mr->map_bounds.top, mr->map_bounds.bottom);
-  DrawCircle(mr->renderer, x, y, 5);
+  DrawCircle(mr->renderer, x, y, 6);
 }
 
 void draw_segment(map_renderer *mr, segment seg) {
