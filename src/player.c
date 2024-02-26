@@ -61,11 +61,11 @@ double dot_pos_linedef(linedef* line, vec2 pos, vertex* vertexes){
   return DOT(a,b);
 }
 
-double get_wall_length_squared(linedef* line, vertex* vertexes){
+double get_wall_length(linedef* line, vertex* vertexes){
   vertex v1 = vertexes[line->start_vertex_id];
   vertex v2 = vertexes[line->end_vertex_id];
   vec2 a = {.x = v2.x - v1.x, .y = v2.y - v1.y};
-  return DOT(a,a);
+  return sqrt(pow(a.x,2)+pow(a.y,2));
 }
 
 void get_projections(linedef* line, vec2 pos, vertex* vertexes, vec2* projected, vec2* projected_hitbox){
@@ -114,7 +114,9 @@ void move_and_slide(player* p, double* velocity){
 
     // check if the player can actually collide with the wall in directions parallel to the wall
     double d = dot_pos_linedef(linedefs+i, p->pos, p->engine->wData->vertexes);
-    if (d < 0 || d > get_wall_length_squared(linedefs+i, p->engine->wData->vertexes)){
+    if (d < -pow(PLAYER_RADIUS,2) || d > pow(get_wall_length(linedefs+i, p->engine->wData->vertexes) + PLAYER_RADIUS,2)){
+      //? why -1?
+      // i got no fucking clue mate.
       continue;
     }
 
