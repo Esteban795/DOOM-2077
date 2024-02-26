@@ -8,9 +8,9 @@
 struct Sidedef {
   i16 x_offset;
   i16 y_offset;
-  int8_t upper_texture[8];
-  int8_t lower_texture[8];
-  int8_t middle_texture[8];
+  char* upper_texture;
+  char* lower_texture;
+  char* middle_texture;
   sector sector;
 };
 

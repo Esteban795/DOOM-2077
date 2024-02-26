@@ -4,9 +4,9 @@ sidedef read_sidedef(FILE *f, int offset,sector* sectors) {
   sidedef s;
   s.x_offset = read_i16(f, offset);
   s.y_offset = read_i16(f, offset + 2);
-  read_texture_name(f, offset + 4, s.upper_texture);
-  read_texture_name(f, offset + 12, s.lower_texture);
-  read_texture_name(f, offset + 20, s.middle_texture);
+  s.upper_texture = read_string(f, offset + 4, 8);
+  s.lower_texture = read_string(f, offset + 12, 8);
+  s.middle_texture = read_string(f, offset + 20, 8);
   i16 sector_id = read_i16(f, offset + 28);
   s.sector = sectors[sector_id];
   return s;
