@@ -55,7 +55,6 @@ void update_player(player *p, int mouse_x, const uint8_t *keyboard_state) {
     p->angle = fmod(p->angle, 360);
     p->angle = p->angle < 0 ? 360 + p->angle : p->angle;
   }
-  SDL_Delay(50);
 }
 
 void player_free(player *p) {

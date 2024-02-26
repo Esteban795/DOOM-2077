@@ -74,6 +74,10 @@ player_keybind *read_keybinds(FILE *f, size_t nlines) {
     }
     char *action = copy_until_char(lineptr, '=');
     char *key = copy_until_char(lineptr + i + 1, '\n');
+    if (!strcmp(key,"")) { // example : MOVE_FORWARD=        (nothing is present)
+      printf("Error reading keybinds config file : missing keybinds.\n");
+      exit(1);
+    }
     keybinds = add_keybind(keybinds, action, key);
     free(key);
   }
@@ -114,7 +118,7 @@ SDL_Keycode get_key_from_action(player_keybind *keybinds, char *action) {
     }
     current = current->next;
   }
-  return -1;
+  return -1; //action doesn't exist, do nothing.
 }
 
 player_keybind *get_player_keybinds(const char *fp) {
@@ -175,6 +179,10 @@ player_setting *read_settings(FILE *f, size_t nlines) {
     }
     char *name = copy_until_char(lineptr, '=');
     char *value = copy_until_char(lineptr + i + 1, '\n');
+    if (!strcmp(value,"")) { // example : FOV=        (nothing is present)
+      printf("Error reading settings config file : missing settings.\n");
+      exit(1);
+    }
     settings = add_setting(settings, name, value);
     free(value);
   }
@@ -256,13 +264,3 @@ void print_settings(player_setting *settings) {
     current = current->next;
   }
 }
-
-// int main(void){
-//     player_keybind* keybinds = get_player_keybinds("keybinds.cfg");
-//     player_setting* settings = get_player_settings("settings.cfg");
-//     print_keybinds(keybinds);
-//     print_settings(settings);
-//     free_keybinds(keybinds);
-//     free_settings(settings);
-//     return 0;
-// }
