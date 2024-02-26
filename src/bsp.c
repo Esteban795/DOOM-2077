@@ -103,8 +103,8 @@ static bool check_if_bbox_visible(bbox bb, player *p) {
 // x2 to the x position of the segment for the screen
 bool is_segment_in_fov(player *p, segment seg, int *x1, int *x2) {
   vec2 player = {.x = p->x, .y = p->y};
-  vertex v1 = seg.start_vertex;
-  vertex v2 = seg.end_vertex;
+  vertex v1 = p->engine->wData->vertexes[seg.start_vertex_id];
+  vertex v2 = p->engine->wData->vertexes[seg.end_vertex_id];
   vec2 v1v = {.x = v1.x, .y = v1.y};
   vec2 v2v = {.x = v2.x, .y = v2.y};
   double angle1 = point_to_angle(player, v1v); // angle from player to v1
@@ -142,9 +142,10 @@ void render_bsp_node(bsp *b, size_t node_id) {
     SDL_SetRenderDrawColor(b->engine->map_renderer->renderer, 0, 255, 0, 255);
     int x1, x2;
     for (i16 i = 0; i < ss.num_segs; i++) {
-      segment seg = ss.segs[i];
+      segment seg = b->segments[ss.first_seg_id + i];
       if (is_segment_in_fov(b->player, seg, &x1, &x2)) {
-        draw_vertical_lines(b->engine->map_renderer, x1, x2, subsector_id);
+        // draw_vertical_lines(b->engine->map_renderer, x1, x2, subsector_id);
+        draw_segment(b->engine->map_renderer, seg);
       }
     }
   } else {
