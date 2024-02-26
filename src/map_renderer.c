@@ -96,7 +96,7 @@ vertex *remap_vertexes(vertex *vertexes, int len, int *map_bounds) {
 
 void draw_linedefs(SDL_Renderer *renderer, linedef *linedefs, int len,
                    vertex *vertexes) {
-  SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+  //SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
   for (int i = 0; i < len; i++) {
     vertex p1 = vertexes[linedefs[i].start_vertex_id];
     vertex p2 = vertexes[linedefs[i].end_vertex_id];
@@ -198,7 +198,7 @@ void draw_active_block(map_renderer *mr) {
   //and now drawing the linedefs, let's go baby
   SDL_SetRenderDrawColor(mr->renderer, 255, 0, 255, 255);
   draw_linedefs(mr->renderer, mr->engine->wData->blockmap->blocks[block_index].linedefs,
-                (int)(mr->engine->wData->blockmap->blocks[block_index].nlinedefs), mr->vertexes);
+                mr->engine->wData->blockmap->blocks[block_index].nlinedefs, mr->vertexes);
 }
 
 void draw(map_renderer *mr) {

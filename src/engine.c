@@ -26,6 +26,7 @@ int update_engine(engine *e) {
   SDL_GetRelativeMouseState(&mouse_x, &mouse_y);
   SDL_SetRenderDrawColor(e->map_renderer->renderer, 0, 0, 0, 255);
   SDL_RenderClear(e->map_renderer->renderer);
+  SDL_SetRenderDrawColor(e->map_renderer->renderer, 255, 0, 0, 255);
   draw_linedefs(
       e->map_renderer->renderer, e->wData->linedefs, e->wData->len_linedefs,
       e->map_renderer
