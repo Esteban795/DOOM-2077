@@ -1,13 +1,9 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 
-#include <SDL2/SDL_keyboard.h>
-#include <SDL2/SDL_keycode.h>
 #include <math.h>
-#include <SDL2/SDL.h>
 
 #include "geometry.h"
-#include "settings.h"
 #include "structs.h"
 
 double deg_to_rad(double deg);

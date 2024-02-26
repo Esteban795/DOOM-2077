@@ -3,9 +3,7 @@
 
 #include <SDL2/SDL.h>
 
-#include "keybindings.h"
 #include "wad_data.h"
-
 
 struct Player;
 struct BSP;
@@ -18,7 +16,6 @@ struct Player {
   double x;
   double y;
   double angle;
-  struct PlayerSettings settings;
 };
 
 struct Engine {

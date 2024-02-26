@@ -5,6 +5,8 @@
 
 #define M_PI 3.14159265358979323846
 #define HALF_M_PI 1.57079632679489661923
+#define FOV 90.0
+#define HALF_FOV (FOV / 2.0)
 
 #define RES_W 320
 #define RES_H 200
