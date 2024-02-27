@@ -8,8 +8,8 @@
 struct Sector {
   i16 floor_height;
   i16 ceiling_height;
-  int8_t floor_texture[8];
-  int8_t ceiling_texture[8];
+  char* floor_texture;
+  char* ceiling_texture;
   i16 light_level;
   i16 type;
   i16 tag;

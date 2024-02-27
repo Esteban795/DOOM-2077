@@ -4,8 +4,8 @@ sector read_sector(FILE *f, int offset) {
   sector s;
   s.floor_height = read_i16(f, offset);
   s.ceiling_height = read_i16(f, offset + 2);
-  read_texture_name(f, offset + 4, s.floor_texture);
-  read_texture_name(f, offset + 12, s.ceiling_texture);
+  s.floor_texture = read_string(f, offset + 4, 8);
+  s.ceiling_texture = read_string(f, offset + 12, 8);
   s.light_level = read_i16(f, offset + 20);
   s.type = read_i16(f, offset + 22);
   s.tag_number = read_i16(f, offset + 24);
