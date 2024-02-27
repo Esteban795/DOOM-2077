@@ -24,3 +24,11 @@ sector *get_sectors_from_lump(FILE *f, lump *directory, int lump_index,
   }
   return sectors;
 }
+
+void sectors_free(sector *sectors, int len_sectors) {
+  for (int i = 0; i < len_sectors; i++) {
+    free(sectors[i].floor_texture);
+    free(sectors[i].ceiling_texture);
+  }
+  free(sectors);
+}

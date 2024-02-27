@@ -60,7 +60,7 @@ void wad_data_free(wad_data *wd) {
   free(wd->segments);
   free(wd->things);
   free(wd->header.wad_type);
-  free(wd->sectors);
+  sectors_free(wd->sectors, wd->len_sectors);
   blockmap_free(wd->blockmap);
   subsectors_free(wd->subsectors, wd->len_subsectors);
   sidedefs_free(wd->sidedefs, wd->len_sidedefs);
