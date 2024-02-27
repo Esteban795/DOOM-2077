@@ -14,6 +14,8 @@ struct Segment {
   linedef linedef;
   i16 direction;
   i16 offset;
+  sector* front_sector;
+  sector* back_sector;
 };
 
 typedef struct Segment segment;
@@ -25,4 +27,5 @@ segment *get_segments_from_lump(FILE *f, lump *directory, int lump_index,
                                 int len_segments, vertex *vertexes,
                                 linedef *linedefs);
 
+void update_segs_sectors(segment *segs, int num_segs);
 #endif

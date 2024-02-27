@@ -1,6 +1,26 @@
 #include "../include/segment.h"
 #include <stdio.h>
 
+void update_segs_sectors(segment *segs, int num_segs) {
+  for (int i = 0; i < num_segs; i++) {
+    sidedef *front_sidedef;
+    sidedef *back_sidedef;
+    if (segs[i].direction) {
+      front_sidedef = &segs[i].linedef.front_sidedef;
+      back_sidedef = &segs[i].linedef.back_sidedef;
+    } else {
+      front_sidedef = &segs[i].linedef.back_sidedef;
+      back_sidedef = &segs[i].linedef.front_sidedef;
+    }
+    segs[i].front_sector = &front_sidedef->sector;
+    if (segs[i].linedef.flag == TWO_SIDED) {
+      segs[i].back_sector = &back_sidedef->sector;
+    } else {
+      segs[i].back_sector = NULL;
+    }
+  }
+}
+
 double bams_to_degrees(i16 bams) {
   double res = ((double)bams) * 180.0 / 65536.0;
   return res < 0 ? 360 + res : res;
@@ -23,6 +43,7 @@ segment read_segment(FILE *f, int offset, vertex *vertexes, linedef *linedefs) {
   s.linedef = get_linedef_from_id(read_i16(f, offset + 6), linedefs);
   s.direction = read_i16(f, offset + 8);
   s.offset = read_i16(f, offset + 10);
+  s.angle = s.angle < 0 ? 360.0 + s.angle : s.angle;
   return s;
 }
 

@@ -48,6 +48,8 @@ wad_data *init_wad_data(const char *path) {
                                     10, 0, wd->len_things);
   wd->blockmap = read_blockmap_from_lump(
       file, wd->directory, wd->map_index + BLOCKMAP, wd->linedefs);
+  update_segs_sectors(wd->segments, wd->len_segments);
+  fclose(file);
   return wd;
 }
 
