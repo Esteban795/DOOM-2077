@@ -1,5 +1,7 @@
 #include "../include/bsp.h"
 
+bool BSP_TRAVERSE = true;
+
 bsp *bsp_init(engine *e, player *p) {
   bsp *b = malloc(sizeof(bsp));
   b->engine = e;
@@ -136,34 +138,39 @@ static bool is_on_back_side(bsp *b, node n) {
 }
 
 void render_bsp_node(bsp *b, size_t node_id) {
-  if (node_id > SUBSECTOR_IDENTIFIER) {
-    i16 subsector_id = node_id - SUBSECTOR_IDENTIFIER;
-    subsector ss = b->engine->wData->subsectors[subsector_id];
-    SDL_SetRenderDrawColor(b->engine->map_renderer->renderer, 0, 255, 0, 255);
-    int x1, x2;
-    for (i16 i = 0; i < ss.num_segs; i++) {
-      segment seg = ss.segs[i];
-      if (is_segment_in_fov(b->player, seg, &x1, &x2)) {
-        draw_vertical_lines(b->engine->map_renderer, x1, x2, subsector_id);
-      }
-    }
-  } else {
-    node n = b->nodes[node_id];
-    bool is_back_side = is_on_back_side(b, n);
-    if (is_back_side) {
-      render_bsp_node(b, n.back_child_id);
-      if (check_if_bbox_visible(n.front_bbox, b->player)) {
-        render_bsp_node(b, n.front_child_id);
+  if (BSP_TRAVERSE) {
+    if (node_id > SUBSECTOR_IDENTIFIER) {
+      i16 subsector_id = node_id - SUBSECTOR_IDENTIFIER;
+      subsector ss = b->engine->wData->subsectors[subsector_id];
+      SDL_SetRenderDrawColor(b->engine->map_renderer->renderer, 0, 255, 0, 255);
+      int x1, x2;
+      for (i16 i = 0; i < ss.num_segs; i++) {
+        segment seg = ss.segs[i];
+        if (is_segment_in_fov(b->player, seg, &x1, &x2)) {
+          draw_vertical_lines(b->engine->map_renderer, x1, x2, subsector_id);
+        }
       }
     } else {
-      render_bsp_node(b, n.front_child_id);
-      if (check_if_bbox_visible(n.back_bbox, b->player)) {
+      node n = b->nodes[node_id];
+      bool is_back_side = is_on_back_side(b, n);
+      if (is_back_side) {
         render_bsp_node(b, n.back_child_id);
+        if (check_if_bbox_visible(n.front_bbox, b->player)) {
+          render_bsp_node(b, n.front_child_id);
+        }
+      } else {
+        render_bsp_node(b, n.front_child_id);
+        if (check_if_bbox_visible(n.back_bbox, b->player)) {
+          render_bsp_node(b, n.back_child_id);
+        }
       }
     }
   }
 }
 
-void update_bsp(bsp *b) { render_bsp_node(b, b->root_node_id); }
+void update_bsp(bsp *b) {
+  BSP_TRAVERSE = true;
+  render_bsp_node(b, b->root_node_id);
+}
 
 void bsp_free(bsp *b) { free(b); }
