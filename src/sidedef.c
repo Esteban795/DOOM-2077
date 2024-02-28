@@ -8,7 +8,7 @@ sidedef read_sidedef(FILE *f, int offset,sector* sectors) {
   s.lower_texture = read_string(f, offset + 12, 8);
   s.middle_texture = read_string(f, offset + 20, 8);
   i16 sector_id = read_i16(f, offset + 28);
-  s.sector = sectors[sector_id];
+  s.sector = &sectors[sector_id];
   return s;
 }
 

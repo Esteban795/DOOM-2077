@@ -11,7 +11,7 @@ struct Sidedef {
   char* upper_texture;
   char* lower_texture;
   char* middle_texture;
-  sector sector;
+  sector* sector;
 };
 
 typedef struct Sidedef sidedef;
