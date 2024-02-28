@@ -2,7 +2,9 @@
 #define SEGMENT_H
 
 #include "byte_reader.h"
+#include "linedef.h"
 #include "lump.h"
+#include "vertex.h"
 // https://doomwiki.org/wiki/Seg
 
 struct Segment {

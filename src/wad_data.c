@@ -25,14 +25,17 @@ wad_data *init_wad_data(const char *path) {
                    10; // 10 = number of bytes per thing
   wd->vertexes = get_vertexes_from_lump(
       file, wd->directory, wd->map_index + VERTEXES, 4, 0, wd->len_vertexes);
-  wd->linedefs = get_linedefs_from_lump(
-      file, wd->directory, wd->map_index + LINEDEFS, 14, 0, wd->len_linedefs);
+  wd->linedefs =
+      get_linedefs_from_lump(file, wd->directory, wd->map_index + LINEDEFS, 14,
+                             0, wd->len_linedefs);
   wd->nodes = get_nodes_from_lump(file, wd->directory, wd->map_index + NODES,
                                   28, 0, wd->len_nodes);
-  wd->subsectors = get_subsectors_from_lump(
-      file, wd->directory, wd->map_index + SSECTORS, 4, 0, wd->len_subsectors);
-  wd->segments = get_segments_from_lump(
-      file, wd->directory, wd->map_index + SEGS, 12, 0, wd->len_segments);
+  wd->segments =
+      get_segments_from_lump(file, wd->directory, wd->map_index + SEGS, 12, 0,
+                             wd->len_segments);
+  wd->subsectors =
+      get_subsectors_from_lump(file, wd->directory, wd->map_index + SSECTORS, 4,
+                               0, wd->len_subsectors);
   wd->things = get_things_from_lump(file, wd->directory, wd->map_index + THINGS,
                                     10, 0, wd->len_things);
   wd->blockmap = read_blockmap_from_lump(

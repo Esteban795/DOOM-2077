@@ -1,13 +1,18 @@
 #include "../include/linedef.h"
 
+vertex get_vertex_from_linedef(u16 vertex_id, vertex *vertexes) {
+  return vertexes[vertex_id];
+}
+
 linedef read_linedef(FILE *f, int offset) {
-  linedef line = {.start_vertex_id = read_u16(f, offset),
-                  .end_vertex_id = read_u16(f, offset + 2),
-                  .flag = read_u16(f, offset + 4),
-                  .line_type = read_u16(f, offset + 6),
-                  .sector_tag = read_u16(f, offset + 8),
-                  .front_sidedef_id = read_u16(f, offset + 10),
-                  .back_sidedef_id = read_u16(f, offset + 12)};
+  linedef line = {
+      .start_vertex_id = read_i16(f, offset),
+      .end_vertex_id = read_i16(f, offset + 2),
+      .flag = read_u16(f, offset + 4),
+      .line_type = read_u16(f, offset + 6),
+      .sector_tag = read_u16(f, offset + 8),
+      .front_sidedef_id = read_u16(f, offset + 10),
+      .back_sidedef_id = read_u16(f, offset + 12)};
   return line;
 }
 

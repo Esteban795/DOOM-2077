@@ -19,3 +19,7 @@ subsector *get_subsectors_from_lump(FILE *f, lump *directory, int lump_index,
   }
   return subsectors;
 }
+
+void subsectors_free(subsector *s, int len) {
+  free(s);
+}

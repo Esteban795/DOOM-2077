@@ -1,12 +1,7 @@
 #include "../include/player.h"
 
-#define M_PI 3.14159265358979323846
-#define HALF_M_PI 1.57079632679489661923
-
 #define SIGN(x) (int) (x > 0) ? 1 : ((x < 0) ? -1 : 0)
 #define DOT(a,b) (a.x * b.x) + (a.y * b.y)
-
-double deg_to_rad(double deg) { return deg * (M_PI / 180); }
 
 player *player_init(engine *e) {
   player *p = malloc(sizeof(player));
@@ -14,7 +9,9 @@ player *player_init(engine *e) {
   p->thing = e->wData->things[0];
   p->pos.x = (double)p->thing.x;
   p->pos.y = (double)p->thing.y;
-  p->angle = (double)p->thing.angle;
+  p->angle = (double)-p->thing.angle;
+  p->keybinds = get_player_keybinds(KEYBINDS_FILE);
+  p->settings = get_player_settings(SETTINGS_FILE);
   return p;
 }
 
@@ -143,31 +140,33 @@ void move_and_slide(player* p, double* velocity){
 }
 
 void update_player(player *p, int mouse_x, const uint8_t *keyboard_state) {
-  bool keydown_z = keyboard_state[SDL_SCANCODE_W];
-  bool keydown_q = keyboard_state[SDL_SCANCODE_A];
-  bool keydown_s = keyboard_state[SDL_SCANCODE_S];
-  bool keydown_d = keyboard_state[SDL_SCANCODE_D];
+  bool forward =
+      keyboard_state[get_key_from_action(p->keybinds, "MOVE_FORWARD")];
+  bool left = keyboard_state[get_key_from_action(p->keybinds, "MOVE_LEFT")];
+  bool backward =
+      keyboard_state[get_key_from_action(p->keybinds, "MOVE_BACKWARD")];
+  bool right_d = keyboard_state[get_key_from_action(p->keybinds, "MOVE_RIGHT")];
   double speed = DT * PLAYER_SPEED;
   double rot_speed = PLAYER_ROTATION_SPEED * DT;
   double vec[2] = {0.0, 0.0};
   int count_dir = 0;
   int count_strafe = 0;
-  if (keydown_z) {
+  if (forward) {
     vec[0] += speed * cos(deg_to_rad(p->angle));
     vec[1] -= speed * sin(deg_to_rad(p->angle));
     count_dir++;
   }
-  if (keydown_s) {
+  if (backward) {
     vec[0] -= speed * cos(deg_to_rad(p->angle));
     vec[1] += speed * sin(deg_to_rad(p->angle));
     count_dir++;
   }
-  if (keydown_q) {
+  if (left) {
     vec[0] += speed * sin(deg_to_rad(p->angle));
     vec[1] += speed * cos(deg_to_rad(p->angle));
     count_strafe++;
   }
-  if (keydown_d) {
+  if (right_d) {
     vec[0] -= speed * sin(deg_to_rad(p->angle));
     vec[1] -= speed * cos(deg_to_rad(p->angle));
     count_strafe++;
@@ -184,4 +183,8 @@ void update_player(player *p, int mouse_x, const uint8_t *keyboard_state) {
   p->angle = p->angle < 0 ? 360 + p->angle : p->angle;
 }
 
-void player_free(player *p) { free(p); }
+void player_free(player *p) {
+  free_keybinds(p->keybinds);
+  free_settings(p->settings);
+  free(p);
+}

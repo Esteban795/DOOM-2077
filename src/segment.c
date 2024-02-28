@@ -6,6 +6,14 @@ double bams_to_degrees(i16 bams){
   return res < 0 ? 360 + res : res;
 }
 
+linedef get_linedef_from_id(i16 linedef_id, linedef *linedefs) {
+  return linedefs[linedef_id];
+}
+
+vertex get_vertex_from_id(i16 vertex_id, vertex *vertexes) {
+  return vertexes[vertex_id];
+}
+
 segment read_segment(FILE *f, int offset) {
   segment s;
   s.start_vertex_id = read_i16(f, offset);

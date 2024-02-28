@@ -3,6 +3,8 @@
 
 #include <SDL2/SDL.h>
 
+
+#include "keybindings.h"
 #include "wad_data.h"
 #include "vec2.h"
 
@@ -16,6 +18,8 @@ struct Player {
   thing thing;
   vec2 pos;
   double angle;
+  struct PlayerSetting *settings;
+  struct PlayerKeybind *keybinds;
 };
 
 struct Engine {

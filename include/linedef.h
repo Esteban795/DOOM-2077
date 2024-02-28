@@ -3,12 +3,13 @@
 
 #include "byte_reader.h"
 #include "lump.h"
+#include "vertex.h"
 #include <stdio.h>
 #include <stdlib.h>
 
 struct Linedef {
-  u16 start_vertex_id;
-  u16 end_vertex_id;
+  i16 start_vertex_id;
+  i16 end_vertex_id;
   u16 flag;
   u16 line_type;
   u16 sector_tag;
