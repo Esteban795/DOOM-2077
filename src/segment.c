@@ -6,15 +6,15 @@ void update_segs_sectors(segment *segs, int num_segs) {
     sidedef *front_sidedef;
     sidedef *back_sidedef;
     if (segs[i].direction) {
-      front_sidedef = &segs[i].linedef.front_sidedef;
-      back_sidedef = &segs[i].linedef.back_sidedef;
+      front_sidedef = segs[i].linedef->front_sidedef;
+      back_sidedef = segs[i].linedef->back_sidedef;
     } else {
-      front_sidedef = &segs[i].linedef.back_sidedef;
-      back_sidedef = &segs[i].linedef.front_sidedef;
+      front_sidedef = segs[i].linedef->back_sidedef;
+      back_sidedef = segs[i].linedef->front_sidedef;
     }
-    segs[i].front_sector = &front_sidedef->sector;
-    if (segs[i].linedef.flag == TWO_SIDED) {
-      segs[i].back_sector = &back_sidedef->sector;
+    segs[i].front_sector = front_sidedef->sector;
+    if (segs[i].linedef->flag == TWO_SIDED) {
+      segs[i].back_sector = back_sidedef->sector;
     } else {
       segs[i].back_sector = NULL;
     }
@@ -26,12 +26,12 @@ double bams_to_degrees(i16 bams) {
   return res < 0 ? 360 + res : res;
 }
 
-linedef get_linedef_from_id(i16 linedef_id, linedef *linedefs) {
-  return linedefs[linedef_id];
+linedef* get_linedef_from_id(i16 linedef_id, linedef *linedefs) {
+  return &linedefs[linedef_id];
 }
 
-vertex get_vertex_from_id(i16 vertex_id, vertex *vertexes) {
-  return vertexes[vertex_id];
+vertex* get_vertex_from_id(i16 vertex_id, vertex *vertexes) {
+  return &vertexes[vertex_id];
 }
 
 segment read_segment(FILE *f, int offset, vertex *vertexes, linedef *linedefs) {

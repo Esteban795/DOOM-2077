@@ -8,10 +8,10 @@
 // https://doomwiki.org/wiki/Seg
 
 struct Segment {
-  vertex start_vertex;
-  vertex end_vertex;
+  vertex* start_vertex;
+  vertex* end_vertex;
   double angle;
-  linedef linedef;
+  linedef* linedef;
   i16 direction;
   i16 offset;
   sector* front_sector;

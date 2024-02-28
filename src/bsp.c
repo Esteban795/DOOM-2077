@@ -105,10 +105,10 @@ static bool check_if_bbox_visible(bbox bb, player *p) {
 // x2 to the x position of the segment for the screen
 bool is_segment_in_fov(player *p, segment seg, int *x1, int *x2) {
   vec2 player = {.x = p->x, .y = p->y};
-  vertex v1 = seg.start_vertex;
-  vertex v2 = seg.end_vertex;
-  vec2 v1v = {.x = v1.x, .y = v1.y};
-  vec2 v2v = {.x = v2.x, .y = v2.y};
+  vertex* v1 = seg.start_vertex;
+  vertex* v2 = seg.end_vertex;
+  vec2 v1v = {.x = v1->x, .y = v1->y};
+  vec2 v2v = {.x = v2->x, .y = v2->y};
   double angle1 = point_to_angle(player, v1v); // angle from player to v1
   double angle2 = point_to_angle(player, v2v); // angle from player to v2
   double span = norm(angle1 - angle2);

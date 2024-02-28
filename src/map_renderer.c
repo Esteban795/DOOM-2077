@@ -153,9 +153,9 @@ static void draw_player(map_renderer *mr) {
 }
 
 void draw_segment(map_renderer *mr, segment seg) {
-  vertex v_start = seg.start_vertex;
-  vertex v_end = seg.end_vertex;
-  SDL_RenderDrawLine(mr->renderer, v_start.x, v_start.y, v_end.x, v_end.y);
+  vertex* v_start = seg.start_vertex;
+  vertex* v_end = seg.end_vertex;
+  SDL_RenderDrawLine(mr->renderer, v_start->x, v_start->y, v_end->x, v_end->y);
 }
 
 void draw_subsector(map_renderer *mr, i16 subsector_id) {
