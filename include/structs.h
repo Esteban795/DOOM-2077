@@ -4,11 +4,12 @@
 #include <SDL2/SDL.h>
 
 #include "wad_data.h"
-
+#include "settings.h"
 struct Player;
 struct BSP;
 struct Engine;
 struct MapRenderer;
+struct SegmentHandler;
 
 struct Player {
   struct Engine *engine;
@@ -25,6 +26,7 @@ struct Engine {
   struct Player *p;
   struct BSP *bsp;
   struct MapRenderer *map_renderer;
+  struct SegmentHandler *seg_handler;
   int numkeys;
   const uint8_t *keys;
 };
@@ -60,4 +62,15 @@ struct Color {
 
 typedef struct Color color;
 
+struct SegmentHandler {
+    player* player;
+    segment* seg;
+    double angle_to_p1;
+    int screen_range[WIDTH];
+    double upper_clip[WIDTH];
+    double lower_clip[WIDTH];
+    int screen_range_count;
+};
+
+typedef struct SegmentHandler segment_handler;
 #endif
