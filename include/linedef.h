@@ -23,13 +23,13 @@ enum LinedefFlags {
 };
 
 struct Linedef {
-  vertex start_vertex;
-  vertex end_vertex;
+  vertex* start_vertex;
+  vertex* end_vertex;
   u16 flag;
   u16 line_type;
   u16 sector_tag;
-  sidedef front_sidedef;
-  sidedef back_sidedef;
+  sidedef* front_sidedef;
+  sidedef* back_sidedef;
   bool has_back_sidedef;
 };
 

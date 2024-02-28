@@ -102,9 +102,9 @@ vertex *remap_vertexes(vertex *vertexes, int len, int *map_bounds) {
 void draw_linedefs(SDL_Renderer *renderer, linedef *linedefs, int len) {
   SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
   for (int i = 0; i < len; i++) {
-    vertex p1 = linedefs[i].start_vertex;
-    vertex p2 = linedefs[i].end_vertex;
-    SDL_RenderDrawLine(renderer, p1.x, p1.y, p2.x, p2.y);
+    vertex* p1 = linedefs[i].start_vertex;
+    vertex* p2 = linedefs[i].end_vertex;
+    SDL_RenderDrawLine(renderer, p1->x, p1->y, p2->x, p2->y);
   }
 }
 

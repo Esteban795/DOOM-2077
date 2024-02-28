@@ -1,11 +1,11 @@
 #include "../include/linedef.h"
 
-vertex get_vertex_from_linedef(i16 vertex_id, vertex *vertexes) {
-  return vertexes[vertex_id];
+vertex* get_vertex_from_linedef(i16 vertex_id, vertex *vertexes) {
+  return &vertexes[vertex_id];
 }
 
-sidedef get_sidedef_from_linedef(i16 sidedef_id, sidedef *sidedefs) {
-  return sidedefs[sidedef_id];
+sidedef* get_sidedef_from_linedef(i16 sidedef_id, sidedef *sidedefs) {
+  return &sidedefs[sidedef_id];
 }
 
 linedef read_linedef(FILE *f, int offset, vertex *vertexes,sidedef *sidedefs){
