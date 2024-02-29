@@ -7,6 +7,7 @@
 #include "settings.h"
 #include "structs.h"
 #include "vec2.h"
+#include "segment_handler.h"
 
 
 extern bool BSP_TRAVERSE;

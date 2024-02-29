@@ -12,9 +12,9 @@ void update_segs_sectors(segment *segs, int num_segs) {
       front_sidedef = segs[i].linedef->back_sidedef;
       back_sidedef = segs[i].linedef->front_sidedef;
     }
-    segs[i].front_sector = front_sidedef->sector;
+    segs[i].front_sector = &front_sidedef->sector;
     if (segs[i].linedef->flag == TWO_SIDED) {
-      segs[i].back_sector = back_sidedef->sector;
+      segs[i].back_sector = &back_sidedef->sector;
     } else {
       segs[i].back_sector = NULL;
     }

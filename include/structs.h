@@ -63,6 +63,7 @@ struct Color {
 typedef struct Color color;
 
 struct SegmentHandler {
+    struct Engine* engine;
     player* player;
     segment* seg;
     double angle_to_p1;

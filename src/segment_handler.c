@@ -1,8 +1,12 @@
 #include "../include/segment_handler.h"
+#include <stdio.h>
+
+
+bool BSP_TRAVERSE = true;
 
 void draw_solid_walls_range(segment_handler* sh, int x1, int x2){
+    draw_vline(sh->engine->map_renderer, x1, 0 , HEIGHT);
     return;
-
 }
 
 void draw_portal_walls_range(segment_handler* sh, int x1, int x2){
@@ -21,6 +25,7 @@ int* calculate_ranges_to_draw(int* screen_range, int x1, int x2){
 
 void clip_solid_walls(segment_handler* sh,int x1, int x2){
     if (sh->screen_range_count < WIDTH){
+        printf("x1 = %d, x2 = %d\n", x1, x2);
         int len = x2 - x1;
         int* ranges_to_draw = calculate_ranges_to_draw(sh->screen_range, x1, x2);
         int index_first_1 = x1;
@@ -63,6 +68,7 @@ void classify_segment(segment_handler* sh,segment* seg,int x1, int x2){
 
 segment_handler* segment_handler_init(engine* e){
     segment_handler* sh = malloc(sizeof(segment_handler));
+    sh->engine = e;
     sh->seg = NULL; //init to NULL, will be changed each time by 'classify_segment'
     sh->player = e->p;
     sh->angle_to_p1 = 0.0;

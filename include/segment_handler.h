@@ -4,10 +4,10 @@
 #include "segment.h"
 #include "settings.h"
 #include "structs.h"
-#include "bsp.h"
-
+#include "map_renderer.h"
 #include <stdlib.h>
 
+extern bool BSP_TRAVERSE;
 void classify_segment(segment_handler* sh,segment* seg,int x1, int x2);
 
 segment_handler* segment_handler_init(engine* e);

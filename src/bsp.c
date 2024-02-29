@@ -1,7 +1,5 @@
 #include "../include/bsp.h"
 
-bool BSP_TRAVERSE = true;
-
 bsp *bsp_init(engine *e, player *p) {
   bsp *b = malloc(sizeof(bsp));
   b->engine = e;
@@ -147,7 +145,8 @@ void render_bsp_node(bsp *b, size_t node_id) {
       for (i16 i = 0; i < ss.num_segs; i++) {
         segment seg = ss.segs[i];
         if (is_segment_in_fov(b->player, seg, &x1, &x2)) {
-          draw_vertical_lines(b->engine->map_renderer, x1, x2, subsector_id);
+          // draw_vertical_lines(b->engine->map_renderer, x1, x2, subsector_id);
+          classify_segment(b->engine->seg_handler, &seg, x1, x2);
         }
       }
     } else {

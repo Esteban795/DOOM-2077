@@ -191,6 +191,9 @@ void draw_fov(map_renderer *mr) {
   SDL_RenderDrawLine(mr->renderer, x, y, x3, y3);
 }
 
+void draw_vline(map_renderer *mr, int x, int y1, int y2) {
+  SDL_RenderDrawLine(mr->renderer, x, y1, x, y2);
+}
 void draw(map_renderer *mr) {
   // draw_vertexes(mr->renderer, mr->vertexes, mr->wData->len_vertexes);
   // draw_linedefs(mr->renderer, mr->wData->linedefs, mr->wData->len_linedefs,
