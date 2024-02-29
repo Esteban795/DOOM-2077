@@ -14,12 +14,12 @@
 
 #define WIDTH RES_W *SCALE
 #define HEIGHT RES_H *SCALE
-#define HALF_WIDTH ((double)WIDTH / 2)
+#define HALF_WIDTH (WIDTH / 2.0)
 #define OUT_MIN 30
 #define OUT_MAX_W (WIDTH - 30)
 #define OUT_MAX_H (HEIGHT - 30)
 
-#define SCREEN_DISTANCE (HALF_WIDTH / tan(HALF_FOV))
+#define SCREEN_DISTANCE (HALF_WIDTH / tan(HALF_FOV * (M_PI / 180.0)))
 
 #define DEFAULT_MAP_BOUNDS                                                     \
   { OUT_MIN, OUT_MAX_W, OUT_MIN, OUT_MAX_H }
