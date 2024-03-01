@@ -17,7 +17,7 @@ linedef read_linedef(FILE *f, int offset, vertex *vertexes,sidedef *sidedefs){
   line.sector_tag = read_i16(f, offset + 8);
   i16 front_sidedef_id = read_i16(f, offset + 10);
   i16 back_sidedef_id = read_i16(f, offset + 12);
-  line.has_back_sidedef = back_sidedef_id > 0;
+  line.has_back_sidedef = back_sidedef_id != -1;
   line.front_sidedef = get_sidedef_from_linedef(front_sidedef_id, sidedefs);
   if (line.has_back_sidedef) line.back_sidedef = get_sidedef_from_linedef(back_sidedef_id, sidedefs);
   return line;

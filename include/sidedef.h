@@ -12,6 +12,7 @@ struct Sidedef {
   char* lower_texture;
   char* middle_texture;
   sector* sector;
+  i16 sector_id;
 };
 
 typedef struct Sidedef sidedef;
