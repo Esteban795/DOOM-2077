@@ -3,6 +3,7 @@
 
 #include <SDL2/SDL.h>
 
+
 #include "wad_data.h"
 #include "settings.h"
 struct Player;
@@ -70,7 +71,7 @@ struct SegmentHandler {
     int screen_range[WIDTH];
     double upper_clip[WIDTH];
     double lower_clip[WIDTH];
-    int screen_range_count;
+    size_t screen_range_count;
 };
 
 typedef struct SegmentHandler segment_handler;

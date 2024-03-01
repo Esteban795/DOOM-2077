@@ -1,5 +1,7 @@
 #include "../include/bsp.h"
 
+static int VALID_SEGMENTS = 0;
+
 bsp *bsp_init(engine *e, player *p) {
   bsp *b = malloc(sizeof(bsp));
   b->engine = e;
@@ -91,8 +93,7 @@ static bool check_if_bbox_visible(bbox bb, player *p) {
     angle1 += p->angle;
     double span1 = norm(angle1 + HALF_FOV);
     if (span1 > FOV) {
-      if (span1 >= span + FOV)
-        continue;
+      if (span1 + 0.1 >= span + FOV) continue;
     }
     return true;
   }
@@ -114,18 +115,19 @@ bool is_segment_in_fov(player *p, segment seg, int *x1, int *x2) {
     return false;
   angle1 += p->angle;
   angle2 += p->angle;
-  double span1 = norm(angle1 + HALF_FOV);
+  double span1 = norm(HALF_FOV + angle1);
   if (span1 > FOV) {
-    if (span1 >= span + FOV)
-      return false;
+    if (span1 + 0.1 >= span + FOV) return false; 
+    else angle1 = HALF_FOV;
   }
   double span2 = norm(HALF_FOV - angle2);
   if (span2 > FOV) {
-    if (span2 >= span + FOV)
-      return false;
+    if (span2 + 0.2 >= span + FOV) return false;
+    else angle2 = -HALF_FOV;
   }
   *x1 = angle_to_x_pos(angle1);
   *x2 = angle_to_x_pos(angle2);
+  VALID_SEGMENTS++;
   return true;
 }
 
@@ -137,7 +139,7 @@ static bool is_on_back_side(bsp *b, node n) {
 
 void render_bsp_node(bsp *b, size_t node_id) {
   if (BSP_TRAVERSE) {
-    if (node_id > SUBSECTOR_IDENTIFIER) {
+    if (node_id >= SUBSECTOR_IDENTIFIER) {
       i16 subsector_id = node_id - SUBSECTOR_IDENTIFIER;
       subsector ss = b->engine->wData->subsectors[subsector_id];
       SDL_SetRenderDrawColor(b->engine->map_renderer->renderer, 0, 255, 0, 255);
@@ -145,7 +147,6 @@ void render_bsp_node(bsp *b, size_t node_id) {
       for (i16 i = 0; i < ss.num_segs; i++) {
         segment seg = ss.segs[i];
         if (is_segment_in_fov(b->player, seg, &x1, &x2)) {
-          // draw_vertical_lines(b->engine->map_renderer, x1, x2, subsector_id);
           classify_segment(b->engine->seg_handler, &seg, x1, x2);
         }
       }
@@ -170,6 +171,7 @@ void render_bsp_node(bsp *b, size_t node_id) {
 void update_bsp(bsp *b) {
   BSP_TRAVERSE = true;
   render_bsp_node(b, b->root_node_id);
+  printf("Valid segments: %d\n", VALID_SEGMENTS);
 }
 
 void bsp_free(bsp *b) { free(b); }

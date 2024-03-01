@@ -28,15 +28,15 @@ segment read_segment(FILE *f, int offset, vertex *vertexes, linedef *linedefs,se
   s.offset = read_i16(f, offset + 10);
   s.angle = s.angle < 0 ? 360.0 + s.angle : s.angle;
   if (s.direction) {
-    sidedef* front_sidedef = s.linedef->front_sidedef;
-    sidedef* back_sidedef = s.linedef->back_sidedef;
-    s.front_sector = get_sector_from_id(front_sidedef->sector_id, sectors);
-    s.back_sector = s.linedef->flag == TWO_SIDED ? get_sector_from_id(back_sidedef->sector_id, sectors) : NULL;
-  } else {
     sidedef* front_sidedef = s.linedef->back_sidedef;
     sidedef* back_sidedef = s.linedef->front_sidedef;
     s.front_sector = get_sector_from_id(front_sidedef->sector_id, sectors);
-    s.back_sector = s.linedef->flag == TWO_SIDED ? get_sector_from_id(back_sidedef->sector_id, sectors) : NULL;
+    s.back_sector = s.linedef->flag & TWO_SIDED ? get_sector_from_id(back_sidedef->sector_id, sectors) : NULL;
+  } else {
+    sidedef* front_sidedef = s.linedef->front_sidedef;
+    sidedef* back_sidedef = s.linedef->back_sidedef;
+    s.front_sector = get_sector_from_id(front_sidedef->sector_id, sectors);
+    s.back_sector = s.linedef->flag & TWO_SIDED ? get_sector_from_id(back_sidedef->sector_id, sectors) : NULL;
   }
   return s;
 }

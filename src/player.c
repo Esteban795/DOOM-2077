@@ -8,7 +8,7 @@ player *player_init(engine *e) {
   p->thing = e->wData->things[0];
   p->x = (double)p->thing.x;
   p->y = (double)p->thing.y;
-  p->angle = (double)-p->thing.angle;
+  p->angle = (double)p->thing.angle + 180.0;
   return p;
 }
 
@@ -50,8 +50,7 @@ void update_player(player *p, int mouse_x, const uint8_t *keyboard_state) {
   p->y += vec[1];
   if (SDL_WINDOW_INPUT_FOCUS) {
     p->angle += rot_speed * mouse_x;
-    p->angle = fmod(p->angle, 360);
-    p->angle = p->angle < 0 ? 360 + p->angle : p->angle;
+    p->angle = norm(p->angle);
   }
 }
 
