@@ -84,17 +84,15 @@ void draw_solid_walls_range(segment_handler *sh, int x1, int x2) {
   }
 }
 
-// void draw_portal_walls_range(segment_handler* sh, int x1, int x2){
-//     return;
-// }
+void draw_portal_walls_range(segment_handler* sh, int x1, int x2){
+    return;
+}
 
 int *calculate_ranges_to_draw(int *screen_range, int x1, int x2) {
   int len = x2 - x1;
   int *ranges_to_draw = malloc(sizeof(int) * len);
   for (int i = 0; i < len; i++) {
     ranges_to_draw[i] = screen_range[x1 + i] ^ 1;
-    screen_range[x1 + i] =
-        1; // so the screen range occupied is actually updated in a single pass.
   }
   return ranges_to_draw;
 }
@@ -112,6 +110,7 @@ void clip_solid_walls(segment_handler *sh, int x1, int x2) {
           index_first_1 = i;
         }
         index_last_1 = i;
+        sh->screen_range[x1 + i] = 1; // mark the pixel as drawn
       } else if (index_first_1 != -1) {
         sh->screen_range_count += index_last_1 - index_first_1 + 1;
         draw_solid_walls_range(sh, x1 + index_first_1, x1 + index_last_1 + 1);
@@ -130,7 +129,29 @@ void clip_solid_walls(segment_handler *sh, int x1, int x2) {
   }
 }
 
-void clip_portal_walls(segment_handler *sh, int x1, int x2) { return; }
+void clip_portal_walls(segment_handler *sh, int x1, int x2) {
+  int len = x2 - x1;
+  int *ranges_to_draw = calculate_ranges_to_draw(sh->screen_range, x1, x2);
+  int index_first_1 = -1;
+  int index_last_1 = -1;
+  for (int i = 0; i < len; i++) {
+    if (ranges_to_draw[i] == 1) {
+      if (index_first_1 == -1) {
+        index_first_1 = i;
+      }
+      index_last_1 = i;
+    } else if (index_first_1 != -1) {
+      draw_portal_walls_range(sh, x1 + index_first_1, x1 + index_last_1 + 1);
+      index_first_1 = -1;
+      index_last_1 = -1;
+    }
+  }
+  if (index_first_1 != -1) { // the end of the loop but we started a chunk of 1s
+    draw_portal_walls_range(sh, x1 + index_first_1, x1 + index_last_1 + 1);
+  }
+  free(ranges_to_draw);
+}
+
 
 void classify_segment(segment_handler *sh, segment *seg, int x1, int x2,
                       double raw_angle_1) {
