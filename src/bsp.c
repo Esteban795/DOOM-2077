@@ -1,7 +1,5 @@
 #include "../include/bsp.h"
 
-static int VALID_SEGMENTS = 0;
-
 bsp *bsp_init(engine *e, player *p) {
   bsp *b = malloc(sizeof(bsp));
   b->engine = e;
@@ -93,7 +91,8 @@ static bool check_if_bbox_visible(bbox bb, player *p) {
     angle1 += p->angle;
     double span1 = norm(angle1 + HALF_FOV);
     if (span1 > FOV) {
-      if (span1 + 0.1 >= span + FOV) continue;
+      if (span1 + 0.1 >= span + FOV)
+        continue;
     }
     return true;
   }
@@ -102,10 +101,11 @@ static bool check_if_bbox_visible(bbox bb, player *p) {
 
 // returns true if the segment is in the player's field of view, and sets x1 and
 // x2 to the x position of the segment for the screen
-bool is_segment_in_fov(player *p, segment seg, int *x1, int *x2,double* raw_angle_1) {
+bool is_segment_in_fov(player *p, segment seg, int *x1, int *x2,
+                       double *raw_angle_1) {
   vec2 player = {.x = p->x, .y = p->y};
-  vertex* v1 = seg.start_vertex;
-  vertex* v2 = seg.end_vertex;
+  vertex *v1 = seg.start_vertex;
+  vertex *v2 = seg.end_vertex;
   vec2 v1v = {.x = v1->x, .y = v1->y};
   vec2 v2v = {.x = v2->x, .y = v2->y};
   double angle1 = point_to_angle(player, v1v); // angle from player to v1
@@ -118,17 +118,20 @@ bool is_segment_in_fov(player *p, segment seg, int *x1, int *x2,double* raw_angl
   angle2 += p->angle;
   double span1 = norm(HALF_FOV + angle1);
   if (span1 > FOV) {
-    if (span1 + 0.1 >= span + FOV) return false; 
-    else angle1 = HALF_FOV;
+    if (span1 + 0.1 >= span + FOV)
+      return false;
+    else
+      angle1 = HALF_FOV;
   }
   double span2 = norm(HALF_FOV - angle2);
   if (span2 > FOV) {
-    if (span2 + 0.2 >= span + FOV) return false;
-    else angle2 = -HALF_FOV;
+    if (span2 + 0.2 >= span + FOV)
+      return false;
+    else
+      angle2 = -HALF_FOV;
   }
   *x1 = angle_to_x_pos(angle1);
   *x2 = angle_to_x_pos(angle2);
-  VALID_SEGMENTS++;
   return true;
 }
 
@@ -148,8 +151,8 @@ void render_bsp_node(bsp *b, size_t node_id) {
       double raw_angle_1;
       for (i16 i = 0; i < ss.num_segs; i++) {
         segment seg = ss.segs[i];
-        if (is_segment_in_fov(b->player, seg, &x1, &x2,&raw_angle_1)) {
-          classify_segment(b->engine->seg_handler, &seg, x1, x2,raw_angle_1);
+        if (is_segment_in_fov(b->player, seg, &x1, &x2, &raw_angle_1)) {
+          classify_segment(b->engine->seg_handler, &seg, x1, x2, raw_angle_1);
         }
       }
     } else {
@@ -173,7 +176,6 @@ void render_bsp_node(bsp *b, size_t node_id) {
 void update_bsp(bsp *b) {
   BSP_TRAVERSE = true;
   render_bsp_node(b, b->root_node_id);
-  printf("Valid segments: %d\n", VALID_SEGMENTS);
 }
 
 void bsp_free(bsp *b) { free(b); }

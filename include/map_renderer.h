@@ -31,6 +31,4 @@ void draw(map_renderer *mr);
 void draw_vertical_lines(map_renderer *mr, int x1, int x2, i16 subsector_id);
 
 void map_renderer_free(map_renderer *mr);
-
-void draw_vline(map_renderer *mr, int x, int y1, int y2);
 #endif

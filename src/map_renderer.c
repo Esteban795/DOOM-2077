@@ -4,7 +4,6 @@
 #define FOV 90.0
 #define H_FOV (FOV / 2.0)
 
-
 color get_random_color2() {
   color c;
   c.r = rand() % 256;
@@ -107,8 +106,8 @@ vertex *remap_vertexes(vertex *vertexes, int len, int *map_bounds) {
 void draw_linedefs(SDL_Renderer *renderer, linedef *linedefs, int len) {
   SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
   for (int i = 0; i < len; i++) {
-    vertex* p1 = linedefs[i].start_vertex;
-    vertex* p2 = linedefs[i].end_vertex;
+    vertex *p1 = linedefs[i].start_vertex;
+    vertex *p2 = linedefs[i].end_vertex;
     SDL_RenderDrawLine(renderer, p1->x, p1->y, p2->x, p2->y);
   }
 }
@@ -158,8 +157,8 @@ static void draw_player(map_renderer *mr) {
 }
 
 void draw_segment(map_renderer *mr, segment seg) {
-  vertex* v_start = seg.start_vertex;
-  vertex* v_end = seg.end_vertex;
+  vertex *v_start = seg.start_vertex;
+  vertex *v_end = seg.end_vertex;
   SDL_RenderDrawLine(mr->renderer, v_start->x, v_start->y, v_end->x, v_end->y);
 }
 
@@ -196,11 +195,6 @@ void draw_fov(map_renderer *mr) {
   SDL_RenderDrawLine(mr->renderer, x, y, x3, y3);
 }
 
-
-bool BSP_TRAVERSE = true;
-void draw_vline(map_renderer *mr, int x, int y1, int y2) {
-  SDL_RenderDrawLine(mr->renderer, x, y1, x, y2);
-}
 void draw(map_renderer *mr) {
   // draw_vertexes(mr->renderer, mr->vertexes, mr->wData->len_vertexes);
   // draw_linedefs(mr->renderer, mr->wData->linedefs, mr->wData->len_linedefs,
