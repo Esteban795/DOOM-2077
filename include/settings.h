@@ -15,6 +15,7 @@
 #define WIDTH RES_W *SCALE
 #define HEIGHT RES_H *SCALE
 #define HALF_WIDTH (WIDTH / 2.0)
+#define HALF_HEIGHT (HEIGHT / 2.0)
 #define OUT_MIN 30
 #define OUT_MAX_W (WIDTH - 30)
 #define OUT_MAX_H (HEIGHT - 30)

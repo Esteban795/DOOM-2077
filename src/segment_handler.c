@@ -1,21 +1,75 @@
 #include "../include/segment_handler.h"
-
-color get_random_color2() {
-  color c;
-  c.r = rand() % 256;
-  c.g = rand() % 256;
-  c.b = rand() % 256;
-  return c;
-}
+#include <math.h>
 
 bool BSP_TRAVERSE = true;
 static size_t SOLID_WALL_COUNTER = 0;
 
+double scale_from_global_angle(segment_handler* sh,int x,double normal_angle,double dist){
+  double x_angle = rad_to_deg(atan((HALF_WIDTH - x) / SCREEN_DISTANCE));
+  double num = SCREEN_DISTANCE * cos(deg_to_rad(normal_angle - x_angle - sh->player->angle));
+  double den = dist * cos(deg_to_rad(x_angle));
+  double scale = num / den;
+  scale = min(MAX_SCALE,max(MIN_SCALE,scale));
+  return scale;
+}
 
 void draw_solid_walls_range(segment_handler *sh, int x1, int x2) {
-  draw_vline(sh->engine->map_renderer, x1, 0, HEIGHT);
-  draw_vline(sh->engine->map_renderer, x2, 0, HEIGHT);
-  SDL_RenderPresent(sh->engine->map_renderer->renderer);
+  //will be used soon while applying textures on walls
+  char* wall_texture = sh->seg->linedef->front_sidedef->middle_texture;
+  char* ceiling_texture = sh->seg->front_sector->ceiling_texture;
+  char* floor_texture = sh->seg->front_sector->floor_texture;
+  i16 light_level = sh->seg->front_sector->light_level;
+
+  int world_front_z1 = sh->seg->front_sector->ceiling_height - PLAYER_HEIGHT;
+  int world_front_z2 = sh->seg->front_sector->floor_height - PLAYER_HEIGHT;
+
+  // check which parts needs to be rendered
+  bool draw_wall = strcmp(sh->seg->linedef->front_sidedef->middle_texture,"-");
+  bool draw_ceiling = world_front_z1 > 0;
+  bool draw_floor = world_front_z2 < 0;
+
+  double normal_angle = sh->seg->angle + 90.0;
+  double offset_angle = normal_angle - sh->raw_angle_1;
+
+  player* p = sh->engine->p;
+  vec2 player_pos = {.x = p->x, .y = p->y};
+  vec2 start_vertex_pos = {.x=sh->seg->start_vertex->x, .y = sh->seg->start_vertex->y};
+  double hyp = dist(player_pos, start_vertex_pos);
+  double raw_dist = hyp * cos(deg_to_rad(offset_angle));
+  double rw_scale_step = 0;
+  double scale1 = scale_from_global_angle(sh, x1, normal_angle, raw_dist);
+  if (x1 < x2) {
+    double scale2 = scale_from_global_angle(sh, x2, normal_angle, raw_dist);
+    rw_scale_step = (scale2 - scale1) / (x2 - x1);
+  }
+
+  double wall_y1 = HALF_HEIGHT - world_front_z1 * scale1;
+  double wall_y1_step = -rw_scale_step * world_front_z1;
+
+  double wall_y2 = HEIGHT - world_front_z2 * scale1;
+  double wall_y2_step = -rw_scale_step * world_front_z2;
+  for (int i = x1; i < x2 + 1; i++){
+    if (draw_ceiling){
+      int cy1 = sh->upper_clip[i] + 1;
+      int cy2 = (int)min(wall_y1 - 1, sh->lower_clip[i] - 1);
+      draw_vline(sh->engine->map_renderer, i, cy1, cy2);
+    }
+
+    if (draw_wall){
+      int wy1 = (int)max(wall_y1 - 1, sh->upper_clip[i] + 1);
+      int wy2 = (int)min(wall_y2, sh->lower_clip[i] - 1);
+      draw_vline(sh->engine->map_renderer, i, wy1, wy2);
+    }
+
+    if (draw_floor){
+      int fy1 = (int)max(wall_y2 + 1, sh->upper_clip[i] + 1);
+      int fy2 = sh->lower_clip[i] - 1;
+      draw_vline(sh->engine->map_renderer, i, fy1, fy2);
+    }
+
+    wall_y1 += wall_y1_step;
+    wall_y2 += wall_y2_step;
+  }
 }
 
 // void draw_portal_walls_range(segment_handler* sh, int x1, int x2){
@@ -64,12 +118,13 @@ void clip_solid_walls(segment_handler *sh, int x1, int x2) {
 
 void clip_portal_walls(segment_handler *sh, int x1, int x2) { return; }
 
-void classify_segment(segment_handler *sh, segment *seg, int x1, int x2) {
+void classify_segment(segment_handler* sh,segment* seg,int x1, int x2,double raw_angle_1) {
   if (x1 == x2)
     return; // no pixel needed to be drawn
   sector *front_sector = seg->front_sector;
   sector *back_sector = seg->back_sector;
   sh->seg = seg;
+  sh->raw_angle_1 = raw_angle_1;
   if (back_sector == NULL) { // its a solid wall
     SOLID_WALL_COUNTER++;
     clip_solid_walls(sh, x1, x2);
@@ -95,7 +150,7 @@ segment_handler *segment_handler_init(engine *e) {
       NULL; // init to NULL, will be changed each time by 'classify_segment'
   sh->screen_range_count = 0;
   sh->player = e->p;
-  sh->angle_to_p1 = 0.0;
+  sh->raw_angle_1 = 0.0;
   memset(sh->screen_range, 0, WIDTH * sizeof(int));
   memset(sh->upper_clip, 0, WIDTH * sizeof(int));
   memset(sh->lower_clip, 0, WIDTH * sizeof(int));

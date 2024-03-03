@@ -67,7 +67,7 @@ struct SegmentHandler {
     struct Engine* engine;
     player* player;
     segment* seg;
-    double angle_to_p1;
+    double raw_angle_1;
     int screen_range[WIDTH];
     double upper_clip[WIDTH];
     double lower_clip[WIDTH];

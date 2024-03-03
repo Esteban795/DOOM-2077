@@ -102,7 +102,7 @@ static bool check_if_bbox_visible(bbox bb, player *p) {
 
 // returns true if the segment is in the player's field of view, and sets x1 and
 // x2 to the x position of the segment for the screen
-bool is_segment_in_fov(player *p, segment seg, int *x1, int *x2) {
+bool is_segment_in_fov(player *p, segment seg, int *x1, int *x2,double* raw_angle_1) {
   vec2 player = {.x = p->x, .y = p->y};
   vertex* v1 = seg.start_vertex;
   vertex* v2 = seg.end_vertex;
@@ -113,6 +113,7 @@ bool is_segment_in_fov(player *p, segment seg, int *x1, int *x2) {
   double span = norm(angle1 - angle2);
   if (span >= 180.0)
     return false;
+  *raw_angle_1 = angle1;
   angle1 += p->angle;
   angle2 += p->angle;
   double span1 = norm(HALF_FOV + angle1);
@@ -144,10 +145,11 @@ void render_bsp_node(bsp *b, size_t node_id) {
       subsector ss = b->engine->wData->subsectors[subsector_id];
       SDL_SetRenderDrawColor(b->engine->map_renderer->renderer, 0, 255, 0, 255);
       int x1, x2;
+      double raw_angle_1;
       for (i16 i = 0; i < ss.num_segs; i++) {
         segment seg = ss.segs[i];
-        if (is_segment_in_fov(b->player, seg, &x1, &x2)) {
-          classify_segment(b->engine->seg_handler, &seg, x1, x2);
+        if (is_segment_in_fov(b->player, seg, &x1, &x2,&raw_angle_1)) {
+          classify_segment(b->engine->seg_handler, &seg, x1, x2,raw_angle_1);
         }
       }
     } else {

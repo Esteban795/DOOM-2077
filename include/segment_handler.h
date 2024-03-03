@@ -7,8 +7,10 @@
 #include "map_renderer.h"
 #include <stdlib.h>
 
+#define MAX_SCALE 64.0
+#define MIN_SCALE 0.00390625
 extern bool BSP_TRAVERSE;
-void classify_segment(segment_handler* sh,segment* seg,int x1, int x2);
+void classify_segment(segment_handler* sh,segment* seg,int x1, int x2,double raw_angle_1);
 
 segment_handler* segment_handler_init(engine* e);
 

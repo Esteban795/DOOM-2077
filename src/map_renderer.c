@@ -4,9 +4,14 @@
 #define FOV 90.0
 #define H_FOV (FOV / 2.0)
 
-int max(int a, int b) { return a > b ? a : b; }
 
-int min(int a, int b) { return a < b ? a : b; }
+color get_random_color2() {
+  color c;
+  c.r = rand() % 256;
+  c.g = rand() % 256;
+  c.b = rand() % 256;
+  return c;
+}
 
 color get_random_color(i16 seed) {
   srand(seed);
@@ -191,6 +196,8 @@ void draw_fov(map_renderer *mr) {
   SDL_RenderDrawLine(mr->renderer, x, y, x3, y3);
 }
 
+
+bool BSP_TRAVERSE = true;
 void draw_vline(map_renderer *mr, int x, int y1, int y2) {
   SDL_RenderDrawLine(mr->renderer, x, y1, x, y2);
 }

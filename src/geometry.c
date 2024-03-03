@@ -27,3 +27,14 @@ double point_to_angle(vec2 p1, vec2 p2) {
 float norm(double angle) {
   return fmod((fmod(angle, 360.0) + 360.0),360.0);
 }
+
+double dist(vec2 pos1, vec2 pos2){
+  return sqrt((pos1.x - pos2.x) * (pos1.x - pos2.x) + (pos1.y - pos2.y) * (pos1.y - pos2.y));
+}
+
+double min(double x, double y){
+  return x < y ? x : y;
+}
+double max(double x, double y){
+  return x > y ? x : y;
+}
