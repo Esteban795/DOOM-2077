@@ -7,10 +7,6 @@ color get_color(char *texture, i16 light_level) {
   return (color){.r = rand() % 255, .g = rand() % 255, .b = rand() % 255};
 }
 
-Uint32 color_to_uint32(color c) {
-  return (c.r << 24) | (c.g << 16) | (c.b << 8) | 0xFF;
-}
-
 double scale_from_global_angle(segment_handler *sh, int x, double normal_angle,
                                double dist) {
   double x_angle = rad_to_deg(atan((HALF_WIDTH - x) / SCREEN_DISTANCE));
@@ -70,23 +66,19 @@ void draw_solid_walls_range(segment_handler *sh, int x1, int x2) {
   double wall_y2_step =
       -rw_scale_step *
       world_front_z2; // step to find the next y position of bottom of the wall
-  if (draw_wall) {
-    const Sint16 vx[4] = {x1, x1, x2, x2};
-    const Sint16 vy[4] = {wall_y1, wall_y2,
-                          wall_y2 + (x2 - x1 + 1) * wall_y2_step,
-                          wall_y1 + (x2 - x1 + 1) * wall_y1_step};
-    color c = get_color(wall_texture, light_level);
-    int res = filledPolygonColor(sh->engine->map_renderer->renderer, vx, vy, 4,
-                                 color_to_uint32(c)); // Use the generated color
-    if (res == -1) {
-      printf("Error at drawing wall\n");
-    }
+  for (int i = x1; i < x2; i++) {
+      if (draw_wall) {
+        color c = get_color(wall_texture, light_level);
+        int wy1 = wall_y1;
+        int wy2 = wall_y2;
+        draw_vline(sh->engine->map_renderer, i, wy1, wy2, c);
+      }
+    wall_y1 += wall_y1_step;
+    wall_y2 += wall_y2_step;
   }
 }
 
-void draw_portal_walls_range(segment_handler* sh, int x1, int x2){
-    return;
-}
+void draw_portal_walls_range(segment_handler *sh, int x1, int x2) { return; }
 
 int *calculate_ranges_to_draw(int *screen_range, int x1, int x2) {
   int len = x2 - x1;
@@ -151,7 +143,6 @@ void clip_portal_walls(segment_handler *sh, int x1, int x2) {
   }
   free(ranges_to_draw);
 }
-
 
 void classify_segment(segment_handler *sh, segment *seg, int x1, int x2,
                       double raw_angle_1) {

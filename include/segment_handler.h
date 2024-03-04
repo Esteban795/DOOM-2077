@@ -5,7 +5,6 @@
 #include "segment.h"
 #include "settings.h"
 #include "structs.h"
-#include <SDL2/SDL2_gfxPrimitives.h>
 #include <stdlib.h>
 
 #define MAX_SCALE 64.0
