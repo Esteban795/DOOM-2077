@@ -3,9 +3,9 @@
 
 #include <SDL2/SDL.h>
 
-
-#include "wad_data.h"
 #include "settings.h"
+#include "wad_data.h"
+
 struct Player;
 struct BSP;
 struct Engine;
@@ -30,6 +30,7 @@ struct Engine {
   struct SegmentHandler *seg_handler;
   int numkeys;
   const uint8_t *keys;
+  int DT;
 };
 
 struct BSP {
@@ -64,14 +65,14 @@ struct Color {
 typedef struct Color color;
 
 struct SegmentHandler {
-    struct Engine* engine;
-    player* player;
-    segment* seg;
-    double raw_angle_1;
-    int screen_range[WIDTH];
-    double upper_clip[WIDTH];
-    double lower_clip[WIDTH];
-    size_t screen_range_count;
+  struct Engine *engine;
+  player *player;
+  segment *seg;
+  double raw_angle_1;
+  int screen_range[WIDTH];
+  double upper_clip[WIDTH];
+  double lower_clip[WIDTH];
+  size_t screen_range_count;
 };
 
 typedef struct SegmentHandler segment_handler;

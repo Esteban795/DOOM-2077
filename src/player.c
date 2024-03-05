@@ -13,12 +13,13 @@ player *player_init(engine *e) {
 }
 
 void update_player(player *p, int mouse_x, const uint8_t *keyboard_state) {
+  int DT = p->engine->DT;
   bool keydown_z = keyboard_state[SDL_SCANCODE_W];
   bool keydown_q = keyboard_state[SDL_SCANCODE_A];
   bool keydown_s = keyboard_state[SDL_SCANCODE_S];
   bool keydown_d = keyboard_state[SDL_SCANCODE_D];
   double speed = DT * PLAYER_SPEED;
-  double rot_speed = PLAYER_ROTATION_SPEED * DT;
+  double rot_speed = DT * PLAYER_ROTATION_SPEED;
   double vec[2] = {0.0, 0.0};
   int count_dir = 0;
   int count_strafe = 0;

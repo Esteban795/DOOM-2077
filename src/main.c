@@ -29,12 +29,14 @@ int main(void) {
   uint64_t now;
   uint64_t old = SDL_GetTicks64();
   engine *e = init_engine("maps/DOOM1.WAD", renderer, numkeys, keys);
+  int dt = 0;
   while (e->running) {
     now = SDL_GetTicks64();
-    int res = update_engine(e);
+    dt = now - old;
+    int res = update_engine(e, dt);
     if (res == 1)
       break;
-    printf("FPS: %f\n", 1000.0 / (now - old));
+    printf("FPS: %f\n", 1000.0 / dt);
     old = now;
   }
   engine_free(e);

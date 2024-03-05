@@ -15,7 +15,8 @@ engine *init_engine(const char *wadPath, SDL_Renderer *renderer, int numkeys,
   return e;
 }
 
-int update_engine(engine *e) {
+int update_engine(engine *e, int dt) {
+  e->DT = dt;
   SDL_PumpEvents(); // updates keys state
   if (e->keys[SDL_SCANCODE_ESCAPE]) {
     e->running = false;
