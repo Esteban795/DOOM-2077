@@ -22,11 +22,14 @@ all: build run
 run_server: build_server
 	./build/server $(SERVER_PORT)
 
-build_server: before_build
-	$(CC) $(SRCDIR)/server.c -o ./build/server $(DEBUGFLAGS) $(FLAGS)
+build_server: before_build build_lib_server
+	$(CC) $(SRCDIR)/server.c -o ./build/server ./build/deps/libnet.a $(DEBUGFLAGS) $(FLAGS)
 
-#build_lib_server: before_build
-#TODO
+build_lib_server: before_build
+	echo "Compiling server's libs"
+	$(CC) -c $(SRCDIR)/net/util.c -o ./build/deps/net_util.o $(DEBUGFLAGS) $(FLAGS)
+	echo "Linking server's libs"
+	ar rcs ./build/deps/libnet.a ./build/deps/net_util.o
 
 before_build:
 	mkdir -p build
