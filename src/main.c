@@ -1,4 +1,6 @@
 #include "../include/engine.h"
+#include <SDL2/SDL_events.h>
+#include <SDL2/SDL_mouse.h>
 
 // handles all kind of error at SDL startup
 int start_SDL(SDL_Window **window, SDL_Renderer **renderer, int width,
@@ -28,6 +30,7 @@ int main(void) {
   }
   uint64_t now;
   uint64_t old = SDL_GetTicks64();
+  SDL_ShowCursor(SDL_DISABLE);
   engine *e = init_engine("maps/DOOM1.WAD", renderer, numkeys, keys);
   int dt = 0;
   while (e->running) {

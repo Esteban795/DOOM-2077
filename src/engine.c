@@ -33,6 +33,7 @@ int update_engine(engine *e, int dt) {
   update_player(e->p, mouse_x, e->keys);
   segment_handler_update(e->seg_handler);
   update_bsp(e->bsp);
+  SDL_SetRelativeMouseMode(SDL_TRUE);
   // draw(e->map_renderer);
   SDL_RenderPresent(e->map_renderer->renderer);
   return 0;
