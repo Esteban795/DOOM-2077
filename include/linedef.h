@@ -7,6 +7,18 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+enum LinedefFlags {
+  BLOCKING = 1,
+  BLOCK_MONSTERS = 2,
+  TWO_SIDED = 4,
+  UPPER_UNPEGGED = 8,
+  LOWER_UNPEGGED = 16,
+  SECRET = 32,
+  BLOCK_SOUND = 64,
+  DONT_DRAW = 128,
+  MAPPED = 256,
+};
+
 struct Linedef {
   i16 start_vertex_id;
   i16 end_vertex_id;

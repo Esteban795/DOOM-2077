@@ -15,6 +15,16 @@ player *player_init(engine *e) {
   return p;
 }
 
+size_t count_two_sided_linedefs(linedef* linedefs, size_t nlinedefs){
+  size_t count = 0;
+  for (size_t i = 0; i < nlinedefs; i++){
+    if (!(linedefs[i].flag & TWO_SIDED)){
+      count++;
+    }
+  }
+  return count;
+}
+
 linedef* get_linedefs_in_active_blocks(player* p, double* velocity, int* nlinedefs){
   //param nlinedefs is a pointer to return the amount of linedefs in the concerned blocks
   blockmap* bmap = p->engine->wData->blockmap;
@@ -22,21 +32,27 @@ linedef* get_linedefs_in_active_blocks(player* p, double* velocity, int* nlinede
 
   //getting the amount of linedefs to process in the active blocks
   int block_index_current = blockmap_get_block_index(bmap, p->pos.x, p->pos.y);
-  (*nlinedefs) += bmap->blocks[block_index_current].nlinedefs;
+  size_t two_sided_linedefs_count = count_two_sided_linedefs(bmap->blocks[block_index_current].linedefs, bmap->blocks[block_index_current].nlinedefs);
   int block_index_aftermove = blockmap_get_block_index(bmap, p->pos.x + velocity[0], p->pos.y + velocity[1]);
   if (block_index_aftermove != block_index_current){
-    (*nlinedefs) += bmap->blocks[block_index_aftermove].nlinedefs;
+    two_sided_linedefs_count += count_two_sided_linedefs(bmap->blocks[block_index_aftermove].linedefs, bmap->blocks[block_index_aftermove].nlinedefs);
   }
-
+  *nlinedefs = two_sided_linedefs_count;
   //gather up all the linedefs
-  linedef* linedefs = malloc(sizeof(linedef) * (*nlinedefs));
-  for (int i = 0; i < (int)bmap->blocks[block_index_current].nlinedefs; i++){
-    linedefs[i] = bmap->blocks[block_index_current].linedefs[i];
+  linedef* linedefs = malloc(sizeof(linedef) * (two_sided_linedefs_count));
+  size_t ind = 0;
+  for (size_t i = 0; i < bmap->blocks[block_index_current].nlinedefs; i++){
+    if (!(bmap->blocks[block_index_current].linedefs[i].flag & TWO_SIDED)){ //its a solid wall, because it has no two sided flag
+      linedefs[ind] = bmap->blocks[block_index_current].linedefs[i];
+      ind++;
+    }
   }
   if (block_index_aftermove != block_index_current){
-    int offset = bmap->blocks[block_index_current].nlinedefs;
-    for (int i = 0; i < (int)bmap->blocks[block_index_aftermove].nlinedefs; i++){
-      linedefs[offset + i] = bmap->blocks[block_index_aftermove].linedefs[i];
+    for (size_t i = 0; i < bmap->blocks[block_index_aftermove].nlinedefs; i++){
+      if (!(bmap->blocks[block_index_aftermove].linedefs[i].flag & TWO_SIDED)){
+        linedefs[ind] = bmap->blocks[block_index_aftermove].linedefs[i];
+        ind++;
+      }
     }
   }
   return linedefs;
