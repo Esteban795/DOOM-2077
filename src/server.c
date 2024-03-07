@@ -3,6 +3,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include <stdint.h>
+#include <assert.h>
 
 #ifndef _LIB_SDL_NET_H
 #define _LIB_SDL_NET_H
@@ -21,7 +22,10 @@ int run_server(uint16_t port) {
     // Open socket
     IPaddress ip;
     TCPsocket server;
-    SDLNet_ResolveHost(&ip, NULL, port);
+    if (SDLNet_ResolveHost(&ip, NULL, port) < 0) {
+        printf("ERR SDLNet_ResolveHost: %s\n", SDLNet_GetError());
+        return -1;
+    }
     server = SDLNet_TCP_Open(&ip);
     if (!server) {
         printf("ERR SDLNet_TCP_Open: %s\n", SDLNet_GetError());
@@ -31,7 +35,7 @@ int run_server(uint16_t port) {
     addrtocstr(&ip, addrstr);
     printf("Listening on %s\n", addrstr);
 
-    
+    while(true) {}
 
     // Clean-up
     printf("Shutting down...\n");
@@ -47,7 +51,7 @@ int main(int argc, char const *argv[])
         printf("Insufficient argument: missing port number.\nUsage: server <port>");
         return -1;
     }
-    uint16_t port = atoi(argv[1]);
+    uint16_t port = (uint16_t) atoi(argv[1]);
     printf("Running server on port %d...\n", port);
     run_server(port);
     printf("Exiting...\n");
