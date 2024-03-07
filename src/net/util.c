@@ -16,5 +16,6 @@
 
 void addrtocstr(IPaddress* ip, char str[24]) {
     uint8_t* addr = (uint8_t*) (&ip->host);
-    sprintf(str, "%d.%d.%d.%d:%d", addr[0], addr[1], addr[2], addr[3], ip->port);
+    uint16_t port = SDLNet_Read16(&ip->port);
+    sprintf(str, "%d.%d.%d.%d:%d", addr[0], addr[1], addr[2], addr[3], port);
 }
