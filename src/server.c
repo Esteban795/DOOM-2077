@@ -15,31 +15,57 @@
 #include "../include/net/util.h"
 #endif
 
+#define MAX_CLIENTS 4
+
 int run_server(uint16_t port) {
     printf("Initializing SDL_net...\n");
     SDLNet_Init();
-
-    // Open socket
-    IPaddress ip;
-    TCPsocket server;
-    if (SDLNet_ResolveHost(&ip, NULL, port) < 0) {
-        printf("ERR SDLNet_ResolveHost: %s\n", SDLNet_GetError());
-        return -1;
-    }
-    server = SDLNet_TCP_Open(&ip);
-    if (!server) {
-        printf("ERR SDLNet_TCP_Open: %s\n", SDLNet_GetError());
-        return -1;
-    }
     char addrstr[24];
-    addrtocstr(&ip, addrstr);
-    printf("Listening on %s\n", addrstr);
 
-    while(true) {}
+    // Create socket
+    IPaddress ip;
+    if (SDLNet_ResolveHost(&ip, NULL, port) == -1) {
+        printf("SDLNet_ResolveHost: %s\n", SDLNet_GetError());
+        return -1;
+    }
+    UDPsocket server = SDLNet_UDP_Open(port);
+    if (server == NULL) {
+        printf("SDLNet_UDP_Open: %s\n", SDLNet_GetError());
+        return -1;
+    }
+    // if (SDLNet_UDP_Bind(server, 0, &ip) < 0 ) {
+    //     printf("SDLNet_UDP_Bind: %s\n", SDLNet_GetError());
+    //     return -1;
+    // }
+
+    addrtocstr(&ip, addrstr);
+    printf("Listening on %s...\n", addrstr);
+
+    // Listen for incoming packets
+    UDPpacket* incoming = SDLNet_AllocPacket(2048);
+    for(;;) {
+        int ready = SDLNet_UDP_Recv(server, incoming);
+        if (ready == 1) {
+            addrtocstr(&incoming->address, addrstr);
+            char sdata[2048] = {0};
+            strncpy(sdata, (char*) incoming->data, incoming->len);
+            printf("incoming packet from %s > %s\n", addrstr, sdata);
+
+            // Echo back to sender
+            int sent = SDLNet_UDP_Send(server, -1, incoming);
+            if (sent < 0) {
+                printf("SDLNet_UDP_Send: %s\n", SDLNet_GetError());
+            }
+        } else if (ready < 0) {
+            printf("SDLNet_UDP_Recv: %s\n", SDLNet_GetError());
+        }
+    }
+    SDLNet_FreePacket(incoming);
 
     // Clean-up
     printf("Shutting down...\n");
-    SDLNet_TCP_Close(server);
+    // SDLNet_UDP_Unbind(server, 1);
+    SDLNet_UDP_Close(server);
     SDLNet_Quit();
     return 0;
 }
