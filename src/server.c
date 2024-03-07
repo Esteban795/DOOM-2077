@@ -33,10 +33,6 @@ int run_server(uint16_t port) {
         printf("SDLNet_UDP_Open: %s\n", SDLNet_GetError());
         return -1;
     }
-    // if (SDLNet_UDP_Bind(server, 0, &ip) < 0 ) {
-    //     printf("SDLNet_UDP_Bind: %s\n", SDLNet_GetError());
-    //     return -1;
-    // }
 
     addrtocstr(&ip, addrstr);
     printf("Listening on %s...\n", addrstr);
@@ -64,7 +60,6 @@ int run_server(uint16_t port) {
 
     // Clean-up
     printf("Shutting down...\n");
-    // SDLNet_UDP_Unbind(server, 1);
     SDLNet_UDP_Close(server);
     SDLNet_Quit();
     return 0;
