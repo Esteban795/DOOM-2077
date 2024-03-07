@@ -18,3 +18,6 @@ clean:
 all:
 	make build
 	make run
+
+button:
+	gcc $(SRCDIR)/button.c -o ./bin/button $(DEBUGFLAGS) $(FLAGS)	
