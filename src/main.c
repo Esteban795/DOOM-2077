@@ -1,4 +1,5 @@
 #include "../include/engine.h"
+#include "../include/game_states.h"
 
 // handles all kind of error at SDL startup
 int start_SDL(SDL_Window **window, SDL_Renderer **renderer, int width,
@@ -28,15 +29,22 @@ int main(void) {
   }
   uint64_t now;
   uint64_t old = SDL_GetTicks64();
-  engine *e = init_engine("maps/DOOM1.WAD", renderer, numkeys, keys);
-  while (e->running) {
+  bool isFirstTime[STATE_COUNT];
+  for(int i=0; i<STATE_COUNT; i++) {
+    isFirstTime[i] = true;
+  }
+  GameState current_state = STATE_INGAME;
+  GameStateArgs args;
+  args.isRunning = true;
+  args.isFirstTime = isFirstTime;
+  args.renderer = renderer;
+  args.numkeys = numkeys;
+  args.keys = keys;
+  while (args.isRunning) {
+    game_states[current_state](&args);
     now = SDL_GetTicks64();
-    int res = update_engine(e);
-    if (res == 1)
-      break;
     printf("FPS: %f\n", 1000.0 / (now - old));
     old = now;
   }
-  engine_free(e);
   return 0;
 }
