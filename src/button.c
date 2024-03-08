@@ -1,14 +1,12 @@
 #include "../include//button.h"
-#include <SDL2/SDL_events.h>
+#include <SDL2/SDL.h>
 #include <SDL2/SDL_render.h>
 #include <SDL2/SDL_surface.h>
 #include <SDL2/SDL_ttf.h>
 #include <SDL2/SDL_video.h>
 
-
-TTF_Font *font = NULL;
 button *button_create(int x, int y, int w, int h,
-                      void (*on_click)(void *data), char *text) {
+                      void (*on_click)(void *data), char *text,TTF_Font* font) {
   button *b = malloc(sizeof(button));
   b->x = x;
   b->y = y;
@@ -18,6 +16,7 @@ button *button_create(int x, int y, int w, int h,
   b->text = text;
   b->pressed = false;
   b->len_text = strlen(text);
+  b->font = font;
   return b;
 }
 
@@ -55,7 +54,6 @@ static void draw_button(SDL_Renderer *r, button *btn) {
   // draw button
   SDL_SetRenderDrawColor(r, 255, 255, 255, 255);
   SDL_Rect rect = {btn->x, btn->y, btn->w, btn->h};
-
   // if button press detected - reset it so it wouldn't trigger twice
   if (btn->pressed) {
     SDL_SetRenderDrawColor(r, 0, 255, 255, 255);
@@ -63,12 +61,32 @@ static void draw_button(SDL_Renderer *r, button *btn) {
   }
   SDL_RenderFillRect(r, &rect);
   SDL_SetRenderDrawColor(r, 255, 0, 0, 255);
-  SDL_Surface* text = TTF_RenderText_Blended(font, btn->text, (SDL_Color){0, 0, 0, 255});
+  SDL_Surface* text = TTF_RenderText_Solid(btn->font, btn->text, (SDL_Color){255, 0, 0, 255});
+  SDL_Texture* texture = SDL_CreateTextureFromSurface(r, text);
+  SDL_RenderCopy(r, texture, NULL, &rect);
+  SDL_DestroyTexture(texture);
+  SDL_FreeSurface(text);
+  SDL_RenderPresent(r);
 }
 
 void test_data(void *data) { printf("Button pressed\n"); }
 
+
+void button_free(button* b){
+  TTF_CloseFont(b->font);
+  free(b);
+}
+
 int main(void) {
+  if (TTF_Init() == -1){
+    printf("TTF init error");
+    exit(EXIT_FAILURE);
+  }
+  TTF_Font* font = TTF_OpenFont("./fonts/amazdoom/AmazDooMLeft.ttf", 28);
+  if (font == NULL){
+    printf("font init error");
+    exit(EXIT_FAILURE);
+  }
   SDL_Window *window;
   SDL_Renderer *renderer;
   int status = start_SDL(&window, &renderer, WIDTH, HEIGHT, "Map rendering..");
@@ -76,20 +94,25 @@ int main(void) {
     printf("Error at SDL startup");
     exit(-1);
   }
+  // SDL_Color white = {255,255,255,255};
   SDL_Event event;
   bool running = true;
-  button *b = button_create(100, 100, 100, 100, test_data, "Button");
+  button *b = button_create(100, 100, 300, 150, test_data, "Button",font);
   while (running) {
     while (SDL_PollEvent(&event)) {
       if (event.type == SDL_QUIT) {
         running = false;
       }
-
       button_test_click(b, event, NULL);
-      draw_button(renderer, b);
-      SDL_RenderPresent(renderer);
     }
+    draw_button(renderer, b);
+    SDL_RenderPresent(renderer);
   }
+  TTF_CloseFont(font);
+  TTF_Quit();
+  SDL_DestroyRenderer(renderer);
+  SDL_DestroyWindow(window);
+  SDL_Quit();
   free(b);
   return 0;
 }

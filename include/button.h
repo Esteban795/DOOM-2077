@@ -18,6 +18,7 @@ struct Button {
     void (*on_click)(void* data);
     char* text;
     size_t len_text;
+    TTF_Font* font;
 };
 
 typedef struct Button button;
