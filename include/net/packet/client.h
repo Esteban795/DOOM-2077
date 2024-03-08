@@ -6,8 +6,8 @@
 #include <string.h>
 #include <stdint.h>
 
-#ifndef _LIB_SDL_NET_H
-#define _LIB_SDL_NET_H
-#define WITHOUT_SDL
-#include <SDL2/SDL_net.h>
-#endif
+int client_join(uint8_t* buf, char* player_name);
+int client_keep_alive(uint8_t* buf);
+int client_ping(uint8_t* buf, uint64_t data);
+int client_quit(uint8_t* buf);
+// TODO: client_player_list
