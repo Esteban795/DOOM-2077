@@ -46,5 +46,8 @@ int main(void) {
     printf("FPS: %f\n", 1000.0 / (now - old));
     old = now;
   }
+  if(args.e != NULL) {
+    engine_free(args.e);
+  }
   return 0;
 }
