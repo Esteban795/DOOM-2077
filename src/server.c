@@ -4,6 +4,7 @@
 #include <string.h>
 #include <stdint.h>
 #include <assert.h>
+#include <signal.h>
 
 #ifndef _LIB_SDL_NET_H
 #define _LIB_SDL_NET_H
@@ -16,6 +17,21 @@
 #endif
 
 #define MAX_CLIENTS 4
+
+static bool SERVER_RUNNING = true;
+
+void signal_handler(int sig) {
+    switch (sig) {
+        case SIGINT:
+        case SIGQUIT:
+        case SIGTERM:
+            SERVER_RUNNING = false;
+            break;
+        default:
+            printf("Caught signal %d.\n", sig);
+            break;
+    }
+}
 
 int run_server(uint16_t port) {
     printf("Initializing SDL_net...\n");
@@ -39,7 +55,7 @@ int run_server(uint16_t port) {
 
     // Listen for incoming packets
     UDPpacket* incoming = SDLNet_AllocPacket(2048);
-    for(;;) {
+    while(SERVER_RUNNING) {
         int ready = SDLNet_UDP_Recv(server, incoming);
         if (ready == 1) {
             addrtocstr(&incoming->address, addrstr);
@@ -73,6 +89,12 @@ int main(int argc, char const *argv[])
         return -1;
     }
     uint16_t port = (uint16_t) atoi(argv[1]);
+
+    // Register signal handlers
+    signal(SIGINT, signal_handler);
+    signal(SIGQUIT, signal_handler);
+    signal(SIGTERM, signal_handler);
+
     printf("Running server on port %d...\n", port);
     run_server(port);
     printf("Exiting...\n");
