@@ -51,6 +51,22 @@ The server can also respond to the request by a `KICK` message that indicates th
 
 The `name` argument is a NUL-terminated string, whose length cannot exceed 100(+1) chars.
 
+### KATC - Keep Alive
+
+**Description**: Keep-alive message to tell the server the client is still there and listening for any response. Indeed, the server can close the connection if the client do not send any message for 20s. No response is expected.
+
+**Args:**
+
+No argument is provided.
+
+### PING - ping
+
+**Description**: A message to calculate the ping between client and server. This packet is special as it is handled once it is received and not at the end of the server tick. A `PONG` message is expected to be sent back with the same data.
+
+**Args:**
+
+* `data`: 8 byte-long data, to identify uniquely the exchange.
+
 ### QUIT - Client Quit
 
 **Description**: A `QUIT` message is the last message a client should send to a server, it indicates that the client is disconnecting from the server and that it will closes its connection. A `QUIT` message is generally acknowledged by a `QUIT` message from the server. It is not necessary to await it.
@@ -75,7 +91,7 @@ No argument is provided.
 
 **Args:**
 
-No argument is provided.
+* `player-id`, a 8 byte-long unique identifier for a player. It will be used as a reference for all other messages.
 
 ### JOIN - Player Join
 
@@ -98,8 +114,15 @@ The player, if they were part of the game, is now forced to leave.
 
 * `reason`, the reason (if any) of the kick.
 
-The `name` argument is a NUL-terminated string, whose length cannot exceed 255(+1) chars.
+The `reason` argument is a NUL-terminated string, whose length cannot exceed 255(+1) chars.
 
+### Pong - pong
+
+**Description**: A message to calculate the ping between client and server, it is a response to a `PING` message.
+
+**Args:**
+
+* `data`: 8 byte-long data, the data of the `PING` request.
 
 ### QUIT - Player Quit
 

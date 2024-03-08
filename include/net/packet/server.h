@@ -6,8 +6,9 @@
 #include <string.h>
 #include <stdint.h>
 
-#ifndef _LIB_SDL_NET_H
-#define _LIB_SDL_NET_H
-#define WITHOUT_SDL
-#include <SDL2/SDL_net.h>
-#endif
+int server_acpt(uint8_t* buf, uint64_t player_id);
+int server_join(uint8_t* buf, uint64_t player_id, char* player_name);
+int server_kick(uint8_t* buf, char* reason);
+int server_pong(uint8_t* buf, uint64_t data);
+int server_quit(uint8_t* buf, uint64_t player_id);
+// TODO: server_player_list
