@@ -1,39 +1,74 @@
-HEADDIR = include
+#  -  CONFIGURABLE PARAMETERS  -  #
+SHELL = /bin/sh 
 
+srcdir = ./src
+builddir = ./build
+depsdir = $(builddir)/deps
+
+AR = ar
 CC = gcc
-FLAGS = -lSDL2 -lSDL2_net -lm $(shell sdl2-config --cflags --libs)
-DEBUGFLAGS = -W -Wall -Wextra -Wvla -fsanitize=address -g -O3
-DEPENDENCIES = ./src/keybindings.c ./src/sidedef.c ./src/sector.c ./src/blockmap.c ./src/bsp.c ./src/byte_reader.c ./src/engine.c ./src/header.c ./src/linedef.c ./src/lump.c ./src/map_renderer.c ./src/node.c ./src/player.c ./src/segment.c ./src/subsector.c ./src/thing.c ./src/vertex.c ./src/wad_data.c
-SERVER_PORT = 9999
+CFLAGS = -Wall -Wextra -Werror -std=c17 -pedantic
+CFLAGS += -fsanitize=address
+LDFLAGS = -lm 
+CDEBUG = -g -O3
+# END OF CONFIGURABLE PARAMETERS  #
 
-build: before_build
-	$(CC) ./src/geometry.c ./src/main.c -o ./build/doomlike $(DEBUGFLAGS) $(DEPENDENCIES) $(FLAGS) 
+ALL_CFLAGS = $(CFLAGS) $(shell pkg-config --cflags sdl2) $(CDEBUG)
+ALL_LDFLAGS = $(LDFLAGS) $(shell pkg-config --libs sdl2)
 
-run:
-	./build/doomlike
+# -  TARGETS  -  #
+CLIENT_SRC = main.c keybindings.c sidedef.c sector.c blockmap.c bsp.c byte_reader.c engine.c header.c linedef.c lump.c map_renderer.c node.c player.c segment.c subsector.c thing.c vertex.c wad_data.c
+CLIENT_OBJ = $(CLIENT_SRC:%.c=%.o)
+CLIENT_LIB = 
+CLIENT_LDFLAGS = -lSDL2
+
+SERVER_SRC = server.c
+SERVER_OBJ = $(SERVER_SRC:%.c=%.o)
+SERVER_LIB = libnet.a 
+SERVER_LDFLAGS = -lSDL2 -lSDL2_net
+
+LIBNET_SRC = net/util.c net/packet/client.c net/packet/server.c
+LIBNET_OBJ = $(LIBNET_SRC:%.c=%.o)
+LIBNET_LIB =
+SERVER_LDFLAGS = -lSDL2 -lSDL2_net
+# - END OF TARGETS  -  #
+
+.PHONY: all clean before_build run_server run_client build_server build_client
+all: $(builddir)/server $(builddir)/client
+
+# helper targets
+run_server: build_server
+	$(builddir)/server 9999
+run_client: build_client
+	$(builddir)/client
+build_client: $(builddir)/client
+build_server: $(builddir)/server
+
+# client - build + link target
+$(builddir)/server: $(addprefix $(depsdir)/, $(SERVER_OBJ)) $(addprefix $(depsdir)/, $(SERVER_LIB)) | before_build
+	@echo "Building server..."
+	$(CC) $(ALL_CFLAGS) -o $@ $^ $(ALL_LDFLAGS) $(SERVER_LDFLAGS)
+
+# client - build + link target
+$(builddir)/client: $(addprefix $(depsdir)/, $(CLIENT_OBJ)) $(addprefix $(depsdir)/, $(CLIENT_LIB)) | before_build
+	@echo "Building client..."
+	$(CC) $(ALL_CFLAGS) -o $@ $^ $(ALL_LDFLAGS) $(CLIENT_LDFLAGS)
+
+# libnet - build archive target
+$(depsdir)/libnet.a: $(addprefix $(depsdir)/, $(LIBNET_OBJ)) $(addprefix $(depsdir)/, $(LIBNET_LIB)) | before_build
+	@echo "Building libnet..."
+	$(AR) rcs $@ $^
+
+# compilation target
+$(depsdir)/%.o: $(srcdir)/%.c | before_build
+	@mkdir -p $(dir $@)
+	@echo "Compiling $<..."
+	$(CC) $(ALL_CFLAGS) -c -o $@ $<
+
+# other targets
+before_build:
+	@mkdir -p $(builddir)
+	@mkdir -p $(depsdir)
 
 clean:
-	rm -rf build
-
-all: build run 
-
-run_server: build_server
-	./build/server $(SERVER_PORT)
-
-build_server: before_build build_lib_server ./src/server.c
-	$(CC) ./src/server.c -o ./build/server ./build/deps/libnet.a $(DEBUGFLAGS) $(FLAGS)
-
-build_lib_server: before_build build_lib_net
-	echo "Compiling server's libs"
-
-build_lib_net: before_build ./src/net/util.c ./src/net/packet/client.c ./src/net/packet/server.c
-	echo "Compiling net's libs"
-	$(CC) -c ./src/net/util.c -o ./build/deps/net_util.o $(DEBUGFLAGS) $(FLAGS)
-	$(CC) -c ./src/net/packet/client.c -o ./build/deps/net_packet_client.o $(DEBUGFLAGS) $(FLAGS)
-	$(CC) -c ./src/net/packet/server.c -o ./build/deps/net_packet_server.o $(DEBUGFLAGS) $(FLAGS)
-	echo "Linking net's libs"
-	ar rcs ./build/deps/libnet.a ./build/deps/net_util.o ./build/deps/net_packet_client.o ./build/deps/net_packet_server.o
-
-before_build:
-	mkdir -p build
-	mkdir -p build/deps
+	-rm -rf $(builddir)
