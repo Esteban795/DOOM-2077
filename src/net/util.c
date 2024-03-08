@@ -26,25 +26,25 @@ void write_uint8(uint8_t* buf, uint8_t data) {
 
 void write_uint16(uint8_t* buf, uint16_t data) {
     buf[0] = data >> 8;
-    buf[1] = data | 0xFF;
+    buf[1] = data & 0xFF;
 }
 
 void write_uint32(uint8_t* buf, uint32_t data) {
     buf[0] = data >> 24;
-    buf[1] = data >> 16 | 0xFF;
-    buf[2] = data >> 8  | 0xFF;
-    buf[3] = data       | 0xFF;
+    buf[1] = data >> 16 & 0xFF;
+    buf[2] = data >> 8  & 0xFF;
+    buf[3] = data       & 0xFF;
 }
 
 void write_uint64(uint8_t* buf, uint64_t data) {
     buf[0] = data >> 56;
-    buf[1] = data >> 48 | 0xFF;
-    buf[2] = data >> 40 | 0xFF;
-    buf[3] = data >> 32 | 0xFF;
-    buf[4] = data >> 24 | 0xFF;
-    buf[5] = data >> 16 | 0xFF;
-    buf[6] = data >> 8  | 0xFF;
-    buf[7] = data       | 0xFF;
+    buf[1] = data >> 48 & 0xFF;
+    buf[2] = data >> 40 & 0xFF;
+    buf[3] = data >> 32 & 0xFF;
+    buf[4] = data >> 24 & 0xFF;
+    buf[5] = data >> 16 & 0xFF;
+    buf[6] = data >> 8  & 0xFF;
+    buf[7] = data       & 0xFF;
 }
 
 int write_cstring(uint8_t* buf, char* data) {
@@ -58,21 +58,21 @@ uint8_t read_uint8(uint8_t* buf) {
 }
 
 uint16_t read_uint16(uint8_t* buf) {
-    uint16_t data = buf[1];
-    data |= buf[0] << 8;
+    uint16_t data = (uint16_t) buf[1];
+    data |= ((uint16_t) buf[0]) << 8;
     return data;
 }
 
 uint32_t read_uint32(uint8_t* buf) {
-    uint32_t data = buf[3];
-    data |= buf[2] << 8;
-    data |= buf[1] << 16;
-    data |= buf[0] << 24;
+    uint32_t data = (uint32_t) buf[3];
+    data |= ((uint32_t) buf[2]) << 8;
+    data |= ((uint32_t) buf[1]) << 16;
+    data |= ((uint32_t) buf[0]) << 24;
     return data;
 }
 
 uint64_t read_uint64(uint8_t* buf) {
-    uint64_t data = buf[7];
+    uint64_t data = (uint64_t) buf[7];
     data |= ((uint64_t) buf[6]) << 8;
     data |= ((uint64_t) buf[5]) << 16;
     data |= ((uint64_t) buf[4]) << 24;
