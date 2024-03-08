@@ -26,8 +26,8 @@ void draw_solid_walls_range(segment_handler *sh, int x1, int x2) {
   // char* floor_texture = sh->seg->front_sector->floor_texture;
   i16 light_level = sh->seg->front_sector->light_level;
 
-  int world_front_z1 = sh->seg->front_sector->ceiling_height - PLAYER_HEIGHT;
-  int world_front_z2 = sh->seg->front_sector->floor_height - PLAYER_HEIGHT;
+  int world_front_z1 = sh->seg->front_sector->ceiling_height - sh->player->height;
+  int world_front_z2 = sh->seg->front_sector->floor_height - sh->player->height;
   // check which parts needs to be rendered
   bool draw_wall = strcmp(sh->seg->linedef->front_sidedef->middle_texture, "-");
   // bool draw_ceiling = world_front_z1 > 0; //can we actually see the ceiling ?

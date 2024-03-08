@@ -173,6 +173,25 @@ void render_bsp_node(bsp *b, size_t node_id) {
   }
 }
 
+
+void get_ssector_height(bsp* b){
+  size_t node_id = b->root_node_id;
+  while (node_id < SUBSECTOR_IDENTIFIER) {
+    node n = b->nodes[node_id];
+    bool is_back_side = is_on_back_side(b, n);
+    if (is_back_side) {
+      node_id = n.back_child_id;
+    } else {
+      node_id = n.front_child_id;
+    }
+  }
+  i16 subsector_id = node_id - SUBSECTOR_IDENTIFIER;
+  subsector player_ssector = b->subsectors[subsector_id];
+  segment seg = player_ssector.segs[0];
+  int floor_height = seg.front_sector->floor_height;
+  update_height(b->engine->p, floor_height);
+}
+
 void update_bsp(bsp *b) {
   BSP_TRAVERSE = true;
   render_bsp_node(b, b->root_node_id);

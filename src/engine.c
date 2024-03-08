@@ -31,6 +31,7 @@ int update_engine(engine *e, int dt) {
   //     e->map_renderer
   //         ->vertexes); // to make it visible what we are actually seeing
   update_player(e->p, mouse_x, e->keys);
+  get_ssector_height(e->bsp);
   segment_handler_update(e->seg_handler);
   update_bsp(e->bsp);
   SDL_SetRelativeMouseMode(SDL_TRUE);

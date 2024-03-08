@@ -19,4 +19,6 @@ void render_bsp_node(bsp *b, size_t node_id);
 void update_bsp(bsp *b);
 
 void bsp_free(bsp *b);
+
+void get_ssector_height(bsp* b);
 #endif

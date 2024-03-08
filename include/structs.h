@@ -18,6 +18,7 @@ struct Player {
   double x;
   double y;
   double angle;
+  int height;
 };
 
 struct Engine {

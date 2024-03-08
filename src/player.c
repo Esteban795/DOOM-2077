@@ -8,8 +8,14 @@ player *player_init(engine *e) {
   p->thing = e->wData->things[0];
   p->x = (double)p->thing.x;
   p->y = (double)p->thing.y;
-  p->angle = (double)p->thing.angle + 180.0;
+  p->angle = (double)p->thing.angle + 180.0;  printf("height: %d\n",p->height);
+  p->height = PLAYER_HEIGHT;
   return p;
+}
+
+
+void update_height(player* p,int z){
+  p->height = z + PLAYER_HEIGHT;
 }
 
 void update_player(player *p, int mouse_x, const uint8_t *keyboard_state) {
