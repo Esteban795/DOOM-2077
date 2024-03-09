@@ -12,33 +12,37 @@
 #include "../../../include/net/util.h"
 #endif
 
-const char* COMMAND_JOIN = "JOIN";
-const char* COMMAND_KATC = "KATC";
-const char* COMMAND_PONG = "PING";
-const char* COMMAND_QUIT = "QUIT";
+const char* CLIENT_COMMAND_JOIN = "JOIN";
+const char* CLIENT_COMMAND_KATC = "KATC";
+const char* CLIENT_COMMAND_PONG = "PING";
+const char* CLIENT_COMMAND_QUIT = "QUIT";
 
 int client_join(uint8_t* buf, char* player_name) {
-    memcpy(buf, COMMAND_JOIN, 4);
-    int clen = write_cstring(buf + 4, player_name);
-    buf[4 + clen] = '\n';
-    return 4 + clen + 1;
+    memcpy(buf, CLIENT_COMMAND_JOIN, 4);
+    int clen = write_cstring(buf + 6, player_name);
+    write_uint16(buf + 4, clen);
+    buf[6 + clen] = '\n';
+    return 4 + 2 + clen + 1;
 }
 
 int client_keep_alive(uint8_t* buf) {
-    memcpy(buf, COMMAND_KATC, 4);
-    buf[4] = '\n';
-    return 4 + 1;
+    memcpy(buf, CLIENT_COMMAND_KATC, 4);
+    write_uint16(buf + 4, 0);
+    buf[6] = '\n';
+    return 4 + 2 + 1;
 }
 
 int client_ping(uint8_t* buf, uint64_t data) {
-    memcpy(buf, COMMAND_PONG, 4);
-    write_uint64(buf, data);
-    buf[12] = '\n';
-    return 4 + 8 + 1;
+    memcpy(buf, CLIENT_COMMAND_PONG, 4);
+    write_uint16(buf + 4, 8);
+    write_uint64(buf + 6, data);
+    buf[14] = '\n';
+    return 4 + 2 + 8 + 1;
 }
 
 int client_quit(uint8_t* buf) {
-    memcpy(buf, COMMAND_QUIT, 4);
-    buf[4] = '\n';
-    return 4 + 1;
+    memcpy(buf, CLIENT_COMMAND_QUIT, 4);
+    write_uint16(buf + 4, 0);
+    buf[6] = '\n';
+    return 4 + 2 + 1;
 }

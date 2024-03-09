@@ -30,7 +30,7 @@ SERVER_OBJ = $(SERVER_SRC:%.c=%.o)
 SERVER_LIB = libnet.a libevent.a
 SERVER_LDFLAGS = -lSDL2 -lSDL2_net
 
-LIBNET_SRC = net/util.c net/packet/client.c net/packet/server.c
+LIBNET_SRC = net/util.c net/tracked_connection.c net/packet/client.c net/packet/server.c
 LIBNET_OBJ = $(LIBNET_SRC:%.c=%.o)
 LIBNET_LIB =
 

@@ -6,6 +6,12 @@
 #include <string.h>
 #include <stdint.h>
 
+extern const char* SERVER_COMMAND_ACPT;
+extern const char* SERVER_COMMAND_JOIN;
+extern const char* SERVER_COMMAND_KICK;
+extern const char* SERVER_COMMAND_PONG;
+extern const char* SERVER_COMMAND_QUIT;
+
 int server_acpt(uint8_t* buf, uint64_t player_id);
 int server_join(uint8_t* buf, uint64_t player_id, char* player_name);
 int server_kick(uint8_t* buf, char* reason);

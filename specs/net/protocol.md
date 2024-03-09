@@ -15,7 +15,7 @@ This protocol is not expected to be readable by human, however it must be suffic
 
 The protocol is built upon **messages**. Each message contains a unique **command**, a 4 char/byte string, immediately followed by the **length** of the payload. The **payload** is all useful information that is necessary to execute a command. Some message are expected to have no payload, a variable payload, or a fixed size payload based on the message's command. Finally, all messages is ended by a newline `\n` character.
 
-The implementation of this protocol assumes the underlying transmission protocol is UDP. **Please be aware, a UDP packet might contain serveral messages.** A UDP packet is expected to be **at most 2048 byte-long**.
+The implementation of this protocol assumes the underlying transmission protocol is UDP. **Please be aware, a UDP packet might contain serveral messages.** A UDP packet is expected to be **at most 1024 byte-long**.
 
 ### Quick recap
 
