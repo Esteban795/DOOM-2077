@@ -102,7 +102,10 @@ void move_and_slide(player* p, double* velocity){
   linedef* linedefs = get_linedefs_in_active_blocks(p, velocity, &nlinedefs);
   vec2 next_pos = {.x = p->pos.x + velocity[0], .y = p->pos.y + velocity[1]};
 
-  for (int i = 0; i < nlinedefs; i++){
+  for (int ii = 0; ii < 2*nlinedefs; ii++){
+
+    int i = ii%nlinedefs;
+
     vec2 p_b; //projection before moving
     vec2 ph_b; //projection hitbox before moving
     vec2 p_a; //projection after moving
