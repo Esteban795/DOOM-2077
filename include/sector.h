@@ -21,4 +21,6 @@ typedef struct Sector sector;
 sector *get_sectors_from_lump(FILE *f, lump *directory, int lump_index,
                               int num_bytes, int header_length,
                               int len_sectors);
+
+void sectors_free(sector *sectors, int len_sectors);
 #endif
