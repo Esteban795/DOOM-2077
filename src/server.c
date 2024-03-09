@@ -5,6 +5,7 @@
 #include <stdint.h>
 #include <assert.h>
 #include <signal.h>
+#include <time.h>
 
 #ifndef _LIB_SDL_NET_H
 #define _LIB_SDL_NET_H
@@ -17,8 +18,23 @@
 #endif
 
 #define MAX_CLIENTS 4
+// 20 tick per second
+#define SERVER_TICK_MS 50 
+
+#define INSTANT_NOW(t) clock_gettime(CLOCK_MONOTONIC, t)
+#define INSTANT_DIFF_MS(a, b) ((a.tv_sec - b.tv_sec) * 1000 + (a.tv_nsec - b.tv_nsec) / 1000000)
+
+typedef struct timespec Instant;
 
 static bool SERVER_RUNNING = true;
+
+int compare_instant(const Instant* a, const Instant* b) {
+    if (a->tv_sec < b->tv_sec) return -1;
+    if (a->tv_sec > b->tv_sec) return 1;
+    if (a->tv_nsec < b->tv_nsec) return -1;
+    if (a->tv_nsec > b->tv_nsec) return 1;
+    return 0;
+}
 
 void signal_handler(int sig) {
     switch (sig) {
@@ -55,21 +71,36 @@ int run_server(uint16_t port) {
 
     // Listen for incoming packets
     UDPpacket* incoming = SDLNet_AllocPacket(2048);
-    while(SERVER_RUNNING) {
-        int ready = SDLNet_UDP_Recv(server, incoming);
-        if (ready == 1) {
-            addrtocstr(&incoming->address, addrstr);
-            char sdata[2048] = {0};
-            strncpy(sdata, (char*) incoming->data, incoming->len);
-            printf("incoming packet from %s > %s\n", addrstr, sdata);
+    assert(incoming != NULL);
 
-            // Echo back to sender
-            int sent = SDLNet_UDP_Send(server, -1, incoming);
-            if (sent < 0) {
-                printf("SDLNet_UDP_Send: %s\n", SDLNet_GetError());
+    Instant tick_time, cur_time;
+    while(SERVER_RUNNING) {
+        // New tick!
+        INSTANT_NOW(&tick_time);
+        INSTANT_NOW(&cur_time);
+        int elapsed = INSTANT_DIFF_MS(cur_time, tick_time);
+        // While there's time left in this tick, process incoming packets.
+        while(elapsed < SERVER_TICK_MS) {
+            // Process an incoming packet
+            int ready = SDLNet_UDP_Recv(server, incoming);
+            if (ready == 1) {
+                addrtocstr(&incoming->address, addrstr);
+                char sdata[2048] = {0};
+                strncpy(sdata, (char*) incoming->data, incoming->len);
+                printf("incoming packet from %s > %s\n", addrstr, sdata);
+
+                // Echo back to sender
+                int sent = SDLNet_UDP_Send(server, -1, incoming);
+                if (sent < 0) {
+                    printf("SDLNet_UDP_Send: %s\n", SDLNet_GetError());
+                }
+            } else if (ready < 0) {
+                printf("SDLNet_UDP_Recv: %s\n", SDLNet_GetError());
             }
-        } else if (ready < 0) {
-            printf("SDLNet_UDP_Recv: %s\n", SDLNet_GetError());
+
+            // Update the elapsed time since the last tick
+            INSTANT_NOW(&cur_time);
+            elapsed = INSTANT_DIFF_MS(cur_time, tick_time);
         }
     }
     SDLNet_FreePacket(incoming);
