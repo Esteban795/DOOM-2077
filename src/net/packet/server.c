@@ -54,7 +54,7 @@ int server_pong(uint8_t* buf, uint64_t data) {
 int server_quit(uint8_t* buf, uint64_t player_id) {
     memcpy(buf, SERVER_COMMAND_QUIT, 4);
     write_uint16(buf + 4, 8);
-    write_uint64(buf, player_id);
+    write_uint64(buf + 6, player_id);
     buf[14] = '\n';
     return 4 + 2 + 8 + 1;
 }
