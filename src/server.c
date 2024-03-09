@@ -150,12 +150,12 @@ int run_server(uint16_t port) {
                         uint64_t data = read_uint64(payload);
                         printf("Pong from %s: %lu.\n", addrstr, data);
                     } else if (strncmp(cmd, CLIENT_COMMAND_QUIT, 4) == 0) {
-                        if (find_conn_by_ip(clients, client_count, &incoming->address) >= 0) {
+                        int cid = find_conn_by_ip(clients, client_count, &incoming->address);
+                        if (cid >= 0) {
                             printf("Player %s is quitting the game.\n", addrstr);
                             outgoing->channel = -1;
-                            outgoing->len = server_quit(outgoing->data, client_count);
+                            outgoing->len = server_quit(outgoing->data, cid);
                             broadcast(&server, clients, client_count, outgoing->data, outgoing->len);
-                            int cid = find_conn_by_ip(clients, client_count, &incoming->address);
                             clients[cid] = clients[client_count - 1];
                             client_count--;
                         } else {
@@ -164,6 +164,8 @@ int run_server(uint16_t port) {
                     } else {
                         printf("Unknown command: %s.\n", cmd);
                     }
+
+                    cursor += 6 + payload_len + 1;
                 }
             } else if (ready < 0) {
                 printf("SDLNet_UDP_Recv: %s\n", SDLNet_GetError());
