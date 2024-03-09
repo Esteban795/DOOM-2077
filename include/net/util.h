@@ -13,6 +13,7 @@
 #endif
 
 void addrtocstr(IPaddress* ip, char str[24]);
+int cmp_addr(IPaddress* ip1, IPaddress* ip2);
 
 void write_uint8(uint8_t* buf, uint8_t data);
 void write_uint16(uint8_t* buf, uint16_t data);

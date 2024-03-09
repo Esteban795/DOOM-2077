@@ -20,6 +20,13 @@ void addrtocstr(IPaddress* ip, char str[24]) {
     sprintf(str, "%d.%d.%d.%d:%d", addr[0], addr[1], addr[2], addr[3], port);
 }
 
+int cmp_addr(IPaddress* ip1, IPaddress* ip2) {
+    if (ip1->host == ip2->host && ip1->port == ip2->port) {
+        return 0;
+    }
+    return 1;
+}
+
 void write_uint8(uint8_t* buf, uint8_t data) {
     buf[0] = data;
 }
