@@ -15,7 +15,7 @@ double scale_from_global_angle(segment_handler *sh, int x, double normal_angle,
            cos(deg_to_rad(-normal_angle + x_angle - sh->player->angle)));
   double den = dist * cos(deg_to_rad(x_angle));
   double scale = num / den;
-  scale = min(MAX_SCALE, max(MIN_SCALE, scale));
+  scale = fmin(MAX_SCALE, fmax(MIN_SCALE, scale));
   return scale;
 }
 

@@ -80,14 +80,14 @@ int *get_map_bounds(vertex *vertexes, int len) {
 
 // remap to keep proportions
 int remap_x(int current_x, int x_min, int x_max) {
-  return (max(x_min, min(current_x, x_max)) - x_min) * (OUT_MAX_W - OUT_MIN) /
+  return (fmax(x_min, fmax(current_x, x_max)) - x_min) * (OUT_MAX_W - OUT_MIN) /
              (x_max - x_min) +
          OUT_MIN;
 }
 
 int remap_y(int current_y, int y_min, int y_max) {
   return HEIGHT -
-         (max(y_min, min(current_y, y_max)) - y_min) * (OUT_MAX_H - OUT_MIN) /
+         (fmax(y_min, fmin(current_y, y_max)) - y_min) * (OUT_MAX_H - OUT_MIN) /
              (y_max - y_min) -
          OUT_MIN;
 }

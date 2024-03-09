@@ -20,6 +20,7 @@
 #define OUT_MAX_W (WIDTH - 30)
 #define OUT_MAX_H (HEIGHT - 30)
 
+#define G 9.81
 #define SCREEN_DISTANCE (HALF_WIDTH / tan(HALF_FOV * (M_PI / 180.0)))
 
 #define DEFAULT_MAP_BOUNDS                                                     \
@@ -27,7 +28,7 @@
 
 #define SUBSECTOR_IDENTIFIER (size_t)0x8000
 
-#define PLAYER_HEIGHT 40
+#define PLAYER_HEIGHT 40.0
 #define PLAYER_SPEED .3
 #define PLAYER_ROTATION_SPEED .03
 #define MOUSE_SENSITIVY 0.3

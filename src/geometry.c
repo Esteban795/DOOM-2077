@@ -32,9 +32,16 @@ double dist(vec2 pos1, vec2 pos2){
   return sqrt((pos1.x - pos2.x) * (pos1.x - pos2.x) + (pos1.y - pos2.y) * (pos1.y - pos2.y));
 }
 
-double min(double x, double y){
+double fmin(double x, double y){
   return x < y ? x : y;
 }
-double max(double x, double y){
+double fmax(double x, double y){
   return x > y ? x : y;
+}
+
+int max(int x, int y){
+  return x > y ? x : y;
+}
+int min(int x, int y){
+  return x < y ? x : y;
 }

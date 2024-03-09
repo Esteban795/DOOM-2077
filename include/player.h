@@ -14,5 +14,5 @@ void update_player(player *p, int mouse_x, const uint8_t *keyboard_state);
 
 void player_free(player *p);
 
-void update_height(player* p,int z);
+void update_height(player* p,double z);
 #endif

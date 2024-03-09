@@ -188,7 +188,7 @@ void get_ssector_height(bsp* b){
   i16 subsector_id = node_id - SUBSECTOR_IDENTIFIER;
   subsector player_ssector = b->subsectors[subsector_id];
   segment seg = player_ssector.segs[0];
-  int floor_height = seg.front_sector->floor_height;
+  double floor_height = seg.front_sector->floor_height;
   update_height(b->engine->p, floor_height);
 }
 
