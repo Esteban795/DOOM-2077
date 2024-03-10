@@ -227,6 +227,8 @@ void map_renderer_free(map_renderer *mr) {
 }
 
 void draw_vline(map_renderer *mr, int x, int y1, int y2, color c) {
-  SDL_SetRenderDrawColor(mr->renderer, c.r, c.g, c.b, 255);
-  SDL_RenderDrawLine(mr->renderer, x, y1, x, y2);
+  if (y1 < y2) {
+    SDL_SetRenderDrawColor(mr->renderer, c.r, c.g, c.b, 255);
+    SDL_RenderDrawLine(mr->renderer, x, y1, x, y2);
+  }
 }
