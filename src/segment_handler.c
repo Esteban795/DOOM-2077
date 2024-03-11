@@ -275,15 +275,6 @@ void draw_portal_walls_range(segment_handler *sh, int x1, int x2) {
   }
 }
 
-int *calculate_ranges_to_draw(int *screen_range, int x1, int x2) {
-  int len = x2 - x1;
-  int *ranges_to_draw = malloc(sizeof(int) * len);
-  for (int i = 0; i < len; i++) {
-    ranges_to_draw[i] = screen_range[x1 + i] ^ 1;
-  }
-  return ranges_to_draw;
-}
-
 void clip_solid_walls(segment_handler *sh, int x1, int x2) {
   if (sh->screen_range_count <
       WIDTH) { // the screen is not fully occupied by walls
