@@ -2,6 +2,7 @@
 #include <SDL2/SDL_stdinc.h>
 #include <SDL2/SDL_timer.h>
 #include <stdio.h>
+#include <string.h>
 
 bool BSP_TRAVERSE = true;
 
@@ -286,56 +287,50 @@ int *calculate_ranges_to_draw(int *screen_range, int x1, int x2) {
 void clip_solid_walls(segment_handler *sh, int x1, int x2) {
   if (sh->screen_range_count <
       WIDTH) { // the screen is not fully occupied by walls
-    int len = x2 - x1;
-    int *ranges_to_draw = calculate_ranges_to_draw(sh->screen_range, x1, x2);
-    int index_first_1 = -1;
-    int index_last_1 = -1;
-    for (int i = 0; i < len; i++) {
-      if (ranges_to_draw[i] == 1) {
-        if (index_first_1 == -1) {
-          index_first_1 = i;
+    int index_first_0 = x1;
+    int index_last_0 = x2;
+    int i = x1;
+    while (i < x2) {
+      if (sh->screen_range[i] == 0) {
+        index_first_0 = i;
+        while (i < x2 && sh->screen_range[i] == 0) {
+          i++;
         }
-        index_last_1 = i;
-        sh->screen_range[x1 + i] = 1; // mark the pixel as drawn
-      } else if (index_first_1 != -1) {
-        sh->screen_range_count += index_last_1 - index_first_1 + 1;
-        draw_solid_walls_range(sh, x1 + index_first_1, x1 + index_last_1 + 1);
-        index_first_1 = -1;
-        index_last_1 = -1;
+        index_last_0 = i;
+        if (index_last_0 - index_first_0 > 0) {
+          draw_solid_walls_range(sh, index_first_0, index_last_0);
+          sh->screen_range_count += index_last_0 - index_first_0;
+        }
+      } else {
+        i++;
       }
     }
-    if (index_first_1 !=
-        -1) { // we've reached the end of the loop but we started a chunk of 1s
-      sh->screen_range_count += index_last_1 - index_first_1 + 1;
-      draw_solid_walls_range(sh, x1 + index_first_1, x1 + index_last_1 + 1);
+    for (int i = x1; i < x2; i++) {
+      sh->screen_range[i] = 1;
     }
-    free(ranges_to_draw);
   } else { // we've already drawn every solid wall on our screen, stop there
     BSP_TRAVERSE = false;
   }
 }
 
 void clip_portal_walls(segment_handler *sh, int x1, int x2) {
-  int len = x2 - x1;
-  int *ranges_to_draw = calculate_ranges_to_draw(sh->screen_range, x1, x2);
-  int index_first_1 = -1;
-  int index_last_1 = -1;
-  for (int i = 0; i < len; i++) {
-    if (ranges_to_draw[i] == 1) {
-      if (index_first_1 == -1) {
-        index_first_1 = i;
+  int index_first_0 = x1;
+  int index_last_0 = x2;
+  int i = x1;
+  while (i < x2) {
+    if (sh->screen_range[i] == 0) {
+      index_first_0 = i;
+      while (i < x2 && sh->screen_range[i] == 0) {
+        i++;
       }
-      index_last_1 = i;
-    } else if (index_first_1 != -1) {
-      draw_portal_walls_range(sh, x1 + index_first_1, x1 + index_last_1 + 1);
-      index_first_1 = -1;
-      index_last_1 = -1;
+      index_last_0 = i;
+      if (index_last_0 - index_first_0 > 0) {
+        draw_portal_walls_range(sh, index_first_0, index_last_0);
+      }
+    } else {
+      i++;
     }
   }
-  if (index_first_1 != -1) { // the end of the loop but we started a chunk of 1s
-    draw_portal_walls_range(sh, x1 + index_first_1, x1 + index_last_1 + 1);
-  }
-  free(ranges_to_draw);
 }
 
 void classify_segment(segment_handler *sh, segment *seg, int x1, int x2,
