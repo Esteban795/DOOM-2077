@@ -4,9 +4,10 @@
 #include <SDL2/SDL_surface.h>
 #include <SDL2/SDL_ttf.h>
 #include <SDL2/SDL_video.h>
+#include <stdio.h>
 
-button *button_create(int x, int y, int w, int h,
-                      void (*on_click)(void *data), char *text,TTF_Font* font) {
+button *button_create(int x, int y, int w, int h, void (*on_click)(void *data),
+                      char *text, TTF_Font *font) {
   button *b = malloc(sizeof(button));
   b->x = x;
   b->y = y;
@@ -20,18 +21,15 @@ button *button_create(int x, int y, int w, int h,
   return b;
 }
 
-static void button_test_click(button *b, SDL_Event event, void *data) {
-  if (event.type == SDL_MOUSEBUTTONDOWN) {
-    int mouse_x, mouse_y;
-    SDL_GetMouseState(&mouse_x, &mouse_y);
-    if (mouse_x > b->x + b->w || mouse_x < b->x || mouse_y > b->y + b->h ||
-        mouse_y < b->y) {
-      b->pressed = false;
-      return;
-    }
-    b->pressed = true;
-    b->on_click(data);
+static void detect_click(button *b, void *data) {
+  int mouse_x, mouse_y;
+  SDL_GetMouseState(&mouse_x, &mouse_y);
+  if (mouse_x > b->x + b->w || mouse_x < b->x || mouse_y > b->y + b->h ||
+      mouse_y < b->y) {
+    b->pressed = false;
+    return;
   }
+  b->pressed = true;
 }
 
 // handles all kind of error at SDL startup
@@ -61,9 +59,16 @@ static void draw_button(SDL_Renderer *r, button *btn) {
   }
   SDL_RenderFillRect(r, &rect);
   SDL_SetRenderDrawColor(r, 255, 0, 0, 255);
-  SDL_Surface* text = TTF_RenderText_Solid(btn->font, btn->text, (SDL_Color){255, 0, 0, 255});
-  SDL_Texture* texture = SDL_CreateTextureFromSurface(r, text);
-  SDL_RenderCopy(r, texture, NULL, &rect);
+  SDL_Surface *text =
+      TTF_RenderText_Solid(btn->font, btn->text, (SDL_Color){255, 0, 0, 255});
+  SDL_Texture *texture = SDL_CreateTextureFromSurface(r, text);
+  int w, h;
+  int size_text = TTF_SizeText(btn->font, btn->text, &w, &h);
+  SDL_Rect centered_rect = {.x = btn->x + (btn->w / 2) - (w / 2),
+                            .y = btn->y + (btn->h / 2) - (h / 2),
+                            .w = w,
+                            .h = h};
+  SDL_RenderCopy(r, texture, NULL, &centered_rect);
   SDL_DestroyTexture(texture);
   SDL_FreeSurface(text);
   SDL_RenderPresent(r);
@@ -71,19 +76,18 @@ static void draw_button(SDL_Renderer *r, button *btn) {
 
 void test_data(void *data) { printf("Button pressed\n"); }
 
-
-void button_free(button* b){
+void button_free(button *b) {
   TTF_CloseFont(b->font);
   free(b);
 }
 
 int main(void) {
-  if (TTF_Init() == -1){
+  if (TTF_Init() == -1) {
     printf("TTF init error");
     exit(EXIT_FAILURE);
   }
-  TTF_Font* font = TTF_OpenFont("./fonts/amazdoom/AmazDooMLeft.ttf", 28);
-  if (font == NULL){
+  TTF_Font *font = TTF_OpenFont("./fonts/amazdoom/AmazDooMLeft.ttf", 50);
+  if (font == NULL) {
     printf("font init error");
     exit(EXIT_FAILURE);
   }
@@ -97,13 +101,13 @@ int main(void) {
   // SDL_Color white = {255,255,255,255};
   SDL_Event event;
   bool running = true;
-  button *b = button_create(100, 100, 300, 150, test_data, "Button",font);
+  button *b = button_create(200, 200, 400, 200, test_data, "Button", font);
   while (running) {
     while (SDL_PollEvent(&event)) {
       if (event.type == SDL_QUIT) {
         running = false;
       }
-      button_test_click(b, event, NULL);
+      detect_click(b, NULL);
     }
     draw_button(renderer, b);
     SDL_RenderPresent(renderer);
