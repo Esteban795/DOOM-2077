@@ -3,8 +3,9 @@
 
 #include <SDL2/SDL.h>
 
-#include "settings.h"
+#include "keybindings.h"
 #include "wad_data.h"
+#include "vec2.h"
 
 struct Player;
 struct BSP;
@@ -15,9 +16,10 @@ struct SegmentHandler;
 struct Player {
   struct Engine *engine;
   thing thing;
-  double x;
-  double y;
+  vec2 pos;
   double angle;
+  struct PlayerSetting *settings;
+  struct PlayerKeybind *keybinds;
   double height;
 };
 

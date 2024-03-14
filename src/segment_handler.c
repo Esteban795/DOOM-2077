@@ -42,10 +42,9 @@ void draw_solid_walls_range(segment_handler *sh, int x1, int x2) {
   double offset_angle = normal_angle - sh->raw_angle_1;
 
   player *p = sh->engine->p;
-  vec2 player_pos = {.x = p->x, .y = p->y};
   vec2 start_vertex_pos = {.x = sh->seg->start_vertex->x,
                            .y = sh->seg->start_vertex->y};
-  double hyp = dist(player_pos,
+  double hyp = dist(p->pos,
                     start_vertex_pos); // distance from player to start vertex
   double raw_dist =
       hyp * cos(deg_to_rad(offset_angle)); // distance from player to wall
@@ -152,10 +151,9 @@ void draw_portal_walls_range(segment_handler *sh, int x1, int x2) {
   double offset_angle = normal_angle - sh->raw_angle_1;
 
   player *p = sh->engine->p;
-  vec2 player_pos = {.x = p->x, .y = p->y};
   vec2 start_vertex_pos = {.x = sh->seg->start_vertex->x,
                            .y = sh->seg->start_vertex->y};
-  double hyp = dist(player_pos,
+  double hyp = dist(p->pos,
                     start_vertex_pos); // distance from player to start vertex
   double raw_dist =
       hyp * cos(deg_to_rad(offset_angle)); // distance from player to wall

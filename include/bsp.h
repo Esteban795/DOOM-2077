@@ -1,16 +1,15 @@
 #ifndef BSP_H
 #define BSP_H
 
-#include "geometry.h"
 #include "map_renderer.h"
-#include "player.h"
-#include "settings.h"
 #include "structs.h"
 #include "vec2.h"
 #include "segment_handler.h"
 
 
 extern bool BSP_TRAVERSE;
+
+#define SUBSECTOR_IDENTIFIER (size_t)0x8000
 
 bsp *bsp_init(engine *e, player *p);
 

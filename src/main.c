@@ -22,7 +22,7 @@ int main(void) {
   SDL_Window *window;
   SDL_Renderer *renderer;
   int numkeys;
-  const uint8_t *keys = SDL_GetKeyboardState(&numkeys);
+  const uint8_t* keys = SDL_GetKeyboardState(&numkeys);
   int status = start_SDL(&window, &renderer, WIDTH, HEIGHT, "Map rendering..");
   if (status == 1) {
     printf("Error at SDL startup");

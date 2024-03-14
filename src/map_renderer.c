@@ -104,7 +104,7 @@ vertex *remap_vertexes(vertex *vertexes, int len, int *map_bounds) {
 }
 
 void draw_linedefs(SDL_Renderer *renderer, linedef *linedefs, int len) {
-  SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+  //SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
   for (int i = 0; i < len; i++) {
     vertex *p1 = linedefs[i].start_vertex;
     vertex *p2 = linedefs[i].end_vertex;
@@ -151,9 +151,9 @@ void draw_node(map_renderer *mr, int node_id) {
 
 static void draw_player(map_renderer *mr) {
   SDL_SetRenderDrawColor(mr->renderer, 0, 0, 255, 255);
-  i16 x = remap_x(mr->engine->p->x, mr->map_bounds.left, mr->map_bounds.right);
-  i16 y = remap_y(mr->engine->p->y, mr->map_bounds.top, mr->map_bounds.bottom);
-  DrawCircle(mr->renderer, x, y, 5);
+  i16 x = remap_x(mr->engine->p->pos.x, mr->map_bounds.left, mr->map_bounds.right);
+  i16 y = remap_y(mr->engine->p->pos.y, mr->map_bounds.top, mr->map_bounds.bottom);
+  DrawCircle(mr->renderer, x, y, PLAYER_RADIUS);
 }
 
 void draw_segment(map_renderer *mr, segment seg) {
@@ -171,17 +171,10 @@ void draw_subsector(map_renderer *mr, i16 subsector_id) {
   }
 }
 
-void draw_vertical_lines(map_renderer *mr, int x1, int x2, i16 subsector_id) {
-  color c = get_random_color(subsector_id);
-  SDL_SetRenderDrawColor(mr->renderer, c.r, c.g, c.b, 255);
-  SDL_RenderDrawLine(mr->renderer, x1, 0, x1, HEIGHT);
-  SDL_RenderDrawLine(mr->renderer, x2, 0, x2, HEIGHT);
-}
-
 void draw_fov(map_renderer *mr) {
   const int RAY_LENGTH = 200;
-  int x = remap_x(mr->engine->p->x, mr->map_bounds.left, mr->map_bounds.right);
-  int y = remap_y(mr->engine->p->y, mr->map_bounds.top, mr->map_bounds.bottom);
+  int x = remap_x(mr->engine->p->pos.x, mr->map_bounds.left, mr->map_bounds.right);
+  int y = remap_y(mr->engine->p->pos.y, mr->map_bounds.top, mr->map_bounds.bottom);
   int x1 = x + RAY_LENGTH * cos(deg_to_rad(mr->engine->p->angle + H_FOV));
   int y1 = y + RAY_LENGTH * sin(deg_to_rad(mr->engine->p->angle + H_FOV));
   int x2 = x + RAY_LENGTH * cos(deg_to_rad(mr->engine->p->angle - H_FOV));
@@ -195,12 +188,43 @@ void draw_fov(map_renderer *mr) {
   SDL_RenderDrawLine(mr->renderer, x, y, x3, y3);
 }
 
+void draw_block(map_renderer *mr, int block_index){
+  //routine that just draws the box of the block
+  SDL_SetRenderDrawColor(mr->renderer, 255, 255, 255, 255);
+  int block_bound_tl_x = mr->engine->wData->blockmap->header->x + (block_index % mr->engine->wData->blockmap->header->ncols) * 128;
+  int block_bound_tl_y = mr->engine->wData->blockmap->header->y + (block_index / mr->engine->wData->blockmap->header->ncols) * 128;
+
+  int x1 = remap_x(block_bound_tl_x, mr->map_bounds.left, mr->map_bounds.right);
+  int y1 = remap_y(block_bound_tl_y, mr->map_bounds.top, mr->map_bounds.bottom);
+  int x2 = remap_x(block_bound_tl_x + 128, mr->map_bounds.left, mr->map_bounds.right);
+  int y2 = remap_y(block_bound_tl_y + 128, mr->map_bounds.top, mr->map_bounds.bottom);
+  SDL_Rect rect = {.x = x1, .y = y1, .w = x2 - x1, .h = y2 - y1};
+  SDL_RenderDrawRect(mr->renderer, &rect);
+
+  //and now drawing the linedefs, let's go baby
+  SDL_SetRenderDrawColor(mr->renderer, 255, 0, 255, 255);
+  draw_linedefs(mr->renderer, mr->engine->wData->blockmap->blocks[block_index].linedefs,
+                mr->engine->wData->blockmap->blocks[block_index].nlinedefs);
+}
+
+void draw_active_blocks(map_renderer *mr) {
+  SDL_SetRenderDrawColor(mr->renderer, 255, 255, 255, 255);
+
+  for (int y=-1; y<=1; y++){
+    for (int x=-1; x<=1; x++){
+      int block_index = blockmap_get_block_index(mr->engine->wData->blockmap, mr->engine->p->pos.x + x*128, mr->engine->p->pos.y + y*128);
+      draw_block(mr, block_index);
+    }
+  }
+}
+
 void draw(map_renderer *mr) {
   // draw_vertexes(mr->renderer, mr->vertexes, mr->wData->len_vertexes);
   // draw_linedefs(mr->renderer, mr->wData->linedefs, mr->wData->len_linedefs,
   // mr->vertexes);
-  // draw_player(mr);
-  // draw_fov(mr);
+  draw_active_blocks(mr);
+  draw_player(mr);
+  draw_fov(mr);
 }
 
 map_renderer *map_renderer_init(engine *e, SDL_Renderer *renderer) {

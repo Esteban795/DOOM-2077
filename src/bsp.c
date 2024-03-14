@@ -31,8 +31,8 @@ static bool check_if_bbox_visible(bbox bb, player *p) {
   vec2 c = {.x = bb.right, .y = bb.top};
   vec2 d = {.x = bb.right, .y = bb.bottom};
   vec2 possibly_visible_bb_sides[4];
-  double x = p->x;
-  double y = p->y;
+  double x = p->pos.x;
+  double y = p->pos.y;
   size_t counter = 0;
   if (x < bb.left) {
     if (y > bb.top) {
@@ -82,7 +82,7 @@ static bool check_if_bbox_visible(bbox bb, player *p) {
     } else
       return true; // we are inside the box
   }
-  vec2 player_pos = {.x = p->x, .y = p->y};
+  vec2 player_pos = p->pos;
   for (size_t i = 0; i < 2 * counter; i += 2) {
     double angle1 = point_to_angle(player_pos, possibly_visible_bb_sides[i]);
     double angle2 =
@@ -103,13 +103,12 @@ static bool check_if_bbox_visible(bbox bb, player *p) {
 // x2 to the x position of the segment for the screen
 bool is_segment_in_fov(player *p, segment seg, int *x1, int *x2,
                        double *raw_angle_1) {
-  vec2 player = {.x = p->x, .y = p->y};
   vertex *v1 = seg.start_vertex;
   vertex *v2 = seg.end_vertex;
   vec2 v1v = {.x = v1->x, .y = v1->y};
   vec2 v2v = {.x = v2->x, .y = v2->y};
-  double angle1 = point_to_angle(player, v1v); // angle from player to v1
-  double angle2 = point_to_angle(player, v2v); // angle from player to v2
+  double angle1 = point_to_angle(p->pos, v1v); // angle from player to v1
+  double angle2 = point_to_angle(p->pos, v2v); // angle from player to v2
   double span = norm(angle1 - angle2);
   if (span >= 180.0)
     return false;
@@ -136,8 +135,8 @@ bool is_segment_in_fov(player *p, segment seg, int *x1, int *x2,
 }
 
 static bool is_on_back_side(bsp *b, node n) {
-  i16 dx = b->player->x - n.x_partition;
-  i16 dy = b->player->y - n.y_partition;
+  i16 dx = b->player->pos.x - n.x_partition;
+  i16 dy = b->player->pos.y - n.y_partition;
   return dx * n.dy_partition - dy * n.dx_partition <= 0;
 }
 
