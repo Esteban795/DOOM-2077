@@ -4,7 +4,7 @@
 #include "byte_reader.h"
 #include "lump.h"
 #include <stdint.h>
-
+#include "string_util.h"
 struct Sector {
   i16 floor_height;
   i16 ceiling_height;
@@ -14,6 +14,8 @@ struct Sector {
   i16 type;
   i16 tag;
   i16 tag_number;
+  unsigned long hash_floor;
+  unsigned long hash_ceiling;
 };
 
 typedef struct Sector sector;

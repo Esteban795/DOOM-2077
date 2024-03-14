@@ -35,7 +35,8 @@ void draw_solid_walls_range(segment_handler *sh, int x1, int x2) {
   int world_front_z2 = sh->seg->front_sector->floor_height - sh->player->height;
 
   // check which parts need to be rendered
-  bool draw_wall = strcmp(sh->seg->linedef->front_sidedef->middle_texture, "-");
+  bool draw_wall =
+      sh->seg->linedef->front_sidedef->hash_middle != NO_TEXTURE_HASH;
   bool draw_ceiling = world_front_z1 > 0; // can we actually see the ceiling ?
   bool draw_floor = world_front_z2 < 0;   // can we actually see the floor ?
 
@@ -126,9 +127,9 @@ void draw_portal_walls_range(segment_handler *sh, int x1, int x2) {
   bool draw_ceiling = false;
   if (world_front_z1 != world_back_z1 ||
       front_sector->light_level != back_sector->light_level ||
-      strcmp(front_sector->ceiling_texture, back_sector->ceiling_texture)) {
-    draw_upper_wall =
-        strcmp(upper_wall_texture, "-") && world_back_z1 < world_front_z1;
+      front_sector->hash_ceiling != back_sector->hash_ceiling) {
+    draw_upper_wall = front_sidedef->hash_upper != NO_TEXTURE_HASH &&
+                      world_back_z1 < world_front_z1;
     draw_ceiling = world_front_z1 >= 0;
   }
 
@@ -137,9 +138,9 @@ void draw_portal_walls_range(segment_handler *sh, int x1, int x2) {
 
   if (world_front_z2 != world_back_z2 ||
       front_sector->light_level != back_sector->light_level ||
-      strcmp(front_sector->floor_texture, back_sector->floor_texture)) {
-    draw_lower_wall =
-        strcmp(lower_wall_texture, "-") && world_back_z2 > world_front_z2;
+      front_sector->hash_floor != back_sector->hash_floor) {
+    draw_lower_wall = front_sidedef->hash_lower != NO_TEXTURE_HASH &&
+                      world_back_z2 > world_front_z2;
     draw_floor = world_front_z2 <= 0;
   }
 
@@ -338,9 +339,8 @@ void classify_segment(segment_handler *sh, segment *seg, int x1, int x2,
              front_sector->floor_height !=
                  back_sector->floor_height) { // its a window
     clip_portal_walls(sh, x1, x2);
-  } else if (!strcmp(back_sector->ceiling_texture,
-                     front_sector->ceiling_texture) &&
-             !strcmp(back_sector->floor_texture, front_sector->floor_texture) &&
+  } else if (front_sector->hash_ceiling != back_sector->hash_ceiling &&
+             front_sector->hash_floor != back_sector->hash_floor &&
              back_sector->light_level ==
                  front_sector->light_level) { // its a portal
     return;

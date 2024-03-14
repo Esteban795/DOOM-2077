@@ -9,6 +9,8 @@ sector read_sector(FILE *f, int offset) {
   s.light_level = read_i16(f, offset + 20);
   s.type = read_i16(f, offset + 22);
   s.tag_number = read_i16(f, offset + 24);
+  s.hash_ceiling = ElfHash(s.ceiling_texture);
+  s.hash_floor = ElfHash(s.floor_texture);
   return s;
 }
 

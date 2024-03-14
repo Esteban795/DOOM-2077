@@ -9,6 +9,9 @@ sidedef read_sidedef(FILE *f, int offset,sector* sectors) {
   s.middle_texture = read_string(f, offset + 20, 8);
   s.sector_id = read_i16(f, offset + 28);
   s.sector = &sectors[s.sector_id];
+  s.hash_lower = ElfHash(s.lower_texture);
+  s.hash_upper = ElfHash(s.upper_texture);
+  s.hash_middle = ElfHash(s.middle_texture);
   return s;
 }
 

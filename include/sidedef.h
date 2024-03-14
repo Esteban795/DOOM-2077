@@ -13,6 +13,9 @@ struct Sidedef {
   char* middle_texture;
   sector* sector;
   i16 sector_id;
+  unsigned long hash_upper;
+  unsigned long hash_lower;
+  unsigned long hash_middle;
 };
 
 typedef struct Sidedef sidedef;
