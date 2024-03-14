@@ -3,6 +3,7 @@
 
 #include <SDL2/SDL.h>
 
+#include "color.h"
 #include "player.h"
 #include "settings.h"
 #include "structs.h"

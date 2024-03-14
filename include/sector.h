@@ -3,13 +3,14 @@
 
 #include "byte_reader.h"
 #include "lump.h"
+#include "util.h"
 #include <stdint.h>
-#include "string_util.h"
+
 struct Sector {
   i16 floor_height;
   i16 ceiling_height;
-  char* floor_texture;
-  char* ceiling_texture;
+  char *floor_texture;
+  char *ceiling_texture;
   i16 light_level;
   i16 type;
   i16 tag;

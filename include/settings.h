@@ -31,7 +31,7 @@
 #define PLAYER_HEIGHT 41.0
 #define PLAYER_SPEED .3
 #define PLAYER_ROTATION_SPEED .03
-#define MOUSE_SENSITIVY 0.3
+#define MOUSE_SENSITIVY 10
 #define DIAGONAL_CORRECTION 1 / sqrt(2)
 
 #endif

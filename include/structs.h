@@ -57,14 +57,6 @@ typedef struct Engine engine;
 typedef struct BSP bsp;
 typedef struct MapRenderer map_renderer;
 
-struct Color {
-  int r;
-  int g;
-  int b;
-};
-
-typedef struct Color color;
-
 struct SegmentHandler {
   struct Engine *engine;
   player *player;

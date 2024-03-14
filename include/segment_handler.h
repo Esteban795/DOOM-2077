@@ -1,10 +1,12 @@
 #ifndef SEGMENT_HANDLER_H
 #define SEGMENT_HANDLER_H
 
+#include "color.h"
 #include "map_renderer.h"
 #include "segment.h"
 #include "settings.h"
 #include "structs.h"
+#include "util.h"
 #include <stdlib.h>
 
 #define MAX_SCALE 64.0
