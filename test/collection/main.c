@@ -16,5 +16,5 @@ int main(void)
     printf("Testing libcollection...\n");
     failed += test_vec();
     printf("libcollection tests finished with %d failures.\n", failed);
-    return 0;
+    return failed;
 }

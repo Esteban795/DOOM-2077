@@ -15,10 +15,10 @@
 typedef struct {
     IPaddress ip;
     uint64_t player_id;
-} TrackedConnection;
+} tracked_connection_t;
 
-int broadcast(UDPsocket* sock, TrackedConnection* connections, int num_connections, uint8_t* buf, int len);
+int broadcast(UDPsocket* sock, tracked_connection_t* connections, int num_connections, uint8_t* buf, int len);
 
-int find_conn_by_ip(TrackedConnection* connections, int num_connections, IPaddress* ip);
+int find_conn_by_ip(tracked_connection_t* connections, int num_connections, IPaddress* ip);
 
-int find_conn_by_id(TrackedConnection* connections, int num_connections, uint64_t id);
+int find_conn_by_id(tracked_connection_t* connections, int num_connections, uint64_t id);

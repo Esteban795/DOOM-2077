@@ -93,7 +93,7 @@ int run_server(uint16_t port) {
     assert(outgoing != NULL);
 
     Instant tick_time, cur_time;
-    TrackedConnection clients[MAX_CLIENTS];
+    tracked_connection_t clients[MAX_CLIENTS];
     int client_count = 0;
     while(SERVER_RUNNING > 0) {
         // New tick!
@@ -117,7 +117,7 @@ int run_server(uint16_t port) {
                 // For each message in the packet
                 while (cursor + 6 <= incoming->len) {
                     memcpy(cmd, sdata + cursor, 4);
-                    payload_len = read_uint16((uint8_t*) (sdata + cursor + 4));
+                    payload_len = read_uint16be((uint8_t*) (sdata + cursor + 4));
                     payload = (uint8_t*) (sdata + cursor + 6);
                     if (cursor + 6 + payload_len + 1 > incoming->len) {
                         printf("Invalid packet: message length exceeds packet length.\n");
@@ -147,7 +147,7 @@ int run_server(uint16_t port) {
                     } else if (strncmp(cmd, CLIENT_COMMAND_KATC, 4) == 0) {
                         printf("Keep-alive from %s.\n", addrstr);
                     } else if (strncmp(cmd, CLIENT_COMMAND_PONG, 4) == 0) {
-                        uint64_t data = read_uint64(payload);
+                        uint64_t data = read_uint64be(payload);
                         printf("Pong from %s: %lu.\n", addrstr, data);
                     } else if (strncmp(cmd, CLIENT_COMMAND_QUIT, 4) == 0) {
                         int cid = find_conn_by_ip(clients, client_count, &incoming->address);
@@ -177,7 +177,7 @@ int run_server(uint16_t port) {
         }
     }
     for (int i = 0; i < client_count; i++) {
-        TrackedConnection* client = &clients[i];
+        tracked_connection_t* client = &clients[i];
         addrtocstr(&client->ip, addrstr);
         printf("Closing connection with %s...", addrstr);
         outgoing->address = client->ip;

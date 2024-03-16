@@ -27,23 +27,23 @@ int cmp_addr(IPaddress* ip1, IPaddress* ip2) {
     return 1;
 }
 
-void write_uint8(uint8_t* buf, uint8_t data) {
+void write_uint8be(uint8_t* buf, uint8_t data) {
     buf[0] = data;
 }
 
-void write_uint16(uint8_t* buf, uint16_t data) {
+void write_uint16be(uint8_t* buf, uint16_t data) {
     buf[0] = data >> 8;
     buf[1] = data & 0xFF;
 }
 
-void write_uint32(uint8_t* buf, uint32_t data) {
+void write_uint32be(uint8_t* buf, uint32_t data) {
     buf[0] = data >> 24;
     buf[1] = data >> 16 & 0xFF;
     buf[2] = data >> 8  & 0xFF;
     buf[3] = data       & 0xFF;
 }
 
-void write_uint64(uint8_t* buf, uint64_t data) {
+void write_uint64be(uint8_t* buf, uint64_t data) {
     buf[0] = data >> 56;
     buf[1] = data >> 48 & 0xFF;
     buf[2] = data >> 40 & 0xFF;
@@ -60,17 +60,17 @@ int write_cstring(uint8_t* buf, char* data) {
     return len + 1;
 }
 
-uint8_t read_uint8(uint8_t* buf) {
+uint8_t read_uint8be(uint8_t* buf) {
     return buf[0];
 }
 
-uint16_t read_uint16(uint8_t* buf) {
+uint16_t read_uint16be(uint8_t* buf) {
     uint16_t data = (uint16_t) buf[1];
     data |= ((uint16_t) buf[0]) << 8;
     return data;
 }
 
-uint32_t read_uint32(uint8_t* buf) {
+uint32_t read_uint32be(uint8_t* buf) {
     uint32_t data = (uint32_t) buf[3];
     data |= ((uint32_t) buf[2]) << 8;
     data |= ((uint32_t) buf[1]) << 16;
@@ -78,7 +78,7 @@ uint32_t read_uint32(uint8_t* buf) {
     return data;
 }
 
-uint64_t read_uint64(uint8_t* buf) {
+uint64_t read_uint64be(uint8_t* buf) {
     uint64_t data = (uint64_t) buf[7];
     data |= ((uint64_t) buf[6]) << 8;
     data |= ((uint64_t) buf[5]) << 16;

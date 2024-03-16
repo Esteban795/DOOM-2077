@@ -15,17 +15,17 @@
 void addrtocstr(IPaddress* ip, char str[24]);
 int cmp_addr(IPaddress* ip1, IPaddress* ip2);
 
-void write_uint8(uint8_t* buf, uint8_t data);
-void write_uint16(uint8_t* buf, uint16_t data);
-void write_uint32(uint8_t* buf, uint32_t data);
-void write_uint64(uint8_t* buf, uint64_t data);
+void write_uint8be(uint8_t* buf, uint8_t data);
+void write_uint16be(uint8_t* buf, uint16_t data);
+void write_uint32be(uint8_t* buf, uint32_t data);
+void write_uint64be(uint8_t* buf, uint64_t data);
 
 int write_cstring(uint8_t* buf, char* data);
 
-uint8_t read_uint8(uint8_t* buf);
-uint16_t read_uint16(uint8_t* buf);
-uint32_t read_uint32(uint8_t* buf);
-uint64_t read_uint64(uint8_t* buf);
+uint8_t read_uint8be(uint8_t* buf);
+uint16_t read_uint16be(uint8_t* buf);
+uint32_t read_uint32be(uint8_t* buf);
+uint64_t read_uint64be(uint8_t* buf);
 
 char* read_cstring(uint8_t* buf);
 
