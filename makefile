@@ -2,9 +2,11 @@
 SHELL = /bin/sh 
 
 srcdir = ./src
+testdir = ./test
 builddir = ./build
 includedir = ./include
 depsdir = $(builddir)/deps
+testdepsdir = $(builddir)/test_deps
 
 AR = ar
 CC = gcc
@@ -39,9 +41,16 @@ LIBEVENT_SRC = event/event.c \
 	$(patsubst $(srcdir)/%, %, $(wildcard $(srcdir)/event/client_*.c))
 LIBEVENT_OBJ = $(LIBEVENT_SRC:%.c=%.o)
 LIBEVENT_LIB =
+
+LIBCOLLECTION_SRC = $(patsubst $(srcdir)/%, %, $(wildcard $(srcdir)/collection/*.c))
+LIBCOLLECTION_OBJ = $(LIBCOLLECTION_SRC:%.c=%.o)
+LIBCOLLECTION_TEST_SRC = $(patsubst $(testdir)/%, %, $(wildcard $(testdir)/collection/*.c))
+LIBCOLLECTION_TEST_OBJ = $(LIBCOLLECTION_TEST_SRC:%.c=%.o)
+LIBCOLLECTION_LIB =
+LIBCOLLECTION_LDFLAGS = 
 # - END OF TARGETS  -  #
 
-.PHONY: all clean before_build run_server run_client build_server build_client
+.PHONY: all clean test before_build run_server run_client build_server build_client test_collection
 all: $(builddir)/server $(builddir)/client
 
 # helper targets
@@ -49,6 +58,9 @@ run_server: build_server
 	$(builddir)/server 9999
 run_client: build_client
 	$(builddir)/client
+test: test_collection
+test_collection: $(builddir)/test_collection
+	@$(builddir)/test_collection
 build_client: $(builddir)/client
 build_server: $(builddir)/server
 
@@ -72,8 +84,24 @@ $(depsdir)/libevent.a: $(addprefix $(depsdir)/, $(LIBEVENT_OBJ)) $(addprefix $(d
 	@echo "Building libevent..."
 	$(AR) rcs $@ $^
 
+# libcollection - build archive target
+$(depsdir)/libcollection.a: $(addprefix $(depsdir)/, $(LIBCOLLECTION_OBJ)) $(addprefix $(depsdir)/, $(LIBCOLLECTION_LIB)) | before_build
+	@echo "Building libcollection..."
+	$(AR) rcs $@ $^
+
+# libcollection - test target
+$(builddir)/test_collection: $(addprefix $(testdepsdir)/, $(LIBCOLLECTION_TEST_OBJ)) $(addprefix $(depsdir)/, $(LIBCOLLECTION_LIB)) $(depsdir)/libcollection.a | before_build
+	@echo "Building test_collection..."
+	$(CC) $(ALL_CFLAGS) -o $@ $^ $(ALL_LDFLAGS) $(LIBCOLLECTION_LDFLAGS)
+
 # compilation target
 $(depsdir)/%.o: $(srcdir)/%.c | before_build
+	@mkdir -p $(dir $@)
+	@echo "Compiling $<..."
+	$(CC) $(ALL_CFLAGS) -c -o $@ $<
+
+# compilation target for tests
+$(testdepsdir)/%.o: $(testdir)/%.c | before_build
 	@mkdir -p $(dir $@)
 	@echo "Compiling $<..."
 	$(CC) $(ALL_CFLAGS) -c -o $@ $<
