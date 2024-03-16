@@ -1,3 +1,4 @@
+#ifndef _LIB_DOOM_COLLECTION_VEC_H
 #define _LIB_DOOM_COLLECTION_VEC_H
 
 #include <stdio.h>
@@ -117,3 +118,4 @@ int vec_binary_search(vec_t* vec, void* data, int (*cmp)(const void*, const void
  * and a negative number if the first item is greater than the second.
  */
 void vec_sort(vec_t* vec, int (*cmp)(const void*, const void*));
+#endif  

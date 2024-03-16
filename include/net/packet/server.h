@@ -1,3 +1,4 @@
+#ifndef _LIB_DOOM_NET_PACKET_SERVER_H
 #define _LIB_DOOM_NET_PACKET_SERVER_H
 
 #include <stdio.h>
@@ -18,3 +19,4 @@ int server_kick(uint8_t* buf, char* reason);
 int server_pong(uint8_t* buf, uint64_t data);
 int server_quit(uint8_t* buf, uint64_t player_id);
 // TODO: server_player_list
+#endif

@@ -13,21 +13,10 @@
 #include <SDL2/SDL_net.h>
 #endif
 
-#ifndef _LIB_DOOM_NET_UTIL_H
 #include "../include/net/util.h"
-#endif
-
-#ifndef _LIB_DOOM_NET_TRACKETCONNECTION_H
 #include "../include/net/tracked_connection.h"
-#endif
-
-#ifndef _LIB_DOOM_NET_PACKET_SERVER_H
 #include "../include/net/packet/server.h"
-#endif
-
-#ifndef _LIB_DOOM_NET_PACKET_CLIENT_H
 #include "../include/net/packet/client.h"
-#endif
 
 #define MAX_CLIENTS 4
 // 20 tick per second

@@ -4,13 +4,8 @@
 #include <string.h>
 #include <stdint.h>
 
-#ifndef _LIB_DOOM_NET_PACKET_SERVER_H
 #include "../../../include/net/packet/server.h"
-#endif
-
-#ifndef _LIB_DOOM_NET_UTIL_H
 #include "../../../include/net/util.h"
-#endif
 
 const char* SERVER_COMMAND_ACPT = "ACPT";
 const char* SERVER_COMMAND_JOIN = "JOIN";

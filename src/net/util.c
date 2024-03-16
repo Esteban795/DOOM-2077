@@ -4,9 +4,7 @@
 #include <string.h>
 #include <stdint.h>
 
-#ifndef _LIB_DOOM_NET_UTIL_H
 #include "../../include/net/util.h"
-#endif
 
 #ifndef _LIB_SDL_NET_H
 #define _LIB_SDL_NET_H

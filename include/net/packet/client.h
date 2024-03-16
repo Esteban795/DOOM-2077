@@ -1,3 +1,4 @@
+#ifndef _LIB_DOOM_NET_PACKET_CLIENT_H
 #define _LIB_DOOM_NET_PACKET_CLIENT_H
 
 #include <stdio.h>
@@ -16,3 +17,4 @@ int client_keep_alive(uint8_t* buf);
 int client_ping(uint8_t* buf, uint64_t data);
 int client_quit(uint8_t* buf);
 // TODO: client_player_list
+#endif

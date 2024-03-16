@@ -1,3 +1,4 @@
+#ifndef _LIB_DOOM_EVENT_SERVERQUIT_H
 #define _LIB_DOOM_EVENT_SERVERQUIT_H
 
 #include <stdio.h>
@@ -6,9 +7,7 @@
 #include <string.h>
 #include <stdint.h>
 
-#ifndef _LIB_DOOM_EVENT_EVENT_H
 #include "event.h"
-#endif
 
 #define SERVER_PLAYER_QUIT_EVENT_TAG 0x8002
 
@@ -21,3 +20,5 @@ typedef struct {
 
 // ServerPlayerQuitEvent_new creates a new ServerPlayerQuitEvent.
 server_player_quit_event_t* ServerPlayerQuitEvent_new(char* name);
+
+#endif

@@ -4,13 +4,8 @@
 #include <string.h>
 #include <stdint.h>
 
-#ifndef _LIB_DOOM_NET_PACKET_CLIENT_H
 #include "../../../include/net/packet/client.h"
-#endif
-
-#ifndef _LIB_DOOM_NET_UTIL_H
 #include "../../../include/net/util.h"
-#endif
 
 const char* CLIENT_COMMAND_JOIN = "JOIN";
 const char* CLIENT_COMMAND_KATC = "KATC";
