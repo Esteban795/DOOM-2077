@@ -1,3 +1,4 @@
+#ifndef _LIB_DOOM_EVENT_EVENT_H
 #define _LIB_DOOM_EVENT_EVENT_H
 
 #include <stdio.h>
@@ -26,3 +27,5 @@ typedef struct {
 
 bool is_server_event(event_t* e);
 bool is_client_event(event_t* e);
+
+#endif

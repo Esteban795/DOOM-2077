@@ -1,3 +1,4 @@
+#ifndef _LIB_DOOM_NET_UTIL_H
 #define _LIB_DOOM_NET_UTIL_H
 
 #include <stdio.h>
@@ -30,3 +31,5 @@ uint64_t read_uint64be(uint8_t* buf);
 char* read_cstring(uint8_t* buf);
 
 char* read_copy_string(uint8_t* buf, int len);
+
+#endif

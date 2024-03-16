@@ -1,3 +1,4 @@
+#ifndef _LIB_DOOM_NET_TRACKETCONNECTION_H
 #define _LIB_DOOM_NET_TRACKETCONNECTION_H
 
 #include <stdio.h>
@@ -22,3 +23,5 @@ int broadcast(UDPsocket* sock, tracked_connection_t* connections, int num_connec
 int find_conn_by_ip(tracked_connection_t* connections, int num_connections, IPaddress* ip);
 
 int find_conn_by_id(tracked_connection_t* connections, int num_connections, uint64_t id);
+
+#endif

@@ -1,3 +1,4 @@
+#ifndef _LIB_DOOM_EVENT_SERVERJOIN_H
 #define _LIB_DOOM_EVENT_SERVERJOIN_H
 
 #include <stdio.h>
@@ -6,9 +7,7 @@
 #include <string.h>
 #include <stdint.h>
 
-#ifndef _LIB_DOOM_EVENT_EVENT_H
 #include "event.h"
-#endif
 
 #define SERVER_PLAYER_JOIN_EVENT_TAG 0x8001
 
@@ -21,3 +20,5 @@ typedef struct {
 
 // ServerPlayerJoinEvent_new creates a new ServerPlayerJoinEvent.
 server_player_join_event_t* ServerPlayerJoinEvent_new(char* name);
+
+#endif

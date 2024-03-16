@@ -5,9 +5,7 @@
 #include <stdint.h>
 #include <assert.h>
 
-#ifndef _LIB_DOOM_COLLECTION_VEC_H
 #include "../../include/collection/vec.h"
-#endif
 
 size_t vec_capacity(vec_t* vec) {
     return vec->capacity;
