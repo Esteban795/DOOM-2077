@@ -5,10 +5,6 @@
 #include <stdbool.h>
 #include <stdio.h>
 
-int min(int a, int b){
-    return a < b ? a : b;
-}
-
 textarea* ta_create(int x, int y, int width, int height, TTF_Font* font){
     textarea* ta = malloc(sizeof(textarea));
     ta->rect = (SDL_Rect){x, y, width, height};
