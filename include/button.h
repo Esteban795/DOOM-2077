@@ -6,6 +6,7 @@
 #include <SDL2/SDL_ttf.h>
 #include <stdbool.h>
 #include <stdlib.h>
+#include "color.h"
 
 struct Button {
   int x;

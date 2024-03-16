@@ -6,6 +6,7 @@
 #include "keybindings.h"
 #include "wad_data.h"
 #include "vec2.h"
+#include "settings.h"
 
 struct Player;
 struct BSP;
