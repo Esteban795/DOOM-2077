@@ -19,5 +19,5 @@ all:
 	make build
 	make run
 
-button:
-	gcc $(SRCDIR)/button.c -o ./bin/button $(DEBUGFLAGS) $(FLAGS)	
+ta:
+	gcc $(SRCDIR)/textarea.c -o ./bin/ta $(DEBUGFLAGS) $(FLAGS)	
