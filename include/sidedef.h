@@ -3,18 +3,27 @@
 
 #include "byte_reader.h"
 #include "lump.h"
+#include "sector.h"
+#include "util.h"
+
 struct Sidedef {
   i16 x_offset;
   i16 y_offset;
-  int8_t upper_texture[8];
-  int8_t lower_texture[8];
-  int8_t middle_texture[8];
-  i16 sector;
+  char *upper_texture;
+  char *lower_texture;
+  char *middle_texture;
+  sector *sector;
+  i16 sector_id;
+  unsigned long hash_upper;
+  unsigned long hash_lower;
+  unsigned long hash_middle;
 };
 
 typedef struct Sidedef sidedef;
 
 sidedef *get_sidedefs_from_lump(FILE *f, lump *directory, int lump_index,
                                 int num_bytes, int header_length,
-                                int len_sidedefs);
+                                int len_sidedefs, sector *sectors);
+
+void sidedefs_free(sidedef *sidedefs, int len_sidedefs);
 #endif
