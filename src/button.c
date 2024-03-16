@@ -81,12 +81,13 @@ void button_set_text(button *b, char *text) {
 }
 
 void button_set_font(button *b, TTF_Font *font) { b->font = font; }
-void button_change_coordinates(button *b, int x, int y) {
+
+void button_set_coordinates(button *b, int x, int y) {
   b->x = x;
   b->y = y;
 }
 
-void button_change_size(button *b, int w, int h) {
+void button_set_size(button *b, int w, int h) {
   b->w = w;
   b->h = h;
 }
