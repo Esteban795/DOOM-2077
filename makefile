@@ -20,9 +20,9 @@ ALL_CFLAGS = $(CFLAGS) $(shell pkg-config --cflags sdl2) $(CDEBUG)
 ALL_LDFLAGS = $(LDFLAGS) $(shell pkg-config --libs sdl2)
 
 # -  TARGETS  -  #
-CLIENT_SRC = main.c keybindings.c sidedef.c sector.c blockmap.c bsp.c byte_reader.c \
-	engine.c header.c linedef.c lump.c map_renderer.c node.c player.c segment.c \
-	subsector.c thing.c vertex.c wad_data.c
+CLIENT_SRC = blockmap.c bsp.c byte_reader.c color.c engine.c geometry.c header.c \
+	keybindings.c linedef.c lump.c main.c map_renderer.c node.c player.c sector.c segment.c \
+	segment_handler.c sidedef.c subsector.c thing.c timer.c util.c vertex.c wad_data.c
 CLIENT_OBJ = $(CLIENT_SRC:%.c=%.o)
 CLIENT_LIB = 
 CLIENT_LDFLAGS = -lSDL2
@@ -112,27 +112,4 @@ before_build:
 	@mkdir -p $(depsdir)
 
 clean:
-	rm -rf build
-
-all: build run 
-
-run_server: build_server
-	./build/server $(SERVER_PORT)
-
-build_server: before_build build_lib_server ./src/server.c
-	$(CC) ./src/server.c -o ./build/server ./build/deps/libnet.a $(DEBUGFLAGS) $(FLAGS)
-
-build_lib_server: before_build build_lib_net
-	echo "Compiling server's libs"
-
-build_lib_net: before_build ./src/net/util.c ./src/net/packet/client.c ./src/net/packet/server.c
-	echo "Compiling net's libs"
-	$(CC) -c ./src/net/util.c -o ./build/deps/net_util.o $(DEBUGFLAGS) $(FLAGS)
-	$(CC) -c ./src/net/packet/client.c -o ./build/deps/net_packet_client.o $(DEBUGFLAGS) $(FLAGS)
-	$(CC) -c ./src/net/packet/server.c -o ./build/deps/net_packet_server.o $(DEBUGFLAGS) $(FLAGS)
-	echo "Linking net's libs"
-	ar rcs ./build/deps/libnet.a ./build/deps/net_util.o ./build/deps/net_packet_client.o ./build/deps/net_packet_server.o
-
-before_build:
-	mkdir -p build
-	mkdir -p build/deps
+	-rm -rf $(builddir)
