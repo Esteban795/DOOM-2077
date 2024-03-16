@@ -2,12 +2,6 @@
 
 bool BSP_TRAVERSE = true;
 
-// FONCTION DE MERDE NE PAS UTILISER CA NIQUE LES PERFS.
-// color get_color(char *texture, i16 light_level) {
-//   srand(texture[1] + light_level);
-//   return (color){.r = rand() % 255, .g = rand() % 255, .b = rand() % 255};
-// }
-
 double scale_from_global_angle(segment_handler *sh, int x, double normal_angle,
                                double dist) {
 
@@ -70,6 +64,11 @@ void draw_solid_walls_range(segment_handler *sh, int x1, int x2) {
   double wall_y2_step =
       -rw_scale_step *
       world_front_z2; // step to find the next y position of bottom of the wall
+
+  color ceiling_c = get_color(sh->seg->front_sector->hash_ceiling, light_level);
+  color middle_c =
+      get_color(sh->seg->linedef->front_sidedef->hash_middle, light_level);
+  color floor_c = get_color(sh->seg->front_sector->hash_floor, light_level);
   for (int i = x1; i < x2; i++) {
     int draw_wall_y1 = (int)(wall_y1)-1;
     int draw_wall_y2 = (int)wall_y2;
@@ -77,25 +76,21 @@ void draw_solid_walls_range(segment_handler *sh, int x1, int x2) {
     if (draw_ceiling) {
       int cy1 = (int)(sh->upper_clip[i] + 1);
       int cy2 = (int)fmin(draw_wall_y1 - 1, sh->lower_clip[i] - 1);
-      color c = get_color(sh->seg->front_sector->hash_ceiling, light_level);
-      draw_vline(sh->engine->map_renderer, i, cy1, cy2, c);
+      draw_vline(sh->engine->map_renderer, i, cy1, cy2, ceiling_c);
     }
 
     if (draw_wall) {
-      color c =
-          get_color(sh->seg->linedef->front_sidedef->hash_middle, light_level);
       int wy1 =
           (int)fmax(draw_wall_y1, sh->upper_clip[i] + 1); // max(0, upper_clip)
       int wy2 = (int)fmin(draw_wall_y2,
                           sh->lower_clip[i] - 1); // min(HEIGHT, lower_clip)
-      draw_vline(sh->engine->map_renderer, i, wy1, wy2, c);
+      draw_vline(sh->engine->map_renderer, i, wy1, wy2, middle_c);
     }
 
     if (draw_floor) {
       int fy1 = (int)fmax(draw_wall_y2 + 1, sh->upper_clip[i] + 1);
       int fy2 = (int)(sh->lower_clip[i] - 1);
-      color c = get_color(sh->seg->front_sector->hash_floor, light_level);
-      draw_vline(sh->engine->map_renderer, i, fy1, fy2, c);
+      draw_vline(sh->engine->map_renderer, i, fy1, fy2, floor_c);
     }
     wall_y1 += wall_y1_step;
     wall_y2 += wall_y2_step;
@@ -204,7 +199,10 @@ void draw_portal_walls_range(segment_handler *sh, int x1, int x2) {
       portal_y2_step = wall_y1_step;
     }
   }
-
+  color ceiling_c = get_color(front_sector->hash_ceiling, light_level);
+  color upper_c = get_color(front_sidedef->hash_upper, light_level);
+  color floor_c = get_color(front_sector->hash_floor, light_level);
+  color lower_c = get_color(front_sidedef->hash_lower, light_level);
   for (int i = x1; i < x2 + 1; i++) {
     double draw_wall_y1 = wall_y1 - 1;
     double draw_wall_y2 = wall_y2;
@@ -214,16 +212,14 @@ void draw_portal_walls_range(segment_handler *sh, int x1, int x2) {
       double draw_upper_wall_y2 = portal_y1;
 
       if (draw_ceiling) {
-        color c = get_color(front_sector->hash_ceiling, light_level);
         int cy1 = (int)(sh->upper_clip[i] + 1);
         int cy2 = (int)fmin(draw_wall_y1 - 1, sh->lower_clip[i] - 1);
-        draw_vline(sh->engine->map_renderer, i, cy1, cy2, c);
+        draw_vline(sh->engine->map_renderer, i, cy1, cy2, ceiling_c);
       }
 
       int wy1 = (int)fmax(draw_upper_wall_y1, sh->upper_clip[i] + 1);
       int wy2 = (int)fmin(draw_upper_wall_y2, sh->lower_clip[i] - 1);
-      color c = get_color(front_sidedef->hash_upper, light_level);
-      draw_vline(sh->engine->map_renderer, i, wy1, wy2, c);
+      draw_vline(sh->engine->map_renderer, i, wy1, wy2, upper_c);
       if (sh->upper_clip[i] < wy2) {
         sh->upper_clip[i] = wy2;
       }
@@ -233,8 +229,7 @@ void draw_portal_walls_range(segment_handler *sh, int x1, int x2) {
     if (draw_ceiling) {
       int cy1 = (int)(sh->upper_clip[i] + 1);
       int cy2 = (int)fmin(draw_wall_y1 - 1, sh->lower_clip[i] - 1);
-      color c = get_color(front_sector->hash_ceiling, light_level);
-      draw_vline(sh->engine->map_renderer, i, cy1, cy2, c);
+      draw_vline(sh->engine->map_renderer, i, cy1, cy2, ceiling_c);
       if (sh->upper_clip[i] < cy2) {
         sh->upper_clip[i] = cy2;
       }
@@ -244,15 +239,14 @@ void draw_portal_walls_range(segment_handler *sh, int x1, int x2) {
       if (draw_floor) {
         int fy1 = (int)fmax(draw_wall_y2 + 1, sh->upper_clip[i] + 1);
         int fy2 = (int)(sh->lower_clip[i] - 1);
-        color c = get_color(front_sector->hash_floor, light_level);
-        draw_vline(sh->engine->map_renderer, i, fy1, fy2, c);
+        draw_vline(sh->engine->map_renderer, i, fy1, fy2, floor_c);
       }
       int draw_lower_wall_y1 = portal_y2 - 1;
       int draw_lower_wall_y2 = wall_y2;
       int wy1 = (int)fmax(draw_lower_wall_y1, sh->upper_clip[i] + 1);
       int wy2 = (int)fmin(draw_lower_wall_y2, sh->lower_clip[i] - 1);
-      color c = get_color(front_sidedef->hash_lower, light_level);
-      draw_vline(sh->engine->map_renderer, i, wy1, wy2, c);
+
+      draw_vline(sh->engine->map_renderer, i, wy1, wy2, lower_c);
       if (sh->lower_clip[i] > wy1) {
         sh->lower_clip[i] = wy1;
       }
@@ -262,8 +256,7 @@ void draw_portal_walls_range(segment_handler *sh, int x1, int x2) {
     if (draw_floor) {
       int fy1 = (int)fmax(draw_wall_y2 + 1, sh->upper_clip[i] + 1);
       int fy2 = (int)(sh->lower_clip[i] - 1);
-      color c = get_color(front_sector->hash_floor, light_level);
-      draw_vline(sh->engine->map_renderer, i, fy1, fy2, c);
+      draw_vline(sh->engine->map_renderer, i, fy1, fy2, floor_c);
 
       if (sh->lower_clip[i] > draw_wall_y2)
         sh->lower_clip[i] = fy1;
