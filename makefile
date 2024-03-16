@@ -20,9 +20,10 @@ ALL_CFLAGS = $(CFLAGS) $(shell pkg-config --cflags sdl2) $(CDEBUG)
 ALL_LDFLAGS = $(LDFLAGS) $(shell pkg-config --libs sdl2)
 
 # -  TARGETS  -  #
-CLIENT_SRC = main.c keybindings.c sidedef.c sector.c blockmap.c bsp.c byte_reader.c \
-	engine.c header.c linedef.c lump.c map_renderer.c node.c player.c segment.c \
-	subsector.c thing.c vertex.c wad_data.c
+CLIENT_SRC = blockmap.c bsp.c byte_reader.c color.c engine.c geometry.c header.c \
+	keybindings.c linedef.c lump.c main.c map_renderer.c node.c player.c sector.c \
+	segment.c segment_handler.c sidedef.c subsector.c thing.c timer.c util.c vertex.c \
+	wad_data.c
 CLIENT_OBJ = $(CLIENT_SRC:%.c=%.o)
 CLIENT_LIB = 
 CLIENT_LDFLAGS = -lSDL2
