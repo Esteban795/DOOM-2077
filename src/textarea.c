@@ -61,7 +61,7 @@ void ta_render(SDL_Renderer* renderer, textarea* ta){
         SDL_RenderSetClipRect(renderer, &ta->rect);
         int w, h;
         TTF_SizeText(ta->font, ta->text, &w, &h);
-        SDL_Surface* surface = TTF_RenderText_Solid(ta->font, ta->text, TA_BORDER);
+        SDL_Surface* surface = TTF_RenderUTF8_Solid(ta->font, ta->text, TA_BORDER);
         SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
         int x_offset = 0;
         if (w > ta->rect.w - 10){
@@ -81,69 +81,71 @@ void ta_render(SDL_Renderer* renderer, textarea* ta){
 
 
 
-int start_SDL(SDL_Window **window, SDL_Renderer **renderer, int width,
-              int height, const char *title) {
-  if (SDL_Init(SDL_INIT_VIDEO) != 0)
-    return 1;
-  *window =
-      SDL_CreateWindow(title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-                       width, height, SDL_WINDOW_SHOWN);
-  if (*window == NULL)
-    return 1;
-  *renderer = SDL_CreateRenderer(*window, -1, SDL_RENDERER_ACCELERATED);
-  if (*renderer == NULL)
-    return 1;
-  return 0;
-}
+// EXAMPLE OF HOW IT CAN BE USED
+
+// int start_SDL(SDL_Window **window, SDL_Renderer **renderer, int width,
+//               int height, const char *title) {
+//   if (SDL_Init(SDL_INIT_VIDEO) != 0)
+//     return 1;
+//   *window =
+//       SDL_CreateWindow(title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+//                        width, height, SDL_WINDOW_SHOWN);
+//   if (*window == NULL)
+//     return 1;
+//   *renderer = SDL_CreateRenderer(*window, -1, SDL_RENDERER_ACCELERATED);
+//   if (*renderer == NULL)
+//     return 1;
+//   return 0;
+// }
 
 
-int main(void) {
-  if (TTF_Init() == -1) {
-    printf("TTF init error");
-    exit(EXIT_FAILURE);
-  }
-  TTF_Font *font = TTF_OpenFont("./fonts/lemon_milk/LEMONMILK-Bold.otf", 20);
-  if (font == NULL) {
-    printf("font init error");
-    exit(EXIT_FAILURE);
-  }
-  SDL_Window *window;
-  SDL_Renderer *renderer;
-  int status = start_SDL(&window, &renderer, WIDTH, HEIGHT, "Map rendering..");
-  if (status == 1) {
-    printf("Error at SDL startup");
-    exit(-1);
-  }
-  SDL_Event event;
-  bool running = true;
-  textarea* ta = ta_create(100, 100, 300, 40,font);
-  while (running) {
-    while (SDL_PollEvent(&event)) {
-      if (event.type == SDL_QUIT) {
-        running = false;
-      } else if (event.type == SDL_KEYDOWN) {
-        if (event.key.keysym.sym == SDLK_BACKSPACE) {
-          ta_remove_char(ta);
-        } else if (event.key.keysym.sym == SDLK_RETURN) {
-          ta_clear(ta);
-        } else if (event.key.keysym.sym == SDLK_ESCAPE) {
-          ta->is_active = true;
-        } else if (event.type == SDL_TEXTINPUT) {
-            ta_add_char(ta, event.text.text[0]);
-            printf("%s\n", ta->text);
-        }
-      } else if (event.type == SDL_TEXTINPUT) {
-        ta_add_char(ta, event.text.text[0]);
-      }
-    }
-    ta_render(renderer, ta);
-    SDL_RenderPresent(renderer);
-  }
-  TTF_CloseFont(font);
-  TTF_Quit();
-  SDL_DestroyRenderer(renderer);
-  SDL_DestroyWindow(window);
-  SDL_Quit();
-  ta_free(ta);
-  return 0;
-}
+// int main(void) {
+//   if (TTF_Init() == -1) {
+//     printf("TTF init error");
+//     exit(EXIT_FAILURE);
+//   }
+//   TTF_Font *font = TTF_OpenFont("./fonts/lemon_milk/LEMONMILK-Bold.otf", 20);
+//   if (font == NULL) {
+//     printf("font init error");
+//     exit(EXIT_FAILURE);
+//   }
+//   SDL_Window *window;
+//   SDL_Renderer *renderer;
+//   int status = start_SDL(&window, &renderer, WIDTH, HEIGHT, "Map rendering..");
+//   if (status == 1) {
+//     printf("Error at SDL startup");
+//     exit(-1);
+//   }
+//   SDL_Event event;
+//   bool running = true;
+//   textarea* ta = ta_create(100, 100, 300, 40,font);
+//   while (running) {
+//     while (SDL_PollEvent(&event)) {
+//       if (event.type == SDL_QUIT) {
+//         running = false;
+//       } else if (event.type == SDL_KEYDOWN) {
+//         if (event.key.keysym.sym == SDLK_BACKSPACE) {
+//           ta_remove_char(ta);
+//         } else if (event.key.keysym.sym == SDLK_RETURN) {
+//           ta_clear(ta);
+//         } else if (event.key.keysym.sym == SDLK_ESCAPE) {
+//           ta->is_active = true;
+//         } else if (event.type == SDL_TEXTINPUT) {
+//             ta_add_char(ta, event.text.text[0]);
+//             printf("%s\n", ta->text);
+//         }
+//       } else if (event.type == SDL_TEXTINPUT) {
+//         ta_add_char(ta, event.text.text[0]);
+//       }
+//     }
+//     ta_render(renderer, ta);
+//     SDL_RenderPresent(renderer);
+//   }
+//   TTF_CloseFont(font);
+//   TTF_Quit();
+//   SDL_DestroyRenderer(renderer);
+//   SDL_DestroyWindow(window);
+//   SDL_Quit();
+//   ta_free(ta);
+//   return 0;
+// }

@@ -25,4 +25,18 @@ struct TextArea {
 };
 
 typedef struct TextArea textarea;
+
+textarea* ta_create(int x, int y, int width, int height, TTF_Font* font);
+
+void ta_free(textarea* ta);
+
+void ta_remove_char(textarea* ta);
+
+void ta_clear(textarea* ta);
+
+void ta_set_pos(textarea* ta, int x, int y);
+
+void ta_set_size(textarea* ta, int width, int height);
+
+void ta_render(SDL_Renderer* renderer, textarea* ta);
 #endif
