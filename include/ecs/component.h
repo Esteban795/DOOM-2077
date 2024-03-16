@@ -1,6 +1,8 @@
 #ifndef _LIB_DOOM_ECS_COMPONENT_H
 #define _LIB_DOOM_ECS_COMPONENT_H
 
+#include <stdint.h>
+
 /*
 * Component representation
 *
@@ -12,7 +14,7 @@
 */
 typedef struct {
     int tag;
-    void data[];
+    uint8_t data[];
 } component_t;
 
 #endif

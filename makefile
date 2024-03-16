@@ -50,7 +50,7 @@ LIBCOLLECTION_LIB =
 LIBCOLLECTION_LDFLAGS = 
 
 LIBECS_SRC = $(patsubst $(srcdir)/%, %, $(wildcard $(srcdir)/ecs/*.c))
-LIBECS_OBJ = $(LIBECS_SRCC:%.c=%.o)
+LIBECS_OBJ = $(LIBECS_SRC:%.c=%.o)
 LIBECS_TEST_SRC = $(patsubst $(testdir)/%, %, $(wildcard $(testdir)/ecs/*.c))
 LIBECS_TEST_OBJ = $(LIBECS_TEST_SRC:%.c=%.o)
 LIBECS_LIB =

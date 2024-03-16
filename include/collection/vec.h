@@ -87,7 +87,7 @@ void vec_clear(vec_t* vec, bool free_data);
  *
  * If the index is greater or equal than the length of the vector, it will crash.
  */
-void swap(vec_t* vec, size_t index1, size_t index2);
+void vec_swap(vec_t* vec, size_t index1, size_t index2);
 
 /*
  * Remove the item at index by swapping it with the last item.
@@ -99,7 +99,8 @@ void vec_swap_remove(vec_t* vec, size_t index, bool free_data);
 /*
  * Binary search for an item in the vector.
  *
- * Returns the index of the item, or -1 if it's not found.
+ * Returns the index of the item, or a negative index if it is not found.
+ *
  * The vector must be sorted.
  * The comparison function must return 0 if the items are equal, 
  * a positive number if the first item is less than the second, 
@@ -107,6 +108,8 @@ void vec_swap_remove(vec_t* vec, size_t index, bool free_data);
  * The comparison function must be consistent with the sorting order.
  * However, data can be a pointer to another type, as long as the comparison function can handle it;
  * it will always be casted to a void*, and be the first argument of the comparison function.
+ * 
+ * The negative index is the bitwise negation of the index where the item should be inserted.
  */
 int vec_binary_search(vec_t* vec, void* data, int (*cmp)(const void*, const void*));
 

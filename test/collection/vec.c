@@ -292,7 +292,7 @@ int test_vec_swap() {
         vec_push(&vec, a);
     }
 
-    swap(&vec, 1, 4);
+    vec_swap(&vec, 1, 4);
 
     for (int i = 0; i < 5; i++) {
         char msg[35] = "vec_swap: data[i] is not end[i]";
@@ -358,7 +358,7 @@ int test_vec_binary_search() {
     ASSERT(i == 1, "vec_binary_search: i is not 1");
     *a = 37;
     i = vec_binary_search(&vec, (void*) a, int_cmp);
-    ASSERT(i == -1, "vec_binary_search: i is not -1");
+    ASSERT(i == ~3, "vec_binary_search: i is not ~3");
     free(a);
     vec_destroy(&vec, true);
     return 0;

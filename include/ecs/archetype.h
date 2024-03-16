@@ -1,9 +1,10 @@
 #ifndef _LIB_DOOM_ECS_ARCHETYPE_H
 #define _LIB_DOOM_ECS_ARCHETYPE_H
 
+#include "../collection/vec.h"
+
 #include "entity.h"
 #include "component.h"
-#include "../collections/vec.h"
 
 /*
  * Archetype representation
@@ -14,7 +15,7 @@
 typedef struct {
     // vec_t<entity_t*>
     vec_t entities;
-    // vec_t<component_t*>
+    // vec_t<vec_t<component>>
     vec_t components;
     // vec_t<int>
     vec_t tags;
@@ -43,7 +44,7 @@ void archetype_add_entity(archetype_t* archetype, entity_t* entity, component_t*
 *
 * This function is faster than archetype_add_entity, but you must call archetype_sort_components after adding all entities.
 */
-void archetype_add_entity_unordered(archetype_t* archetype, entity_t* entity);
+void archetype_add_entity_unordered(archetype_t* archetype, entity_t* entity, component_t* components[]);
 
 /*
 * Sort the components of an archetype.
@@ -53,7 +54,7 @@ void archetype_sort_components(archetype_t* archetype);
 /*
 * Remove an entity from an archetype
 */
-archetype_t* archetype_remove_entity(archetype_t* archetype, entity_t* entity);
+bool archetype_remove_entity(archetype_t* archetype, entity_t* entity);
 
 /*
 * Remove an entity without reordering the components.
@@ -61,7 +62,7 @@ archetype_t* archetype_remove_entity(archetype_t* archetype, entity_t* entity);
 *
 * This function is faster than archetype_remove_entity, but you must call archetype_sort_components after adding all entities.
 */
-archetype_t* archetype_remove_entity_unordered(archetype_t* archetype, entity_t* entity);
+bool archetype_remove_entity_unordered(archetype_t* archetype, entity_t* entity);
 
 /*
 * Get the component (by tag) of an entity in an archetype

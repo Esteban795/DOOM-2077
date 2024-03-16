@@ -2,12 +2,11 @@
 #define _LIB_DOOM_ECS_WORLD_H
 
 #include "../event/event.h"
+#include "../collection/vec.h"
 
 #include "entity.h"
 #include "archetype.h"
 #include "component.h"
-
-typedef int system_t(world_t* world, event_t* event);
 
 /* 
 * The world contains all the entities and archetypes in the game. 
@@ -25,6 +24,8 @@ typedef struct {
     // vec_t<system_t>
     vec_t* systems;
 } world_t;
+
+typedef int system_t(world_t*, event_t*);
 
 /*
 * Initialize a new world
@@ -77,9 +78,9 @@ component_t* world_get_component(world_t* world, entity_t* entity, int tag);
 archetype_t* world_get_archetype_by_tags(world_t* world, int component_tags[], int component_count);
 
 /*
-* Handle an event
+* Queue an event
 */
-int world_handle_event(world_t* world, event_t* event);
+int world_queue_event(world_t* world, event_t* event);
 
 /*
 * Add components to an entity
@@ -90,5 +91,15 @@ void world_add_components(world_t* world, entity_t* entity, component_t** compon
 * Remove components from an entity
 */
 void world_remove_components(world_t* world, entity_t* entity, int component_tag);
+
+/*
+* Execute all systems
+*
+* This function will execute all systems in the world on the events in the queue.
+*
+* Note: This function guarantees that all events will be processed in the order they were queued.
+* Moreover, events can be queued from within systems, and they will be processed in the same time step.
+*/
+void world_update(world_t* world);
 
 #endif
