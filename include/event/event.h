@@ -22,7 +22,7 @@ typedef struct {
      */
     uint16_t tag;
     uint8_t info[];
-} Event;
+} event_t;
 
-bool is_server_event(Event* e);
-bool is_client_event(Event* e);
+bool is_server_event(event_t* e);
+bool is_client_event(event_t* e);

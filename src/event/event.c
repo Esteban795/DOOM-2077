@@ -8,10 +8,10 @@
 #include "../../include/event/event.h"
 #endif
 
-bool is_server_event(Event* e) {
+bool is_server_event(event_t* e) {
     return (e->tag & 0x8000) > 0;
 }
 
-bool is_client_event(Event* e) {
+bool is_client_event(event_t* e) {
     return (e->tag & 0x8000) == 0;
 }
