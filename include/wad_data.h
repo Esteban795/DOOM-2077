@@ -16,8 +16,6 @@
 #include "thing.h"
 #include "vertex.h"
 
-#define DT 2
-
 struct WADData {
   header header;
   lump *directory;

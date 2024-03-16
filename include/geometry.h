@@ -14,4 +14,14 @@ double point_to_angle(vec2 p1, vec2 p2);
 float norm(double angle);
 
 double deg_to_rad(double deg);
+
+double dist(vec2 pos1, vec2 pos2);
+
+double fmin(double x, double y);
+
+double fmax(double x, double y);
+
+int max(int x, int y);
+
+int min(int x, int y);
 #endif

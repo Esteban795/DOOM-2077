@@ -3,11 +3,11 @@ HEADDIR = include
 LIBDIR = ./src
 
 FLAGS = -lSDL2 -lm
-DEBUGFLAGS = -W -Wall -Wextra -Wvla -fsanitize=address -g -O3
-DEPENDENCIES = $(SRCDIR)/keybindings.c $(SRCDIR)/sidedef.c $(SRCDIR)/sector.c $(SRCDIR)/blockmap.c $(SRCDIR)/bsp.c $(SRCDIR)/byte_reader.c $(SRCDIR)/engine.c $(SRCDIR)/header.c $(SRCDIR)/linedef.c $(SRCDIR)/lump.c $(SRCDIR)/map_renderer.c $(SRCDIR)/node.c $(SRCDIR)/player.c $(SRCDIR)/segment.c $(SRCDIR)/subsector.c $(SRCDIR)/thing.c $(SRCDIR)/vertex.c $(SRCDIR)/wad_data.c
+DEBUGFLAGS = -W -Wall -Wextra -Wvla -O3 -g -fsanitize=address 
+DEPENDENCIES = $(SRCDIR)/color.c $(SRCDIR)/util.c $(SRCDIR)/timer.c $(SRCDIR)/geometry.c $(SRCDIR)/segment_handler.c $(SRCDIR)/keybindings.c $(SRCDIR)/sidedef.c $(SRCDIR)/sector.c $(SRCDIR)/blockmap.c $(SRCDIR)/bsp.c $(SRCDIR)/byte_reader.c $(SRCDIR)/engine.c $(SRCDIR)/header.c $(SRCDIR)/linedef.c $(SRCDIR)/lump.c $(SRCDIR)/map_renderer.c $(SRCDIR)/node.c $(SRCDIR)/player.c $(SRCDIR)/segment.c $(SRCDIR)/subsector.c $(SRCDIR)/thing.c $(SRCDIR)/vertex.c $(SRCDIR)/wad_data.c
 
 build:
-	gcc $(SRCDIR)/geometry.c $(SRCDIR)/main.c -o ./bin/doomlike $(DEBUGFLAGS) $(DEPENDENCIES) $(FLAGS) 
+	gcc $(SRCDIR)/main.c -o ./bin/doomlike $(DEBUGFLAGS) $(DEPENDENCIES) $(FLAGS) 
 
 run:
 	./bin/doomlike
@@ -18,3 +18,6 @@ clean:
 all:
 	make build
 	make run
+
+build-test:
+	gcc test.c -o test $(DEBUGFLAGS) $(FLAGS)
