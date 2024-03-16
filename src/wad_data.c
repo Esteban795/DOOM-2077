@@ -27,27 +27,28 @@ wad_data *init_wad_data(const char *path) {
                     26; // 26 = number of bytes per sector
   wd->len_sidedefs = wd->directory[wd->map_index + SIDEDEFS].lump_size /
                      30; // 30 = number of bytes per sidedef
+  wd->sectors = get_sectors_from_lump(
+      file, wd->directory, wd->map_index + SECTORS, 26, 0, wd->len_sectors);
+  wd->sidedefs = get_sidedefs_from_lump(
+      file, wd->directory, wd->map_index + SIDEDEFS, 30, 0, wd->len_sidedefs,wd->sectors);
   wd->vertexes = get_vertexes_from_lump(
       file, wd->directory, wd->map_index + VERTEXES, 4, 0, wd->len_vertexes);
   wd->linedefs =
       get_linedefs_from_lump(file, wd->directory, wd->map_index + LINEDEFS, 14,
-                             0, wd->len_linedefs);
+                             0, wd->len_linedefs, wd->vertexes, wd->sidedefs);
   wd->nodes = get_nodes_from_lump(file, wd->directory, wd->map_index + NODES,
                                   28, 0, wd->len_nodes);
   wd->segments =
       get_segments_from_lump(file, wd->directory, wd->map_index + SEGS, 12, 0,
-                             wd->len_segments);
+                             wd->len_segments, wd->vertexes, wd->linedefs,wd->sectors);
   wd->subsectors =
       get_subsectors_from_lump(file, wd->directory, wd->map_index + SSECTORS, 4,
-                               0, wd->len_subsectors);
+                               0, wd->len_subsectors, wd->segments);
   wd->things = get_things_from_lump(file, wd->directory, wd->map_index + THINGS,
                                     10, 0, wd->len_things);
   wd->blockmap = read_blockmap_from_lump(
       file, wd->directory, wd->map_index + BLOCKMAP, wd->linedefs);
-  wd->sectors = get_sectors_from_lump(
-      file, wd->directory, wd->map_index + SECTORS, 26, 0, wd->len_sectors);
-  wd->sidedefs = get_sidedefs_from_lump(
-      file, wd->directory, wd->map_index + SIDEDEFS, 30, 0, wd->len_sidedefs);
+  fclose(file);
   return wd;
 }
 
@@ -58,10 +59,10 @@ void wad_data_free(wad_data *wd) {
   free(wd->segments);
   free(wd->things);
   free(wd->header.wad_type);
-  free(wd->sectors);
-  free(wd->sidedefs);
+  sectors_free(wd->sectors, wd->len_sectors);
   blockmap_free(wd->blockmap);
   subsectors_free(wd->subsectors, wd->len_subsectors);
+  sidedefs_free(wd->sidedefs, wd->len_sidedefs);
   for (int i = 0; i < wd->header.lump_count; i++) {
     free(wd->directory[i].lump_name);
   }

@@ -3,10 +3,24 @@
 
 #include <SDL2/SDL.h>
 
+#include "color.h"
 #include "player.h"
-#include "settings.h"
 #include "structs.h"
 #include "vertex.h"
+
+#define RES_W 320
+#define RES_H 200
+#define SCALE 5
+
+#define WIDTH RES_W *SCALE
+#define HEIGHT RES_H *SCALE
+
+#define OUT_MIN 30
+#define OUT_MAX_W (WIDTH - 30)
+#define OUT_MAX_H (HEIGHT - 30)
+
+#define DEFAULT_MAP_BOUNDS                                                     \
+  { OUT_MIN, OUT_MAX_W, OUT_MIN, OUT_MAX_H }
 
 int *get_map_bounds(vertex *vertexes, int len);
 
@@ -25,11 +39,11 @@ void draw_node(map_renderer *mr, int node_id);
 void draw_segment(map_renderer *mr, segment seg);
 
 
-void draw_linedefs(SDL_Renderer *renderer, linedef *linedefs, int len,vertex *vertexes);
+void draw_linedefs(SDL_Renderer *renderer, linedef *linedefs, int len);
 
 void draw(map_renderer *mr);
 
-void draw_vertical_lines(map_renderer *mr, int x1, int x2, i16 subsector_id);
-
 void map_renderer_free(map_renderer *mr);
+
+void draw_vline(map_renderer *mr, int x, int y1, int y2, color c);
 #endif

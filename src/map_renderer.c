@@ -4,9 +4,13 @@
 #define FOV 90.0
 #define H_FOV (FOV / 2.0)
 
-int max(int a, int b) { return a > b ? a : b; }
-
-int min(int a, int b) { return a < b ? a : b; }
+color get_random_color2() {
+  color c;
+  c.r = rand() % 256;
+  c.g = rand() % 256;
+  c.b = rand() % 256;
+  return c;
+}
 
 color get_random_color(i16 seed) {
   srand(seed);
@@ -76,14 +80,14 @@ int *get_map_bounds(vertex *vertexes, int len) {
 
 // remap to keep proportions
 int remap_x(int current_x, int x_min, int x_max) {
-  return (max(x_min, min(current_x, x_max)) - x_min) * (OUT_MAX_W - OUT_MIN) /
+  return (fmax(x_min, fmax(current_x, x_max)) - x_min) * (OUT_MAX_W - OUT_MIN) /
              (x_max - x_min) +
          OUT_MIN;
 }
 
 int remap_y(int current_y, int y_min, int y_max) {
   return HEIGHT -
-         (max(y_min, min(current_y, y_max)) - y_min) * (OUT_MAX_H - OUT_MIN) /
+         (fmax(y_min, fmin(current_y, y_max)) - y_min) * (OUT_MAX_H - OUT_MIN) /
              (y_max - y_min) -
          OUT_MIN;
 }
@@ -99,13 +103,12 @@ vertex *remap_vertexes(vertex *vertexes, int len, int *map_bounds) {
   return remapped_vertexes;
 }
 
-void draw_linedefs(SDL_Renderer *renderer, linedef *linedefs, int len,
-                   vertex *vertexes) {
-  SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+void draw_linedefs(SDL_Renderer *renderer, linedef *linedefs, int len) {
+  //SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
   for (int i = 0; i < len; i++) {
-    vertex p1 = vertexes[linedefs[i].start_vertex_id];
-    vertex p2 = vertexes[linedefs[i].end_vertex_id];
-    SDL_RenderDrawLine(renderer, p1.x, p1.y, p2.x, p2.y);
+    vertex *p1 = linedefs[i].start_vertex;
+    vertex *p2 = linedefs[i].end_vertex;
+    SDL_RenderDrawLine(renderer, p1->x, p1->y, p2->x, p2->y);
   }
 }
 
@@ -148,37 +151,30 @@ void draw_node(map_renderer *mr, int node_id) {
 
 static void draw_player(map_renderer *mr) {
   SDL_SetRenderDrawColor(mr->renderer, 0, 0, 255, 255);
-  i16 x = remap_x(mr->engine->p->x, mr->map_bounds.left, mr->map_bounds.right);
-  i16 y = remap_y(mr->engine->p->y, mr->map_bounds.top, mr->map_bounds.bottom);
-  DrawCircle(mr->renderer, x, y, 5);
+  i16 x = remap_x(mr->engine->p->pos.x, mr->map_bounds.left, mr->map_bounds.right);
+  i16 y = remap_y(mr->engine->p->pos.y, mr->map_bounds.top, mr->map_bounds.bottom);
+  DrawCircle(mr->renderer, x, y, PLAYER_RADIUS);
 }
 
 void draw_segment(map_renderer *mr, segment seg) {
-  vertex v_start = mr->vertexes[seg.start_vertex_id];
-  vertex v_end = mr->vertexes[seg.end_vertex_id];
-  SDL_RenderDrawLine(mr->renderer, v_start.x, v_start.y, v_end.x, v_end.y);
+  vertex *v_start = seg.start_vertex;
+  vertex *v_end = seg.end_vertex;
+  SDL_RenderDrawLine(mr->renderer, v_start->x, v_start->y, v_end->x, v_end->y);
 }
 
 void draw_subsector(map_renderer *mr, i16 subsector_id) {
   subsector ss = mr->wData->subsectors[subsector_id];
   SDL_SetRenderDrawColor(mr->renderer, 0, 255, 0, 255);
   for (i16 i = 0; i < ss.num_segs; i++) {
-    segment seg = mr->wData->segments[ss.first_seg_id + i];
+    segment seg = ss.segs[i];
     draw_segment(mr, seg);
   }
 }
 
-void draw_vertical_lines(map_renderer *mr, int x1, int x2, i16 subsector_id) {
-  color c = get_random_color(subsector_id);
-  SDL_SetRenderDrawColor(mr->renderer, c.r, c.g, c.b, 255);
-  SDL_RenderDrawLine(mr->renderer, x1, 0, x1, HEIGHT);
-  SDL_RenderDrawLine(mr->renderer, x2, 0, x2, HEIGHT);
-}
-
 void draw_fov(map_renderer *mr) {
   const int RAY_LENGTH = 200;
-  int x = remap_x(mr->engine->p->x, mr->map_bounds.left, mr->map_bounds.right);
-  int y = remap_y(mr->engine->p->y, mr->map_bounds.top, mr->map_bounds.bottom);
+  int x = remap_x(mr->engine->p->pos.x, mr->map_bounds.left, mr->map_bounds.right);
+  int y = remap_y(mr->engine->p->pos.y, mr->map_bounds.top, mr->map_bounds.bottom);
   int x1 = x + RAY_LENGTH * cos(deg_to_rad(mr->engine->p->angle + H_FOV));
   int y1 = y + RAY_LENGTH * sin(deg_to_rad(mr->engine->p->angle + H_FOV));
   int x2 = x + RAY_LENGTH * cos(deg_to_rad(mr->engine->p->angle - H_FOV));
@@ -192,10 +188,41 @@ void draw_fov(map_renderer *mr) {
   SDL_RenderDrawLine(mr->renderer, x, y, x3, y3);
 }
 
+void draw_block(map_renderer *mr, int block_index){
+  //routine that just draws the box of the block
+  SDL_SetRenderDrawColor(mr->renderer, 255, 255, 255, 255);
+  int block_bound_tl_x = mr->engine->wData->blockmap->header->x + (block_index % mr->engine->wData->blockmap->header->ncols) * 128;
+  int block_bound_tl_y = mr->engine->wData->blockmap->header->y + (block_index / mr->engine->wData->blockmap->header->ncols) * 128;
+
+  int x1 = remap_x(block_bound_tl_x, mr->map_bounds.left, mr->map_bounds.right);
+  int y1 = remap_y(block_bound_tl_y, mr->map_bounds.top, mr->map_bounds.bottom);
+  int x2 = remap_x(block_bound_tl_x + 128, mr->map_bounds.left, mr->map_bounds.right);
+  int y2 = remap_y(block_bound_tl_y + 128, mr->map_bounds.top, mr->map_bounds.bottom);
+  SDL_Rect rect = {.x = x1, .y = y1, .w = x2 - x1, .h = y2 - y1};
+  SDL_RenderDrawRect(mr->renderer, &rect);
+
+  //and now drawing the linedefs, let's go baby
+  SDL_SetRenderDrawColor(mr->renderer, 255, 0, 255, 255);
+  draw_linedefs(mr->renderer, mr->engine->wData->blockmap->blocks[block_index].linedefs,
+                mr->engine->wData->blockmap->blocks[block_index].nlinedefs);
+}
+
+void draw_active_blocks(map_renderer *mr) {
+  SDL_SetRenderDrawColor(mr->renderer, 255, 255, 255, 255);
+
+  for (int y=-1; y<=1; y++){
+    for (int x=-1; x<=1; x++){
+      int block_index = blockmap_get_block_index(mr->engine->wData->blockmap, mr->engine->p->pos.x + x*128, mr->engine->p->pos.y + y*128);
+      draw_block(mr, block_index);
+    }
+  }
+}
+
 void draw(map_renderer *mr) {
   // draw_vertexes(mr->renderer, mr->vertexes, mr->wData->len_vertexes);
   // draw_linedefs(mr->renderer, mr->wData->linedefs, mr->wData->len_linedefs,
   // mr->vertexes);
+  draw_active_blocks(mr);
   draw_player(mr);
   draw_fov(mr);
 }
@@ -221,4 +248,11 @@ void map_renderer_free(map_renderer *mr) {
   free(mr->vertexes);
   SDL_DestroyRenderer(mr->renderer);
   free(mr);
+}
+
+void draw_vline(map_renderer *mr, int x, int y1, int y2, color c) {
+  if (y1 < y2) {
+    SDL_SetRenderDrawColor(mr->renderer, c.r, c.g, c.b, 255);
+    SDL_RenderDrawLine(mr->renderer, x, y1, x, y2);
+  }
 }
