@@ -9,9 +9,9 @@ they form with player's POV
 */
 int angle_to_x_pos(double angle) {
   if (angle > 0) {
-    return (int)(SCREEN_DISTANCE - tan(deg_to_rad(angle)) * (double)WIDTH / 2);
+    return (int)(SCREEN_DISTANCE - tan(deg_to_rad(angle)) * HALF_WIDTH);
   } else {
-    return (int)(tan(deg_to_rad(angle)) * (double)WIDTH / 2 + SCREEN_DISTANCE);
+    return (int)(-tan(deg_to_rad(angle)) * HALF_WIDTH + SCREEN_DISTANCE);
   }
 }
 
@@ -24,4 +24,24 @@ double point_to_angle(vec2 p1, vec2 p2) {
 }
 
 // makes sure we stay in [0,360[
-float norm(double angle) { return fmod((angle + 360.0), 360.0); }
+float norm(double angle) {
+  return fmod((fmod(angle, 360.0) + 360.0),360.0);
+}
+
+double dist(vec2 pos1, vec2 pos2){
+  return sqrt((pos1.x - pos2.x) * (pos1.x - pos2.x) + (pos1.y - pos2.y) * (pos1.y - pos2.y));
+}
+
+double fmin(double x, double y){
+  return x < y ? x : y;
+}
+double fmax(double x, double y){
+  return x > y ? x : y;
+}
+
+int max(int x, int y){
+  return x > y ? x : y;
+}
+int min(int x, int y){
+  return x < y ? x : y;
+}
