@@ -40,7 +40,7 @@ button *button_copy(button *b) {
 
 void button_free(button *b) { free(b); }
 
-void button_detect_click(button *b, void *data) {
+void button_detect_click(button *b) {
   int mouse_x, mouse_y;
   SDL_GetMouseState(&mouse_x, &mouse_y);
   if (mouse_x > b->x + b->w || mouse_x < b->x || mouse_y > b->y + b->h ||

@@ -34,7 +34,7 @@ button *button_copy(button *b);
 
 void button_free(button *b);
 
-void button_detect_click(button *b, void *data);
+void button_detect_click(button *b);
 
 void button_render(SDL_Renderer *r, button *btn);
 
