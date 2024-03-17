@@ -68,3 +68,9 @@ void read_texture_name(FILE *f, int offset, int8_t *texture_name) {
     exit(1);
   }
 }
+
+u8 read_u8(FILE *f, int offset){
+  fseek(f, offset, 0);
+  u8 b = getc(f);
+  return b;
+}
