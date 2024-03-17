@@ -42,9 +42,9 @@ void button_set_text(button *b, char *text);
 
 void button_set_font(button *b, TTF_Font *font);
 
-void button_change_coordinates(button *b, int x, int y);
+void button_set_coords(button *b, int x, int y);
 
-void button_change_size(button *b, int w, int h);
+void button_set_size(button *b, int w, int h);
 
 void button_set_callback(button *b, void (*on_click)(void *data));
 
