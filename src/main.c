@@ -1,4 +1,5 @@
 #include "../include/engine.h"
+#include "../include/weapons.h"
 
 // handles all kind of error at SDL startup
 int start_SDL(SDL_Window **window, SDL_Renderer **renderer, int width,
@@ -16,7 +17,7 @@ int start_SDL(SDL_Window **window, SDL_Renderer **renderer, int width,
   return 0;
 }
 
-int main(void) {
+int main() {
   SDL_Window *window;
   SDL_Renderer *renderer;
   int numkeys;
@@ -26,17 +27,19 @@ int main(void) {
     printf("Error at SDL startup");
     exit(-1);
   }
-  uint64_t now;
-  uint64_t old = SDL_GetTicks64();
-  engine *e = init_engine("maps/DOOM1.WAD", renderer, numkeys, keys);
-  while (e->running) {
-    now = SDL_GetTicks64();
-    int res = update_engine(e);
-    if (res == 1)
-      break;
-    printf("FPS: %f\n", 1000.0 / (now - old));
-    old = now;
-  }
-  engine_free(e);
+  weapons_array* wa = init_weapons_array();
+  free_weapons_array(wa);
+  // uint64_t now;
+  // uint64_t old = SDL_GetTicks64();
+  // engine *e = init_engine("maps/DOOM1.WAD", renderer, numkeys, keys);
+  // while (e->running) {
+  //   now = SDL_GetTicks64();
+  //   int res = update_engine(e);
+  //   if (res == 1)
+  //     break;
+  //   printf("FPS: %f\n", 1000.0 / (now - old));
+  //   old = now;
+  // }
+  // engine_free(e);
   return 0;
 }

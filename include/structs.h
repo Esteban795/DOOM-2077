@@ -6,11 +6,14 @@
 #include "keybindings.h"
 #include "wad_data.h"
 
+#define WEAPONS_NUMBER 1
+
 struct Player;
 struct BSP;
 struct Engine;
 struct MapRenderer;
 struct Weapon;
+struct WeaponsArray;
 
 struct Weapon{
     /*Identification de l'arme*/
@@ -28,6 +31,11 @@ struct Weapon{
     int ammo_id; /*ID des (types de) munitions utilisées */
     int type; /*Eventuellement si on veut rajouter/classifier les armes (melee vs range, hitscan vs projectile....)*/
 };
+
+struct WeaponsArray{
+    int weapons_number;
+    struct Weapon** weapons;
+};
 struct Player {
   struct Engine *engine;
   thing thing;
@@ -36,7 +44,8 @@ struct Player {
   double angle;
   struct PlayerSetting *settings;
   struct PlayerKeybind *keybinds;
-  WeaponInventory weapons;
+  struct Weapon** weapons;
+  int active_weapon;
 };
 
 struct Engine {
@@ -74,6 +83,7 @@ typedef struct Engine engine;
 typedef struct BSP bsp;
 typedef struct MapRenderer map_renderer;
 typedef struct Weapon weapon;
+typedef struct WeaponsArray weapons_array;
 typedef weapon** WeaponInventory;
 
 struct Color {

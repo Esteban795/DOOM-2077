@@ -2,6 +2,7 @@
 
 player *player_init(engine *e) {
   player *p = malloc(sizeof(player));
+  WeaponInventory winv = malloc(WEAPONS_NUMBER*sizeof(weapon*));
   p->engine = e;
   p->thing = e->wData->things[0];
   p->x = (double)p->thing.x;
@@ -9,6 +10,8 @@ player *player_init(engine *e) {
   p->angle = (double)-p->thing.angle;
   p->keybinds = get_player_keybinds(KEYBINDS_FILE);
   p->settings = get_player_settings(SETTINGS_FILE);
+  p->weapons =
+  p->active_weapon=0;
   return p;
 }
 
