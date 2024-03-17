@@ -65,10 +65,10 @@ void draw_solid_walls_range(segment_handler *sh, int x1, int x2) {
       -rw_scale_step *
       world_front_z2; // step to find the next y position of bottom of the wall
 
-  color ceiling_c = get_color(sh->seg->front_sector->hash_ceiling, light_level);
+  color ceiling_c = get_color(sh->engine->wData->color_palette,sh->seg->front_sector->hash_ceiling, light_level);
   color middle_c =
-      get_color(sh->seg->linedef->front_sidedef->hash_middle, light_level);
-  color floor_c = get_color(sh->seg->front_sector->hash_floor, light_level);
+      get_color(sh->engine->wData->color_palette,sh->seg->linedef->front_sidedef->hash_middle, light_level);
+  color floor_c = get_color(sh->engine->wData->color_palette,sh->seg->front_sector->hash_floor, light_level);
   for (int i = x1; i < x2; i++) {
     int draw_wall_y1 = (int)(wall_y1)-1;
     int draw_wall_y2 = (int)wall_y2;
@@ -199,10 +199,10 @@ void draw_portal_walls_range(segment_handler *sh, int x1, int x2) {
       portal_y2_step = wall_y1_step;
     }
   }
-  color ceiling_c = get_color(front_sector->hash_ceiling, light_level);
-  color upper_c = get_color(front_sidedef->hash_upper, light_level);
-  color floor_c = get_color(front_sector->hash_floor, light_level);
-  color lower_c = get_color(front_sidedef->hash_lower, light_level);
+  color ceiling_c = get_color(sh->engine->wData->color_palette,front_sector->hash_ceiling, light_level);
+  color upper_c = get_color(sh->engine->wData->color_palette,front_sidedef->hash_upper, light_level);
+  color floor_c = get_color(sh->engine->wData->color_palette,front_sector->hash_floor, light_level);
+  color lower_c = get_color(sh->engine->wData->color_palette,front_sidedef->hash_lower, light_level);
   for (int i = x1; i < x2 + 1; i++) {
     double draw_wall_y1 = wall_y1 - 1;
     double draw_wall_y2 = wall_y2;
