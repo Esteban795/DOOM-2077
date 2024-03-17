@@ -138,8 +138,8 @@ void draw_node(map_renderer *mr, int node_id) {
   node n = mr->engine->wData->nodes[node_id];
   bbox bbox_front = n.front_bbox;
   bbox bbox_back = n.back_bbox;
-  draw_bbox(mr, bbox_front, (color){0, 0, 255});
-  draw_bbox(mr, bbox_back, (color){0, 255, 0});
+  draw_bbox(mr, bbox_front, (color){0, 0, 255, 255});
+  draw_bbox(mr, bbox_back, (color){0, 255, 0, 255});
   i16 x1 = remap_x(n.x_partition, mr->map_bounds.left, mr->map_bounds.right);
   i16 y1 = remap_y(n.y_partition, mr->map_bounds.top, mr->map_bounds.bottom);
   i16 x2 = remap_x(n.x_partition + n.dx_partition, mr->map_bounds.left,
