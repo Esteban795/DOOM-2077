@@ -3,10 +3,9 @@
 #include <stdlib.h>
 
 byte read_1_byte(FILE *f, int offset) {
-  byte *b = read_bytes(f, 1, offset);
-  byte temp = b[0];
-  free(b);
-  return temp;
+  fseek(f, offset, 0);
+  byte b = getc(f);
+  return b;
 }
 
 byte *read_bytes(FILE *f, int offset, int num_bytes) {

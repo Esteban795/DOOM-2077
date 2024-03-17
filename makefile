@@ -25,7 +25,7 @@ CLIENT_SRC = blockmap.c bsp.c button.c byte_reader.c color.c engine.c geometry.c
 	segment_handler.c sidedef.c subsector.c textarea.c thing.c timer.c util.c vertex.c wad_data.c 
 CLIENT_OBJ = $(CLIENT_SRC:%.c=%.o)
 CLIENT_LIB = 
-CLIENT_LDFLAGS = -lSDL2
+CLIENT_LDFLAGS = -lSDL2 -lSDL2_ttf -lSDL2_image
 
 SERVER_SRC = server.c
 SERVER_OBJ = $(SERVER_SRC:%.c=%.o)

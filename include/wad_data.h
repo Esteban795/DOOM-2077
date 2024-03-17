@@ -6,6 +6,7 @@
 #include <stdlib.h>
 
 #include "blockmap.h"
+#include "color.h"
 #include "header.h"
 #include "linedef.h"
 #include "node.h"
@@ -29,6 +30,7 @@ struct WADData {
   blockmap *blockmap;
   sector *sectors;
   sidedef *sidedefs;
+  color* color_palette;
   int len_vertexes;
   int len_linedefs;
   int len_nodes;
