@@ -50,6 +50,8 @@ wad_data *init_wad_data(const char *path) {
       file, wd->directory, wd->map_index + BLOCKMAP, wd->linedefs);
   const int PLAYPAL = get_lump_index(wd->directory, "PLAYPAL", wd->header.lump_count);
   wd->color_palette = get_color_palette_from_lump(file, wd->directory, PLAYPAL, 3, 0);
+  const int start_patches = get_lump_index(wd->directory, PATCHES_START, wd->header.lump_count);
+  const int end_patches = get_lump_index(wd->directory, PATCHES_END, wd->header.lump_count);
   fclose(file);
   return wd;
 }
@@ -66,6 +68,7 @@ void wad_data_free(wad_data *wd) {
   subsectors_free(wd->subsectors, wd->len_subsectors);
   sidedefs_free(wd->sidedefs, wd->len_sidedefs);
   free(wd->color_palette);
+  free_patches(wd->patches, wd->len_patches);
   for (int i = 0; i < wd->header.lump_count; i++) {
     free(wd->directory[i].lump_name);
   }

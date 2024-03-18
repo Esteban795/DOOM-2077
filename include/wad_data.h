@@ -16,6 +16,7 @@
 #include "subsector.h"
 #include "thing.h"
 #include "vertex.h"
+#include "patches.h"
 
 struct WADData {
   header header;
@@ -31,6 +32,8 @@ struct WADData {
   sector *sectors;
   sidedef *sidedefs;
   color* color_palette;
+  patch* patches;
+  int len_patches;
   int len_vertexes;
   int len_linedefs;
   int len_nodes;
