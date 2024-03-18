@@ -2,7 +2,10 @@
 
 player *player_init(engine *e) {
   player *p = malloc(sizeof(player));
-  WeaponInventory winv = malloc(WEAPONS_NUMBER*sizeof(weapon*));
+  int* ammo = malloc(WEAPONS_NUMBER*sizeof(int));
+  for (int i = 0; i < WEAPONS_NUMBER; i++) {
+    ammo[i] = -1;
+  }
   p->engine = e;
   p->thing = e->wData->things[0];
   p->x = (double)p->thing.x;
@@ -10,7 +13,7 @@ player *player_init(engine *e) {
   p->angle = (double)-p->thing.angle;
   p->keybinds = get_player_keybinds(KEYBINDS_FILE);
   p->settings = get_player_settings(SETTINGS_FILE);
-  p->weapons =
+  p->ammo = ammo;
   p->active_weapon=0;
   return p;
 }
@@ -63,5 +66,6 @@ void update_player(player *p, int mouse_x, const uint8_t *keyboard_state) {
 void player_free(player *p) {
   free_keybinds(p->keybinds);
   free_settings(p->settings);
+  free(p->ammo);
   free(p);
 }

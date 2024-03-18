@@ -44,7 +44,7 @@ struct Player {
   double angle;
   struct PlayerSetting *settings;
   struct PlayerKeybind *keybinds;
-  struct Weapon** weapons;
+  int* ammo; /*Array of size weapon_number that indicates the number of ammo by weapon (id)*/
   int active_weapon;
 };
 

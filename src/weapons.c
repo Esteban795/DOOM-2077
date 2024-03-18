@@ -1,10 +1,5 @@
 #include "../include/weapons.h"
 
-
-void switch_weapon(player* p, int weapon_id){
-    p->active_weapon = weapon_id;
-}
-
 weapon* init_one_weapon(int id, char* weapon_name, char* sprite, int magsize, int max_damage, int min_damage, double fire_rate, double spray, int ammo_bounce, int ammo_id, int type){
     weapon* w = malloc(sizeof(weapon));
     w->id = id;
@@ -79,3 +74,19 @@ void free_weapons_array(weapons_array* wa){
     free(wa->weapons);
     free(wa);
 }
+
+void switch_weapon(player* p, int weapon_id){
+    p->active_weapon = weapon_id;
+}
+
+void add_weapon(player* p, int weapon_id,weapons_array* wa){
+    if (p->ammo[weapon_id] < 0){
+        if (wa->weapons[weapon_id]->magsize > 0){
+            p->ammo[weapon_id] = wa->weapons[weapon_id]->magsize;
+        } else {
+            p->ammo[weapon_id] = -2;
+        }
+    }
+}
+
+
