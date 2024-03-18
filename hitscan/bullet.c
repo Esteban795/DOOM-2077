@@ -19,6 +19,9 @@ double dist(double posx_a,double posy_a,double posx_b,double posy_b){
 }
 
 
+
+
+
 void fire_bullet(player** players,int num_players,int num_player,int damage){ //pour l'instant ne detecte que les joueurs, pas les murs
     int j=0;
     int has_hit=0;
