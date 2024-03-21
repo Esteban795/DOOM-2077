@@ -5,7 +5,7 @@ engine *init_engine(const char *wadPath, SDL_Renderer *renderer, int numkeys,
   engine *e = malloc(sizeof(engine));
   e->wadPath = wadPath;
   e->running = true;
-  e->wData = init_wad_data(e->wadPath);
+  e->wData = init_wad_data(e->wadPath,renderer);
   e->p = player_init(e);
   e->bsp = bsp_init(e, e->p);
   e->map_renderer = map_renderer_init(e, renderer);

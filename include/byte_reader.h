@@ -10,6 +10,7 @@ typedef int16_t i16;
 typedef uint16_t u16;
 typedef int32_t i32;
 typedef uint8_t u8;
+typedef uint32_t u32;
 typedef unsigned char byte;
 
 #define THINGS 1
@@ -34,6 +35,8 @@ u16 read_u16(FILE *f, int offset);
 i32 read_i32(FILE *f, int offset);
 
 u8 read_u8(FILE *f, int offset);
+
+u32 read_u32(FILE *f, int offset);
 
 char *read_string(FILE *f, int offset, int num_bytes);
 

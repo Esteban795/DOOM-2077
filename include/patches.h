@@ -18,7 +18,7 @@ struct PatchHeader {
     i16 height;
     i16 x_offset;
     i16 y_offset;
-    uint32_t* column_offsets;
+    u32* column_offsets;
 };
 
 typedef struct PatchHeader patch_header;
@@ -34,6 +34,7 @@ struct PatchColumn {
 typedef struct PatchColumn patch_column;
 
 struct Patch {
+    char* patchname;
     color* palette;
     patch_header header;
     patch_column* columns;
@@ -46,9 +47,9 @@ typedef struct Patch patch;
 patch create_patch(FILE *f, int offset, SDL_Renderer* renderer,header *header, lump *directory,
                    char *patchname,color *palette);
 
-void free_patch(patch *p);
-
 void display_patches(SDL_Renderer* renderer, patch* patches, int patch_count);
 
-void free_patches(patch *patches, int patch_count);
+void patches_free(patch *patches, int patch_count);
+
+patch* get_patches(SDL_Renderer* renderer,lump* directory, header* header, FILE* f, color* palette,int* patch_count);
 #endif

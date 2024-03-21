@@ -1,7 +1,7 @@
 #include "../include/engine.h"
 #include <SDL2/SDL_events.h>
 #include <SDL2/SDL_mouse.h>
-#include "../include/patches.h"
+#include <stdio.h>
 
 // handles all kind of error at SDL startup
 int start_SDL(SDL_Window **window, SDL_Renderer **renderer, int width,
@@ -62,16 +62,7 @@ int main(void) {
   SDL_ShowCursor(SDL_DISABLE);
   engine *e = init_engine("maps/DOOM1.WAD", renderer, numkeys, keys);
   int dt = 0;
-
-  while (e->running) {
-    now = SDL_GetTicks64();
-    dt = now - old;
-    // int res = update_engine(e, dt);
-    // if (res == 1)
-    //   break;
-    printf("FPS: %f\n", 1000.0 / dt);
-    old = now;
-  }
+  // display_patches(e->map_renderer->renderer, e->wData->patches, e->wData->len_patches);
   engine_free(e);
   return 0;
 }

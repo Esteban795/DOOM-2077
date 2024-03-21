@@ -74,3 +74,14 @@ u8 read_u8(FILE *f, int offset){
   u8 b = getc(f);
   return b;
 }
+
+u32 read_u32(FILE *f, int offset){
+  byte *bytes = read_bytes(f, offset, 4);
+  u32 temp = 0;
+  temp = bytes[3] << 24;
+  temp |= bytes[2] << 16;
+  temp |= bytes[1] << 8;
+  temp |= bytes[0];
+  free(bytes);
+  return temp;
+}
