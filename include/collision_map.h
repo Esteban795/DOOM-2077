@@ -12,6 +12,8 @@ void display_linedefs_coords(linedef* linedefs);
 //  int is_full;
 //}collision_map;
 
+
+
 int** create_collision_map(void);
 
 //void display_collision_map(int** collision_map);
@@ -20,4 +22,13 @@ void free_collision_map(int** collision_map);
 
 void construct_collision_map(int** collision_map,linedef* linedefs);
 
+
+typedef struct _linepoint{
+    double x;
+    double y;
+}linepoint;
+
 #endif
+
+
+
