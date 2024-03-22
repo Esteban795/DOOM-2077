@@ -14,5 +14,7 @@ void update_player(player *p, int mouse_x, const uint8_t *keyboard_state);
 
 void player_free(player *p);
 
+player** create_players(int num_players);
+
 void update_height(player* p,double z);
 #endif

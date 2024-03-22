@@ -1,5 +1,7 @@
 #include "../include/player.h"
 #include <stdio.h>
+#include <math.h>
+#include <stdlib.h>
 
 #define SIGN(x) (int) (x > 0) ? 1 : ((x < 0) ? -1 : 0)
 #define DOT(a,b) (a.x * b.x) + (a.y * b.y)
@@ -17,6 +19,11 @@ player *player_init(engine *e) {
   p->keybinds = get_player_keybinds(KEYBINDS_FILE);
   p->settings = get_player_settings(SETTINGS_FILE);
   return p;
+}
+
+player** create_players(int num_players){
+    player** Players = malloc(sizeof(player*)*num_players);
+    return(Players);
 }
 
 // size_t count_two_sided_linedefs(linedef* linedefs, size_t nlinedefs){

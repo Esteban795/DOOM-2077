@@ -13,7 +13,7 @@ typedef struct _bullet{
 
 bullet *create_bullet(player** players,int num_player);
 
-double dist(double posx_a,double posy_a,double posx_b,double posy_b);
+double distance(double posx_a,double posy_a,double posx_b,double posy_b);
 
 void fire_bullet(player** players,int num_players,int num_player,int damage);
 

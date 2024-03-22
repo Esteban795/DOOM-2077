@@ -41,7 +41,7 @@ void free_collision_map(int** collision_map) {
   free(collision_map);
 }
 
-void construct_collision_map(int** collision_map,linedef* linedefs){
+/*void construct_collision_map(int** collision_map,linedef* linedefs){
     int i=0;
     for(i=0;i<number_of_linedefs;i++){
         int x1=linedefs[i].start_vertex->x;
@@ -50,9 +50,9 @@ void construct_collision_map(int** collision_map,linedef* linedefs){
         int y2=linedefs[i].end_vertex->y;
         double dist =sqrt(pow((x1-x2),2)+pow((y1-y2),2));
         int number_of_points =dist/collision_map_precision;
-        int* line=malloc(sizeof(int)*(number_of_points));
+        //int* line=malloc(sizeof(int)*(number_of_points));
         int j=0;
         for(j=0;j<number_of_points;j++){
         }
     }
-}
+}*/
