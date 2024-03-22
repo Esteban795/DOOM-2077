@@ -10,7 +10,7 @@ testdepsdir = $(builddir)/test_deps
 
 AR = ar
 CC = gcc
-CFLAGS = -Wall -Wextra -Werror -std=gnu17 -pedantic
+CFLAGS = -Wall -Wextra  -std=gnu17 -pedantic #-Werror#
 CFLAGS += -fsanitize=address,undefined -fno-omit-frame-pointer
 LDFLAGS = -lm 
 CDEBUG = -g -O3

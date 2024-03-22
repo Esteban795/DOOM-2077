@@ -6,6 +6,7 @@
 #include "player.h"
 #include "structs.h"
 #include "segment_handler.h"
+#include "collision_map.h"
 
 engine *init_engine(const char *wadPath, SDL_Renderer *renderer, int numkeys, const uint8_t *keys);
 
