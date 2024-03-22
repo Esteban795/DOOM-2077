@@ -55,22 +55,25 @@ int from_coords_to_collision_map(int coord){
 void construct_collision_map(int** collision_map,linedef* linedefs){
     int i=0;
     for(i=0;i<number_of_linedefs;i++){
-        int x1=linedefs[i].start_vertex->x; //segfault si 0 remplacé par quoi que ca soit d'autre 
-        int y1=linedefs[i].start_vertex->y;
-        int x2=linedefs[i].end_vertex->x;
-        int y2=linedefs[i].end_vertex->y;
-        double dist =sqrt(pow((x1-x2),2)+pow((y1-y2),2));
-        double number_of_points =dist/collision_map_precision;
-        double stepx = (x2-x1)/number_of_points;
-        double stepy = (y2-y1)/number_of_points;
-        int j=0;
-        for(j=0;j<number_of_points;j++){
-            int x=from_coords_to_collision_map(x1);
-            int y=from_coords_to_collision_map(y1);
-            printf("%i,%i\n",x,y);
-            collision_map[x][y]=1;
-            x1=x1+stepx;
-            y1=y1+stepy;
+        if(!(linedefs[i].has_back_sidedef)){
+            int x1=linedefs[i].start_vertex->x; //segfault si 0 remplacé par quoi que ca soit d'autre 
+            int y1=linedefs[i].start_vertex->y;
+            int x2=linedefs[i].end_vertex->x;
+            int y2=linedefs[i].end_vertex->y;
+            double dist =sqrt(pow((x1-x2),2)+pow((y1-y2),2));
+            double number_of_points =dist/collision_map_precision;
+            double stepx = (x2-x1)/number_of_points;
+            double stepy = (y2-y1)/number_of_points;
+            int j=0;
+
+            for(j=0;j<number_of_points;j++){
+                int x=from_coords_to_collision_map(x1);
+                int y=from_coords_to_collision_map(y1);
+                //printf("%i,%i\n",x,y);
+                collision_map[x][y]=1;
+                x1=x1+stepx;
+                y1=y1+stepy;
+            }
         }
     }
     printf("%i\n",collision_map[0][0]);
