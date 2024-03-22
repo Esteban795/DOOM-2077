@@ -13,19 +13,21 @@
 * It is the main structure that holds the game state.
 */
 typedef struct {
-    int entity_count;
-    int archetype_count;
     // vec_t<entity_t>
-    vec_t* entities;
+    vec_t entities;
     // vec_t<archetype_t>
-    vec_t* entity_archetype;
+    vec_t entity_archetype;
     // vec_t<archetype_t>
-    vec_t* archetypes;
+    vec_t archetypes;
     // vec_t<system_t>
-    vec_t* systems;
+    vec_t systems;
+    // vec_t<event_t>
+    vec_t event_queue;
 } world_t;
 
-typedef int system_t(world_t*, event_t*);
+typedef struct {
+    int (*fn)(world_t*, event_t*);
+} system_t;
 
 /*
 * Initialize a new world
@@ -40,12 +42,14 @@ void world_destroy(world_t* world);
 /*
 * Create a new entity
 */
-entity_t* world_create_entity(world_t* world, component_t* components[], int component_count);
+entity_t* world_create_entity(world_t* world, component_t** components, int component_count);
 
 /*
-* Create bulk entities (exactly count entities)
+* Create bulk entities (exactly count entities) with the respective components (each entity has the same type of components)
+*
+* Freeing the components array is the responsibility of the caller. IMPORTANT NOTE: Do not free the component items.
 */
-entity_t** world_create_bulk_entity(world_t* world, component_t* components[], int component_count, int count);
+entity_t** world_create_bulk_entity(world_t* world, component_t*** components, int component_count, int count);
 
 /*
 * Remove an entity from the world
@@ -55,12 +59,7 @@ void world_remove_entity(world_t* world, entity_t* entity);
 /*
 * Register a new system
 */
-int world_register_system(world_t* world, system_t* system);
-
-/*
-* Register a new component
-*/
-void world_register_component(world_t* world, component_t* component);
+int world_register_system(world_t* world, int (*system_fn)(world_t*, event_t*));
 
 /*
 * Get the archetype of an entity
@@ -80,7 +79,7 @@ archetype_t* world_get_archetype_by_tags(world_t* world, int component_tags[], i
 /*
 * Queue an event
 */
-int world_queue_event(world_t* world, event_t* event);
+void world_queue_event(world_t* world, event_t* event);
 
 /*
 * Add components to an entity

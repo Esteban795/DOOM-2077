@@ -22,6 +22,19 @@ typedef struct {
 } archetype_t;
 
 /*
+* Archetype tag representation
+*
+* An archetype tag is a structure that holds the information necessary to determine if two archetypes stores the same
+* set of components.
+*/
+typedef struct {
+    int component_count;
+    int* component_tags;
+} archetype_tag_t;
+
+int compare_entity(const void* a, const void* b);
+
+/*
  * Intialize a new archetype
  *
  * This function inits a new archetype.
@@ -68,5 +81,19 @@ bool archetype_remove_entity_unordered(archetype_t* archetype, entity_t* entity)
 * Get the component (by tag) of an entity in an archetype
 */
 component_t* archetype_get_component(archetype_t* archetype, entity_t* entity, int tag);
+
+/*
+* Determine if an archetype matches a given archetype tag
+*
+* Returns 0 if the archetypes match.
+* Otherwise, returns if the archetype tag is greater than the given archetype tag.
+* If the given archetype tag is less than the archetype's tag, returns a positive value.
+* If the given archetype tag is greater than the archetype's tag, returns a negative value.
+*
+* This function is designed to be used with vec_sort.
+*
+* int archetype_match(archetype_t* archetype, archetype_tag_t* archetype_tag);
+*/
+int archetype_match(const void* archetype, const void* archetype_tag);
 
 #endif

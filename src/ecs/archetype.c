@@ -168,3 +168,22 @@ component_t* archetype_get_component(archetype_t* archetype, entity_t* entity, i
     return (component_t*) vec_get(component, ind);
 }
 
+int archetype_match(const void* _archetype, const void* _archetype_tag) {
+    archetype_t* archetype = (archetype_t*) _archetype;
+    archetype_tag_t* archetype_tag = (archetype_tag_t*) _archetype_tag;
+    int i = 0;
+    while (i < (int) vec_length(&archetype->tags) && i < archetype_tag->component_count) {
+        int tag = *(int*) vec_get(&archetype->tags, i);
+        int tag_tag = archetype_tag->component_tags[i];
+        if (tag_tag-tag != 0) {
+            return tag_tag-tag;
+        }
+        i++;
+    }
+    if (i < archetype_tag->component_count) {
+        return 1;
+    } else if (i < (int) vec_length(&archetype->tags)) {
+        return -1;
+    }
+    return 0;
+}
