@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include "../include/bullet.h"
 
-#define player_hitbox_size 60
+#define player_hitbox_size 150
 #define hitscan_precision 10
 
 bullet* create_bullet(player *player_){
@@ -31,7 +31,7 @@ void fire_bullet(player** players,int num_players,player* player_,int damage,int
         int i=0;
         for(i=0;i<num_players;i++){    
                 if (distance(bullet_->posx,bullet_->posy,players[i]->pos.x,players[i]->pos.y)<player_hitbox_size){//radius de distance nécéssaire pour toucher
-                        printf("g touche le joueur %i\n",i);
+                        printf("g touche le joueur %i\n longueur de trajet %i\n",i,j);
                         players[i]->life=players[i]->life-damage;
                 has_hit=1;}
         }
@@ -40,17 +40,17 @@ void fire_bullet(player** players,int num_players,player* player_,int damage,int
         xb=from_coords_to_collision_map(bullet_->posx);
         yb=from_coords_to_collision_map(bullet_->posy);
         printf("%i  %i\n",xb,yb);
-        if(abs(xb)>650||abs(yb)>650||xb<1||yb<1){
+        if(abs(xb)>999||abs(yb)>999||xb<1||yb<1){
             has_hit=2;
         }
         j++;
         printf("%lf,%lf, \n", bullet_->posx,bullet_->posy);
     }
     if(has_hit==0){
-        printf("pas touché cheh\n");
+        printf("Pas touché, longueur de trajet %i\n",j);
     }
     if(has_hit==2){
-        printf("balle enfuie !\n");
+        printf("balle enfuie !longueur de trajet %i\n",j);
     }
     player_->cooldown=player_->cooldown+100;
     free(bullet_);

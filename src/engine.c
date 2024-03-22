@@ -15,7 +15,7 @@ engine *init_engine(const char *wadPath, SDL_Renderer *renderer, int numkeys,
   e->numkeys = numkeys;
   e->keys = keys;
   e->players = create_players(num_players,e);
-  e->collision_map = create_collision_map(e);
+  e->collision_map = create_collision_map();
   return e;
 }
 

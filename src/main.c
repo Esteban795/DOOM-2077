@@ -45,6 +45,7 @@ int main(void) {
      //printf("%i\n",e->p->cooldown);
      //printf("%f%f\n",e->p->pos.x,e->p->pos.y); 
     //printf("FPS: %f\n", 1000.0 / dt);
+    //printf("%i",e->wData->len_linedefs);
     old = now;
   }
   engine_free(e);
