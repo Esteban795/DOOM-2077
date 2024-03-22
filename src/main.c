@@ -34,7 +34,6 @@ int main(void) {
   engine *e = init_engine("maps/DOOM1.WAD", renderer, numkeys, keys);
   int ** collision_map=create_collision_map();
   construct_collision_map(collision_map,e->wData->linedefs);
-  player** players=create_players(1,e); //TABLEAU DES AUTRES JOUEURS
 
 
   int dt = 0;
@@ -50,6 +49,5 @@ int main(void) {
   }
   engine_free(e);
   free_collision_map(collision_map);
-  players_free(players,1);
   return 0;
 }

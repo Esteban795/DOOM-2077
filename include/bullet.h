@@ -12,11 +12,11 @@ typedef struct _bullet{
 
 
 
-bullet *create_bullet(player** players,int num_player);
+bullet *create_bullet(player* player_);
 
 double distance(double posx_a,double posy_a,double posx_b,double posy_b);
 
-void fire_bullet(player** players,int num_players,int num_player,int damage,int** collision_map);
+void fire_bullet(player** players,int num_players,player*  player_,int damage,int** collision_map);
 
 
 

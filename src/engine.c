@@ -1,4 +1,6 @@
 #include "../include/engine.h"
+#define num_players 1 //autres joueurs
+
 
 engine *init_engine(const char *wadPath, SDL_Renderer *renderer, int numkeys,
                     const uint8_t *keys) {
@@ -12,6 +14,7 @@ engine *init_engine(const char *wadPath, SDL_Renderer *renderer, int numkeys,
   e->seg_handler = segment_handler_init(e);
   e->numkeys = numkeys;
   e->keys = keys;
+  e->players = create_players(num_players,e);
   return e;
 }
 
@@ -20,11 +23,6 @@ int update_engine(engine *e, int dt) {
   SDL_PumpEvents(); // updates keys state
   if (e->keys[SDL_SCANCODE_ESCAPE]) {
     e->running = false;
-    return 1;
-  }
-  if (e->keys[SDL_SCANCODE_SPACE]) {
-    printf("JE TIRE");
-    
     return 1;
   }
   int mouse_x, mouse_y;
@@ -46,5 +44,7 @@ void engine_free(engine *e) {
   player_free(e->p);
   map_renderer_free(e->map_renderer);
   segment_handler_free(e->seg_handler);
+  players_free(e->players,num_players);
   free(e);
+
 }

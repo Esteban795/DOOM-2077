@@ -36,6 +36,7 @@ struct Engine {
   int numkeys;
   const uint8_t *keys;
   int DT;
+  struct Player** players;
 };
 
 struct BSP {
