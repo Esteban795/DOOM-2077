@@ -26,6 +26,8 @@ player** create_players(int num_players){
     return(Players);
 }
 
+
+
 // size_t count_two_sided_linedefs(linedef* linedefs, size_t nlinedefs){
 //   size_t count = 0;
 //   for (size_t i = 0; i < nlinedefs; i++){
@@ -306,4 +308,11 @@ void player_free(player *p) {
   free_keybinds(p->keybinds);
   free_settings(p->settings);
   free(p);
+}
+
+void players_free(player** players, int num_players){
+  for(int i=0;i<num_players;i++){
+    player_free(players[i]);
+  }
+  free(players);
 }
