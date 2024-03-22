@@ -43,10 +43,6 @@ struct Patch {
 
 typedef struct Patch patch;
 
-
-patch create_patch(FILE *f, int offset, SDL_Renderer* renderer,header *header, lump *directory,
-                   char *patchname,color *palette);
-
 void display_patches(SDL_Renderer* renderer, patch* patches, int patch_count);
 
 void patches_free(patch *patches, int patch_count);

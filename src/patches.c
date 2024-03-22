@@ -42,9 +42,7 @@ patch_column read_patch_column(FILE *f, int column_offset) {
   return pc;
 }
 
-patch create_patch(FILE *f, int patch_offset, SDL_Renderer *renderer,
-                   header *header, lump *directory, char *patchname,
-                   color *palette) {
+patch create_patch(FILE *f, int patch_offset, SDL_Renderer *renderer,char *patchname, color *palette) {
   patch p;
   p.palette = palette;
   p.header = read_patch_header(f, patch_offset);
@@ -61,20 +59,21 @@ patch create_patch(FILE *f, int patch_offset, SDL_Renderer *renderer,
   // int pitch = 0;
   // SDL_PixelFormat fmt;
   // fmt.format = SDL_PIXELFORMAT_RGBA8888;
-  // Uint32* pixels = malloc(sizeof(Uint32) * p.header.width * p.header.height);
-  // SDL_Texture* texture = SDL_CreateTexture(renderer,
-  // SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, p.header.width,
-  // p.header.height); if (SDL_LockTexture(texture, NULL, (void**)&pixels,
-  // &pitch) != 0) {
+  // Uint32 *pixels = malloc(sizeof(Uint32) * p.header.width * p.header.height);
+  // SDL_Texture *texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
+  //                                          SDL_TEXTUREACCESS_STREAMING,
+  //                                          p.header.width, p.header.height);
+  // if (SDL_LockTexture(texture, NULL, (void **)&pixels, &pitch) != 0) {
   //   printf("Error locking texture: %s\n", SDL_GetError());
   //   exit(1);
   // }
   // SDL_SetRenderTarget(renderer, texture);
   // for (int i = 0; i < p.header.width; i++) {
-  //   if (p.columns[i].top_delta == 0xFF) continue; //no pixel in this column
+  //   if (p.columns[i].top_delta == 0xFF)
+  //     continue; // no pixel in this column
   //   patch_column pc = p.columns[i];
   //   for (int j = 0; j < p.columns[i].length; j++) {
-  //     int color_idx =  pc.data[j];
+  //     int color_idx = pc.data[j];
   //     color c = p.palette[color_idx];
   //     Uint32 color = SDL_MapRGB(&fmt, c.r, c.g, c.b);
   //     Uint32 pixel_pos = i * (pitch * sizeof(unsigned int)) + i;
@@ -94,7 +93,7 @@ void free_patch(patch p) {
     free(p.columns[i].data);
   }
   free(p.columns);
-  // SDL_DestroyTexture(p.patch_img);
+  // if (p.patch_img != NULL) SDL_DestroyTexture(p.patch_img);
 }
 
 void patches_free(patch *patches, int patch_count) {
@@ -105,11 +104,30 @@ void patches_free(patch *patches, int patch_count) {
 }
 
 void display_patches(SDL_Renderer *renderer, patch *patches, int patch_count) {
-  for (int i = 0; i < patch_count; i++) {
-    printf("Displaying patch %d\n", i);
-    SDL_RenderCopy(renderer, patches[i].patch_img, NULL, NULL);
-    SDL_RenderPresent(renderer);
-    SDL_Delay(500);
+  // for (int i = 0; i < patch_count; i++) {
+  //   printf("Displaying patch %d\n", i);
+  //   if (patches[i].patch_img == NULL) {
+  //     printf("No texture associated with patch %d\n", i);
+  //     continue;
+  //   }
+  //   SDL_RenderCopy(renderer, patches[i].patch_img, NULL, NULL);
+  //   SDL_RenderPresent(renderer);
+  //   SDL_Delay(500);
+  // }
+  for (int i = 0; i < patch_count;i++){
+    printf("Patch %d: %s\n", i, patches[i].patchname);
+    printf("Width: %d\n", patches[i].header.width);
+    printf("Height: %d\n", patches[i].header.height);
+    printf("X Offset: %d\n", patches[i].header.x_offset);
+    printf("Y Offset: %d\n", patches[i].header.y_offset);
+    for (int j = 0; j < patches[i].header.width; j++){
+      printf("Column %d: ", j);
+      for (int k = 0; k < patches[i].columns[j].length; k++){
+        printf("%d ", patches[i].columns[j].data[k]);
+      }
+      printf("\n");
+    }
+    printf("\n\n\n");
   }
 }
 
@@ -122,9 +140,9 @@ patch *get_patches(SDL_Renderer *renderer, lump *directory, header *header,
   patch *patches = malloc(sizeof(patch) * *patch_count);
   for (int i = 0; i < *patch_count;
        i++) { // skip start_patches because it's only the marker
-    patches[i] = create_patch(f, directory[start_patches + i + 1].lump_offset,
-                              renderer, header, directory,
-                              directory[start_patches + i].lump_name, palette);
+    patches[i] =
+        create_patch(f, directory[start_patches + i + 1].lump_offset, renderer,
+                     directory[start_patches + i + 1].lump_name, palette);
   }
   return patches;
 }
