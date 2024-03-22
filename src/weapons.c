@@ -1,4 +1,6 @@
 #include "../include/weapons.h"
+#include <assert.h>
+
 
 weapon* init_one_weapon(int id, char* weapon_name, char* sprite, int magsize, int max_damage, int min_damage, double fire_rate, double spray, int ammo_bounce, int ammo_id, int type){
     weapon* w = malloc(sizeof(weapon));
@@ -53,7 +55,8 @@ weapons_array* init_weapons_array(){
         fgets(line,sizeof(line),f);
         sscanf(line, "%d,%1023[^,],%1023[^,],%d,%d,%d,%lf,%lf,%d,%d,%d", &id, weapon_name, sprite, &magsize, &max_damage, &min_damage, &fire_rate, &spray, &ammo_bounce, &ammo_id, &type);
         printf("id: %d, weapon_name: %s, sprite: %s, magsize: %d, max_damage: %d, min_damage: %d, fire_rate: %lf, spray: %lf, ammo_bounce: %d, ammo_id: %d, type: %d\n",id,weapon_name,sprite,magsize,max_damage,min_damage,fire_rate,spray,ammo_bounce,ammo_id,type);
-        winv[i] = NULL;
+        weapon* new_weapon = init_one_weapon(id, weapon_name, sprite, magsize, max_damage, min_damage, fire_rate, spray, ammo_bounce, ammo_id, type);
+        winv[i] = new_weapon;
     }
     wa->weapons = winv;
 
@@ -82,9 +85,14 @@ void switch_weapon(player* p, int weapon_id){
 void add_weapon(player* p, int weapon_id,weapons_array* wa){
     /*If the player doesnt have the weapon and the weapon have a limited magsize*/
     if (p->ammo[weapon_id] < 0){
+        printf("tout va  bien\n");
+        assert(weapon_id < wa->weapons_number);
+        assert(wa->weapons[weapon_id] != NULL);
         if (wa->weapons[weapon_id]->magsize > 0){
+            printf("Prends ton chargeur gamin");
             p->ammo[weapon_id] = wa->weapons[weapon_id]->magsize;
         } else {
+            printf("Munitions infinies G_G");
             p->ammo[weapon_id] = -2;
         }
         switch_weapon(p,weapon_id);

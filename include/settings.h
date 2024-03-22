@@ -32,4 +32,6 @@
 #define MOUSE_SENSITIVITY 0.3
 #define DIAGONAL_CORRECTION 1 / sqrt(2)
 
+#define WEAPONS_NUMBER 2 
+
 #endif

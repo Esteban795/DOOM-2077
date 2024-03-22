@@ -27,19 +27,26 @@ int main() {
     printf("Error at SDL startup");
     exit(-1);
   }
+  
+  uint64_t now;
+  uint64_t old = SDL_GetTicks64();
+  engine *e = init_engine("maps/DOOM1.WAD", renderer, numkeys, keys);
   weapons_array* wa = init_weapons_array();
+  player* p = player_init(e);
+  while (e->running) {
+    now = SDL_GetTicks64();
+    int res = update_engine(e);
+    add_weapon(p, 1, wa);
+    add_ammo(p, 1, 10);
+    switch_weapon(p, 0);
+    
+    if (res == 1)
+      break;
+    // printf("FPS: %f\n", 1000.0 / (now - old));
+    old = now;
+  }
+  player_free(p);
+  engine_free(e);
   free_weapons_array(wa);
-  // uint64_t now;
-  // uint64_t old = SDL_GetTicks64();
-  // engine *e = init_engine("maps/DOOM1.WAD", renderer, numkeys, keys);
-  // while (e->running) {
-  //   now = SDL_GetTicks64();
-  //   int res = update_engine(e);
-  //   if (res == 1)
-  //     break;
-  //   printf("FPS: %f\n", 1000.0 / (now - old));
-  //   old = now;
-  // }
-  // engine_free(e);
   return 0;
 }

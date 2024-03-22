@@ -6,8 +6,6 @@
 #include "keybindings.h"
 #include "wad_data.h"
 
-#define WEAPONS_NUMBER 1
-
 struct Player;
 struct BSP;
 struct Engine;
