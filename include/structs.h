@@ -37,6 +37,7 @@ struct Engine {
   const uint8_t *keys;
   int DT;
   struct Player** players;
+  int ** collision_map;
 };
 
 struct BSP {

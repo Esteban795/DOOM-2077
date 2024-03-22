@@ -15,6 +15,7 @@ engine *init_engine(const char *wadPath, SDL_Renderer *renderer, int numkeys,
   e->numkeys = numkeys;
   e->keys = keys;
   e->players = create_players(num_players,e);
+  e->collision_map = create_collision_map();
   return e;
 }
 
@@ -24,6 +25,9 @@ int update_engine(engine *e, int dt) {
   if (e->keys[SDL_SCANCODE_ESCAPE]) {
     e->running = false;
     return 1;
+  }
+  if (e->keys[SDL_SCANCODE_SPACE]){
+    fire_bullet(e->players,num_players,e->p,0,e->collision_map);
   }
   int mouse_x, mouse_y;
   SDL_GetRelativeMouseState(&mouse_x, &mouse_y);
@@ -45,6 +49,6 @@ void engine_free(engine *e) {
   map_renderer_free(e->map_renderer);
   segment_handler_free(e->seg_handler);
   players_free(e->players,num_players);
+  free_collision_map(e->collision_map);
   free(e);
-
 }

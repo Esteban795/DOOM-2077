@@ -4,7 +4,7 @@
 #include "../include/bullet.h"
 
 #define player_hitbox_size 6
-#define hitscan_precision 0.1
+#define hitscan_precision 10
 
 bullet* create_bullet(player *player_){
     bullet *bullet_ = malloc(sizeof(bullet));
@@ -39,10 +39,10 @@ void fire_bullet(player** players,int num_players,player* player_,int damage,int
         xb=from_coords_to_collision_map(bullet_->posx);
         yb=from_coords_to_collision_map(bullet_->posy);
         j++;
-        //printf("%lf,%lf, \n", bullet->posx,bullet->posy,bullet->angle);
+        printf("%lf,%lf, \n", bullet_->posx,bullet_->posy);
     }
     if(has_hit==0){
         printf("pas touché cheh");
     }
-
+    free(bullet_);
 }

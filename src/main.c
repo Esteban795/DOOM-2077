@@ -32,8 +32,7 @@ int main(void) {
   uint64_t old = SDL_GetTicks64();
   SDL_ShowCursor(SDL_DISABLE);
   engine *e = init_engine("maps/DOOM1.WAD", renderer, numkeys, keys);
-  int ** collision_map=create_collision_map();
-  construct_collision_map(collision_map,e->wData->linedefs);
+  construct_collision_map(e->collision_map,e->wData->linedefs);
 
 
   int dt = 0;
@@ -48,6 +47,5 @@ int main(void) {
     old = now;
   }
   engine_free(e);
-  free_collision_map(collision_map);
   return 0;
 }
