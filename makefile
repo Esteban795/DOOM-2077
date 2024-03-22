@@ -118,19 +118,19 @@
 SRCDIR = src
 HEADDIR = include
 LIBDIR = ./src
-
+BUILDDIR = ./build
 FLAGS = -lSDL2 -lSDL2_ttf -lSDL2_net -lm
 DEBUGFLAGS = -W -Wall -Wextra -Wvla -fsanitize=address -g -O3
 DEPENDENCIES := $(SRCDIR)/patches.c $(SRCDIR)/blockmap.c $(SRCDIR)/bsp.c $(SRCDIR)/button.c $(SRCDIR)/byte_reader.c $(SRCDIR)/color.c $(SRCDIR)/engine.c $(SRCDIR)/geometry.c $(SRCDIR)/header.c $(SRCDIR)/keybindings.c $(SRCDIR)/linedef.c $(SRCDIR)/lump.c $(SRCDIR)/main.c $(SRCDIR)/map_renderer.c $(SRCDIR)/node.c $(SRCDIR)/player.c $(SRCDIR)/sector.c $(SRCDIR)/segment.c $(SRCDIR)/segment_handler.c $(SRCDIR)/sidedef.c $(SRCDIR)/subsector.c $(SRCDIR)/textarea.c $(SRCDIR)/thing.c $(SRCDIR)/timer.c $(SRCDIR)/util.c $(SRCDIR)/vertex.c $(SRCDIR)/wad_data.c
 
 patches:
-	gcc -o ./bin/doomlike $(DEBUGFLAGS) $(DEPENDENCIES) $(FLAGS) 
+	gcc -o $(BUILDDIR)/doomlike $(DEBUGFLAGS) $(DEPENDENCIES) $(FLAGS) 
 
 run:
-	./bin/doomlike
+	$(BUILDDIR)/doomlike
 
 clean:
-	rm ./bin/doomlike
+	rm $(BUILDDIR)/doomlike
 
 all:
 	make build

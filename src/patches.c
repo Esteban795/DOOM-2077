@@ -22,41 +22,40 @@ patch_header read_patch_header(FILE *f, int offset) {
   return ph;
 }
 
-patch_column read_patch_column(FILE *f, int column_offset, int *new_offset) {
+patch_column read_patch_column(FILE *f, int column_offset) {
   patch_column pc;
   pc.top_delta = read_u8(f, column_offset);
   if (pc.top_delta == NO_PIXELS) {
-    *new_offset = column_offset + 1;
     return pc;
   }
   pc.length = read_u8(f, column_offset + 1);
   pc.padding_pre = read_u8(f, column_offset + 2);
   pc.data = malloc(sizeof(u8) * pc.length);
+  if (pc.data == NULL) {
+    printf("Error allocating memory for patch column data\n");
+    exit(1);
+  }
   for (int i = 0; i < pc.length; i++) {
     pc.data[i] = read_u8(f, column_offset + 3 + i);
   }
   pc.padding_post = read_u8(f, column_offset + 3 + pc.length);
-  *new_offset = column_offset + 4 + pc.length;
   return pc;
 }
 
-patch create_patch(FILE *f, int offset, SDL_Renderer *renderer, header *header,
-                   lump *directory, char *patchname, color *palette) {
+patch create_patch(FILE *f, int patch_offset, SDL_Renderer *renderer,
+                   header *header, lump *directory, char *patchname,
+                   color *palette) {
   patch p;
   p.palette = palette;
-  p.header = read_patch_header(f, offset);
+  p.header = read_patch_header(f, patch_offset);
   p.columns = malloc(sizeof(patch_column) * p.header.width);
   p.patchname = patchname;
-  int patch_index = get_lump_index(directory, patchname, header->lump_count);
-  int patch_offset = directory[patch_index].lump_offset;
   int column_offset = 0;
   for (int i = 0; i < p.header.width; i++) {
     column_offset = patch_offset + p.header.column_offsets[i];
-    while (true) {
-      p.columns[i] = read_patch_column(f, column_offset, &column_offset);
-      if (p.columns[i].top_delta == 0xFF) {
-        break;
-      }
+    p.columns[i] = read_patch_column(f, column_offset);
+    if (p.columns[i].top_delta == NO_PIXELS) {
+      continue;
     }
   }
   // int pitch = 0;
@@ -119,7 +118,7 @@ patch *get_patches(SDL_Renderer *renderer, lump *directory, header *header,
   int start_patches =
       get_lump_index(directory, PATCHES_START, header->lump_count);
   int end_patches = get_lump_index(directory, PATCHES_END, header->lump_count);
-  *patch_count = end_patches - start_patches;
+  *patch_count = end_patches - start_patches - 1;
   patch *patches = malloc(sizeof(patch) * *patch_count);
   for (int i = 0; i < *patch_count;
        i++) { // skip start_patches because it's only the marker
