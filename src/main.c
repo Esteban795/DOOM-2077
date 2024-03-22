@@ -42,7 +42,8 @@ int main(void) {
     int res = update_engine(e, dt);
     if (res == 1)
       break;
-     printf("%i\n",e->p->cooldown); 
+     //printf("%i\n",e->p->cooldown);
+     //printf("%f%f\n",e->p->pos.x,e->p->pos.y); 
     //printf("FPS: %f\n", 1000.0 / dt);
     old = now;
   }

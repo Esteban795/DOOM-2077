@@ -1,7 +1,7 @@
 #include "../include/collision_map.h"
 #include <stdio.h>
 #include <stdlib.h>
-#define map_size  8000 //j'en sais rien frere ????
+#define map_size  9000 //j'en sais rien frere ????
 #define collision_map_precision 10 //j'en sais toujours rien 
 #define number_of_blocs map_size/collision_map_precision
 #define number_of_linedefs 215 //trouvé par dichotomie

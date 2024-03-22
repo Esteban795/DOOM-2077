@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include "../include/bullet.h"
 
-#define player_hitbox_size 6
+#define player_hitbox_size 60
 #define hitscan_precision 10
 
 bullet* create_bullet(player *player_){
@@ -39,16 +39,23 @@ void fire_bullet(player** players,int num_players,player* player_,int damage,int
         bullet_->posy=bullet_->posy+sin(bullet_->angle)*hitscan_precision;
         xb=from_coords_to_collision_map(bullet_->posx);
         yb=from_coords_to_collision_map(bullet_->posy);
+        printf("%i  %i\n",xb,yb);
+        if(abs(xb)>650||abs(yb)>650||xb<1||yb<1){
+            has_hit=2;
+        }
         j++;
         printf("%lf,%lf, \n", bullet_->posx,bullet_->posy);
     }
     if(has_hit==0){
-        printf("pas touché cheh");
+        printf("pas touché cheh\n");
+    }
+    if(has_hit==2){
+        printf("balle enfuie !\n");
     }
     player_->cooldown=player_->cooldown+100;
     free(bullet_);
     }
     else{
-        printf("je ne peux pas tirer");
+        //printf("je ne peux pas tirer\n");
     }
 }
