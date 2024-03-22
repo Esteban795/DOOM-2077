@@ -33,7 +33,6 @@ int main(void) {
   SDL_ShowCursor(SDL_DISABLE);
   engine *e = init_engine("maps/DOOM1.WAD", renderer, numkeys, keys);
   int ** collision_map=create_collision_map();
-  
   //printf("%i\n",e->wData->linedefs[1].start_vertex->x);
   construct_collision_map(collision_map,e->wData->linedefs);
   free_collision_map(collision_map);

@@ -20,13 +20,14 @@ double distance(double posx_a,double posy_a,double posx_b,double posy_b){
 
 
 
-
-
-void fire_bullet(player** players,int num_players,int num_player,int damage){ //pour l'instant ne detecte que les joueurs, pas les murs
+void fire_bullet(player** players,int num_players,int num_player,int damage,int** collision_map){ //pour l'instant ne detecte que les joueurs, pas les murs
     int j=0;
     int has_hit=0;
+    
     bullet* bullet_=create_bullet(players,num_player);
-    while (j<1000&&has_hit==0){ //tant qu'une collison avec un mur n'est pas detectée(a implémenter)
+    int xb=from_coords_to_collision_map(bullet_->posx);
+    int yb=from_coords_to_collision_map(bullet_->posy);
+    while (collision_map[xb][yb]==0&&has_hit==0){ //tant qu'une collison avec un mur n'est pas detectée(a implémenter)
         int i=0;
         for(i=0;i<num_players;i++){    
             if(i!=num_player){
@@ -38,6 +39,8 @@ void fire_bullet(player** players,int num_players,int num_player,int damage){ //
         }
         bullet_->posx=bullet_->posx+cos(bullet_->angle)*hitscan_precision;
         bullet_->posy=bullet_->posy+sin(bullet_->angle)*hitscan_precision;
+        xb=from_coords_to_collision_map(bullet_->posx);
+        yb=from_coords_to_collision_map(bullet_->posy);
         j++;
         //printf("%lf,%lf, \n", bullet->posx,bullet->posy,bullet->angle);
     }

@@ -11,7 +11,7 @@ testdepsdir = $(builddir)/test_deps
 AR = ar
 CC = gcc
 CFLAGS = -Wall -Wextra  -std=gnu17 -pedantic #-Werror#
-CFLAGS += -fsanitize=address,undefined -fno-omit-frame-pointer
+CFLAGS += -fsanitize=address -fno-omit-frame-pointer
 LDFLAGS = -lm 
 CDEBUG = -g -O3
 # END OF CONFIGURABLE PARAMETERS  #

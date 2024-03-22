@@ -1,10 +1,10 @@
 #include "../include/collision_map.h"
 #include <stdio.h>
 #include <stdlib.h>
-#define map_size  4000 //j'en sais rien frere ????
+#define map_size  8000 //j'en sais rien frere ????
 #define collision_map_precision 10 //j'en sais toujours rien 
 #define number_of_blocs map_size/collision_map_precision
-#define number_of_linedefs 10 //qu'est ce que j'en sais putain
+#define number_of_linedefs 100 //qu'est ce que j'en sais putain
 
 
 void display_linedefs_coords(linedef* linedefs){
@@ -47,30 +47,30 @@ void free_collision_map(int** collision_map) {
 }
 
 
+int from_coords_to_collision_map(int coord){
+    return(coord/collision_map_precision)+number_of_blocs/2;
+}
+
 
 void construct_collision_map(int** collision_map,linedef* linedefs){
     int i=0;
     for(i=0;i<number_of_linedefs;i++){
-
-        //int x1=linedefs[i].start_vertex->x;
-        //int y1=linedefs[i].start_vertex->y;
-        //int x2=linedefs[i].end_vertex->x;
-        int a=linedefs[i].start_vertex->x;//.end_vertex->y;
-        int y2=0;
-        int x1=0;
-        int x2=0;
-        int y1=0;
-        //int y2=0;
+        int x1=linedefs[i].start_vertex->x; //segfault si 0 remplacé par quoi que ca soit d'autre 
+        int y1=linedefs[i].start_vertex->y;
+        int x2=linedefs[i].end_vertex->x;
+        int y2=linedefs[i].end_vertex->y;
         double dist =sqrt(pow((x1-x2),2)+pow((y1-y2),2));
         double number_of_points =dist/collision_map_precision;
         double stepx = (x2-x1)/number_of_points;
         double stepy = (y2-y1)/number_of_points;
         int j=0;
         for(j=0;j<number_of_points;j++){
-            //collision_map[x1/collision_map_precision][y1/collision_map_precision]=1;
+            int x=from_coords_to_collision_map(x1);
+            int y=from_coords_to_collision_map(y1);
+            printf("%i,%i\n",x,y);
+            collision_map[x][y]=1;
             x1=x1+stepx;
             y1=y1+stepy;
-
         }
     }
     printf("%i\n",collision_map[0][0]);
