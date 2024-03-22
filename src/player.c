@@ -18,6 +18,7 @@ player *player_init(engine *e) {
   p->height = PLAYER_HEIGHT;
   p->keybinds = get_player_keybinds(KEYBINDS_FILE);
   p->settings = get_player_settings(SETTINGS_FILE);
+  p->cooldown = 0;
   return p;
 }
 

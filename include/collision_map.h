@@ -3,6 +3,7 @@
 #include "linedef.h"
 #include <stdio.h>
 #include <math.h>
+#include "structs.h"
 
 void display_linedefs_coords(linedef* linedefs);
 

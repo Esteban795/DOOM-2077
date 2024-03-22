@@ -42,7 +42,7 @@ int main(void) {
     int res = update_engine(e, dt);
     if (res == 1)
       break;
-      //printf("%f%f\n",e->p->pos.x,e->p->pos.y); //position du joueur
+     printf("%i\n",e->p->cooldown); 
     //printf("FPS: %f\n", 1000.0 / dt);
     old = now;
   }

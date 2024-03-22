@@ -15,7 +15,7 @@ engine *init_engine(const char *wadPath, SDL_Renderer *renderer, int numkeys,
   e->numkeys = numkeys;
   e->keys = keys;
   e->players = create_players(num_players,e);
-  e->collision_map = create_collision_map();
+  e->collision_map = create_collision_map(e);
   return e;
 }
 
@@ -30,6 +30,9 @@ int update_engine(engine *e, int dt) {
     fire_bullet(e->players,num_players,e->p,0,e->collision_map);
   }
   int mouse_x, mouse_y;
+  if(e->p->cooldown>1){
+    e->p->cooldown=e->p->cooldown-1;
+  }
   SDL_GetRelativeMouseState(&mouse_x, &mouse_y);
   SDL_SetRenderDrawColor(e->map_renderer->renderer, 0, 0, 0, 255);
   SDL_RenderClear(e->map_renderer->renderer);

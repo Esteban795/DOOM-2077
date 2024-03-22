@@ -23,6 +23,7 @@ struct Player {
   struct PlayerKeybind *keybinds;
   double height;
   int life;
+  int cooldown;
 };
 
 struct Engine {

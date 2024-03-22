@@ -21,6 +21,7 @@ double distance(double posx_a,double posy_a,double posx_b,double posy_b){
 
 
 void fire_bullet(player** players,int num_players,player* player_,int damage,int** collision_map){ //pour l'instant ne detecte que les joueurs, pas les murs
+    if(player_->cooldown<50){
     int j=0;
     int has_hit=0;
     bullet* bullet_=create_bullet(player_);
@@ -44,5 +45,10 @@ void fire_bullet(player** players,int num_players,player* player_,int damage,int
     if(has_hit==0){
         printf("pas touché cheh");
     }
+    player_->cooldown=player_->cooldown+100;
     free(bullet_);
+    }
+    else{
+        printf("je ne peux pas tirer");
+    }
 }

@@ -24,19 +24,6 @@ void display_linedefs_coords(linedef* linedefs){
 //    }
 //}
 
-int** create_collision_map(void){
-    int i=0;
-    int j=0;
-    int** collision_map=malloc(sizeof(int)*number_of_blocs*number_of_blocs); //flemme d'import math
-    for(i=0;i<number_of_blocs;i++){
-        collision_map[i]=malloc(sizeof(int)*number_of_blocs);
-        for(j=0;j<number_of_blocs;j++){
-            collision_map[i][j]=0;
-        }
-    }
-    return(collision_map);
-}
-
 
 void free_collision_map(int** collision_map) {
     int i=0;
@@ -77,6 +64,19 @@ void construct_collision_map(int** collision_map,linedef* linedefs){
         }
     }
     printf("%i\n",collision_map[0][0]);
+}
+
+int** create_collision_map(void){
+    int i=0;
+    int j=0;
+    int** collision_map=malloc(sizeof(int)*number_of_blocs*number_of_blocs); //flemme d'import math
+    for(i=0;i<number_of_blocs;i++){
+        collision_map[i]=malloc(sizeof(int)*number_of_blocs);
+        for(j=0;j<number_of_blocs;j++){
+            collision_map[i][j]=0;
+        }
+    }
+    return(collision_map);
 }
 
 
