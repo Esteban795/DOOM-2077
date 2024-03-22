@@ -7,6 +7,7 @@
 #include "wad_data.h"
 #include "vec2.h"
 #include "settings.h"
+#include "ui/module.h"
 
 struct Player;
 struct BSP;
@@ -35,6 +36,8 @@ struct Engine {
   int numkeys;
   const uint8_t *keys;
   int DT;
+  UIModule** uimodules;
+  int nuimodules;
 };
 
 struct BSP {

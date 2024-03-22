@@ -12,6 +12,7 @@ engine *init_engine(const char *wadPath, SDL_Renderer *renderer, int numkeys,
   e->seg_handler = segment_handler_init(e);
   e->numkeys = numkeys;
   e->keys = keys;
+  e->uimodules = get_ui_ingame(&e->nuimodules);
   return e;
 }
 
@@ -30,12 +31,16 @@ int update_engine(engine *e, int dt) {
   get_ssector_height(e->bsp);
   segment_handler_update(e->seg_handler);
   update_bsp(e->bsp);
+  for (int i=0; i<e->nuimodules; i++){
+    render_uimodule(e->uimodules[i]);
+  }
   SDL_SetRelativeMouseMode(SDL_TRUE);
   SDL_RenderPresent(e->map_renderer->renderer);
   return 0;
 }
 
 void engine_free(engine *e) {
+  free_ui_ingame(e->uimodules, e->nuimodules);
   wad_data_free(e->wData);
   bsp_free(e->bsp);
   player_free(e->p);

@@ -1,4 +1,4 @@
-#include "../include//button.h"
+#include "../include/button.h"
 
 button *button_create(int x, int y, int w, int h, void (*on_click)(void *data),
                       bool text_centered, char *text, TTF_Font *font,

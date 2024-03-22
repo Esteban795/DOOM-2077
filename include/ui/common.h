@@ -1,0 +1,31 @@
+#ifndef UI_COMMON_H
+#define UI_COMMON_H
+
+#include <SDL2/SDL.h>
+#include <stdbool.h>
+
+//represents where the UI element sits compared to its positioning values (x,y,w,h)
+typedef enum _UIAnchorPoint {
+    UIAP_TOP_LEFT,
+    UIAP_TOP_RIGHT,
+    UIAP_BOTTOM_LEFT,
+    UIAP_BOTTOM_RIGHT,
+    UIAP_CENTER
+} UIAnchorPoint;
+
+//this runs "relative to viewport" positioning
+//x=1 represents the right-most pixel of the screen, x=0 the left-most pixel
+typedef struct _UICommon {
+    bool active;
+
+    float x; //in [0,1]
+    float y; //in [0,1]
+    float width; //in [0,1]
+    float height; //in [0,1]
+
+    UIAnchorPoint anchor;
+} UICommon;
+
+void get_absolute_position(UICommon* common, SDL_Rect* rect);
+
+#endif
