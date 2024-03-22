@@ -21,8 +21,11 @@ player *player_init(engine *e) {
   return p;
 }
 
-player** create_players(int num_players){
+player ** create_players(int num_players,engine *e){
     player** Players = malloc(sizeof(player*)*num_players);
+    for(int i=0;i<num_players;i++){
+      Players[i]=player_init(e);
+    }
     return(Players);
 }
 

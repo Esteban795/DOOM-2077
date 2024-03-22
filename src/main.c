@@ -33,10 +33,10 @@ int main(void) {
   SDL_ShowCursor(SDL_DISABLE);
   engine *e = init_engine("maps/DOOM1.WAD", renderer, numkeys, keys);
   int ** collision_map=create_collision_map();
-  
   construct_collision_map(collision_map,e->wData->linedefs);
-  printf("%i\n",e->wData->len_linedefs);
-  free_collision_map(collision_map);
+  player** players=create_players(1,e); //TABLEAU DES AUTRES JOUEURS
+
+
   int dt = 0;
   while (e->running) {
     now = SDL_GetTicks64();
@@ -44,9 +44,12 @@ int main(void) {
     int res = update_engine(e, dt);
     if (res == 1)
       break;
+      //printf("%f%f\n",e->p->pos.x,e->p->pos.y); //position du joueur
     //printf("FPS: %f\n", 1000.0 / dt);
     old = now;
   }
   engine_free(e);
+  free_collision_map(collision_map);
+  players_free(players,1);
   return 0;
 }

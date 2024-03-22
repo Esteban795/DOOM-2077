@@ -22,6 +22,11 @@ int update_engine(engine *e, int dt) {
     e->running = false;
     return 1;
   }
+  if (e->keys[SDL_SCANCODE_SPACE]) {
+    printf("JE TIRE");
+    
+    return 1;
+  }
   int mouse_x, mouse_y;
   SDL_GetRelativeMouseState(&mouse_x, &mouse_y);
   SDL_SetRenderDrawColor(e->map_renderer->renderer, 0, 0, 0, 255);
