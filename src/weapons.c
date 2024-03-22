@@ -80,12 +80,20 @@ void switch_weapon(player* p, int weapon_id){
 }
 
 void add_weapon(player* p, int weapon_id,weapons_array* wa){
+    /*If the player doesnt have the weapon and the weapon have a limited magsize*/
     if (p->ammo[weapon_id] < 0){
         if (wa->weapons[weapon_id]->magsize > 0){
             p->ammo[weapon_id] = wa->weapons[weapon_id]->magsize;
         } else {
             p->ammo[weapon_id] = -2;
         }
+        switch_weapon(p,weapon_id);
+    }
+}
+
+void add_ammo(player* p, int weapon_id, int ammo){
+    if (p->ammo[weapon_id] >= 0){
+        p->ammo[weapon_id] += ammo;
     }
 }
 

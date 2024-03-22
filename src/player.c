@@ -3,7 +3,8 @@
 player *player_init(engine *e) {
   player *p = malloc(sizeof(player));
   int* ammo = malloc(WEAPONS_NUMBER*sizeof(int));
-  for (int i = 0; i < WEAPONS_NUMBER; i++) {
+  ammo[0] = -2;
+  for (int i = 1; i < WEAPONS_NUMBER; i++) {
     ammo[i] = -1;
   }
   p->engine = e;
