@@ -1,7 +1,8 @@
 #include "../include/segment.h"
 
 double bams_to_degrees(i16 bams) {
-  double res = (bams << 16) * 8.38190317e-8;
+  int bitshift = 1 << 16;
+  double res = (bams * bitshift) * 8.38190317e-8;
   return res < 0 ? 360 + res : res;
 }
 
