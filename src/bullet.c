@@ -61,8 +61,10 @@ void fire_bullet(player** players,int num_players,player* player_,int damage,int
 }
 
 void fire_bullet2(player** players,int num_players,player* player_,int damage){
+    double distance_finale=10000;
     int touche=0;
-    if(player_->cooldown<50){
+    if(player_->cooldown<80){
+        printf("debut\n");
         player_->cooldown=player_->cooldown+100;
         linedef* linedefs=player_->engine->wData->linedefs;
         double x1=player_->pos.x;
@@ -70,8 +72,18 @@ void fire_bullet2(player** players,int num_players,player* player_,int damage){
         double x2=x1+100*cos(deg_to_rad(player_->angle));
         double y2=y1+100*sin(deg_to_rad(player_->angle));
         double a =0;
+        int direction =0; // 0 correspond a ni droite ni auche 1 a gauche 2 a droite
+
+        int mur_touche = -1;
+        
         if(x1!=x2){
             a=(y2-y1)/(x2-x1);
+            if(x1>x2){
+                direction=1;
+            }
+            else{
+                direction=2;
+            }
         }
         double b=y1-a*x1;
         //printf("%f %f %f %f ,%f \n",x1,x2,y1,y2,pente);
@@ -91,8 +103,15 @@ void fire_bullet2(player** players,int num_players,player* player_,int damage){
                     x=(d-b)/(a-c);
                     y=a*x+b;
                     if(((x1a<=x)&&(x<=x2a))||((x2a<=x)&&(x<=x1a))){
-                        touche=2;
-                        printf("2\n");
+                        if(((direction==1)&&(x1a>x))||((direction==2)&&(x1a<x))||(direction==0)){
+                            printf("x1=%f y1=%f x=%f y=%f %f %f \n",x1,y1,x,y,distance(x1,y1,x,y),distance_finale);
+                            if(distance(x1,y1,x,y)<distance_finale){
+                                distance_finale=distance(x1,y1,x,y);
+                                mur_touche=i;
+                            }
+                            touche=2;
+                            //printf("2\n");
+                        }
                     }
 
                 }
@@ -100,8 +119,16 @@ void fire_bullet2(player** players,int num_players,player* player_,int damage){
                     x=x1a;
                     y=a*x+b;
                     if(((y1a<=y)&&(y<=y2a))||((y2a<=y)&&(y<=y1a))){
-                        touche=1;
-                        printf("1\n");
+                        //printf("%i,%f,%f\n",direction,x1a,x);
+                        if(((direction==1)&&(x1a>=x))||((direction==2)&&(x1a<=x))){
+                            printf("x1=%f y1=%f x=%f y=%f %f %f \n",x1,y1,x,y,distance(x1,y1,x,y),distance_finale);
+                            if(distance(x1,y1,x,y)<distance_finale){
+                                distance_finale=distance(x1,y1,x,y);
+                                mur_touche=i;
+                            }
+                            touche=1;
+                            //printf("1\n");
+                        }
                     }
                 }
             }
@@ -110,10 +137,10 @@ void fire_bullet2(player** players,int num_players,player* player_,int damage){
         printf("rate\n");
     }
     if(touche==1){
-        printf("touche 1\n");
+        printf("touche 1, mur %i  %f \n", mur_touche, distance_finale);
     }
     if(touche==2){
-        printf("touche 2\n");
+        printf("touche 2  mur %i %f  \n", mur_touche, distance_finale);
     }    
     }
 }
