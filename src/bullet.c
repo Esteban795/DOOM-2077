@@ -69,11 +69,11 @@ void fire_bullet2(player** players,int num_players,player* player_,int damage){
         double y1=player_->pos.y;
         double x2=x1+100*cos(deg_to_rad(player_->angle));
         double y2=y1+100*sin(deg_to_rad(player_->angle));
-        double pente =0;
-
+        double a =0;
         if(x1!=x2){
-            pente=(y2-y1)/(x2-x1);
+            a=(y2-y1)/(x2-x1);
         }
+        double b=y1-a*x1;
         //printf("%f %f %f %f ,%f \n",x1,x2,y1,y2,pente);
         for(int i=0;i<475;i++){
             double x=0;
@@ -83,35 +83,38 @@ void fire_bullet2(player** players,int num_players,player* player_,int damage){
                 double y1a=linedefs[i].start_vertex->y;
                 double x2a=linedefs[i].end_vertex->x;
                 double y2a=linedefs[i].end_vertex->y;
+                double c =0;
+                double d=0;
                 if(x1a!=x2a){
-                    double pentea=(y2a-y1a)/(x1a-x2a);
-                    if(pente!=pentea){
-                        x = (x2a-x1)/(pente-pentea);
-                        if(((x1a<=x)&&(x<=x2a))||((x2a<=x)&&(x<=x1a))){
-                            int touche=1;
-                            printf("%i  b\n",i);
-                            //printf("%f %f %f\n",x,x1a,x2a);
-                        }
-                        else{
-                        }
+                    c=(y2a-y1a)/(x1a-x2a);
+                    d=y1a-c*x1a;
+                    x=(d-b)/(a-c);
+                    y=a*x+b;
+                    if(((x1a<=x)&&(x<=x2a))||((x2a<=x)&&(x<=x1a))){
+                        touche=2;
+                        printf("2\n");
                     }
+
                 }
                 else{
-                    if(pente!=0){
-                        y=pente*x1a+x1;
-                        
-                        if(((y1a<=y)&&(y<=y2a))||((y2a<=y)&&(y<=y1a))){
-                                int touche=1;
-                                //printf("%f %f %f\n",y,y1a,y2a);
-                                printf("%i  a\n",i);
-                        }
+                    x=x1a;
+                    y=a*x+b;
+                    if(((y1a<=y)&&(y<=y2a))||((y2a<=y)&&(y<=y1a))){
+                        touche=1;
+                        printf("1\n");
                     }
                 }
             }
         }
-        printf("stop\n");    
+    if(touche==0){
+        printf("rate\n");
     }
-    
-
+    if(touche==1){
+        printf("touche 1\n");
+    }
+    if(touche==2){
+        printf("touche 2\n");
+    }    
+    }
 }
 
