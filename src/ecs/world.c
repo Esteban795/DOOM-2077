@@ -101,7 +101,7 @@ void world_remove_entity(world_t* world, entity_t* entity) {
     vec_remove(&world->entities, ind, false);
     int arch_index = *(int*) vec_get(&world->entity_archetype, ind);
     archetype_t* archetype = (archetype_t*) vec_get(&world->archetypes, arch_index);
-    archetype_remove_entity(archetype, entity);
+    archetype_remove_entity(archetype, entity, true);
     vec_remove(&world->entity_archetype, ind, true);
 
     // Free the entity
@@ -150,3 +150,127 @@ void world_queue_event(world_t* world, event_t* event) {
     vec_push(&world->event_queue, (void*) event);
 }
 
+
+void world_add_components(world_t* world, entity_t* entity, component_t** components, int component_count) {
+    // Find the entity in the world
+    int ind = vec_binary_search(&world->entities, entity, compare_entity);
+    if (ind < 0) {
+        fprintf(stderr, "FATAL: Entity with id %ld not found in world!\n", entity->id);
+        return;
+    }
+
+    // Find the current archetype of the entity
+    int arch_index = *(int*) vec_get(&world->entity_archetype, ind);
+    archetype_t* archetype = (archetype_t*) vec_get(&world->archetypes, arch_index);
+    
+    // Create a new archetype tag with the new components
+    int old_tag_count = (int) vec_length(&archetype->tags);
+    int* new_tags = malloc(sizeof(int) * (old_tag_count + component_count));
+    component_t** new_components = malloc(sizeof(component_t*) * (old_tag_count + component_count));
+    for (int i = 0; i < old_tag_count; i++) {
+        new_tags[i] = *(int*) vec_get(&archetype->tags, i);
+        new_components[i] = archetype_get_component(archetype, entity, new_tags[i]);
+    }
+    for (int i = 0; i < component_count; i++) {
+        new_tags[old_tag_count + i] = components[i]->tag;
+        new_components[old_tag_count + i] = components[i];
+    }
+    
+    // Find the new archetype
+    int dest_index = vec_binary_search(&world->archetypes, new_tags, archetype_match);
+    if (dest_index < 0) {
+        // Create a new archetype if it doesn't exist
+        archetype_t* dest_archetype = malloc(sizeof(archetype_t));
+        archetype_init(dest_archetype, old_tag_count + component_count, new_tags);
+        vec_insert(&world->archetypes, ~dest_index, (void*) dest_archetype);
+        dest_index = ~dest_index;
+    }
+
+    // Remove the entity from the old archetype
+    archetype_remove_entity(archetype, entity, false);
+
+    // Add the entity to the new archetype
+    archetype_t* dest_archetype = (archetype_t*) vec_get(&world->archetypes, dest_index);
+    archetype_add_entity(dest_archetype, entity, new_components);
+
+    // Update the entity_archetype vector
+    *(int*) vec_get(&world->entity_archetype, ind) = dest_index;
+
+    free(new_tags);
+    free(new_components);
+}
+
+void world_remove_components(world_t* world, entity_t* entity, int* component_tag, int component_count) {
+    // Find the entity in the world
+    int ind = vec_binary_search(&world->entities, entity, compare_entity);
+    if (ind < 0) {
+        fprintf(stderr, "FATAL: Entity with id %ld not found in world!\n", entity->id);
+        return;
+    }
+
+    // Find the current archetype of the entity
+    int arch_index = *(int*) vec_get(&world->entity_archetype, ind);
+    archetype_t* archetype = (archetype_t*) vec_get(&world->archetypes, arch_index);
+
+    // Create a new archetype tag without the components to be removed
+    int old_tag_count = (int) vec_length(&archetype->tags);
+    int* new_tags = malloc(sizeof(int) * (old_tag_count - component_count));
+    component_t** new_components = malloc(sizeof(component_t*) * (old_tag_count - component_count));
+    int new_tag_count = 0;
+    int j =0;
+    for (int i = 0; i < old_tag_count; i++) {
+        if (j < component_count && component_tag[j] == *(int*) vec_get(&archetype->tags, i)) {
+            j++;
+            continue;
+        }
+        new_tags[new_tag_count] = *(int*) vec_get(&archetype->tags, i);
+        new_components[new_tag_count] = archetype_get_component(archetype, entity, new_tags[new_tag_count]);
+        new_tag_count++;
+    }
+    if (new_tag_count != old_tag_count - component_count) {
+        fprintf(stderr, "FATAL: Component tags to remove not found in entity!\n");
+        free(new_tags);
+        free(new_components);
+        return;
+    }
+
+    // Find the new archetype
+    int dest_index = vec_binary_search(&world->archetypes, new_tags, archetype_match);
+    if (dest_index < 0) {
+        // Create a new archetype if it doesn't exist
+        archetype_t* dest_archetype = malloc(sizeof(archetype_t));
+        archetype_init(dest_archetype, new_tag_count, new_tags);
+        vec_insert(&world->archetypes, ~dest_index, (void*) dest_archetype);
+        dest_index = ~dest_index;
+    }
+
+    // Remove the entity from the old archetype
+    archetype_remove_entity(archetype, entity, false);
+
+    // Add the entity to the new archetype
+    archetype_t* dest_archetype = (archetype_t*) vec_get(&world->archetypes, dest_index);
+    archetype_add_entity(dest_archetype, entity, new_components);
+
+    // Update the entity_archetype vector
+    *(int*) vec_get(&world->entity_archetype, ind) = dest_index;
+
+    free(new_tags);
+    free(new_components);
+}
+
+void world_update(world_t* world) {
+    // Process the event queue
+    // IMPORTANT NOTE: We process each event one after the other by all systems. 
+    // This is to ensure that the order of events is maintained, and that systems can create new events
+    // that are processed in the same tick. (This is why we don't use a for loop here and we iterate these items like this)
+    int i = 0;
+    while (i < vec_length(&world->event_queue)) {
+        event_t* event = (event_t*) vec_get(&world->event_queue, i);
+        for (int j = 0; j < vec_length(&world->systems); j++) {
+            system_t* system = (system_t*) vec_get(&world->systems, j);
+            system->fn(world, event);
+        }
+        i++;
+    }
+    vec_clear(&world->event_queue, true);
+}

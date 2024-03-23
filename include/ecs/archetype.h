@@ -66,16 +66,19 @@ void archetype_sort_components(archetype_t* archetype);
 
 /*
 * Remove an entity from an archetype
+*
+* If should_free is true, the components of the entity will be freed.
 */
-bool archetype_remove_entity(archetype_t* archetype, entity_t* entity);
+bool archetype_remove_entity(archetype_t* archetype, entity_t* entity, bool should_free);
 
 /*
 * Remove an entity without reordering the components.
 * This is useful when the world is being destroyed, or you are removing a lot of entities at once.
 *
 * This function is faster than archetype_remove_entity, but you must call archetype_sort_components after adding all entities.
+* If should_free is true, the components of the entity will be freed.
 */
-bool archetype_remove_entity_unordered(archetype_t* archetype, entity_t* entity);
+bool archetype_remove_entity_unordered(archetype_t* archetype, entity_t* entity, bool should_free);
 
 /*
 * Get the component (by tag) of an entity in an archetype

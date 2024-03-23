@@ -89,7 +89,7 @@ void world_add_components(world_t* world, entity_t* entity, component_t** compon
 /*
 * Remove components from an entity
 */
-void world_remove_components(world_t* world, entity_t* entity, int component_tag);
+void world_remove_components(world_t* world, entity_t* entity, int* component_tag, int component_count);
 
 /*
 * Execute all systems

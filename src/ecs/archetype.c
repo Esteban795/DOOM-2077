@@ -127,7 +127,7 @@ void archetype_sort_components(archetype_t* archetype) {
     quicksort(archetype, 0, vec_length(&archetype->entities) - 1);
 }
 
-bool archetype_remove_entity(archetype_t* archetype, entity_t* entity) {
+bool archetype_remove_entity(archetype_t* archetype, entity_t* entity, bool should_free) {
     int ind = index_of_entity(archetype, entity);
     if (ind == -1) {
         return false;
@@ -135,12 +135,12 @@ bool archetype_remove_entity(archetype_t* archetype, entity_t* entity) {
     vec_remove(&archetype->entities, ind, false);
     for (int i = 0; (size_t) i < vec_length(&archetype->tags); i++) {
         vec_t* component = (vec_t*) vec_get(&archetype->components, i);
-        vec_remove(component, ind, true);
+        vec_remove(component, ind, should_free);
     }
     return true;
 }
 
-bool archetype_remove_entity_unordered(archetype_t* archetype, entity_t* entity) {
+bool archetype_remove_entity_unordered(archetype_t* archetype, entity_t* entity, bool should_free) {
     int ind = index_of_entity(archetype, entity);
     if (ind == -1) {
         return false;
@@ -148,7 +148,7 @@ bool archetype_remove_entity_unordered(archetype_t* archetype, entity_t* entity)
     vec_swap_remove(&archetype->entities, ind, false);
     for (int i = 0; (size_t) i < vec_length(&archetype->tags); i++) {
         vec_t* component = (vec_t*) vec_get(&archetype->components, i);
-        vec_swap_remove(component, ind, true);
+        vec_swap_remove(component, ind, should_free);
     }
     return true;
 }
