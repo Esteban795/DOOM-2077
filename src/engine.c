@@ -15,7 +15,6 @@ engine *init_engine(const char *wadPath, SDL_Renderer *renderer, int numkeys,
   e->numkeys = numkeys;
   e->keys = keys;
   e->players = create_players(num_players,e);
-  e->collision_map = create_collision_map();
   return e;
 }
 
@@ -27,7 +26,7 @@ int update_engine(engine *e, int dt) {
     return 1;
   }
   if (e->keys[SDL_SCANCODE_SPACE]){
-    fire_bullet(e->players,num_players,e->p,0,e->collision_map);
+    fire_bullet2(e->players,num_players,e->p,0);
   }
   int mouse_x, mouse_y;
   if(e->p->cooldown>1){
@@ -52,6 +51,5 @@ void engine_free(engine *e) {
   map_renderer_free(e->map_renderer);
   segment_handler_free(e->seg_handler);
   players_free(e->players,num_players);
-  free_collision_map(e->collision_map);
   free(e);
 }

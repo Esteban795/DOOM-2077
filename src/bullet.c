@@ -59,3 +59,59 @@ void fire_bullet(player** players,int num_players,player* player_,int damage,int
         //printf("je ne peux pas tirer\n");
     }
 }
+
+void fire_bullet2(player** players,int num_players,player* player_,int damage){
+    int touche=0;
+    if(player_->cooldown<50){
+        player_->cooldown=player_->cooldown+100;
+        linedef* linedefs=player_->engine->wData->linedefs;
+        double x1=player_->pos.x;
+        double y1=player_->pos.y;
+        double x2=x1+100*cos(deg_to_rad(player_->angle));
+        double y2=y1+100*sin(deg_to_rad(player_->angle));
+        double pente =0;
+
+        if(x1!=x2){
+            pente=(y2-y1)/(x2-x1);
+        }
+        //printf("%f %f %f %f ,%f \n",x1,x2,y1,y2,pente);
+        for(int i=0;i<475;i++){
+            double x=0;
+            double y=0;
+            if(!(linedefs[i].has_back_sidedef)){
+                double x1a=linedefs[i].start_vertex->x;
+                double y1a=linedefs[i].start_vertex->y;
+                double x2a=linedefs[i].end_vertex->x;
+                double y2a=linedefs[i].end_vertex->y;
+                if(x1a!=x2a){
+                    double pentea=(y2a-y1a)/(x1a-x2a);
+                    if(pente!=pentea){
+                        x = (x2a-x1)/(pente-pentea);
+                        if(((x1a<=x)&&(x<=x2a))||((x2a<=x)&&(x<=x1a))){
+                            int touche=1;
+                            printf("%i  b\n",i);
+                            //printf("%f %f %f\n",x,x1a,x2a);
+                        }
+                        else{
+                        }
+                    }
+                }
+                else{
+                    if(pente!=0){
+                        y=pente*x1a+x1;
+                        
+                        if(((y1a<=y)&&(y<=y2a))||((y2a<=y)&&(y<=y1a))){
+                                int touche=1;
+                                //printf("%f %f %f\n",y,y1a,y2a);
+                                printf("%i  a\n",i);
+                        }
+                    }
+                }
+            }
+        }
+        printf("stop\n");    
+    }
+    
+
+}
+
