@@ -16,6 +16,8 @@
   SDL_MapRGBA(SDL_AllocFormat(SDL_PIXELFORMAT_RGBA8888), 0, 0, 0, 0)
 
 // https://doomwiki.org/wiki/Picture_format
+// https://doom.fandom.com/wiki/TEXTURE1_and_TEXTURE2
+// https://doomwiki.org/wiki/TEXTURE1_and_TEXTURE2
 
 struct PatchHeader {
   i16 width;
@@ -47,6 +49,37 @@ struct Patch {
 };
 
 typedef struct Patch patch;
+
+struct TextureHeader {
+  u32 num_textures;
+  u32 *texture_map_offsets;
+  u32 *texture_data_offsets;
+};
+
+typedef struct TextureHeader texture_header;
+
+struct PatchMap {
+  i16 left_offset;
+  i16 top_offset;
+  u16 patch_index;
+  u16 step_dir; // unused 
+  u16 color_map; // unused
+};
+
+typedef struct PatchMap patch_map;
+
+struct TextureMap {
+  char* name;
+  bool masked;
+  u16 width;
+  u16 height;
+  u32 column_dir; //obsolete and unused but it still lies in WAD files
+  u16 patch_count;
+  patch_map* patch_maps;
+  int len_patch_maps;
+};
+
+typedef struct TextureMap texture_map;
 
 void display_patches(SDL_Renderer *renderer, patch *patches, int patch_count);
 
