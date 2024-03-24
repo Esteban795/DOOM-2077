@@ -49,7 +49,7 @@ typedef struct Patch patch;
 
 void display_patches(SDL_Renderer* renderer, patch* patches, int patch_count);
 
-void patches_free(patch *patches, int patch_count);
+void sprites_free(patch *patches, int patch_count);
 
-patch* get_patches(SDL_Renderer* renderer,lump* directory, header* header, FILE* f, color* palette,int* patch_count);
+patch* get_sprites(SDL_Renderer* renderer,lump* directory, header* header, FILE* f, color* palette,int* patch_count);
 #endif

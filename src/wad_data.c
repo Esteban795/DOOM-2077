@@ -51,7 +51,7 @@ wad_data *init_wad_data(const char *path,SDL_Renderer *renderer) {
       file, wd->directory, wd->map_index + BLOCKMAP, wd->linedefs);
   const int PLAYPAL = get_lump_index(wd->directory, "PLAYPAL", wd->header.lump_count);
   wd->color_palette = get_color_palette_from_lump(file, wd->directory, PLAYPAL, 3, 0);
-  wd->patches = get_patches(renderer, wd->directory, &wd->header, file, wd->color_palette, &wd->len_patches);
+  wd->sprites = get_sprites(renderer, wd->directory, &wd->header, file, wd->color_palette, &wd->len_sprites);
   fclose(file);
   return wd;
 }
@@ -68,7 +68,7 @@ void wad_data_free(wad_data *wd) {
   subsectors_free(wd->subsectors, wd->len_subsectors);
   sidedefs_free(wd->sidedefs, wd->len_sidedefs);
   free(wd->color_palette);
-  patches_free(wd->patches, wd->len_patches);
+  sprites_free(wd->sprites, wd->len_sprites);
   for (int i = 0; i < wd->header.lump_count; i++) {
     free(wd->directory[i].lump_name);
   }

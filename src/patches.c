@@ -134,7 +134,7 @@ patch create_patch(FILE *f, int patch_offset, SDL_Renderer *renderer,
   return p;
 }
 
-void free_patch(patch p) {
+void sprite_free(patch p) {
   free(p.header.column_offsets);
   for (int i = 0; i < p.nb_columns; i++) {
     if (p.columns[i].top_delta == NO_PIXELS) continue;  // nothing was actually allocated
@@ -144,9 +144,9 @@ void free_patch(patch p) {
   SDL_DestroyTexture(p.patch_img);
 }
 
-void patches_free(patch *patches, int patch_count) {
+void sprites_free(patch *patches, int patch_count) {
   for (int i = 0; i < patch_count; i++) {
-    free_patch(patches[i]);
+    sprite_free(patches[i]);
   }
   free(patches);
 }
@@ -196,7 +196,7 @@ void print_patch(patch p) {
   }
 }
 
-patch *get_patches(SDL_Renderer *renderer, lump *directory, header *header,
+patch *get_sprites(SDL_Renderer *renderer, lump *directory, header *header,
                    FILE *f, color *palette, int *patch_count) {
   int start_patches =
       get_lump_index(directory, PATCHES_START, header->lump_count);

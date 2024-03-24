@@ -32,8 +32,8 @@ struct WADData {
   sector *sectors;
   sidedef *sidedefs;
   color* color_palette;
-  patch* patches;
-  int len_patches;
+  patch* sprites;
+  int len_sprites;
   int len_vertexes;
   int len_linedefs;
   int len_nodes;
