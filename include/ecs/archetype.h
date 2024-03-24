@@ -89,14 +89,13 @@ component_t* archetype_get_component(archetype_t* archetype, entity_t* entity, i
 * Determine if an archetype matches a given archetype tag
 *
 * Returns 0 if the archetypes match.
-* Otherwise, returns if the archetype tag is greater than the given archetype tag.
-* If the given archetype tag is less than the archetype's tag, returns a positive value.
-* If the given archetype tag is greater than the archetype's tag, returns a negative value.
+* Returns a negative number if the archetype tag is less than the archetype.
+* Returns a positive number if the archetype tag is greater than the archetype
 *
 * This function is designed to be used with vec_sort.
 *
-* int archetype_match(archetype_t* archetype, archetype_tag_t* archetype_tag);
+* int archetype_match(const archetype_tag_t** archetype_tag, const archetype_t** archetype);
 */
-int archetype_match(const void* archetype, const void* archetype_tag);
+int archetype_match(const void* _archetype_tag, const void* _archetype);
 
 #endif

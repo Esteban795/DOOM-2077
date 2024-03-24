@@ -1,16 +1,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "../../include/collection/vec.h"
 #include "../../include/ecs/archetype.h"
 
 int compare_int(const void* a, const void* b) {
-    return (*(int*) b - *(int*) a);
+    return (**(int**) a - **(int**) b);
 }
 
 int compare_entity(const void* a, const void* b) {
     entity_t* entity_a = *(entity_t**) a;
     entity_t* entity_b = *(entity_t**) b;
-    return (entity_b->id - entity_a->id);
+    return (entity_a->id - entity_b->id);
 }
 
 int index_of_entity(archetype_t* archetype, entity_t* entity) {
@@ -58,11 +59,11 @@ void archetype_add_entity(archetype_t* archetype, entity_t* entity, component_t*
         return;
     }
     vec_insert(&archetype->entities, ~ind, (void*) entity);
-    for (int i = 0; (size_t) i < vec_length(&archetype->tags); i++) {
+    for (int i = 0; i < (int) vec_length(&archetype->tags); i++) {
         int tag = components[i]->tag;
-        int ind = vec_binary_search(&archetype->tags, &tag, compare_int);
-        if (ind >= 0) {
-            vec_t* component = (vec_t*) vec_get(&archetype->components, ind);
+        int comp_ind = vec_binary_search(&archetype->tags, &tag, compare_int);
+        if (comp_ind >= 0) {
+            vec_t* component = (vec_t*) vec_get(&archetype->components, comp_ind);
             vec_insert(component, ~ind, components[i]);
         } else {
             printf("FATAL: Component with tag %d not found in archetype!\n", tag);
@@ -92,11 +93,11 @@ void partition(archetype_t* archetype, int low, int high, int* pivot) {
     entity_t* pivot_value = (entity_t*) vec_get(&archetype->entities, pivot_index);
     while (i <= j) {
         entity_t* low_value = (entity_t*) vec_get(&archetype->entities, i);
-        while (compare_entity(&low_value, &pivot_value) > 0) {
+        while (compare_entity(&low_value, &pivot_value) < 0) {
             i++;
         }
         entity_t* high_value = (entity_t*) vec_get(&archetype->entities, j);
-        while (compare_entity(&high_value, &pivot_value) < 0){
+        while (compare_entity(&high_value, &pivot_value) > 0){
             j--;
         }
         if (i < j) {
@@ -168,9 +169,9 @@ component_t* archetype_get_component(archetype_t* archetype, entity_t* entity, i
     return (component_t*) vec_get(component, ind);
 }
 
-int archetype_match(const void* _archetype, const void* _archetype_tag) {
-    archetype_t* archetype = (archetype_t*) _archetype;
-    archetype_tag_t* archetype_tag = (archetype_tag_t*) _archetype_tag;
+int archetype_match(const void* _archetype_tag, const void* _archetype) {
+    archetype_t* archetype = *(archetype_t**) _archetype;
+    archetype_tag_t* archetype_tag = *(archetype_tag_t**) _archetype_tag;
     int i = 0;
     while (i < (int) vec_length(&archetype->tags) && i < archetype_tag->component_count) {
         int tag = *(int*) vec_get(&archetype->tags, i);
@@ -181,9 +182,9 @@ int archetype_match(const void* _archetype, const void* _archetype_tag) {
         i++;
     }
     if (i < archetype_tag->component_count) {
-        return 1;
-    } else if (i < (int) vec_length(&archetype->tags)) {
         return -1;
+    } else if (i < (int) vec_length(&archetype->tags)) {
+        return 1;
     }
     return 0;
 }

@@ -53,7 +53,7 @@ LIBECS_SRC = $(patsubst $(srcdir)/%, %, $(wildcard $(srcdir)/ecs/*.c))
 LIBECS_OBJ = $(LIBECS_SRC:%.c=%.o)
 LIBECS_TEST_SRC = $(patsubst $(testdir)/%, %, $(wildcard $(testdir)/ecs/*.c))
 LIBECS_TEST_OBJ = $(LIBECS_TEST_SRC:%.c=%.o)
-LIBECS_LIB =
+LIBECS_LIB = libcollection.a
 # - END OF TARGETS  -  #
 
 .PHONY: all clean test before_build run_server run_client build_server build_client test test_collection \
@@ -104,12 +104,12 @@ $(builddir)/test_collection: $(addprefix $(testdepsdir)/, $(LIBCOLLECTION_TEST_O
 	$(CC) $(ALL_CFLAGS) -o $@ $^ $(ALL_LDFLAGS) $(LIBCOLLECTION_LDFLAGS)
 
 # libecs - build archive target
-$(depsdir)/libecs.a: $(addprefix $(depsdir)/, $(LIBECS_OBJ)) $(addprefix $(depsdir)/, $(LIBECS_LIB)) | before_build
+$(depsdir)/libecs.a: $(addprefix $(depsdir)/, $(LIBECS_OBJ)) | before_build
 	@echo "Building libecs..."
 	$(AR) rcs $@ $^
 
 # libecs - test target
-$(builddir)/test_ecs: $(addprefix $(testdepsdir)/, $(LIBECS_TEST_OBJ)) $(addprefix $(depsdir)/, $(LIBECS_LIB)) $(depsdir)/libecs.a | before_build
+$(builddir)/test_ecs: $(addprefix $(testdepsdir)/, $(LIBECS_TEST_OBJ)) $(depsdir)/libecs.a $(addprefix $(depsdir)/, $(LIBECS_LIB)) | before_build
 	@echo "Building test_ecs..."
 	$(CC) $(ALL_CFLAGS) -o $@ $^ $(ALL_LDFLAGS)
 

@@ -116,14 +116,14 @@ int vec_binary_search(vec_t* vec, void* data, int (*cmp)(const void*, const void
     int right = vec->length - 1;
     while (left <= right) {
         int middle = left + (right - left) / 2;
-        int cmp_result = cmp(data, vec->data[middle]);
+        int cmp_result = cmp(&data, &vec->data[middle]);
         if (cmp_result == 0) {
             return middle;
         }
         if (left == right) {
             return ~left;
         }
-        if (cmp_result > 0) {
+        if (cmp_result < 0) {
             right = middle - 1;
         } else {
             left = middle + 1;

@@ -264,9 +264,9 @@ void world_update(world_t* world) {
     // This is to ensure that the order of events is maintained, and that systems can create new events
     // that are processed in the same tick. (This is why we don't use a for loop here and we iterate these items like this)
     int i = 0;
-    while (i < vec_length(&world->event_queue)) {
+    while (i < (int) vec_length(&world->event_queue)) {
         event_t* event = (event_t*) vec_get(&world->event_queue, i);
-        for (int j = 0; j < vec_length(&world->systems); j++) {
+        for (int j = 0; j < (int) vec_length(&world->systems); j++) {
             system_t* system = (system_t*) vec_get(&world->systems, j);
             system->fn(world, event);
         }

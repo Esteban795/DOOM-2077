@@ -101,13 +101,9 @@ void vec_swap_remove(vec_t* vec, size_t index, bool free_data);
  *
  * Returns the index of the item, or a negative index if it is not found.
  *
- * The vector must be sorted.
- * The comparison function must return 0 if the items are equal, 
- * a positive number if the first item is less than the second, 
- * and a negative number if the first item is greater than the second.
- * The comparison function must be consistent with the sorting order.
- * However, data can be a pointer to another type, as long as the comparison function can handle it;
- * it will always be casted to a void*, and be the first argument of the comparison function.
+ * The vector must be sorted. Check vec_sort, for more information about the comparison function.
+ * Due to the nature of the comparison function, data will be passed as void** to the comparison function,
+ * as the first argument.
  * 
  * The negative index is the bitwise negation of the index where the item should be inserted.
  */
@@ -116,9 +112,15 @@ int vec_binary_search(vec_t* vec, void* data, int (*cmp)(const void*, const void
 /*
  * Sorts the vector.
  *
- * The comparison function must return 0 if the items are equal, 
- * a positive number if the first item is less than the second, 
- * and a negative number if the first item is greater than the second.
+ * The comparison function must return a negative value if the first item is less than
+ * the second item, a positive value if the first item is greater than the second item,
+ * and zero if the items are equal.
+ * 
+ * The comparison function must have the following signature:
+ * int cmp(const void* a, const void* b);
+ * Note that the comparison function is expected to receive pointers to the items. 
+ * Example: if this vec_t is a vector of integers, the comparison function should expected
+ * that a and b are castable to int**.
  */
 void vec_sort(vec_t* vec, int (*cmp)(const void*, const void*));
 #endif  
