@@ -49,7 +49,7 @@ Uint32 *transform_to_row_based(Uint32 *pixels, int width, int height) {
   return row_based;
 }
 
-int find_nb_of_columns(FILE* f,patch_header ph, int offset){
+int find_nb_of_columns(FILE *f, patch_header ph, int offset) {
   int actual_number_of_columns = 0;
   int cln_offset = 0;
   for (int i = 0; i < ph.width; i++) {
@@ -66,8 +66,10 @@ int find_nb_of_columns(FILE* f,patch_header ph, int offset){
   return actual_number_of_columns;
 }
 
-patch_column* read_patch_columns(FILE* f, patch_header ph, int offset, int actual_number_of_columns){
-  patch_column* columns = malloc(sizeof(patch_column) * actual_number_of_columns);
+patch_column *read_patch_columns(FILE *f, patch_header ph, int offset,
+                                 int actual_number_of_columns) {
+  patch_column *columns =
+      malloc(sizeof(patch_column) * actual_number_of_columns);
   int column_offset = 0;
   int arr_offset = 0;
   for (int i = 0; i < ph.width; i++) {
@@ -84,13 +86,14 @@ patch_column* read_patch_columns(FILE* f, patch_header ph, int offset, int actua
   return columns;
 }
 
-SDL_Texture* get_texture_from_patch(SDL_Renderer* renderer,patch p){
+SDL_Texture *get_texture_from_patch(SDL_Renderer *renderer, patch p) {
   int pitch = p.header.width * 4;
   int ix = 0;
   int color_idx;
   SDL_PixelFormat *fmt = SDL_AllocFormat(SDL_PIXELFORMAT_RGBA8888);
   Uint32 *pixels = malloc(sizeof(Uint32) * p.header.width * p.header.height);
-  memset(pixels,TRANSPARENT_COLOR,p.header.width * p.header.height * sizeof(Uint32));
+  memset(pixels, TRANSPARENT_COLOR,
+         p.header.width * p.header.height * sizeof(Uint32));
   color c;
   Uint32 code_c;
   for (int j = 0; j < p.nb_columns; j++) {
@@ -129,15 +132,17 @@ patch create_patch(FILE *f, int patch_offset, SDL_Renderer *renderer,
   p.header = read_patch_header(f, patch_offset);
   int actual_number_of_columns = find_nb_of_columns(f, p.header, patch_offset);
   p.nb_columns = actual_number_of_columns;
-  p.columns = read_patch_columns(f, p.header, patch_offset, actual_number_of_columns);
-  p.patch_img = get_texture_from_patch(renderer,p);
+  p.columns =
+      read_patch_columns(f, p.header, patch_offset, actual_number_of_columns);
+  p.patch_img = get_texture_from_patch(renderer, p);
   return p;
 }
 
 void sprite_free(patch p) {
   free(p.header.column_offsets);
   for (int i = 0; i < p.nb_columns; i++) {
-    if (p.columns[i].top_delta == NO_PIXELS) continue;  // nothing was actually allocated
+    if (p.columns[i].top_delta == NO_PIXELS)
+      continue; // nothing was actually allocated
     free(p.columns[i].data);
   }
   free(p.columns);
@@ -151,6 +156,25 @@ void sprites_free(patch *patches, int patch_count) {
   free(patches);
 }
 
+void texture_patch_free(patch p) {
+  free(p.header.column_offsets);
+  for (int i = 0; i < p.nb_columns; i++) {
+    if (p.columns[i].top_delta == NO_PIXELS)
+      continue; // nothing was actually allocated
+    free(p.columns[i].data);
+  }
+  free(p.columns);
+  free(p.patchname);
+  SDL_DestroyTexture(p.patch_img);
+}
+
+void textures_patches_free(patch *patches, int patch_count) {
+  for (int i = 0; i < patch_count; i++) {
+    texture_patch_free(patches[i]);
+  }
+  free(patches);
+}
+
 void display_patches(SDL_Renderer *renderer, patch *patches, int patch_count) {
   for (int i = 0; i < patch_count; i++) {
     if (patches[i].patch_img == NULL) {
@@ -159,7 +183,7 @@ void display_patches(SDL_Renderer *renderer, patch *patches, int patch_count) {
     }
     SDL_RenderCopy(renderer, patches[i].patch_img, NULL, NULL);
     SDL_RenderPresent(renderer);
-    SDL_Delay(6);
+    SDL_Delay(100);
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
     SDL_RenderClear(renderer);
   }
@@ -210,4 +234,28 @@ patch *get_sprites(SDL_Renderer *renderer, lump *directory, header *header,
                      directory[start_patches + i + 1].lump_name, palette);
   }
   return patches;
+}
+
+patch *get_texture_patches(SDL_Renderer *renderer, lump *directory,
+                           header *header, FILE *f, color *palette,
+                           int *len_textures_patches) {
+  int PNAMES_lump_index =
+      get_lump_index(directory, "PNAMES", header->lump_count);
+  lump PNAMES_lump = directory[PNAMES_lump_index];
+  int offset = PNAMES_lump.lump_offset;
+  i32 num_patches = read_i32(f, offset);
+  offset += 4;
+  *len_textures_patches = (int)num_patches;
+  patch *texture_patches = malloc(sizeof(patch) * num_patches);
+  for (int i = 0; i < *len_textures_patches; i++) {
+    char *patch_name = read_texture_name(f, offset + i * 8, 8);
+    i16 patch_index = get_lump_index(directory, patch_name, header->lump_count);
+    if (patch_index == -1) {
+      free(patch_name);
+      continue;
+    }
+    texture_patches[i] = create_patch(f, directory[patch_index].lump_offset,
+                                      renderer, patch_name, palette);
+  }
+  return texture_patches;
 }

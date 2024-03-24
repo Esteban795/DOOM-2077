@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+typedef int8_t i8;
 typedef int16_t i16;
 typedef uint16_t u16;
 typedef int32_t i32;
@@ -40,5 +41,5 @@ u32 read_u32(FILE *f, int offset);
 
 char *read_string(FILE *f, int offset, int num_bytes);
 
-void read_texture_name(FILE *f, int offset, int8_t *texture_name);
+char *read_texture_name(FILE *f, int offset, int length);
 #endif

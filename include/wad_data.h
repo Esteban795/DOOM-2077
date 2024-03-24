@@ -10,13 +10,13 @@
 #include "header.h"
 #include "linedef.h"
 #include "node.h"
+#include "patches.h"
 #include "sector.h"
 #include "segment.h"
 #include "sidedef.h"
 #include "subsector.h"
 #include "thing.h"
 #include "vertex.h"
-#include "patches.h"
 
 struct WADData {
   header header;
@@ -31,8 +31,10 @@ struct WADData {
   blockmap *blockmap;
   sector *sectors;
   sidedef *sidedefs;
-  color* color_palette;
-  patch* sprites;
+  color *color_palette;
+  patch *sprites;
+  patch *texture_patches;
+  int len_texture_patches;
   int len_sprites;
   int len_vertexes;
   int len_linedefs;
@@ -46,7 +48,7 @@ struct WADData {
 
 typedef struct WADData wad_data;
 
-wad_data *init_wad_data(const char *path,SDL_Renderer* renderer);
+wad_data *init_wad_data(const char *path, SDL_Renderer *renderer);
 
 void wad_data_free(wad_data *wd);
 #endif
