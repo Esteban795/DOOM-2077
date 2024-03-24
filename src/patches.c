@@ -1,9 +1,4 @@
 #include "../include/patches.h"
-#include <SDL2/SDL_pixels.h>
-#include <SDL2/SDL_render.h>
-#include <SDL2/SDL_stdinc.h>
-#include <SDL2/SDL_timer.h>
-#include <stdio.h>
 
 patch_header read_patch_header(FILE *f, int offset) {
   patch_header ph;
@@ -22,10 +17,11 @@ patch_header read_patch_header(FILE *f, int offset) {
   return ph;
 }
 
-patch_column read_patch_column(FILE *f, int column_offset) {
+patch_column read_patch_column(FILE *f, int column_offset, int *new_offset) {
   patch_column pc;
   pc.top_delta = read_u8(f, column_offset);
   if (pc.top_delta == NO_PIXELS) {
+    *new_offset = column_offset + 1;
     return pc;
   }
   pc.length = read_u8(f, column_offset + 1);
@@ -39,61 +35,113 @@ patch_column read_patch_column(FILE *f, int column_offset) {
     pc.data[i] = read_u8(f, column_offset + 3 + i);
   }
   pc.padding_post = read_u8(f, column_offset + 3 + pc.length);
+  *new_offset = column_offset + 4 + pc.length;
   return pc;
 }
 
-patch create_patch(FILE *f, int patch_offset, SDL_Renderer *renderer,char *patchname, color *palette) {
-  patch p;
-  p.palette = palette;
-  p.header = read_patch_header(f, patch_offset);
-  p.columns = malloc(sizeof(patch_column) * p.header.width);
-  p.patchname = patchname;
-  int column_offset = 0;
-  for (int i = 0; i < p.header.width; i++) {
-    column_offset = patch_offset + p.header.column_offsets[i];
-    p.columns[i] = read_patch_column(f, column_offset);
-    if (p.columns[i].top_delta == NO_PIXELS) {
-      continue;
+Uint32 *transform_to_row_based(Uint32 *pixels, int width, int height) {
+  Uint32 *row_based = malloc(sizeof(Uint32) * width * height);
+  for (int i = 0; i < height; i++) {
+    for (int j = 0; j < width; j++) {
+      row_based[i * width + j] = pixels[j * height + i];
     }
   }
-  // int pitch = 0;
-  // SDL_PixelFormat fmt;
-  // fmt.format = SDL_PIXELFORMAT_RGBA8888;
-  // Uint32 *pixels = malloc(sizeof(Uint32) * p.header.width * p.header.height);
-  // SDL_Texture *texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
-  //                                          SDL_TEXTUREACCESS_STREAMING,
-  //                                          p.header.width, p.header.height);
-  // if (SDL_LockTexture(texture, NULL, (void **)&pixels, &pitch) != 0) {
-  //   printf("Error locking texture: %s\n", SDL_GetError());
-  //   exit(1);
-  // }
-  // SDL_SetRenderTarget(renderer, texture);
-  // for (int i = 0; i < p.header.width; i++) {
-  //   if (p.columns[i].top_delta == 0xFF)
-  //     continue; // no pixel in this column
-  //   patch_column pc = p.columns[i];
-  //   for (int j = 0; j < p.columns[i].length; j++) {
-  //     int color_idx = pc.data[j];
-  //     color c = p.palette[color_idx];
-  //     Uint32 color = SDL_MapRGB(&fmt, c.r, c.g, c.b);
-  //     Uint32 pixel_pos = i * (pitch * sizeof(unsigned int)) + i;
-  //     pixels[pixel_pos] = color;
-  //   }
-  // }
-  // SDL_UnlockTexture(texture);
-  // p.patch_img = texture;
+  return row_based;
+}
+
+int find_nb_of_columns(FILE* f,patch_header ph, int offset){
+  int actual_number_of_columns = 0;
+  int cln_offset = 0;
+  for (int i = 0; i < ph.width; i++) {
+    cln_offset = offset + ph.column_offsets[i];
+    while (true) {
+      patch_column pc = read_patch_column(f, cln_offset, &cln_offset);
+      actual_number_of_columns++;
+      if (pc.top_delta == NO_PIXELS) {
+        break;
+      }
+      free(pc.data);
+    }
+  }
+  return actual_number_of_columns;
+}
+
+patch_column* read_patch_columns(FILE* f, patch_header ph, int offset, int actual_number_of_columns){
+  patch_column* columns = malloc(sizeof(patch_column) * actual_number_of_columns);
+  int column_offset = 0;
+  int arr_offset = 0;
+  for (int i = 0; i < ph.width; i++) {
+    column_offset = offset + ph.column_offsets[i];
+    while (true) {
+      patch_column pc = read_patch_column(f, column_offset, &column_offset);
+      columns[arr_offset] = pc;
+      arr_offset++;
+      if (pc.top_delta == NO_PIXELS) {
+        break;
+      }
+    }
+  }
+  return columns;
+}
+
+SDL_Texture* get_texture_from_patch(SDL_Renderer* renderer,patch p){
+  int pitch = p.header.width * 4;
+  int ix = 0;
+  int color_idx;
+  SDL_PixelFormat *fmt = SDL_AllocFormat(SDL_PIXELFORMAT_RGBA8888);
+  Uint32 *pixels = malloc(sizeof(Uint32) * p.header.width * p.header.height);
+  memset(pixels,TRANSPARENT_COLOR,p.header.width * p.header.height * sizeof(Uint32));
+  color c;
+  Uint32 code_c;
+  for (int j = 0; j < p.nb_columns; j++) {
+    patch_column column = p.columns[j];
+    if (column.top_delta == NO_PIXELS) {
+      ix++;
+      continue;
+    }
+    for (int iy = 0; iy < column.length; iy++) {
+      color_idx = column.data[iy];
+      c = p.palette[color_idx];
+      code_c = SDL_MapRGBA(fmt, c.r, c.g, c.b, 255);
+      pixels[ix * p.header.height + iy + column.top_delta] = code_c;
+    }
+  }
+  Uint32 *row_based =
+      transform_to_row_based(pixels, p.header.width, p.header.height);
+  free(pixels);
+  SDL_Texture *texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
+                                           SDL_TEXTUREACCESS_STATIC,
+                                           p.header.width, p.header.height);
+  if (texture == NULL) {
+    SDL_Log("Texture could not be created! SDL_Error: %s\n", SDL_GetError());
+    exit(1);
+  }
+  SDL_UpdateTexture(texture, NULL, row_based, pitch);
+  free(row_based);
+  return texture;
+}
+
+patch create_patch(FILE *f, int patch_offset, SDL_Renderer *renderer,
+                   char *patchname, color *palette) {
+  patch p;
+  p.patchname = patchname;
+  p.palette = palette;
+  p.header = read_patch_header(f, patch_offset);
+  int actual_number_of_columns = find_nb_of_columns(f, p.header, patch_offset);
+  p.nb_columns = actual_number_of_columns;
+  p.columns = read_patch_columns(f, p.header, patch_offset, actual_number_of_columns);
+  p.patch_img = get_texture_from_patch(renderer,p);
   return p;
 }
 
 void free_patch(patch p) {
   free(p.header.column_offsets);
-  for (int i = 0; i < p.header.width; i++) {
-    if (p.columns[i].top_delta == NO_PIXELS)
-      continue;
+  for (int i = 0; i < p.nb_columns; i++) {
+    if (p.columns[i].top_delta == NO_PIXELS) continue;  // nothing was actually allocated
     free(p.columns[i].data);
   }
   free(p.columns);
-  // if (p.patch_img != NULL) SDL_DestroyTexture(p.patch_img);
+  SDL_DestroyTexture(p.patch_img);
 }
 
 void patches_free(patch *patches, int patch_count) {
@@ -104,30 +152,47 @@ void patches_free(patch *patches, int patch_count) {
 }
 
 void display_patches(SDL_Renderer *renderer, patch *patches, int patch_count) {
-  // for (int i = 0; i < patch_count; i++) {
-  //   printf("Displaying patch %d\n", i);
-  //   if (patches[i].patch_img == NULL) {
-  //     printf("No texture associated with patch %d\n", i);
-  //     continue;
-  //   }
-  //   SDL_RenderCopy(renderer, patches[i].patch_img, NULL, NULL);
-  //   SDL_RenderPresent(renderer);
-  //   SDL_Delay(500);
-  // }
-  for (int i = 0; i < patch_count;i++){
-    printf("Patch %d: %s\n", i, patches[i].patchname);
-    printf("Width: %d\n", patches[i].header.width);
-    printf("Height: %d\n", patches[i].header.height);
-    printf("X Offset: %d\n", patches[i].header.x_offset);
-    printf("Y Offset: %d\n", patches[i].header.y_offset);
-    for (int j = 0; j < patches[i].header.width; j++){
-      printf("Column %d: ", j);
-      for (int k = 0; k < patches[i].columns[j].length; k++){
-        printf("%d ", patches[i].columns[j].data[k]);
-      }
-      printf("\n");
+  for (int i = 0; i < patch_count; i++) {
+    if (patches[i].patch_img == NULL) {
+      printf("No texture associated with patch %d\n", i);
+      continue;
     }
-    printf("\n\n\n");
+    SDL_RenderCopy(renderer, patches[i].patch_img, NULL, NULL);
+    SDL_RenderPresent(renderer);
+    SDL_Delay(6);
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
+    SDL_RenderClear(renderer);
+  }
+}
+
+void print_patch_column(patch_column pc) {
+  printf("Top delta: %d\n", pc.top_delta);
+  printf("Length: %d\n", pc.length);
+  printf("Padding pre: %d\n", pc.padding_pre);
+  printf("Data: [");
+  for (int i = 0; i < pc.length; i++) {
+    if (i != 0)
+      printf(", ");
+    printf("%d", pc.data[i]);
+  }
+  printf("]\n");
+  printf("Padding post: %d\n", pc.padding_post);
+}
+
+void print_patch(patch p) {
+  printf("Patch %s\n", p.patchname);
+  printf("Width: %d\n", p.header.width);
+  printf("Height: %d\n", p.header.height);
+  printf("X Offset: %d\n", p.header.x_offset);
+  printf("Y Offset: %d\n", p.header.y_offset);
+  for (int i = 0; i < p.header.width; i++) {
+    printf("[");
+    for (int j = 0; j < p.columns[i].length; j++) {
+      if (j != 0)
+        printf(", ");
+      printf("%d", p.columns[i].data[j]);
+    }
+    printf("]\n");
   }
 }
 

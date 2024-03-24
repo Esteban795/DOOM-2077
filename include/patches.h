@@ -11,6 +11,9 @@
 
 #define PATCHES_START "S_START"
 #define PATCHES_END "S_END"
+
+#define TRANSPARENT_COLOR SDL_MapRGBA(SDL_AllocFormat(SDL_PIXELFORMAT_RGBA8888), 0, 0, 0,0)
+
 // https://doomwiki.org/wiki/Picture_format
 
 struct PatchHeader {
@@ -34,6 +37,7 @@ struct PatchColumn {
 typedef struct PatchColumn patch_column;
 
 struct Patch {
+    int nb_columns;
     char* patchname;
     color* palette;
     patch_header header;
