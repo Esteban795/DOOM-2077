@@ -362,6 +362,12 @@ int test_vec_binary_search() {
     *a = 37;
     i = vec_binary_search(&vec, (void*) a, compare_ints);
     ASSERT(i == ~3, "vec_binary_search: i is not ~3");
+    *a = 0;
+    i = vec_binary_search(&vec, (void*) a, compare_ints);
+    ASSERT(i == ~0, "vec_binary_search: i is not ~0");
+    *a = 11;
+    i = vec_binary_search(&vec, (void*) a, compare_ints);
+    ASSERT(i == ~1, "vec_binary_search: i is not ~1");
     free(a);
     vec_destroy(&vec, true);
     return 0;

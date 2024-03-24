@@ -120,16 +120,13 @@ int vec_binary_search(vec_t* vec, void* data, int (*cmp)(const void*, const void
         if (cmp_result == 0) {
             return middle;
         }
-        if (left == right) {
-            return ~left;
-        }
         if (cmp_result < 0) {
             right = middle - 1;
         } else {
             left = middle + 1;
         }
     }
-    return ~0;
+    return ~left;
 }
 
 void vec_sort(vec_t* vec, int (*cmp)(const void*, const void*)) {

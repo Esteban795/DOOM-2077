@@ -53,7 +53,7 @@ void archetype_destroy(archetype_t* archetype) {
 
 
 void archetype_add_entity(archetype_t* archetype, entity_t* entity, component_t* components[]) {
-    int ind = vec_binary_search(&archetype->entities, entity, compare_entity);
+    int ind = index_of_entity(archetype, entity);
     if (ind >= 0)  {
         fprintf(stderr, "FATAL: Entity with id %ld already exists in archetype!\n", entity->id);
         return;
@@ -130,10 +130,10 @@ void archetype_sort_components(archetype_t* archetype) {
 
 bool archetype_remove_entity(archetype_t* archetype, entity_t* entity, bool should_free) {
     int ind = index_of_entity(archetype, entity);
-    if (ind == -1) {
+    if (ind < 0) {
         return false;
     }
-    vec_remove(&archetype->entities, ind, false);
+    vec_remove(&archetype->entities, ind, should_free);
     for (int i = 0; (size_t) i < vec_length(&archetype->tags); i++) {
         vec_t* component = (vec_t*) vec_get(&archetype->components, i);
         vec_remove(component, ind, should_free);
@@ -143,10 +143,10 @@ bool archetype_remove_entity(archetype_t* archetype, entity_t* entity, bool shou
 
 bool archetype_remove_entity_unordered(archetype_t* archetype, entity_t* entity, bool should_free) {
     int ind = index_of_entity(archetype, entity);
-    if (ind == -1) {
+    if (ind < 0) {
         return false;
     }
-    vec_swap_remove(&archetype->entities, ind, false);
+    vec_swap_remove(&archetype->entities, ind, should_free);
     for (int i = 0; (size_t) i < vec_length(&archetype->tags); i++) {
         vec_t* component = (vec_t*) vec_get(&archetype->components, i);
         vec_swap_remove(component, ind, should_free);
@@ -182,9 +182,9 @@ int archetype_match(const void* _archetype_tag, const void* _archetype) {
         i++;
     }
     if (i < archetype_tag->component_count) {
-        return -1;
-    } else if (i < (int) vec_length(&archetype->tags)) {
         return 1;
+    } else if (i < (int) vec_length(&archetype->tags)) {
+        return -1;
     }
     return 0;
 }
