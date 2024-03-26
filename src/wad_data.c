@@ -77,6 +77,7 @@ void wad_data_free(wad_data *wd) {
   sidedefs_free(wd->sidedefs, wd->len_sidedefs);
   free(wd->color_palette);
   sprites_free(wd->sprites, wd->len_sprites);
+  textures_patches_free(wd->texture_patches, wd->len_texture_patches);
   for (int i = 0; i < wd->header.lump_count; i++) {
     free(wd->directory[i].lump_name);
   }
