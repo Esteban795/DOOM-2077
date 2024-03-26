@@ -40,7 +40,7 @@ int update_engine(engine *e, int dt) {
 }
 
 void engine_free(engine *e) {
-  free_ui_ingame(e->uimodules, e->nuimodules);
+  free_ui_ingame(e->uimodules);
   wad_data_free(e->wData);
   bsp_free(e->bsp);
   player_free(e->p);
