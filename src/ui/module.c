@@ -38,12 +38,12 @@ void uimodule_set_element(UIModule* module, int index, UIElementType type, void*
     } 
 }
 
-void render_uimodule(UIModule* module) {
+void render_uimodule(SDL_Renderer* r, UIModule* module) {
     for (int i = 0; i < module->nelements; i++){
         if (module->elements[i] != 0){
             switch (module->elements[i]->type) {
                 case UIET_Label:
-                    uilabel_render(module->elements[i]->element);
+                    uilabel_render(r, module->elements[i]->element);
                     break;
                 default:
                     break;

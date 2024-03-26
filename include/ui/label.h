@@ -10,14 +10,15 @@ typedef struct _UILabel {
     UIAnchorPoint text_anchor;
     char* string;
     SDL_Color color;
+    TTF_Font* font;
 } UILabel;
 
 UILabel* uilabel_create(float x, float y, float w, float h,
                         UIAnchorPoint m_anchor, UIAnchorPoint text_anchor, char* string,
-                        int r, int g, int b, int a);
+                        int r, int g, int b, int a, TTF_Font* font);
 
 void uilabel_free(UILabel* o);
 
-void uilabel_render(UILabel* o);
+void uilabel_render(SDL_Renderer* r, UILabel* o);
 
 #endif

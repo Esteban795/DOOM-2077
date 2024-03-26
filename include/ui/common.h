@@ -2,7 +2,10 @@
 #define UI_COMMON_H
 
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_ttf.h>
 #include <stdbool.h>
+
+#include "../settings.h"
 
 //represents where the UI element sits compared to its positioning values (x,y,w,h)
 typedef enum _UIAnchorPoint {

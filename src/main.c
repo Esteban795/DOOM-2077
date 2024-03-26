@@ -28,6 +28,11 @@ int main(void) {
     printf("Error at SDL startup");
     exit(-1);
   }
+  status = TTF_Init();
+  if (status == 1) {
+    printf("Error at SDL_TTF startup");
+    exit(-1);
+  }
   uint64_t now;
   uint64_t old = SDL_GetTicks64();
   SDL_ShowCursor(SDL_DISABLE);

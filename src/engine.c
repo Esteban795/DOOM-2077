@@ -32,7 +32,7 @@ int update_engine(engine *e, int dt) {
   segment_handler_update(e->seg_handler);
   update_bsp(e->bsp);
   for (int i=0; i<e->nuimodules; i++){
-    render_uimodule(e->uimodules[i]);
+    render_uimodule(e->map_renderer->renderer, e->uimodules[i]);
   }
   SDL_SetRelativeMouseMode(SDL_TRUE);
   SDL_RenderPresent(e->map_renderer->renderer);
