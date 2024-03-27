@@ -76,7 +76,6 @@ struct TextureMap {
   u32 column_dir; //obsolete and unused but it still lies in WAD files
   u16 patch_count;
   patch_map* patch_maps;
-  int len_patch_maps;
 };
 
 typedef struct TextureMap texture_map;

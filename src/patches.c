@@ -1,5 +1,34 @@
 #include "../include/patches.h"
 
+patch_map read_patch_map(FILE* f, int offset){
+  patch_map pm;
+  pm.left_offset = read_i16(f, offset);
+  pm.top_offset = read_i16(f, offset + 2);
+  pm.patch_index = read_u16(f, offset + 4);
+  pm.step_dir = 0; // both are unused so we don't care
+  pm.color_map = 0; //
+  return pm;
+}
+
+texture_map read_texture_map(FILE* f, int offset){
+  texture_map tm;
+  tm.name = read_texture_name(f, offset, 8);
+  tm.masked = (bool)read_i32(f, offset + 8);
+  tm.width = read_i16(f, offset + 12);
+  tm.height = read_i16(f, offset + 14);
+  tm.column_dir = read_i32(f, offset + 16);
+  tm.patch_count = read_u16(f, offset + 20);
+  tm.patch_maps = malloc(sizeof(patch_map) * tm.patch_count);
+  for (int i = 0; i < tm.patch_count; i++){
+    tm.patch_maps[i] = read_patch_map(f, offset + 22 + i * 10);
+  }
+  return tm;
+}
+
+// texture_header read_texture_headder(FILE* f, int offset){
+//   texture_header th;
+//   th
+// }
 patch_header read_patch_header(FILE *f, int offset) {
   patch_header ph;
   ph.width = read_i16(f, offset);
