@@ -18,24 +18,24 @@ node* new_node(patch* p){
 avl_tree* avl_new(void){
     avl_tree* t = malloc(sizeof(avl_tree));
     t->root = NULL;
-    t->nb_elts = 0;
+    t->size = 0;
     return t;
 }
 
 bool node_member(node* n, char* key){
     if (n == NULL || key[0] == '\0') return false;
-    printf("n.patch.patchname: %s\n",n->patch->patchname);
     if (strcmp(key,n->patch->patchname) < 0) node_member(n->left,key);
     if (strcmp(key, n->patch->patchname) > 0) node_member(n->right,key);
     return true;
 }
 
+// Check if a key is in the tree
 bool avl_member(avl_tree* t,char* key){
     return node_member(t->root,key);
 }
 
-int avl_nb_elements(avl_tree* t){
-    return t->nb_elts;
+int avl_size(avl_tree* t){
+    return t->size;
 }
 
 void node_elements(node* n,patch** tab_elts,int* i){
@@ -46,8 +46,9 @@ void node_elements(node* n,patch** tab_elts,int* i){
     if (n->right != NULL) node_elements(n->right,tab_elts,i);
 }
 
+// Returns the elements that are in the tree, in a sorted array.
 patch** avl_elements(avl_tree* t){
-    patch** elts = malloc(sizeof(patch*) * t->nb_elts * 2);
+    patch** elts = malloc(sizeof(patch*) * t->size);
     int i = 0;
     node_elements(t->root,elts,&i);
     return elts;
@@ -62,6 +63,15 @@ int avl_height(avl_tree* t){
     return node_height(t->root);
 }
 
+/* 
+Does the following operation :
+
+          y                         x
+         |  \                      /  |
+        x    c     <------        a    y
+      /   \                           /  \
+      a    b                         b    c
+*/  
 node* left_rotate(node* x){
     node* y = x->right;
     x->right = y->left;
@@ -71,6 +81,15 @@ node* left_rotate(node* x){
     return y;
 }
 
+/* 
+Does the following operation : 
+
+          y                         x
+         |  \                      /  |
+        x    c     ------>        a    y
+      /   \                           /  \
+      a    b                         b    c
+*/     
 node* right_rotate(node* y){
     node* x = y->left;
     y->left = x->right;
@@ -97,7 +116,6 @@ node* insert_node(node* n,patch* p,bool* inserted){
 
     //Re-balancing the tree.
     //updating n's height
-    // int l_compare = strcmp(p->patchname, n->left->patch->patchname);
     n->height = 1 + max(node_height(n->left),node_height(n->right));
     int n_balance = get_node_balance(n);
     if (n_balance > 1 && strcmp(p->patchname, n->left->patch->patchname) < 0) return right_rotate(n);
@@ -114,10 +132,11 @@ node* insert_node(node* n,patch* p,bool* inserted){
     return n;
 }
 
-void avl_insert(avl_tree* t,patch* p){
+bool avl_insert(avl_tree* t,patch* p){
     bool inserted = false;
     t->root = insert_node(t->root,p,&inserted);
-    if (inserted) t->nb_elts++;
+    if (inserted) t->size++;
+    return inserted;
 }
 
 node* find_min(node* n) {
@@ -130,7 +149,7 @@ node* find_min(node* n) {
 
 node* node_remove(node* n,char* patchname,bool* removed){
     if (n == NULL) return NULL;
-    if (strcmp(patchname, n->patch->patchname) < 0) n->left = node_remove(n->left,patchname,removed);
+    if (strcmp(patchname, n->patch->patchname) < 0) n->left = node_remove(n->left,patchname,removed); // traversing the tree
     else if (strcmp(patchname, n->patch->patchname) > 0) n->right = node_remove(n->right,patchname,removed);
     else  { // we found the node that is going to get deleted
         *removed = true;
@@ -168,10 +187,13 @@ node* node_remove(node* n,char* patchname,bool* removed){
     return n;
 }
 
-void avl_remove(avl_tree* t,char* patchname){
+bool avl_remove(avl_tree* t,char* patchname){
     bool removed = false;
     t->root = node_remove(t->root,patchname,&removed);
-    if (removed) t->nb_elts--;
+    if (removed) {
+        t->size--;
+    }
+    return removed;
 }
 
 void print_sorted(node* n) {
@@ -254,10 +276,10 @@ void avl_delete(avl_tree* t){
 //     avl_insert(t, p6);
 //     printf("Inserted %s\n",p6->patchname);
 //     printf("Height of tree : %d\n",avl_height(t));
-//     printf("Nb d'éléments : %d\n",t->nb_elts);
+//     printf("Nb d'éléments : %d\n",t->size);
 //     fflush(stdout);
 //     patch** elts = avl_elements(t);
-//     for (int i = 0; i < t->nb_elts;i++){
+//     for (int i = 0; i < t->size;i++){
 //         printf("%s ",elts[i]->patchname);
 //     }
 //     printf("\n\n");
@@ -273,6 +295,14 @@ void avl_delete(avl_tree* t){
 //     printf("%s is member of tree : %d\n",p3->patchname,avl_member(t,p3->patchname));
 //     printf("%s is member of tree : %d\n",p2->patchname,avl_member(t,p2->patchname));
 //     printf("\n");
+//     free(p1);
+//     free(p2);
+//     free(p3);
+//     free(p4);
+//     free(p5);
+//     free(p6);
+//     free(p7);
+//     free(p8);
 //     avl_delete(t);
 //     return 0;
 // }
