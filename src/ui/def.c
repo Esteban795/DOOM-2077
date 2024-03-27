@@ -21,7 +21,7 @@ UIModule** get_ui_ingame(int* nuimodules){
 }
 
 void free_ui_ingame(UIModule** yay) {
-    //TTF_CloseFont(((UILabel*)yay[0])->font);
+    TTF_CloseFont(((UILabel*)yay[0])->font);
     for (int i=0; i<1; i++){
         uimodule_free(yay[i]);
     }
