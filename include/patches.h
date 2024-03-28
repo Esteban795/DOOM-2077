@@ -50,14 +50,6 @@ struct Patch {
 
 typedef struct Patch patch;
 
-struct TextureHeader {
-  u32 num_textures;
-  u32 *texture_map_offsets;
-  u32 *texture_data_offsets;
-};
-
-typedef struct TextureHeader texture_header;
-
 struct PatchMap {
   i16 left_offset;
   i16 top_offset;
@@ -80,11 +72,21 @@ struct TextureMap {
 
 typedef struct TextureMap texture_map;
 
+struct TextureHeader {
+  u32 num_textures;
+  u32 *texture_map_offsets;
+  texture_map *texture_maps;
+};
+
+typedef struct TextureHeader texture_header;
+
 void display_patches(SDL_Renderer *renderer, patch *patches, int patch_count);
 
 void sprites_free(patch *patches, int patch_count);
 
 void textures_patches_free(patch *patches, int patch_count);
+
+void texture_maps_free(texture_map* texture_maps, int len_texture_maps);
 
 patch *get_sprites(SDL_Renderer *renderer, lump *directory, header *header,
                    FILE *f, color *palette, int *patch_count);
@@ -92,4 +94,6 @@ patch *get_sprites(SDL_Renderer *renderer, lump *directory, header *header,
 patch *get_texture_patches(SDL_Renderer *renderer, lump *directory,
                            header *header, FILE *f, color *palette,
                            int *len_textures_patches);
+
+texture_map* get_texture_maps(FILE* f, lump* directory, header* header, int* len_texture_maps);
 #endif

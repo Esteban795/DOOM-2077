@@ -60,6 +60,8 @@ wad_data *init_wad_data(const char *path, SDL_Renderer *renderer) {
   wd->texture_patches =
       get_texture_patches(renderer, wd->directory, &wd->header, file,
                           wd->color_palette, &wd->len_texture_patches);
+  wd->texture_maps =
+      get_texture_maps(file, wd->directory, &wd->header, &wd->len_texture_maps);
   fclose(file);
   return wd;
 }
@@ -78,6 +80,7 @@ void wad_data_free(wad_data *wd) {
   free(wd->color_palette);
   sprites_free(wd->sprites, wd->len_sprites);
   textures_patches_free(wd->texture_patches, wd->len_texture_patches);
+  texture_maps_free(wd->texture_maps, wd->len_texture_maps);
   for (int i = 0; i < wd->header.lump_count; i++) {
     free(wd->directory[i].lump_name);
   }
