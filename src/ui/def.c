@@ -1,27 +1,27 @@
 #include "../../include/ui/def.h"
 
+void none(void) {
+    return;
+}
+
 UIModule** get_ui_ingame(int* nuimodules){
     *nuimodules = 1;
     UIModule** modules = malloc(*nuimodules * sizeof(UIModule*));
 
-    TTF_Font* font = TTF_OpenFont("./fonts/lemon_milk/LEMONMILK-Regular.otf", 50);
-    if (font == NULL){
-        printf("%s\n", SDL_GetError());
-        exit(1);
-    }
+    SDL_Color bg = {.r=0xFF, .g=0x00, .b=0x00, .a=0xFF};
+    SDL_Color br = {.r=0x00, .g=0xFF, .b=0x00, .a=0xFF};
 
-    UILabel* test_label = uilabel_create(0, 0, 1, 1, UIAP_TOP_LEFT, UIAP_TOP_RIGHT, "bonjour la team ce texte est un peu long", 255, 0, 0, 255, font);
+    UIButton* test = uibutton_create(0,0,0.5,0.5,UIAP_TOP_LEFT, bg, br, NULL, NULL, *none);
 
-    UIModule* test_label_module = uimodule_create(69, 1);
-    uimodule_set_element(test_label_module, 0, UIET_Label, test_label);
+    UIModule* test_module = uimodule_create(69, 1);
+    uimodule_set_element(test_module, 0, UIET_Button, test);
 
-    *(modules) = test_label_module;
+    *(modules) = test_module;
 
     return modules;
 }
 
 void free_ui_ingame(UIModule** yay) {
-    TTF_CloseFont(((UILabel*)yay[0])->font);
     for (int i=0; i<1; i++){
         uimodule_free(yay[i]);
     }

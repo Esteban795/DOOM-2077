@@ -4,6 +4,7 @@
 #include <stdlib.h>
 
 #include "label.h"
+#include "button.h"
 
 typedef enum _UIElementType {
     UIET_Label,

@@ -20,6 +20,9 @@ void uimodule_free(UIModule* module){
                 case UIET_Label:
                     uilabel_free(module->elements[i]->element);
                     break;
+                case UIET_Button:
+                    uibutton_free(module->elements[i]->element);
+                    break;
                 default:
                     break;
             }
