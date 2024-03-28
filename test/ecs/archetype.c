@@ -258,6 +258,7 @@ int test_archetype_remove_entity(void) {
     // Free archetype
     archetype_destroy(&archetype);
     free(components);
+    free(e1);
     free(e2);
     free(e3);
     return 0;

@@ -133,7 +133,7 @@ bool archetype_remove_entity(archetype_t* archetype, entity_t* entity, bool shou
     if (ind < 0) {
         return false;
     }
-    vec_remove(&archetype->entities, ind, should_free);
+    vec_remove(&archetype->entities, ind, false);
     for (int i = 0; (size_t) i < vec_length(&archetype->tags); i++) {
         vec_t* component = (vec_t*) vec_get(&archetype->components, i);
         vec_remove(component, ind, should_free);

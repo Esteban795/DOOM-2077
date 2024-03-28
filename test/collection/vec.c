@@ -395,7 +395,6 @@ int test_vec_sort() {
         char msg[35] = "vec_sort: data[i] is not end[i]";
         msg[15] = '0' + i;
         msg[29] = '0' + i;
-        printf("testing %d, l: %d r: %d\n", i, *(int*)vec.data[i], end[i]);
         ASSERT(*(int*)vec.data[i] == end[i], msg);
     }
 

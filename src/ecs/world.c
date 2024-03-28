@@ -10,13 +10,20 @@ void world_init(world_t* world) {
     vec_init(&world->entity_archetype);
     vec_init(&world->archetypes);
     vec_init(&world->systems);
+    vec_init(&world->event_queue);
 }
 
 void world_destroy(world_t* world) {
     vec_destroy(&world->entities, true);
     vec_destroy(&world->entity_archetype, true);
-    vec_destroy(&world->archetypes, true);
     vec_destroy(&world->systems, true);
+    for (size_t i = 0; i < vec_length(&world->archetypes); i++) {
+        archetype_t* archetype = (archetype_t*) vec_get(&world->archetypes, i);
+        archetype_destroy(archetype);
+        free(archetype);
+    }
+    vec_destroy(&world->archetypes, false);
+    vec_destroy(&world->event_queue, true);
 }
 
 entity_t* world_create_entity(world_t* world, component_t** components, int component_count) {
@@ -49,7 +56,9 @@ entity_t* world_create_entity(world_t* world, component_t** components, int comp
     archetype_add_entity(archetype, entity, components);
 
     // Add the archetype index to the entity_archetype vector
-    vec_push(&world->entity_archetype, (void*) &arch_index);
+    int* arch_index_ptr = malloc(sizeof(int));
+    *arch_index_ptr = arch_index;
+    vec_push(&world->entity_archetype, (void*) arch_index_ptr);
 
     return entity;
 }
@@ -84,6 +93,11 @@ entity_t** world_create_bulk_entity(world_t* world, component_t*** components, i
     archetype_t* archetype = (archetype_t*) vec_get(&world->archetypes, arch_index);
     for (int i = 0; i < count; i++) {
         archetype_add_entity(archetype, entities[i], components[i]);
+
+        // Add the archetype index to the entity_archetype vector
+        int* arch_index_ptr = malloc(sizeof(int));
+        *arch_index_ptr = arch_index;
+        vec_push(&world->entity_archetype, (void*) arch_index_ptr);
     }
 
     return entities;
@@ -104,11 +118,10 @@ void world_remove_entity(world_t* world, entity_t* entity) {
     archetype_remove_entity(archetype, entity, true);
     vec_remove(&world->entity_archetype, ind, true);
 
-    // Free the entity
     free(entity);
 }
 
-void register_system(world_t* world, int (*system_fn)(world_t*, event_t*)) {
+void world_register_system(world_t* world, int (*system_fn)(world_t*, event_t*)) {
     system_t* s = malloc(sizeof(system_t));
     s->fn = system_fn;
     vec_push(&world->systems, s);
@@ -218,8 +231,11 @@ void world_remove_components(world_t* world, entity_t* entity, int* component_ta
     component_t** new_components = malloc(sizeof(component_t*) * (old_tag_count - component_count));
     int new_tag_count = 0;
     int j =0;
+
+    component_t* component_to_free[component_count];
     for (int i = 0; i < old_tag_count; i++) {
         if (j < component_count && component_tag[j] == *(int*) vec_get(&archetype->tags, i)) {
+            component_to_free[j] = archetype_get_component(archetype, entity, component_tag[j]);
             j++;
             continue;
         }
@@ -246,6 +262,12 @@ void world_remove_components(world_t* world, entity_t* entity, int* component_ta
 
     // Remove the entity from the old archetype
     archetype_remove_entity(archetype, entity, false);
+
+    // Free the components to be removed
+    for (int i = 0; i < component_count; i++) {
+        if (component_to_free[i] != NULL)
+            free(component_to_free[i]);
+    }
 
     // Add the entity to the new archetype
     archetype_t* dest_archetype = (archetype_t*) vec_get(&world->archetypes, dest_index);

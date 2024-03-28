@@ -59,7 +59,7 @@ void world_remove_entity(world_t* world, entity_t* entity);
 /*
 * Register a new system
 */
-int world_register_system(world_t* world, int (*system_fn)(world_t*, event_t*));
+void world_register_system(world_t* world, int (*system_fn)(world_t*, event_t*));
 
 /*
 * Get the archetype of an entity
