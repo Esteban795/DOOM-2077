@@ -12,6 +12,7 @@
 #include "sector.h"
 #include "segment.h"
 #include "sidedef.h"
+#include "sound.h"
 #include "subsector.h"
 #include "thing.h"
 #include "vertex.h"
@@ -29,6 +30,8 @@ struct WADData {
   blockmap *blockmap;
   sector *sectors;
   sidedef *sidedefs;
+  sound *sounds;
+  int len_sounds;
   int len_vertexes;
   int len_linedefs;
   int len_nodes;
