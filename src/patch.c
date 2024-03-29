@@ -1,5 +1,4 @@
 #include "../include/patch.h"
-#include <SDL2/SDL_stdinc.h>
 
 patch_header read_patch_header(FILE *f, int offset) {
   patch_header ph;
@@ -57,6 +56,7 @@ Uint32 *transform_to_row_based(Uint32 *pixels, int width, int height) {
       row_based[i * width + j] = pixels[j * height + i];
     }
   }
+  free(pixels);
   return row_based;
 }
 
@@ -121,7 +121,6 @@ Uint32 *get_pixels_from_patch(patch p) {
   }
   Uint32 *row_based =
       transform_to_row_based(pixels, p.header.width, p.header.height);
-  free(pixels);
   return row_based;
 }
 

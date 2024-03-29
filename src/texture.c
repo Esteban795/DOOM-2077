@@ -1,31 +1,28 @@
 #include "../include/texture.h"
-#include <SDL2/SDL_render.h>
-#include <stdio.h>
-
 SDL_Texture *get_texture_from_patchmaps(texture_map tm, patch *patches,
                                         SDL_Renderer *renderer) {
   Uint32 *pixels = malloc(sizeof(Uint32) * tm.width * tm.height);
-  printf("Pixels length %d\n", tm.width * tm.height);
   for (int k = 0; k < tm.patch_count; k++) {
     patch_map pm = tm.patch_maps[k];
     patch p = patches[pm.patch_index];
-    printf("Patch index: %d\n", pm.patch_index);
-    printf("Patch width: %d, height: %d\n", p.header.width, p.header.height);
-    for (int i = 0; i < tm.height; i++){
-      for (int j = 0; j < tm.width;j++){
-        int x = j + pm.left_offset;
-        int y = i * (tm.width + pm.top_offset);
-        printf("x: %d, y: %d\n", x, y);
-        pixels[x + y] = p.pixels[i * p.header.width + j];
+    for (int i = 0; i < p.header.height; i++) {
+      for (int j = 0; j < p.header.width; j++) {
+        int index_l = i + pm.top_offset;
+        int index_c = j + pm.left_offset;
+        if (index_l >= 0 && index_l < tm.height && index_c >= 0 &&
+            index_c < tm.width) {
+          pixels[index_l * tm.width + index_c] =
+              p.pixels[i * p.header.width + j];
+        }
       }
     }
-    printf("\n\n\n\n\n");
   }
   SDL_Surface *surface =
       SDL_CreateRGBSurfaceFrom(pixels, tm.width, tm.height, 32, tm.width * 4,
-                               0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000);
+                               0xff000000, 0x00ff0000, 0x0000ff00, 0x000000ff);
   SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, surface);
   SDL_FreeSurface(surface);
+  free(pixels);
   return texture;
 }
 
@@ -65,6 +62,7 @@ texture_header read_texture_header(FILE *f, int offset, patch *patches,
 void texture_map_free(texture_map tm) {
   free(tm.name);
   free(tm.patch_maps);
+  SDL_DestroyTexture(tm.texture);
 }
 
 void texture_maps_free(texture_map *texture_maps, int len_texture_maps) {
@@ -81,9 +79,11 @@ void display_texture_maps(SDL_Renderer *renderer, texture_map *texture_maps,
       printf("No texture associated with patch %d\n", i);
       continue;
     }
-    SDL_RenderCopy(renderer, texture_maps[i].texture, NULL, NULL);
+    SDL_Rect r =
+        (SDL_Rect){0, 0, 3 * texture_maps[i].width, 3 * texture_maps[i].height};
+    SDL_RenderCopy(renderer, texture_maps[i].texture, NULL, &r);
     SDL_RenderPresent(renderer);
-    SDL_Delay(100);
+    SDL_Delay(50);
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
     SDL_RenderClear(renderer);
   }
