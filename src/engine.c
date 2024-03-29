@@ -32,6 +32,7 @@ int update_engine(engine *e, int dt) {
   if(e->p->cooldown>1){
     e->p->cooldown=e->p->cooldown-1;
   }
+  
   SDL_GetRelativeMouseState(&mouse_x, &mouse_y);
   SDL_SetRenderDrawColor(e->map_renderer->renderer, 0, 0, 0, 255);
   SDL_RenderClear(e->map_renderer->renderer);
@@ -40,6 +41,7 @@ int update_engine(engine *e, int dt) {
   segment_handler_update(e->seg_handler);
   update_bsp(e->bsp);
   SDL_SetRelativeMouseMode(SDL_TRUE);
+  draw_crosshair(e->map_renderer,get_color(50,0),20);
   SDL_RenderPresent(e->map_renderer->renderer);
   return 0;
 }

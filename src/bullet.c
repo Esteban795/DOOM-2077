@@ -64,7 +64,6 @@ void fire_bullet2(player** players,int num_players,player* player_,int damage){ 
     double distance_finale=10000; 
     int touche=0;
     if(player_->cooldown<80){
-
         player_->cooldown=player_->cooldown+100;
         linedef* linedefs=player_->engine->wData->linedefs;
         double x1=player_->pos.x;

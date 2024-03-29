@@ -39,9 +39,8 @@ int main(void) {
     int res = update_engine(e, dt);
     if (res == 1)
       break;
-     //printf("%i\n",e->p->cooldown); 
+    
     //printf("FPS: %f\n", 1000.0 / dt);
-    //printf("%i",e->wData->len_linedefs);
     old = now;
   }
   engine_free(e);
