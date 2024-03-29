@@ -26,7 +26,7 @@ int update_engine(engine *e, int dt) {
     return 1;
   }
   if (e->keys[SDL_SCANCODE_SPACE]){
-    fire_bullet2(e->players,num_players,e->p,0);
+    fire_bullet2(e->players,num_players,e->p,3);
   }
   int mouse_x, mouse_y;
   if(e->p->cooldown>1){

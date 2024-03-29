@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include "../include/bullet.h"
 
-#define player_hitbox_size 150
+#define player_hitbox_size 50
 #define hitscan_precision 10
 
 bullet* create_bullet(player *player_){
@@ -72,6 +72,8 @@ void fire_bullet2(player** players,int num_players,player* player_,int damage){ 
         double x2=x1+100*cos(deg_to_rad((player_->angle)));
         double y2=y1+100*sin(deg_to_rad((player_->angle)));
         double a =0;
+        double x_final=0;
+        double y_final=0;
         int direction =1; // 0 correspond a ni droite ni auche 1 a gauche 2 a droite
         double height=player_->height;
         int mur_touche = -1;
@@ -112,6 +114,8 @@ void fire_bullet2(player** players,int num_players,player* player_,int damage){ 
                             if(distance(x1,y1,x,y)<distance_finale){
                                 distance_finale=distance(x1,y1,x,y);
                                 mur_touche=i;
+                                x_final=x;
+                                y_final=y;
                             }
                             touche=2;
                             //printf("2\n");
@@ -130,6 +134,8 @@ void fire_bullet2(player** players,int num_players,player* player_,int damage){ 
                             if(distance(x1,y1,x,y)<distance_finale){
                                 distance_finale=distance(x1,y1,x,y);
                                 mur_touche=i;
+                                x_final=x;
+                                y_final=y;
                             }
                             touche=1;
                             //printf("1\n");
@@ -146,7 +152,20 @@ void fire_bullet2(player** players,int num_players,player* player_,int damage){ 
     }
     if(touche==2){
         printf("touche 2  mur %i %f  \n", mur_touche, distance_finale);
-    }    
+    }
+    for(int j=0;j<num_players;j++){
+        double dist_to_hitscan=(fabs(a*(players[j]->pos.x)+(players[j]->pos.y)+b))/(sqrt(pow(a,2)+pow(-1,2)));
+        //printf("%f\n",dist_to_hitscan);
+        if(dist_to_hitscan<player_hitbox_size){
+            if((min(x1,x_final)<players[j]->pos.x)
+            &&(max(x1,x_final)>players[j]->pos.x)
+            &&(min(y1,y_final)<-players[j]->pos.y)
+            &&(min(y1,y_final)<-players[j]->pos.y)){
+                printf("joueur %i touché, vie : %i\n",j,players[j]->life);
+                players[j]->life-=damage;
+            }
+        }
+    }
     }
 }
 
