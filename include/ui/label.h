@@ -19,6 +19,6 @@ UILabel* uilabel_create(float x, float y, float w, float h,
 
 void uilabel_free(UILabel* o);
 
-void uilabel_render(SDL_Renderer* r, UILabel* o);
+void uilabel_update(SDL_Renderer* r, UILabel* o);
 
 #endif

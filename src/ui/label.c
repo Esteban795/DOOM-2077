@@ -28,7 +28,7 @@ void uilabel_free(UILabel* uilabel) {
     free(uilabel);
 }
 
-void uilabel_render(SDL_Renderer* r, UILabel* uilabel) {
+void uilabel_update(SDL_Renderer* r, UILabel* uilabel) {
     SDL_Surface *text = TTF_RenderText_Blended(uilabel->font, uilabel->string, uilabel->color);
     SDL_Texture *texture = SDL_CreateTextureFromSurface(r, text);
 

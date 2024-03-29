@@ -30,6 +30,6 @@ void uimodule_free(UIModule* module);
 
 void uimodule_set_element(UIModule* module, int index, UIElementType type, void* element);
 
-void render_uimodule(SDL_Renderer* r, UIModule* module);
+void update_uimodule(SDL_Renderer* r, UIModule* module, const uint8_t* keys);
 
 #endif

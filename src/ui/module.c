@@ -41,12 +41,15 @@ void uimodule_set_element(UIModule* module, int index, UIElementType type, void*
     } 
 }
 
-void render_uimodule(SDL_Renderer* r, UIModule* module) {
+void update_uimodule(SDL_Renderer* r, UIModule* module, const uint8_t* keys) {
     for (int i = 0; i < module->nelements; i++){
         if (module->elements[i] != 0){
             switch (module->elements[i]->type) {
                 case UIET_Label:
-                    uilabel_render(r, module->elements[i]->element);
+                    uilabel_update(r, module->elements[i]->element);
+                    break;
+                case UIET_Button:
+                    uibutton_update(r, module->elements[i]->element, keys);
                     break;
                 default:
                     break;
