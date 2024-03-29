@@ -72,7 +72,7 @@ void fire_bullet2(player** players,int num_players,player* player_,int damage){ 
         double x2=x1+100*cos(deg_to_rad((player_->angle)));
         double y2=y1+100*sin(deg_to_rad((player_->angle)));
         double a =0;
-        int direction =0; // 0 correspond a ni droite ni auche 1 a gauche 2 a droite
+        int direction =1; // 0 correspond a ni droite ni auche 1 a gauche 2 a droite
         double height=player_->height;
         int mur_touche = -1;
         if(x1!=x2){
@@ -84,7 +84,7 @@ void fire_bullet2(player** players,int num_players,player* player_,int damage){ 
                 direction=2;  //vers la droite
             }
         }
-        printf("debut %f %i\n",player_->angle);
+        //printf("debut %f %i\n",player_->angle);
         double b=y1-a*x1;
         //printf("%f %f %f %f ,%f \n",x1,x2,y1,y2,pente);
         for(int i=0;i<player_->engine->wData->len_linedefs;i++){
@@ -98,13 +98,16 @@ void fire_bullet2(player** players,int num_players,player* player_,int damage){ 
                 double c =0;
                 double d=0;
                 if(x1a!=x2a){
-                    c=(y2a-y1a)/(x1a-x2a);
+                    c=(y2a-y1a)/(x2a-x1a);
                     d=y1a-c*x1a;
                     x=(d-b)/(a-c);
                     y=a*x+b;
+                    if(distance(x1,y1,x,y)<100){
+                        //printf("i=%i d=%f x=%f y=%f x1=%f y1=%f x1a=%f x2a=%f y1a=%f y2a=%f\n",i,distance(x1,y1,x,y),x,y,x1,y1,x1a,x2a,y1a,y2a);
+                    }
                     if(((x1a<=x)&&(x<=x2a))||((x2a<=x)&&(x<=x1a))){
                         if(((direction==1)&&(x1>x))||((direction==2)&&(x1<x))){
-                            printf("x1=%f y1=%f x=%f y=%f %f %f %i \n",x1,y1,x,y,distance(x1,y1,x,y),distance_finale,i);
+                            //printf("x1=%f y1=%f x=%f y=%f %f %f %i \n",x1,y1,x,y,distance(x1,y1,x,y),distance_finale,i);
                             //printf("%f %f %f %f\n",x1a,x2a,y1a,y2a);
                             if(distance(x1,y1,x,y)<distance_finale){
                                 distance_finale=distance(x1,y1,x,y);
