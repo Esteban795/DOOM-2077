@@ -60,47 +60,13 @@ struct PatchMap {
 
 typedef struct PatchMap patch_map;
 
-struct TextureMap {
-  char *name;
-  bool masked;
-  u16 width;
-  u16 height;
-  u32 column_dir; // obsolete and unused but it still lies in WAD files
-  u16 patch_count;
-  patch_map *patch_maps;
-};
-
-typedef struct TextureMap texture_map;
-
-struct TextureHeader {
-  u32 num_textures;
-  u32 *texture_map_offsets;
-  texture_map *texture_maps;
-};
-
-typedef struct TextureHeader texture_header;
-
-struct Flat {
-  char *name;
-  int width;
-  int height;
-  Uint32 *pixels;
-  SDL_Texture *flat_img;
-};
-
-typedef struct Flat flat;
+patch_map read_patch_map(FILE *f, int offset);
 
 void display_patches(SDL_Renderer *renderer, patch *patches, int patch_count);
-
-void display_flats(SDL_Renderer *renderer, flat *flats, int len_flats);
 
 void sprites_free(patch *patches, int patch_count);
 
 void textures_patches_free(patch *patches, int patch_count);
-
-void texture_maps_free(texture_map *texture_maps, int len_texture_maps);
-
-void flats_free(flat *flats, int len_flats);
 
 patch *get_sprites(SDL_Renderer *renderer, lump *directory, header *header,
                    FILE *f, color *palette, int *patch_count);
@@ -108,11 +74,5 @@ patch *get_sprites(SDL_Renderer *renderer, lump *directory, header *header,
 patch *get_texture_patches(SDL_Renderer *renderer, lump *directory,
                            header *header, FILE *f, color *palette,
                            int *len_textures_patches);
-
-texture_map *get_texture_maps(FILE *f, lump *directory, header *header,
-                              int *len_texture_maps);
-
-flat *get_flats(FILE *f, SDL_Renderer *renderer, lump *directory,
-                header *header, color *palette, int *len_flats);
 
 #endif

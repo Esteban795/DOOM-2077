@@ -1,47 +1,4 @@
-#include "../include/patches.h"
-#include <SDL2/SDL_render.h>
-#include <SDL2/SDL_stdinc.h>
-#include <stdio.h>
-
-patch_map read_patch_map(FILE *f, int offset) {
-  patch_map pm;
-  pm.left_offset = read_i16(f, offset);
-  pm.top_offset = read_i16(f, offset + 2);
-  pm.patch_index = read_u16(f, offset + 4);
-  pm.step_dir = 0;  // both are unused so we don't care
-  pm.color_map = 0; //
-  return pm;
-}
-
-texture_map read_texture_map(FILE *f, int offset) {
-  texture_map tm;
-  tm.name = read_texture_name(f, offset, 8);
-  tm.masked = (bool)read_i32(f, offset + 8);
-  tm.width = read_i16(f, offset + 12);
-  tm.height = read_i16(f, offset + 14);
-  tm.column_dir = read_i32(f, offset + 16);
-  tm.patch_count = read_u16(f, offset + 20);
-  tm.patch_maps = malloc(sizeof(patch_map) * tm.patch_count);
-  for (int i = 0; i < tm.patch_count; i++) {
-    tm.patch_maps[i] = read_patch_map(f, offset + 22 + i * 10);
-  }
-  return tm;
-}
-
-texture_header read_texture_header(FILE *f, int offset) {
-  texture_header th;
-  th.num_textures = read_i32(f, offset);
-  th.texture_map_offsets = malloc(sizeof(texture_map) * th.num_textures);
-  for (u32 i = 0; i < th.num_textures; i++) {
-    th.texture_map_offsets[i] = read_i32(f, offset + 4 + i * 4);
-  }
-  th.texture_maps = malloc(sizeof(texture_map) * th.num_textures);
-  for (u32 i = 0; i < th.num_textures; i++) {
-    th.texture_maps[i] =
-        read_texture_map(f, offset + th.texture_map_offsets[i]);
-  }
-  return th;
-}
+#include "../include/patch.h"
 
 patch_header read_patch_header(FILE *f, int offset) {
   patch_header ph;
@@ -58,6 +15,16 @@ patch_header read_patch_header(FILE *f, int offset) {
     ph.column_offsets[i] = read_u32(f, offset + 8 + i * 4);
   }
   return ph;
+}
+
+patch_map read_patch_map(FILE *f, int offset) {
+  patch_map pm;
+  pm.left_offset = read_i16(f, offset);
+  pm.top_offset = read_i16(f, offset + 2);
+  pm.patch_index = read_u16(f, offset + 4);
+  pm.step_dir = 0;  // both are unused so we don't care
+  pm.color_map = 0; //
+  return pm;
 }
 
 patch_column read_patch_column(FILE *f, int column_offset, int *new_offset) {
@@ -218,30 +185,6 @@ void textures_patches_free(patch *patches, int patch_count) {
   free(patches);
 }
 
-void texture_map_free(texture_map tm) {
-  free(tm.name);
-  free(tm.patch_maps);
-}
-
-void texture_maps_free(texture_map *texture_maps, int len_texture_maps) {
-  for (int i = 0; i < len_texture_maps; i++) {
-    texture_map_free(texture_maps[i]);
-  }
-  free(texture_maps);
-}
-
-void flat_free(flat fl) { // fl.name freed when freeing directory
-  free(fl.pixels);
-  SDL_DestroyTexture(fl.flat_img);
-}
-
-void flats_free(flat *flats, int len_flats) {
-  for (int i = 0; i < len_flats; i++) {
-    flat_free(flats[i]);
-  }
-  free(flats);
-}
-
 void display_patches(SDL_Renderer *renderer, patch *patches, int patch_count) {
   for (int i = 0; i < patch_count; i++) {
     if (patches[i].patch_img == NULL) {
@@ -251,16 +194,6 @@ void display_patches(SDL_Renderer *renderer, patch *patches, int patch_count) {
     SDL_RenderCopy(renderer, patches[i].patch_img, NULL, NULL);
     SDL_RenderPresent(renderer);
     SDL_Delay(100);
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
-    SDL_RenderClear(renderer);
-  }
-}
-
-void display_flats(SDL_Renderer *renderer, flat *flats, int len_flats) {
-  for (int i = 0; i < len_flats; i++) {
-    SDL_RenderCopy(renderer, flats[i].flat_img, NULL, NULL);
-    SDL_RenderPresent(renderer);
-    SDL_Delay(6);
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
     SDL_RenderClear(renderer);
   }
@@ -335,64 +268,4 @@ patch *get_texture_patches(SDL_Renderer *renderer, lump *directory,
                                       renderer, patch_name, palette);
   }
   return texture_patches;
-}
-
-texture_map *get_texture_maps(FILE *f, lump *directory, header *header,
-                              int *len_texture_maps) {
-  const int TEXTURE1_lump_index =
-      get_lump_index(directory, "TEXTURE1", header->lump_count);
-  lump TEXTURE1_lump = directory[TEXTURE1_lump_index];
-  int offset = TEXTURE1_lump.lump_offset;
-  texture_header th = read_texture_header(f, offset);
-  *len_texture_maps = th.num_textures;
-  texture_map *texture_maps = malloc(sizeof(texture_map) * th.num_textures);
-  for (u32 i = 0; i < th.num_textures; i++) {
-    texture_maps[i] = th.texture_maps[i];
-  }
-  free(th.texture_map_offsets);
-  free(th.texture_maps);
-  return texture_maps;
-}
-
-flat read_flat(FILE *f, SDL_Renderer *renderer, color *palette, char *name,
-               int offset) {
-  flat fl;
-  fl.width = 64;
-  fl.height = 64;
-  fl.name = name;
-  fl.pixels = malloc(sizeof(Uint32) * 64 * 64);
-  SDL_PixelFormat *fmt = SDL_AllocFormat(SDL_PIXELFORMAT_RGBA8888);
-  for (int i = 0; i < 64; i++) {
-    for (int j = 0; j < 64; j++) {
-      int color_id = read_u8(f, offset + i * 64 + j);
-      color c = palette[color_id];
-      Uint32 code_c = SDL_MapRGBA(fmt, c.r, c.g, c.b, 255);
-      fl.pixels[i * 64 + j] = code_c;
-    }
-  }
-  SDL_Texture *texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
-                                           SDL_TEXTUREACCESS_STATIC, 64, 64);
-  if (texture == NULL) {
-    SDL_Log("Texture could not be created! SDL_Error: %s\n", SDL_GetError());
-    exit(1);
-  }
-  SDL_UpdateTexture(texture, NULL, fl.pixels, 64 * 4);
-  fl.flat_img = texture;
-  return fl;
-}
-
-flat *get_flats(FILE *f, SDL_Renderer *renderer, lump *directory,
-                header *header, color *palette, int *len_flats) {
-  const int START_MARKER =
-      get_lump_index(directory, "F1_START", header->lump_count);
-  const int END_MARKER =
-      get_lump_index(directory, "F1_END", header->lump_count);
-  *len_flats = END_MARKER - START_MARKER - 1;
-  flat *flats = malloc(sizeof(flat) * *len_flats);
-  for (int i = 0; i < *len_flats; i++) {
-    flats[i] = read_flat(f, renderer, palette,
-                         directory[START_MARKER + i + 1].lump_name,
-                         directory[START_MARKER + i + 1].lump_offset);
-  }
-  return flats;
 }
