@@ -10,6 +10,7 @@ UILabel* uilabel_create(float x, float y, float w, float h,
     uilabel->common.width = w;
     uilabel->common.height = h;
     uilabel->common.anchor = m_anchor;
+    uilabel->common.active = true;
 
     uilabel->text_anchor = text_anchor;
     uilabel->string = string;
@@ -29,6 +30,8 @@ void uilabel_free(UILabel* uilabel) {
 }
 
 void uilabel_update(SDL_Renderer* r, UILabel* uilabel) {
+    if (!uilabel->common.active) { return; }
+
     SDL_Surface *text = TTF_RenderText_Blended(uilabel->font, uilabel->string, uilabel->color);
     SDL_Texture *texture = SDL_CreateTextureFromSurface(r, text);
 

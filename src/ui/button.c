@@ -10,6 +10,7 @@ UIButton* uibutton_create(float x, float y, float w, float h, UIAnchorPoint uian
     b->common.width = w;
     b->common.height = h;
     b->common.anchor = uianchor;
+    b->common.active = true;
 
     b->pressed = false;
     b->hovered = false;
@@ -46,6 +47,8 @@ void uibutton_detect_click(UIButton* uibutton, SDL_Rect* rect, bool mouse_left_s
 }
 
 void uibutton_update(SDL_Renderer* r, UIButton* uibutton, const uint8_t* keys){
+    if (!uibutton->common.active) { return; }
+
     SDL_Rect destrect;
     get_absolute_position(&(uibutton->common), &destrect);
 
