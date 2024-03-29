@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-#include "../patches.h"
+#include "../patch.h"
 
 /*
 AVL C implementation
