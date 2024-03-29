@@ -1,6 +1,4 @@
 #include "../include/wad_data.h"
-#include <SDL2/SDL_render.h>
-#include <stdio.h>
 
 wad_data *init_wad_data(const char *path, SDL_Renderer *renderer) {
   FILE *file = fopen(path, "rb");
@@ -62,6 +60,8 @@ wad_data *init_wad_data(const char *path, SDL_Renderer *renderer) {
                           wd->color_palette, &wd->len_texture_patches);
   wd->texture_maps =
       get_texture_maps(file, wd->directory, &wd->header, &wd->len_texture_maps);
+  wd->flats = get_flats(file, renderer, wd->directory, &wd->header,
+                        wd->color_palette, &wd->len_flats);
   fclose(file);
   return wd;
 }
@@ -81,6 +81,7 @@ void wad_data_free(wad_data *wd) {
   sprites_free(wd->sprites, wd->len_sprites);
   textures_patches_free(wd->texture_patches, wd->len_texture_patches);
   texture_maps_free(wd->texture_maps, wd->len_texture_maps);
+  flats_free(wd->flats, wd->len_flats);
   for (int i = 0; i < wd->header.lump_count; i++) {
     free(wd->directory[i].lump_name);
   }

@@ -35,6 +35,8 @@ struct WADData {
   patch *sprites;
   patch *texture_patches;
   texture_map *texture_maps;
+  flat *flats;
+  int len_flats;
   int len_texture_maps;
   int len_texture_patches;
   int len_sprites;
