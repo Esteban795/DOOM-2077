@@ -73,16 +73,15 @@ void fire_bullet2(player** players,int num_players,player* player_,int damage){
         double y2=y1+100*sin(deg_to_rad(player_->angle+180));
         double a =0;
         int direction =0; // 0 correspond a ni droite ni auche 1 a gauche 2 a droite
-        
+        double height=player_->height;
         int mur_touche = -1;
-        
         if(x1!=x2){
             a=(y2-y1)/(x2-x1);
             if(x1>x2){
-                direction=2;
+                direction=2; //vers la gauche
             }
             else{
-                direction=1;
+                direction=1;  //vers la droite
             }
         }
         double b=y1-a*x1;
@@ -90,7 +89,7 @@ void fire_bullet2(player** players,int num_players,player* player_,int damage){
         for(int i=0;i<player_->engine->wData->len_linedefs;i++){
             double x=0;
             double y=0;
-            if(!(linedefs[i].flag & TWO_SIDED)){
+            if((!(linedefs[i].has_back_sidedef))||(correct_height(linedefs[i],height))){
                 double x1a=linedefs[i].start_vertex->x;
                 double y1a=linedefs[i].start_vertex->y;
                 double x2a=linedefs[i].end_vertex->x;
@@ -103,8 +102,9 @@ void fire_bullet2(player** players,int num_players,player* player_,int damage){
                     x=(d-b)/(a-c);
                     y=a*x+b;
                     if(((x1a<=x)&&(x<=x2a))||((x2a<=x)&&(x<=x1a))){
-                        if(((direction==1)&&(x1a>x))||((direction==2)&&(x1a<x))||(direction==0)){
-                            printf("x1=%f y1=%f x=%f y=%f %f %f \n",x1,y1,x,y,distance(x1,y1,x,y),distance_finale);
+                        if(((direction==1)&&(x1>x))||((direction==2)&&(x1<x))){
+                            printf("x1=%f y1=%f x=%f y=%f %f %f %i \n",x1,y1,x,y,distance(x1,y1,x,y),distance_finale,i);
+                            //printf("%f %f %f %f\n",x1a,x2a,y1a,y2a);
                             if(distance(x1,y1,x,y)<distance_finale){
                                 distance_finale=distance(x1,y1,x,y);
                                 mur_touche=i;
@@ -120,8 +120,9 @@ void fire_bullet2(player** players,int num_players,player* player_,int damage){
                     y=a*x+b;
                     if(((y1a<=y)&&(y<=y2a))||((y2a<=y)&&(y<=y1a))){
                         //printf("%i,%f,%f\n",direction,x1a,x);
-                        if(((direction==2)&&(x1a>=x))||((direction==1)&&(x1a<=x))){
-                            printf("x1=%f y1=%f x=%f y=%f %f %f \n",x1,y1,x,y,distance(x1,y1,x,y),distance_finale);
+                        if(((direction==1)&&(x1>=x))||((direction==2)&&(x1<=x))){
+                            printf("x1=%f y1=%f x=%f y=%f %f %f %i\n",x1,y1,x,y,distance(x1,y1,x,y),distance_finale,i);
+                            printf("%f %f %f %f\n",x1a,x2a,y1a,y2a);
                             if(distance(x1,y1,x,y)<distance_finale){
                                 distance_finale=distance(x1,y1,x,y);
                                 mur_touche=i;
@@ -144,4 +145,30 @@ void fire_bullet2(player** players,int num_players,player* player_,int damage){
     }    
     }
 }
+
+int correct_height(linedef wall,int height){
+    if(!(wall.has_back_sidedef)){
+        return 0;
+    }
+    else{
+        int ceil_height_1=wall.back_sidedef->sector->ceiling_height;
+        int floor_height_1=wall.back_sidedef->sector->floor_height;
+        int ceil_height_2=wall.front_sidedef->sector->ceiling_height;
+        int floor_height_2=wall.front_sidedef->sector->floor_height;
+        if((min(ceil_height_1,ceil_height_2)<height)&&(max(ceil_height_1,ceil_height_2)>height)){
+            return 1;
+        }
+        else{
+            if((min(floor_height_1,floor_height_2)<height)&&(max(floor_height_1,floor_height_2)>height)){
+                return 1;
+        }
+        else{
+            return 0;
+        }
+    }
+}
+}
+
+
+
 

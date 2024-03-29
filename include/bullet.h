@@ -20,3 +20,6 @@ void fire_bullet(player** players,int num_players,player*  player_,int damage,in
 
 void fire_bullet2(player** players,int num_players,player* player_,int damage);
 
+int correct_height(linedef wall,int height);
+
+
