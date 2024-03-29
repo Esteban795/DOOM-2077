@@ -60,17 +60,17 @@ void fire_bullet(player** players,int num_players,player* player_,int damage,int
     }
 }
 
-void fire_bullet2(player** players,int num_players,player* player_,int damage){
-    double distance_finale=10000;
+void fire_bullet2(player** players,int num_players,player* player_,int damage){ //toutes les valeurs de y sont négatives
+    double distance_finale=10000; 
     int touche=0;
     if(player_->cooldown<80){
-        printf("debut\n");
+
         player_->cooldown=player_->cooldown+100;
         linedef* linedefs=player_->engine->wData->linedefs;
         double x1=player_->pos.x;
-        double y1=player_->pos.y;
-        double x2=x1+100*cos(deg_to_rad(player_->angle+180));
-        double y2=y1+100*sin(deg_to_rad(player_->angle+180));
+        double y1=-player_->pos.y;
+        double x2=x1+100*cos(deg_to_rad((player_->angle)));
+        double y2=y1+100*sin(deg_to_rad((player_->angle)));
         double a =0;
         int direction =0; // 0 correspond a ni droite ni auche 1 a gauche 2 a droite
         double height=player_->height;
@@ -78,12 +78,13 @@ void fire_bullet2(player** players,int num_players,player* player_,int damage){
         if(x1!=x2){
             a=(y2-y1)/(x2-x1);
             if(x1>x2){
-                direction=2; //vers la gauche
+                direction=1; //vers la gauche
             }
             else{
-                direction=1;  //vers la droite
+                direction=2;  //vers la droite
             }
         }
+        printf("debut %f %i\n",player_->angle);
         double b=y1-a*x1;
         //printf("%f %f %f %f ,%f \n",x1,x2,y1,y2,pente);
         for(int i=0;i<player_->engine->wData->len_linedefs;i++){
@@ -91,9 +92,9 @@ void fire_bullet2(player** players,int num_players,player* player_,int damage){
             double y=0;
             if((!(linedefs[i].has_back_sidedef))||(correct_height(linedefs[i],height))){
                 double x1a=linedefs[i].start_vertex->x;
-                double y1a=linedefs[i].start_vertex->y;
+                double y1a=-linedefs[i].start_vertex->y;
                 double x2a=linedefs[i].end_vertex->x;
-                double y2a=linedefs[i].end_vertex->y;
+                double y2a=-linedefs[i].end_vertex->y;
                 double c =0;
                 double d=0;
                 if(x1a!=x2a){
@@ -121,8 +122,8 @@ void fire_bullet2(player** players,int num_players,player* player_,int damage){
                     if(((y1a<=y)&&(y<=y2a))||((y2a<=y)&&(y<=y1a))){
                         //printf("%i,%f,%f\n",direction,x1a,x);
                         if(((direction==1)&&(x1>=x))||((direction==2)&&(x1<=x))){
-                            printf("x1=%f y1=%f x=%f y=%f %f %f %i\n",x1,y1,x,y,distance(x1,y1,x,y),distance_finale,i);
-                            printf("%f %f %f %f\n",x1a,x2a,y1a,y2a);
+                            //printf("x1=%f y1=%f x=%f y=%f %f %f %i\n",x1,y1,x,y,distance(x1,y1,x,y),distance_finale,i);
+                            //printf("%f %f %f %f\n",x1a,x2a,y1a,y2a);
                             if(distance(x1,y1,x,y)<distance_finale){
                                 distance_finale=distance(x1,y1,x,y);
                                 mur_touche=i;
