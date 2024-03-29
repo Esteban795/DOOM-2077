@@ -1,4 +1,5 @@
 #include "../include/patch.h"
+#include <SDL2/SDL_stdinc.h>
 
 patch_header read_patch_header(FILE *f, int offset) {
   patch_header ph;
@@ -96,8 +97,7 @@ patch_column *read_patch_columns(FILE *f, patch_header ph, int offset,
   return columns;
 }
 
-SDL_Texture *get_texture_from_patch(SDL_Renderer *renderer, patch p) {
-  int pitch = p.header.width * 4;
+Uint32 *get_pixels_from_patch(patch p) {
   int ix = 0;
   int color_idx;
   SDL_PixelFormat *fmt = SDL_AllocFormat(SDL_PIXELFORMAT_RGBA8888);
@@ -122,20 +122,10 @@ SDL_Texture *get_texture_from_patch(SDL_Renderer *renderer, patch p) {
   Uint32 *row_based =
       transform_to_row_based(pixels, p.header.width, p.header.height);
   free(pixels);
-  SDL_Texture *texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
-                                           SDL_TEXTUREACCESS_STATIC,
-                                           p.header.width, p.header.height);
-  if (texture == NULL) {
-    SDL_Log("Texture could not be created! SDL_Error: %s\n", SDL_GetError());
-    exit(1);
-  }
-  SDL_UpdateTexture(texture, NULL, row_based, pitch);
-  free(row_based);
-  return texture;
+  return row_based;
 }
 
-patch create_patch(FILE *f, int patch_offset, SDL_Renderer *renderer,
-                   char *patchname, color *palette) {
+patch create_patch(FILE *f, int patch_offset, char *patchname, color *palette) {
   patch p;
   p.patchname = patchname;
   p.palette = palette;
@@ -144,7 +134,7 @@ patch create_patch(FILE *f, int patch_offset, SDL_Renderer *renderer,
   p.nb_columns = actual_number_of_columns;
   p.columns =
       read_patch_columns(f, p.header, patch_offset, actual_number_of_columns);
-  p.patch_img = get_texture_from_patch(renderer, p);
+  p.pixels = get_pixels_from_patch(p);
   return p;
 }
 
@@ -155,8 +145,8 @@ void sprite_free(patch p) {
       continue; // nothing was actually allocated
     free(p.columns[i].data);
   }
+  free(p.pixels);
   free(p.columns);
-  SDL_DestroyTexture(p.patch_img);
 }
 
 void sprites_free(patch *patches, int patch_count) {
@@ -173,9 +163,9 @@ void texture_patch_free(patch p) {
       continue; // nothing was actually allocated
     free(p.columns[i].data);
   }
+  free(p.pixels);
   free(p.columns);
   free(p.patchname);
-  SDL_DestroyTexture(p.patch_img);
 }
 
 void textures_patches_free(patch *patches, int patch_count) {
@@ -185,53 +175,8 @@ void textures_patches_free(patch *patches, int patch_count) {
   free(patches);
 }
 
-void display_patches(SDL_Renderer *renderer, patch *patches, int patch_count) {
-  for (int i = 0; i < patch_count; i++) {
-    if (patches[i].patch_img == NULL) {
-      printf("No texture associated with patch %d\n", i);
-      continue;
-    }
-    SDL_RenderCopy(renderer, patches[i].patch_img, NULL, NULL);
-    SDL_RenderPresent(renderer);
-    SDL_Delay(100);
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
-    SDL_RenderClear(renderer);
-  }
-}
-
-void print_patch_column(patch_column pc) {
-  printf("Top delta: %d\n", pc.top_delta);
-  printf("Length: %d\n", pc.length);
-  printf("Padding pre: %d\n", pc.padding_pre);
-  printf("Data: [");
-  for (int i = 0; i < pc.length; i++) {
-    if (i != 0)
-      printf(", ");
-    printf("%d", pc.data[i]);
-  }
-  printf("]\n");
-  printf("Padding post: %d\n", pc.padding_post);
-}
-
-void print_patch(patch p) {
-  printf("Patch %s\n", p.patchname);
-  printf("Width: %d\n", p.header.width);
-  printf("Height: %d\n", p.header.height);
-  printf("X Offset: %d\n", p.header.x_offset);
-  printf("Y Offset: %d\n", p.header.y_offset);
-  for (int i = 0; i < p.header.width; i++) {
-    printf("[");
-    for (int j = 0; j < p.columns[i].length; j++) {
-      if (j != 0)
-        printf(", ");
-      printf("%d", p.columns[i].data[j]);
-    }
-    printf("]\n");
-  }
-}
-
-patch *get_sprites(SDL_Renderer *renderer, lump *directory, header *header,
-                   FILE *f, color *palette, int *patch_count) {
+patch *get_sprites(lump *directory, header *header, FILE *f, color *palette,
+                   int *patch_count) {
   int start_patches =
       get_lump_index(directory, PATCHES_START, header->lump_count);
   int end_patches = get_lump_index(directory, PATCHES_END, header->lump_count);
@@ -240,15 +185,14 @@ patch *get_sprites(SDL_Renderer *renderer, lump *directory, header *header,
   for (int i = 0; i < *patch_count;
        i++) { // skip start_patches because it's only the marker
     patches[i] =
-        create_patch(f, directory[start_patches + i + 1].lump_offset, renderer,
+        create_patch(f, directory[start_patches + i + 1].lump_offset,
                      directory[start_patches + i + 1].lump_name, palette);
   }
   return patches;
 }
 
-patch *get_texture_patches(SDL_Renderer *renderer, lump *directory,
-                           header *header, FILE *f, color *palette,
-                           int *len_textures_patches) {
+patch *get_texture_patches(lump *directory, header *header, FILE *f,
+                           color *palette, int *len_textures_patches) {
   int PNAMES_lump_index =
       get_lump_index(directory, "PNAMES", header->lump_count);
   lump PNAMES_lump = directory[PNAMES_lump_index];
@@ -265,7 +209,7 @@ patch *get_texture_patches(SDL_Renderer *renderer, lump *directory,
       continue;
     }
     texture_patches[i] = create_patch(f, directory[patch_index].lump_offset,
-                                      renderer, patch_name, palette);
+                                      patch_name, palette);
   }
   return texture_patches;
 }

@@ -53,13 +53,14 @@ wad_data *init_wad_data(const char *path, SDL_Renderer *renderer) {
       get_lump_index(wd->directory, "PLAYPAL", wd->header.lump_count);
   wd->color_palette =
       get_color_palette_from_lump(file, wd->directory, PLAYPAL, 3, 0);
-  wd->sprites = get_sprites(renderer, wd->directory, &wd->header, file,
-                            wd->color_palette, &wd->len_sprites);
+  wd->sprites = get_sprites(wd->directory, &wd->header, file, wd->color_palette,
+                            &wd->len_sprites);
   wd->texture_patches =
-      get_texture_patches(renderer, wd->directory, &wd->header, file,
-                          wd->color_palette, &wd->len_texture_patches);
+      get_texture_patches(wd->directory, &wd->header, file, wd->color_palette,
+                          &wd->len_texture_patches);
   wd->texture_maps =
-      get_texture_maps(file, wd->directory, &wd->header, &wd->len_texture_maps);
+      get_texture_maps(file, wd->directory, &wd->header, wd->texture_patches,
+                       renderer, &wd->len_texture_maps);
   wd->flats = get_flats(file, renderer, wd->directory, &wd->header,
                         wd->color_palette, &wd->len_flats);
   fclose(file);

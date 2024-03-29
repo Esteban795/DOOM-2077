@@ -4,6 +4,7 @@
 #include "byte_reader.h"
 #include "color.h"
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_stdinc.h>
 #include <stdbool.h>
 #include <stdint.h>
 
@@ -45,7 +46,7 @@ struct Patch {
   color *palette;
   patch_header header;
   patch_column *columns;
-  SDL_Texture *patch_img;
+  Uint32 *pixels;
 };
 
 typedef struct Patch patch;
@@ -68,11 +69,10 @@ void sprites_free(patch *patches, int patch_count);
 
 void textures_patches_free(patch *patches, int patch_count);
 
-patch *get_sprites(SDL_Renderer *renderer, lump *directory, header *header,
+patch *get_sprites(lump *directory, header *header,
                    FILE *f, color *palette, int *patch_count);
 
-patch *get_texture_patches(SDL_Renderer *renderer, lump *directory,
-                           header *header, FILE *f, color *palette,
-                           int *len_textures_patches);
+patch *get_texture_patches(lump *directory, header *header, FILE *f,
+                           color *palette, int *len_textures_patches);
 
 #endif
