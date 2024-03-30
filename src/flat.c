@@ -64,3 +64,12 @@ flat *get_flats(FILE *f, SDL_Renderer *renderer, lump *directory,
   }
   return flats;
 }
+
+flat* get_flat_from_name(flat* flats,int len_flats, char* name) {
+  for (int i = 0; i < len_flats; i++) {
+    if (strcmp(flats[i].name, name) == 0) {
+      return &flats[i];
+    }
+  }
+  return NULL;
+}

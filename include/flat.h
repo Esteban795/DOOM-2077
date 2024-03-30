@@ -20,4 +20,6 @@ flat *get_flats(FILE *f, SDL_Renderer *renderer, lump *directory,
 void flats_free(flat *flats, int len_flats);
 
 void display_flats(SDL_Renderer *renderer, flat *flats, int len_flats);
+
+flat* get_flat_from_name(flat* flats,int len_flats, char* name);
 #endif
