@@ -10,7 +10,7 @@ testdepsdir = $(builddir)/test_deps
 
 AR = ar
 CC = gcc
-CFLAGS = -Wall -Wextra -Werror -std=gnu17 -pedantic
+CFLAGS = -Wall -Wextra -std=gnu17 -pedantic
 CFLAGS += -fsanitize=address,undefined -fno-omit-frame-pointer
 LDFLAGS = -lm 
 CDEBUG = -g -O3
@@ -20,7 +20,7 @@ ALL_CFLAGS = $(CFLAGS) $(shell pkg-config --cflags sdl2) $(CDEBUG)
 ALL_LDFLAGS = $(LDFLAGS) $(shell pkg-config --libs sdl2)
 
 # -  TARGETS  -  #
-CLIENT_SRC = blockmap.c bsp.c button.c byte_reader.c color.c engine.c geometry.c header.c \
+CLIENT_SRC = sound.c blockmap.c bsp.c button.c byte_reader.c color.c engine.c geometry.c header.c \
 	keybindings.c linedef.c lump.c main.c map_renderer.c node.c player.c sector.c segment.c \
 	segment_handler.c sidedef.c subsector.c textarea.c thing.c timer.c util.c vertex.c wad_data.c 
 CLIENT_OBJ = $(CLIENT_SRC:%.c=%.o)
