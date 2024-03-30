@@ -32,4 +32,5 @@ texture_map *get_texture_maps(FILE *f, lump *directory, header *header,
                               patch *patches, SDL_Renderer *renderer,
                               int *len_texture_maps);
 
+texture_map* get_texture_from_name(texture_map* texture_maps, int len_texture_maps, char* name);
 #endif

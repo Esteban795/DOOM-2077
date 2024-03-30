@@ -1,4 +1,5 @@
 #include "../include/texture.h"
+#include <stdio.h>
 
 Uint32 *get_pixels_from_patchmaps(texture_map tm, patch *patches,
                                         SDL_Renderer *renderer) {
@@ -83,4 +84,14 @@ texture_map *get_texture_maps(FILE *f, lump *directory, header *header,
   free(th.texture_map_offsets);
   free(th.texture_maps);
   return texture_maps;
+}
+
+
+texture_map* get_texture_from_name(texture_map* texture_maps, int len_texture_maps, char* name) {
+  for (int i = 0; i < len_texture_maps; i++) {
+    if (strcmp(texture_maps[i].name, name) == 0) {
+      return &texture_maps[i];
+    }
+  }
+  return NULL;
 }

@@ -46,7 +46,7 @@ wad_data *init_wad_data(const char *path, SDL_Renderer *renderer) {
       wd->flats, wd->len_flats);
   wd->sidedefs =
       get_sidedefs_from_lump(file, wd->directory, wd->map_index + SIDEDEFS, 30,
-                             0, wd->len_sidedefs, wd->sectors);
+                             0, wd->len_sidedefs, wd->sectors, wd->texture_maps,wd->len_texture_maps);
   wd->vertexes = get_vertexes_from_lump(
       file, wd->directory, wd->map_index + VERTEXES, 4, 0, wd->len_vertexes);
   wd->linedefs =
