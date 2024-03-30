@@ -6,10 +6,10 @@ int max(int a,int b){
     return a > b ? a : b;
 }
 
-node* new_node(patch* p){
+node* new_node(texture_map* tm){
     node* n = malloc(sizeof(node));
     n->height = 0;
-    n->patch = p;
+    n->texture = tm;
     n->left = NULL;
     n->right = NULL;
     return n;
@@ -24,8 +24,8 @@ avl_tree* avl_new(void){
 
 bool node_member(node* n, char* key){
     if (n == NULL || key[0] == '\0') return false;
-    if (strcmp(key,n->patch->patchname) < 0) node_member(n->left,key);
-    if (strcmp(key, n->patch->patchname) > 0) node_member(n->right,key);
+    if (strcmp(key,n->texture->name) < 0) node_member(n->left,key);
+    if (strcmp(key, n->texture->name) > 0) node_member(n->right,key);
     return true;
 }
 
@@ -38,17 +38,17 @@ int avl_size(avl_tree* t){
     return t->size;
 }
 
-void node_elements(node* n,patch** tab_elts,int* i){
+void node_elements(node* n,texture_map** tab_elts,int* i){
     if (n == NULL) return;
     if (n->left != NULL) node_elements(n->left,tab_elts,i);
-    tab_elts[*i] = n->patch;
+    tab_elts[*i] = n->texture;
     (*i)++;
     if (n->right != NULL) node_elements(n->right,tab_elts,i);
 }
 
 // Returns the elements that are in the tree, in a sorted array.
-patch** avl_elements(avl_tree* t){
-    patch** elts = malloc(sizeof(patch*) * t->size);
+texture_map** avl_elements(avl_tree* t){
+    texture_map** elts = malloc(sizeof(texture_map*) * t->size);
     int i = 0;
     node_elements(t->root,elts,&i);
     return elts;
@@ -104,37 +104,37 @@ int get_node_balance(node* n){
     return node_height(n->left) - node_height(n->right);
 }
 
-node* insert_node(node* n,patch* p,bool* inserted){
+node* insert_node(node* n,texture_map* tm,bool* inserted){
     if (n == NULL){
         *inserted = true;
-        return new_node(p);
+        return new_node(tm);
     }
-    int compare = strcmp(p->patchname,n->patch->patchname);
-    if (compare < 0) n->left = insert_node(n->left,p,inserted); //traversing the tree
-    else if (compare > 0) n->right = insert_node(n->right,p,inserted);
+    int compare = strcmp(tm->name,n->texture->name);
+    if (compare < 0) n->left = insert_node(n->left,tm,inserted); //traversing the tree
+    else if (compare > 0) n->right = insert_node(n->right,tm,inserted);
     else return n; //element already exists
 
     //Re-balancing the tree.
     //updating n's height
     n->height = 1 + max(node_height(n->left),node_height(n->right));
     int n_balance = get_node_balance(n);
-    if (n_balance > 1 && strcmp(p->patchname, n->left->patch->patchname) < 0) return right_rotate(n);
-    if (n_balance > 1 && strcmp(p->patchname, n->left->patch->patchname) > 0) {
+    if (n_balance > 1 && strcmp(tm->name, n->left->texture->name) < 0) return right_rotate(n);
+    if (n_balance > 1 && strcmp(tm->name, n->left->texture->name) > 0) {
         n->left = left_rotate(n->left);
         return right_rotate(n);
     }
 
-    if (n_balance < -1 && strcmp(p->patchname, n->right->patch->patchname) < 0) return left_rotate(n);
-    if (n_balance < -1 && strcmp(p->patchname, n->right->patch->patchname) > 0){
+    if (n_balance < -1 && strcmp(tm->name, n->right->texture->name) < 0) return left_rotate(n);
+    if (n_balance < -1 && strcmp(tm->name, n->right->texture->name) > 0){
         n->right = right_rotate(n->right);
         return left_rotate(n);
     }
     return n;
 }
 
-bool avl_insert(avl_tree* t,patch* p){
+bool avl_insert(avl_tree* t,texture_map* tm){
     bool inserted = false;
-    t->root = insert_node(t->root,p,&inserted);
+    t->root = insert_node(t->root,tm,&inserted);
     if (inserted) t->size++;
     return inserted;
 }
@@ -147,10 +147,10 @@ node* find_min(node* n) {
     return n;
 }
 
-node* node_remove(node* n,char* patchname,bool* removed){
+node* node_remove(node* n,char* name,bool* removed){
     if (n == NULL) return NULL;
-    if (strcmp(patchname, n->patch->patchname) < 0) n->left = node_remove(n->left,patchname,removed); // traversing the tree
-    else if (strcmp(patchname, n->patch->patchname) > 0) n->right = node_remove(n->right,patchname,removed);
+    if (strcmp(name, n->texture->name) < 0) n->left = node_remove(n->left,name,removed); // traversing the tree
+    else if (strcmp(name, n->texture->name) > 0) n->right = node_remove(n->right,name,removed);
     else  { // we found the node that is going to get deleted
         *removed = true;
         if (n->left == NULL || n->right == NULL){
@@ -164,8 +164,8 @@ node* node_remove(node* n,char* patchname,bool* removed){
             free(temp);
         } else {
             node* temp = find_min(n->right);
-            n->patch = temp->patch;
-            n->right = node_remove(n->right,temp->patch->patchname,removed);
+            n->texture = temp->texture;
+            n->right = node_remove(n->right,temp->texture->name,removed);
         }
     }
     if (n == NULL) return NULL; //means n was the root, so the tree is now empty
@@ -196,18 +196,6 @@ bool avl_remove(avl_tree* t,char* patchname){
     return removed;
 }
 
-void print_sorted(node* n) {
-  if (n != NULL) {
-    print_sorted(n->left);
-    printf("%s ", n->patch->patchname);
-    print_sorted(n->right);
-  }
-}
-
-void avl_print_sorted(avl_tree* t){
-    print_sorted(t->root);
-}
-
 void node_delete(node* n){
     if (n == NULL) return;
     node_delete(n->left);
@@ -220,7 +208,6 @@ void avl_delete(avl_tree* t){
     free(t);
     t = NULL;
 }
-
 
 // int main() {
 //     avl_tree* t = avl_new();

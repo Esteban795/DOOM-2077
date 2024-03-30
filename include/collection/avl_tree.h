@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-#include "../patch.h"
+#include "../texture.h"
 
 /*
 AVL C implementation
@@ -15,7 +15,7 @@ Uses lexico-graphical of patch->patchname order to sort elements.
 struct Node {
     struct Node* left;
     struct Node* right;
-    patch* patch;
+    texture_map* texture;
     int height;
 };
 
@@ -42,8 +42,7 @@ bool avl_member(avl_tree* t,char* key);
 Returns elements that are in the AVL tree, in an sorted array. 
 Access its length through avl_nb_elements
 */
-patch** avl_elements(avl_tree* t);
-
+texture_map** avl_elements(avl_tree* t);
 /*
 Returns the current number of element in the AVL
 */
@@ -57,7 +56,7 @@ int avl_height(avl_tree* t);
 /*
 Inserts given element in AVL, if it doesn't already exists.
 */
-bool avl_insert(avl_tree* t,patch* p);
+bool avl_insert(avl_tree* t,texture_map* tm);
 
 /*
 Removes key from the AVL if it exists in AVL, and returns true if the element was effectively deleted. If not, returns false.
