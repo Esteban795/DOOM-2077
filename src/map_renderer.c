@@ -1,4 +1,5 @@
 #include "../include/map_renderer.h"
+#include <SDL2/SDL_pixels.h>
 
 #define FOV 90.0
 #define H_FOV (FOV / 2.0)
@@ -315,7 +316,8 @@ void draw_flat(map_renderer *mr, flat *texture, i16 light_level, int x, int y1,
                int y2, int world_z) {
   if (y1 < y2) {
     double player_dir_x = cos(deg_to_rad(mr->engine->p->angle));
-    double player_dir_y = -sin(deg_to_rad(mr->engine->p->angle)); // - because the fucking y axis is reversed
+    double player_dir_y = -sin(deg_to_rad(
+        mr->engine->p->angle)); // - because the fucking y axis is reversed
     for (int iy = y1; iy < y2; iy++) {
       double z = HALF_WIDTH * world_z / (HALF_HEIGHT - iy);
       double px = player_dir_x * z + mr->engine->p->pos.x;
@@ -330,8 +332,7 @@ void draw_flat(map_renderer *mr, flat *texture, i16 light_level, int x, int y1,
       int texture_y = (int)(left_y + dy * x) & 63;
       Uint32 pixel = texture->pixels[texture_y * 64 + texture_x];
       u8 r, g, b, a;
-      SDL_GetRGBA(pixel, SDL_AllocFormat(SDL_PIXELFORMAT_RGBA8888), &r, &g, &b,
-                  &a);
+      SDL_GetRGBA(pixel, texture->format, &r, &g, &b, &a);
       r = r * light_level / 255;
       g = g * light_level / 255;
       b = b * light_level / 255;

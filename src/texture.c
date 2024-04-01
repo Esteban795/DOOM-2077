@@ -1,5 +1,4 @@
 #include "../include/texture.h"
-#include <stdio.h>
 
 Uint32 *get_pixels_from_patchmaps(texture_map tm, patch *patches,
                                         SDL_Renderer *renderer) {
@@ -36,6 +35,7 @@ texture_map read_texture_map(FILE *f, int offset, patch *patches,
     tm.patch_maps[i] = read_patch_map(f, offset + 22 + i * 10);
   }
   tm.pixels = get_pixels_from_patchmaps(tm, patches, renderer);
+  tm.format = SDL_AllocFormat(SDL_PIXELFORMAT_RGBA8888);
   return tm;
 }
 

@@ -3,7 +3,6 @@
 
 #include "byte_reader.h"
 #include "patch.h"
-#include <SDL2/SDL_render.h>
 
 struct TextureMap {
   char *name;
@@ -14,6 +13,7 @@ struct TextureMap {
   u16 patch_count;
   patch_map *patch_maps;
   Uint32* pixels;
+  SDL_PixelFormat* format;
 };
 
 typedef struct TextureMap texture_map;
