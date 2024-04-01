@@ -7,20 +7,7 @@
 #include "player.h"
 #include "structs.h"
 #include "vertex.h"
-
-#define RES_W 320
-#define RES_H 200
-#define SCALE 5
-
-#define WIDTH RES_W *SCALE
-#define HEIGHT RES_H *SCALE
-
-#define OUT_MIN 30
-#define OUT_MAX_W (WIDTH - 30)
-#define OUT_MAX_H (HEIGHT - 30)
-
-#define DEFAULT_MAP_BOUNDS                                                     \
-  { OUT_MIN, OUT_MAX_W, OUT_MIN, OUT_MAX_H }
+#include "settings.h"
 
 int *get_map_bounds(vertex *vertexes, int len);
 
@@ -46,4 +33,11 @@ void draw(map_renderer *mr);
 void map_renderer_free(map_renderer *mr);
 
 void draw_vline(map_renderer *mr, int x, int y1, int y2, color c);
+
+void draw_wall_column(map_renderer *mr, texture_map *texture,
+                      double texture_column, int x, int y1, int y2,
+                      double texture_alt, double inverted_scale, i16 light_level);
+
+void draw_flat(map_renderer *mr, flat *texture, i16 light_level, int x,
+               int y1, int y2, int world_z);
 #endif

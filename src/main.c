@@ -19,34 +19,6 @@ int start_SDL(SDL_Window **window, SDL_Renderer **renderer, int width,
   return 0;
 }
 
-// int main(void) {
-//   SDL_Window *window;
-//   SDL_Renderer *renderer;
-//   int numkeys;
-//   const uint8_t* keys = SDL_GetKeyboardState(&numkeys);
-//   int status = start_SDL(&window, &renderer, WIDTH, HEIGHT, "Map rendering..");
-//   if (status == 1) {
-//     printf("Error at SDL startup");
-//     exit(-1);
-//   }
-//   uint64_t now;
-//   uint64_t old = SDL_GetTicks64();
-//   SDL_ShowCursor(SDL_DISABLE);
-//   engine *e = init_engine("maps/DOOM1.WAD", renderer, numkeys, keys);
-//   int dt = 0;
-//   while (e->running) {
-//     now = SDL_GetTicks64();
-//     dt = now - old;
-//     int res = update_engine(e, dt);
-//     if (res == 1)
-//       break;
-//     printf("FPS: %f\n", 1000.0 / dt);
-//     old = now;
-//   }
-//   engine_free(e);
-//   return 0;
-// }
-
 int main(void) {
   SDL_Window *window;
   SDL_Renderer *renderer;
@@ -62,7 +34,37 @@ int main(void) {
   SDL_ShowCursor(SDL_DISABLE);
   engine *e = init_engine("maps/DOOM1.WAD", renderer, numkeys, keys);
   int dt = 0;
-  display_texture_maps(renderer, e->wData->texture_maps, e->wData->len_texture_maps);
+  while (e->running) {
+    now = SDL_GetTicks64();
+    dt = now - old;
+    int res = update_engine(e, dt);
+    if (res == 1)
+      break;
+    printf("FPS: %f\n", 1000.0 / dt);
+    old = now;
+    // SDL_Delay(5000);
+    // break;
+  }
   engine_free(e);
   return 0;
 }
+
+// int main(void) {
+//   SDL_Window *window;
+//   SDL_Renderer *renderer;
+//   int numkeys;
+//   const uint8_t* keys = SDL_GetKeyboardState(&numkeys);
+//   int status = start_SDL(&window, &renderer, WIDTH, HEIGHT, "Map rendering..");
+//   if (status == 1) {
+//     printf("Error at SDL startup");
+//     exit(-1);
+//   }
+//   uint64_t now;
+//   uint64_t old = SDL_GetTicks64();
+//   SDL_ShowCursor(SDL_DISABLE);
+//   engine *e = init_engine("maps/DOOM1.WAD", renderer, numkeys, keys);
+//   int dt = 0;
+//   display_texture_maps(renderer, e->wData->texture_maps, e->wData->len_texture_maps);
+//   engine_free(e);
+//   return 0;
+// }

@@ -1,5 +1,4 @@
 #include "../include/map_renderer.h"
-#include <SDL2/SDL_render.h>
 
 #define FOV 90.0
 #define H_FOV (FOV / 2.0)
@@ -104,7 +103,7 @@ vertex *remap_vertexes(vertex *vertexes, int len, int *map_bounds) {
 }
 
 void draw_linedefs(SDL_Renderer *renderer, linedef *linedefs, int len) {
-  //SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+  // SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
   for (int i = 0; i < len; i++) {
     vertex *p1 = linedefs[i].start_vertex;
     vertex *p2 = linedefs[i].end_vertex;
@@ -151,8 +150,10 @@ void draw_node(map_renderer *mr, int node_id) {
 
 static void draw_player(map_renderer *mr) {
   SDL_SetRenderDrawColor(mr->renderer, 0, 0, 255, 255);
-  i16 x = remap_x(mr->engine->p->pos.x, mr->map_bounds.left, mr->map_bounds.right);
-  i16 y = remap_y(mr->engine->p->pos.y, mr->map_bounds.top, mr->map_bounds.bottom);
+  i16 x =
+      remap_x(mr->engine->p->pos.x, mr->map_bounds.left, mr->map_bounds.right);
+  i16 y =
+      remap_y(mr->engine->p->pos.y, mr->map_bounds.top, mr->map_bounds.bottom);
   DrawCircle(mr->renderer, x, y, PLAYER_RADIUS);
 }
 
@@ -173,8 +174,10 @@ void draw_subsector(map_renderer *mr, i16 subsector_id) {
 
 void draw_fov(map_renderer *mr) {
   const int RAY_LENGTH = 200;
-  int x = remap_x(mr->engine->p->pos.x, mr->map_bounds.left, mr->map_bounds.right);
-  int y = remap_y(mr->engine->p->pos.y, mr->map_bounds.top, mr->map_bounds.bottom);
+  int x =
+      remap_x(mr->engine->p->pos.x, mr->map_bounds.left, mr->map_bounds.right);
+  int y =
+      remap_y(mr->engine->p->pos.y, mr->map_bounds.top, mr->map_bounds.bottom);
   int x1 = x + RAY_LENGTH * cos(deg_to_rad(mr->engine->p->angle + H_FOV));
   int y1 = y + RAY_LENGTH * sin(deg_to_rad(mr->engine->p->angle + H_FOV));
   int x2 = x + RAY_LENGTH * cos(deg_to_rad(mr->engine->p->angle - H_FOV));
@@ -188,31 +191,40 @@ void draw_fov(map_renderer *mr) {
   SDL_RenderDrawLine(mr->renderer, x, y, x3, y3);
 }
 
-void draw_block(map_renderer *mr, int block_index){
-  //routine that just draws the box of the block
+void draw_block(map_renderer *mr, int block_index) {
+  // routine that just draws the box of the block
   SDL_SetRenderDrawColor(mr->renderer, 255, 255, 255, 255);
-  int block_bound_tl_x = mr->engine->wData->blockmap->header->x + (block_index % mr->engine->wData->blockmap->header->ncols) * 128;
-  int block_bound_tl_y = mr->engine->wData->blockmap->header->y + (block_index / mr->engine->wData->blockmap->header->ncols) * 128;
+  int block_bound_tl_x =
+      mr->engine->wData->blockmap->header->x +
+      (block_index % mr->engine->wData->blockmap->header->ncols) * 128;
+  int block_bound_tl_y =
+      mr->engine->wData->blockmap->header->y +
+      (block_index / mr->engine->wData->blockmap->header->ncols) * 128;
 
   int x1 = remap_x(block_bound_tl_x, mr->map_bounds.left, mr->map_bounds.right);
   int y1 = remap_y(block_bound_tl_y, mr->map_bounds.top, mr->map_bounds.bottom);
-  int x2 = remap_x(block_bound_tl_x + 128, mr->map_bounds.left, mr->map_bounds.right);
-  int y2 = remap_y(block_bound_tl_y + 128, mr->map_bounds.top, mr->map_bounds.bottom);
+  int x2 = remap_x(block_bound_tl_x + 128, mr->map_bounds.left,
+                   mr->map_bounds.right);
+  int y2 = remap_y(block_bound_tl_y + 128, mr->map_bounds.top,
+                   mr->map_bounds.bottom);
   SDL_Rect rect = {.x = x1, .y = y1, .w = x2 - x1, .h = y2 - y1};
   SDL_RenderDrawRect(mr->renderer, &rect);
 
-  //and now drawing the linedefs, let's go baby
+  // and now drawing the linedefs, let's go baby
   SDL_SetRenderDrawColor(mr->renderer, 255, 0, 255, 255);
-  draw_linedefs(mr->renderer, mr->engine->wData->blockmap->blocks[block_index].linedefs,
+  draw_linedefs(mr->renderer,
+                mr->engine->wData->blockmap->blocks[block_index].linedefs,
                 mr->engine->wData->blockmap->blocks[block_index].nlinedefs);
 }
 
 void draw_active_blocks(map_renderer *mr) {
   SDL_SetRenderDrawColor(mr->renderer, 255, 255, 255, 255);
 
-  for (int y=-1; y<=1; y++){
-    for (int x=-1; x<=1; x++){
-      int block_index = blockmap_get_block_index(mr->engine->wData->blockmap, mr->engine->p->pos.x + x*128, mr->engine->p->pos.y + y*128);
+  for (int y = -1; y <= 1; y++) {
+    for (int x = -1; x <= 1; x++) {
+      int block_index = blockmap_get_block_index(
+          mr->engine->wData->blockmap, mr->engine->p->pos.x + x * 128,
+          mr->engine->p->pos.y + y * 128);
       draw_block(mr, block_index);
     }
   }
@@ -254,5 +266,77 @@ void draw_vline(map_renderer *mr, int x, int y1, int y2, color c) {
   if (y1 < y2) {
     SDL_SetRenderDrawColor(mr->renderer, c.r, c.g, c.b, 255);
     SDL_RenderDrawLine(mr->renderer, x, y1, x, y2);
+  }
+}
+
+void draw_column(map_renderer *mr, int x, int y1, int y2, color c) {
+  SDL_SetRenderDrawColor(mr->renderer, c.r, c.g, c.b, 255);
+  SDL_RenderDrawLine(mr->renderer, x, y1, x, y2);
+}
+
+void draw_wall_column(map_renderer *mr, texture_map *texture,
+                      double texture_column, int x, int y1, int y2,
+                      double texture_alt, double inverted_scale,
+                      i16 light_level) {
+  if (y1 < y2) {
+    int texture_width = texture->width;
+    int texture_height = texture->height;
+    printf("texture_width: %d\n", texture_width);
+    printf("texture_height: %d\n", texture_height);
+    printf("texture_column: %f\n", texture_column);
+    printf("x: %d\n", x);
+    printf("y1: %d\n", y1);
+    printf("y2: %d\n", y2);
+    printf("texture_alt: %f\n", texture_alt);
+    printf("inverted_scale: %f\n", inverted_scale);
+    int texture_column_int =
+        ((int)texture_column) % texture_width; // texture repeatition
+    double texture_y =
+        texture_alt + ((double)y1 - HALF_HEIGHT) * inverted_scale;
+    printf("texture_y: %f\n", texture_y);
+    for (int y = y1; y < y2 + 1; y++) {
+      int texture_y_int = (int)texture_y % texture_height;
+      // printf("texture_y_int: %d\n", texture_y_int);
+      Uint32 pixel =
+          texture->pixels[texture_y_int * texture_width + texture_column_int];
+      u8 r = (pixel & 0xFF0000) >> 16;
+      u8 g = (pixel & 0x00FF00) >> 8;
+      u8 b = (pixel & 0x0000FF);
+      r = r * light_level / 255;
+      g = g * light_level / 255;
+      b = b * light_level / 255;
+      SDL_SetRenderDrawColor(mr->renderer, r, g, b, 255);
+      SDL_RenderDrawPoint(mr->renderer, x, y);
+    }
+  }
+}
+
+void draw_flat(map_renderer *mr, flat *texture, i16 light_level, int x, int y1,
+               int y2, int world_z) {
+  if (y1 < y2) {
+    double player_dir_x = cos(deg_to_rad(mr->engine->p->angle));
+    double player_dir_y = -sin(deg_to_rad(mr->engine->p->angle)); // - because the fucking y axis is reversed
+    for (int iy = y1; iy < y2; iy++) {
+      double z = HALF_WIDTH * world_z / (HALF_HEIGHT - iy);
+      double px = player_dir_x * z + mr->engine->p->pos.x;
+      double py = player_dir_y * z + mr->engine->p->pos.y;
+      double left_x = -player_dir_y * z + px;
+      double left_y = player_dir_x * z + py;
+      double right_x = player_dir_y * z + px;
+      double right_y = -player_dir_x * z + py;
+      double dx = (right_x - left_x) / WIDTH;
+      double dy = (right_y - left_y) / WIDTH;
+      int texture_x = (int)(left_x + dx * x) & 63;
+      int texture_y = (int)(left_y + dy * x) & 63;
+      Uint32 pixel = texture->pixels[texture_y * 64 + texture_x];
+      u8 r, g, b, a;
+      SDL_GetRGBA(pixel, SDL_AllocFormat(SDL_PIXELFORMAT_RGBA8888), &r, &g, &b,
+                  &a);
+      r = r * light_level / 255;
+      g = g * light_level / 255;
+      b = b * light_level / 255;
+      SDL_SetRenderDrawColor(mr->renderer, r, g, b, a);
+      SDL_RenderDrawPoint(mr->renderer, x, iy);
+    }
   }
 }
