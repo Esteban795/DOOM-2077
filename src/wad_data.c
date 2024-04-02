@@ -39,7 +39,7 @@ wad_data *init_wad_data(const char *path, SDL_Renderer *renderer) {
   wd->texture_maps =
       get_texture_maps(file, wd->directory, &wd->header, wd->texture_patches,
                        renderer, &wd->len_texture_maps);
-  wd->flats = get_flats(file, renderer, wd->directory, &wd->header,
+  wd->flats = get_flats(file, wd->directory, &wd->header,
                         wd->color_palette, &wd->len_flats);
   wd->sectors = get_sectors_from_lump(
       file, wd->directory, wd->map_index + SECTORS, 26, 0, wd->len_sectors,
