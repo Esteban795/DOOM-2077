@@ -55,6 +55,9 @@ void update_uimodule(SDL_Renderer *r, UIModule *module, const uint8_t *keys) {
       case UIET_Button:
         uibutton_update(r, module->elements[i]->element, keys);
         break;
+      case UIET_Image:
+        uiimage_update(r, module->elements[i]->element);
+        break;
       default:
         break;
       }

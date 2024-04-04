@@ -6,8 +6,8 @@ UIModule **get_ui_ingame(int *nuimodules) {
 
   modules[0] = uimodule_create(0, 1);
 
-  UIImage *image = uiimage_create(0, 0, 0.5, 0.5, UIAP_TOP_LEFT,
-                                  "../../assets/testimage.jpg");
+  UIImage *image =
+      uiimage_create(0, 0, 0.5, 0.5, UIAP_TOP_LEFT, "assets/testimage.jpg");
 
   uimodule_set_element(modules[0], 0, UIET_Image, image);
 
@@ -15,7 +15,7 @@ UIModule **get_ui_ingame(int *nuimodules) {
 }
 
 void free_ui_ingame(UIModule **yay) {
-  for (int i = 0; i < 0; i++) {
+  for (int i = 0; i < 1; i++) {
     uimodule_free(yay[i]);
   }
   free(yay);
