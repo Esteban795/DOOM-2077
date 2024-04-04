@@ -1,5 +1,6 @@
 #include "../include/engine.h"
 #include <SDL2/SDL_events.h>
+#include <SDL2/SDL_image.h>
 #include <SDL2/SDL_mouse.h>
 #include <SDL2/SDL_ttf.h>
 
@@ -34,6 +35,7 @@ int main(void) {
     printf("Error at SDL_TTF startup");
     exit(-1);
   }
+  IMG_Init(IMG_INIT_PNG || IMG_INIT_JPG);
   uint64_t now;
   uint64_t old = SDL_GetTicks64();
   SDL_ShowCursor(SDL_DISABLE);
@@ -49,6 +51,7 @@ int main(void) {
     old = now;
   }
   engine_free(e);
+  IMG_Quit();
   TTF_Quit();
   return 0;
 }
