@@ -1,11 +1,15 @@
 #include "../include/events.h"
 
 uint8_t keys[SDL_NUM_SCANCODES] = {0};
-uint8_t mouse[NUM_MOUSE_BUTTONS + 2] = {0};
+int mouse[NUM_MOUSE_BUTTONS + 2] = {0};
 
 void handle_events(engine *e) {
   SDL_Event event;
   SDL_Scancode scancode;
+  int mouse_x, mouse_y;
+  SDL_GetRelativeMouseState(&mouse_x, &mouse_y);
+  mouse[NUM_MOUSE_BUTTONS] = mouse_x;
+  mouse[NUM_MOUSE_BUTTONS + 1] = mouse_y;
   while (SDL_PollEvent(&event)) {
     switch (event.type) {
     case SDL_QUIT:
@@ -25,14 +29,9 @@ void handle_events(engine *e) {
     case SDL_MOUSEBUTTONUP:
       mouse[event.button.button] = 0;
       break;
-    case SDL_MOUSEMOTION:
-      mouse[NUM_MOUSE_BUTTONS] = event.motion.x;
-      mouse[NUM_MOUSE_BUTTONS + 1] = event.motion.y;
-      break;
     default:
       break;
     }
-    game_states[e->state](NULL);
+    // game_states[e->state](NULL);
   }
-  
 }

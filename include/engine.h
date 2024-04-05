@@ -6,8 +6,9 @@
 #include "player.h"
 #include "structs.h"
 #include "segment_handler.h"
+#include "events.h"
 
-engine *init_engine(const char *wadPath, SDL_Renderer *renderer, int numkeys, const uint8_t *keys);
+engine *init_engine(const char *wadPath, SDL_Renderer *renderer);
 
 int update_engine(engine *e,int dt);
 

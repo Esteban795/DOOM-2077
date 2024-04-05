@@ -7,6 +7,7 @@
 #include "wad_data.h"
 #include "vec2.h"
 #include "settings.h"
+#include "game_states.h"
 
 struct Player;
 struct BSP;
@@ -32,8 +33,7 @@ struct Engine {
   struct BSP *bsp;
   struct MapRenderer *map_renderer;
   struct SegmentHandler *seg_handler;
-  int numkeys;
-  const uint8_t *keys;
+  GameState state;
   int DT;
 };
 

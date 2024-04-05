@@ -7,6 +7,7 @@
 #define NUM_MOUSE_BUTTONS 3
 
 extern uint8_t keys[SDL_NUM_SCANCODES];
-extern uint8_t mouse[NUM_MOUSE_BUTTONS + 2];// to handle mouse buttons and events
+extern int mouse[NUM_MOUSE_BUTTONS + 2];// to handle mouse buttons and events
 
+void handle_events(engine *e);
 #endif
