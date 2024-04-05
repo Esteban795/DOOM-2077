@@ -5,20 +5,23 @@
 
 #include "keybindings.h"
 #include "wad_data.h"
+#include "vec2.h"
+#include "settings.h"
 
 struct Player;
 struct BSP;
 struct Engine;
 struct MapRenderer;
+struct SegmentHandler;
 
 struct Player {
   struct Engine *engine;
   thing thing;
-  double x;
-  double y;
+  vec2 pos;
   double angle;
   struct PlayerSetting *settings;
   struct PlayerKeybind *keybinds;
+  double height;
 };
 
 struct Engine {
@@ -28,8 +31,10 @@ struct Engine {
   struct Player *p;
   struct BSP *bsp;
   struct MapRenderer *map_renderer;
+  struct SegmentHandler *seg_handler;
   int numkeys;
   const uint8_t *keys;
+  int DT;
 };
 
 struct BSP {
@@ -55,12 +60,16 @@ typedef struct Engine engine;
 typedef struct BSP bsp;
 typedef struct MapRenderer map_renderer;
 
-struct Color {
-  int r;
-  int g;
-  int b;
+struct SegmentHandler {
+  struct Engine *engine;
+  player *player;
+  segment *seg;
+  double raw_angle_1;
+  int screen_range[WIDTH + 1];
+  double upper_clip[WIDTH + 1];
+  double lower_clip[WIDTH + 1];
+  size_t screen_range_count;
 };
 
-typedef struct Color color;
-
+typedef struct SegmentHandler segment_handler;
 #endif

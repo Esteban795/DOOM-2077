@@ -1,4 +1,6 @@
 #include "../include/engine.h"
+#include <SDL2/SDL_events.h>
+#include <SDL2/SDL_mouse.h>
 #include "../include/game_states.h"
 
 // handles all kind of error at SDL startup
@@ -21,7 +23,7 @@ int main(void) {
   SDL_Window *window;
   SDL_Renderer *renderer;
   int numkeys;
-  const uint8_t *keys = SDL_GetKeyboardState(&numkeys);
+  const uint8_t* keys = SDL_GetKeyboardState(&numkeys);
   int status = start_SDL(&window, &renderer, WIDTH, HEIGHT, "Map rendering..");
   if (status == 1) {
     printf("Error at SDL startup");
@@ -29,6 +31,7 @@ int main(void) {
   }
   uint64_t now;
   uint64_t old = SDL_GetTicks64();
+  SDL_ShowCursor(SDL_DISABLE);
   bool isFirstTime[STATE_COUNT];
   for(int i=0; i<STATE_COUNT; i++) {
     isFirstTime[i] = true;
@@ -40,10 +43,15 @@ int main(void) {
   args.renderer = renderer;
   args.numkeys = numkeys;
   args.keys = keys;
+  int dt = 0;
   while (args.isRunning) {
     game_states[current_state](&args);
     now = SDL_GetTicks64();
-    printf("FPS: %f\n", 1000.0 / (now - old));
+    dt = now - old;
+    int res = update_engine(e, dt);
+    if (res == 1)
+      break;
+    printf("FPS: %f\n", 1000.0 / dt);
     old = now;
   }
   if(args.e != NULL) {
