@@ -4,6 +4,8 @@
 #define FOV 90.0
 #define H_FOV (FOV / 2.0)
 
+SDL_PixelFormat* fmt = NULL;
+
 color get_random_color2() {
   color c;
   c.r = rand() % 256;
@@ -241,6 +243,7 @@ void draw(map_renderer *mr) {
 }
 
 map_renderer *map_renderer_init(engine *e, SDL_Renderer *renderer) {
+  fmt = SDL_AllocFormat(SDL_PIXELFORMAT_RGBA8888);
   map_renderer *mr = malloc(sizeof(map_renderer));
   mr->engine = e;
   mr->wData = e->wData;
@@ -265,8 +268,11 @@ void map_renderer_free(map_renderer *mr) {
 
 void draw_vline(map_renderer *mr, int x, int y1, int y2, color c) {
   if (y1 < y2) {
-    SDL_SetRenderDrawColor(mr->renderer, c.r, c.g, c.b, 255);
-    SDL_RenderDrawLine(mr->renderer, x, y1, x, y2);
+    Uint32 pixel = SDL_MapRGBA(fmt, c.r,
+                               c.g, c.b, 255);
+    for (int y = y1; y < y2; y++) {
+      mr->engine->pixels[y * WIDTH + x] = pixel;
+    }
   }
 }
 
@@ -336,8 +342,8 @@ void draw_flat(map_renderer *mr, flat *texture, i16 light_level, int x, int y1,
       r = r * light_level / 255;
       g = g * light_level / 255;
       b = b * light_level / 255;
-      SDL_SetRenderDrawColor(mr->renderer, r, g, b, a);
-      SDL_RenderDrawPoint(mr->renderer, x, iy);
+      
+      mr->engine->pixels[iy * WIDTH + x] = pixel;
     }
   }
 }

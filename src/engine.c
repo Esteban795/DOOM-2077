@@ -12,6 +12,8 @@ engine *init_engine(const char *wadPath, SDL_Renderer *renderer, int numkeys,
   e->seg_handler = segment_handler_init(e);
   e->numkeys = numkeys;
   e->keys = keys;
+  e->texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
+                                 SDL_TEXTUREACCESS_STREAMING, WIDTH, HEIGHT);
   return e;
 }
 
@@ -30,8 +32,10 @@ int update_engine(engine *e, int dt) {
   get_ssector_height(e->bsp);
   segment_handler_update(e->seg_handler);
   update_bsp(e->bsp);
-  SDL_SetRelativeMouseMode(SDL_TRUE);
+  SDL_UpdateTexture(e->texture, NULL, e->pixels, WIDTH * 4);
+  SDL_RenderCopy(e->map_renderer->renderer, e->texture, NULL, NULL);
   SDL_RenderPresent(e->map_renderer->renderer);
+  memset(e->pixels, 0, WIDTH * HEIGHT * 4);
   return 0;
 }
 
