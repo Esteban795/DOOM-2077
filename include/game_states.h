@@ -1,38 +1,23 @@
 #ifndef GAMESTATES_H
 #define GAMESTATES_H
-#define STATE_COUNT 4
 
 #include <SDL2/SDL.h>
 #include <stdbool.h>
-#include "../include/engine.h"
+#include "structs.h"
+#include "player.h"
+#include "bsp.h"
+#include "segment_handler.h"
 
-typedef enum {
-    STATE_MENU,
-    STATE_INGAME,
-    STATE_PAUSE,
-    STATE_GAMEOVER
-} GameState;
+extern bool firstTimeLaunching;
 
-typedef struct {
-    SDL_Renderer *renderer;
-    bool *isFirstTime;
-    bool isRunning;
-    int numkeys;
-    const uint8_t *keys;
-    engine *e;
-    
-} GameStateArgs;
-
-typedef void (*GameStateFunction)(GameStateArgs *args);
+typedef void (*GameStateFunction)(engine* e);
 
 extern GameStateFunction game_states[STATE_COUNT];
 
-
-
-
-// void handle_menu_state(SDL_Renderer *renderer);
-// void handle_ingame_state(SDL_Renderer *renderer);
-// void handle_paused_state(SDL_Renderer *renderer);
-// void handle_gameover_state(SDL_Renderer *renderer);
+void handle_menu_state(engine* e);
+void handle_settings_state(engine* e);
+void handle_ingame_state(engine* e);
+void handle_paused_state(engine* e);
+void handle_gameover_state(engine* e);
 
 #endif

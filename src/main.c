@@ -1,6 +1,5 @@
 #include "../include/engine.h"
-#include <SDL2/SDL_events.h>
-#include <SDL2/SDL_mouse.h>
+
 
 // handles all kind of error at SDL startup
 int start_SDL(SDL_Window **window, SDL_Renderer **renderer, int width,
@@ -27,13 +26,14 @@ int main(void) {
     exit(-1);
   }
   uint64_t now;
-  uint64_t old = SDL_GetTicks64();
+  uint64_t old = SDL_GetTicks();
   SDL_ShowCursor(SDL_DISABLE);
-  engine *e = init_engine("maps/DOOM1.WAD", renderer);
-  int dt = 0;
   SDL_SetRelativeMouseMode(SDL_TRUE);
+  engine *e = init_engine("maps/DOOM1.WAD", renderer);
+  read_map(e, renderer, "E1M1");
+  int dt = 0;
   while (e->running) {
-    now = SDL_GetTicks64();
+    now = SDL_GetTicks();
     dt = now - old;
     int res = update_engine(e, dt);
     if (res == 1)

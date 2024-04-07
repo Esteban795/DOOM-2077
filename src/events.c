@@ -1,7 +1,7 @@
 #include "../include/events.h"
 
 uint8_t keys[SDL_NUM_SCANCODES] = {0};
-int mouse[NUM_MOUSE_BUTTONS + 2] = {0};
+int mouse[NUM_MOUSE_BUTTONS + 2] = {0}; // left, middle, right, mouse_motion_x, mouse_motion_y
 
 void handle_events(engine *e) {
   SDL_Event event;
@@ -32,6 +32,5 @@ void handle_events(engine *e) {
     default:
       break;
     }
-    // game_states[e->state](NULL);
   }
 }

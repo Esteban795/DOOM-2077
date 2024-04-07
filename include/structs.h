@@ -7,7 +7,16 @@
 #include "wad_data.h"
 #include "vec2.h"
 #include "settings.h"
-#include "game_states.h"
+
+#define STATE_COUNT 5
+
+typedef enum {
+  STATE_MENU,
+  STATE_INGAME,
+  STATE_PAUSE,
+  STATE_GAMEOVER,
+  STATE_SETTINGS
+} GameState;
 
 struct Player;
 struct BSP;
@@ -72,4 +81,11 @@ struct SegmentHandler {
 };
 
 typedef struct SegmentHandler segment_handler;
+
+typedef struct {
+  struct Engine* engine;
+  bool *isFirstTime;
+  bool isRunning;
+} GameStateArgs;
+
 #endif

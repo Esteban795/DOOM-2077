@@ -5,12 +5,17 @@ engine *init_engine(const char *wadPath, SDL_Renderer *renderer) {
   engine *e = malloc(sizeof(engine));
   e->wadPath = wadPath;
   e->running = true;
-  e->wData = init_wad_data(e->wadPath);
+  e->state = STATE_INGAME;
+  e->DT = 0;
+  return e;
+}
+
+void read_map(engine* e, SDL_Renderer *renderer,char* map_name){
+  e->wData = init_wad_data(e->wadPath,map_name);
   e->p = player_init(e);
   e->bsp = bsp_init(e, e->p);
   e->map_renderer = map_renderer_init(e, renderer);
   e->seg_handler = segment_handler_init(e);
-  return e;
 }
 
 int update_engine(engine *e, int dt) {
@@ -18,11 +23,7 @@ int update_engine(engine *e, int dt) {
   SDL_SetRenderDrawColor(e->map_renderer->renderer, 0, 0, 0, 255);
   SDL_RenderClear(e->map_renderer->renderer);
   handle_events(e);
-  update_player(e->p);
-  get_ssector_height(e->bsp);
-  segment_handler_update(e->seg_handler);
-  update_bsp(e->bsp);
-  // SDL_Delay(500);
+  game_states[e->state](e);
   SDL_RenderPresent(e->map_renderer->renderer);
   return 0;
 }

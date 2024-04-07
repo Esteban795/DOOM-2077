@@ -2,7 +2,7 @@
 #define EVENTS_H
 
 #include "structs.h"    
-#include "game_states.h"
+
 
 #define NUM_MOUSE_BUTTONS 3
 
