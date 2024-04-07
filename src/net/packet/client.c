@@ -11,6 +11,7 @@ const char* CLIENT_COMMAND_JOIN = "JOIN";
 const char* CLIENT_COMMAND_KATC = "KATC";
 const char* CLIENT_COMMAND_PONG = "PING";
 const char* CLIENT_COMMAND_QUIT = "QUIT";
+const char* CLIENT_COMMAND_MOVE = "MOVE";
 
 int client_join(uint8_t* buf, char* player_name) {
     memcpy(buf, CLIENT_COMMAND_JOIN, 4);
@@ -40,4 +41,14 @@ int client_quit(uint8_t* buf) {
     write_uint16be(buf + 4, 0);
     buf[6] = '\n';
     return 4 + 2 + 1;
+}
+
+int client_move(uint8_t* buf, double x, double y, double angle) {
+    memcpy(buf, CLIENT_COMMAND_MOVE, 4);
+    write_uint16be(buf + 4, 8*3);
+    write_uint64be(buf + 6,  (uint64_t) (x*1000));
+    write_uint64be(buf + 14, (uint64_t) (y*1000));
+    write_uint64be(buf + 22, (uint64_t) (angle*1000));
+    buf[30] = '\n';
+    return 4 + 2 + 8*3 + 1;
 }

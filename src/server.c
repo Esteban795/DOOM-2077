@@ -150,6 +150,11 @@ int run_server(uint16_t port) {
                         } else {
                             printf("Unknown client %s intended to quit the game.\n", addrstr);
                         }
+                    } else if (strncmp(cmd, CLIENT_COMMAND_MOVE, 4) == 0) {
+                        double x = ((double) read_uint64be(payload)) / 1000.0;
+                        double y = ((double) read_uint64be(payload + 8)) / 1000.0;
+                        double angle = ((double) read_uint64be(payload + 16)) / 1000.0;
+                        printf("Player %s moved to (%.2f, %.2f) at %.2f degrees.\n", addrstr, x, y, angle);
                     } else {
                         printf("Unknown command: %s.\n", cmd);
                     }

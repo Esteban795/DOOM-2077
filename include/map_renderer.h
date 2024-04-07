@@ -10,7 +10,9 @@
 
 #define RES_W 320
 #define RES_H 200
+#ifndef SCALE
 #define SCALE 5
+#endif
 
 #define WIDTH RES_W *SCALE
 #define HEIGHT RES_H *SCALE

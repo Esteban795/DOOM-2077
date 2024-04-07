@@ -1,12 +1,16 @@
 #ifndef STRUCTS_H
 #define STRUCTS_H
 
-#include <SDL2/SDL.h>
+#ifndef _LIB_SDL_NET_H
+#define _LIB_SDL_NET_H
+#include <SDL2/SDL_net.h>
+#endif
 
 #include "keybindings.h"
 #include "wad_data.h"
 #include "vec2.h"
 #include "settings.h"
+#include "remote.h"
 
 struct Player;
 struct BSP;
@@ -24,6 +28,12 @@ struct Player {
   double height;
 };
 
+struct RemoteServer {
+    IPaddress addr;
+    UDPsocket socket;
+    UDPpacket* packet;
+};
+
 struct Engine {
   const char *wadPath;
   bool running;
@@ -32,6 +42,7 @@ struct Engine {
   struct BSP *bsp;
   struct MapRenderer *map_renderer;
   struct SegmentHandler *seg_handler;
+  struct RemoteServer *remote;
   int numkeys;
   const uint8_t *keys;
   int DT;
@@ -59,6 +70,7 @@ typedef struct Player player;
 typedef struct Engine engine;
 typedef struct BSP bsp;
 typedef struct MapRenderer map_renderer;
+typedef struct RemoteServer remote_server_t;
 
 struct SegmentHandler {
   struct Engine *engine;

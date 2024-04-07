@@ -1,4 +1,13 @@
 #include "../include/engine.h"
+#include "../include/remote.h"
+
+#ifndef SERVER_ADDR
+#define SERVER_ADDR ""
+#endif
+
+#ifndef SERVER_PORT
+#define SERVER_PORT 6942
+#endif
 
 engine *init_engine(const char *wadPath, SDL_Renderer *renderer, int numkeys,
                     const uint8_t *keys) {
@@ -10,6 +19,8 @@ engine *init_engine(const char *wadPath, SDL_Renderer *renderer, int numkeys,
   e->bsp = bsp_init(e, e->p);
   e->map_renderer = map_renderer_init(e, renderer);
   e->seg_handler = segment_handler_init(e);
+  e->remote = malloc(sizeof(remote_server_t));
+  remote_init(e->remote, SERVER_ADDR, SERVER_PORT);
   e->numkeys = numkeys;
   e->keys = keys;
   return e;
@@ -30,6 +41,7 @@ int update_engine(engine *e, int dt) {
   get_ssector_height(e->bsp);
   segment_handler_update(e->seg_handler);
   update_bsp(e->bsp);
+  remote_update(e, e->remote);
   SDL_SetRelativeMouseMode(SDL_TRUE);
   SDL_RenderPresent(e->map_renderer->renderer);
   return 0;
@@ -41,5 +53,6 @@ void engine_free(engine *e) {
   player_free(e->p);
   map_renderer_free(e->map_renderer);
   segment_handler_free(e->seg_handler);
+  remote_destroy(e->remote);
   free(e);
 }
