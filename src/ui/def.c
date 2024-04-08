@@ -6,8 +6,10 @@ UIModule **get_ui_ingame(SDL_Renderer *r, int *nuimodules) {
 
   modules[0] = uimodule_create(0, 1);
 
-  UIImage *image =
-      uiimage_create(r, 0, 0, 0.5, 0.5, UIAP_TOP_LEFT, "assets/testimage.jpg");
+  UIAnchorPoint a = UIAP_CENTER;
+
+  UIImage *image = uiimage_create(r, 0, 0, 0.2, 0.5, UIAP_TOP_LEFT, UIIF_FIT,
+                                  "assets/testimage.jpg", &a);
 
   uimodule_set_element(modules[0], 0, UIET_Image, image);
 
