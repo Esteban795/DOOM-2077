@@ -12,6 +12,7 @@ engine *init_engine(const char *wadPath, SDL_Renderer *renderer, int numkeys,
   e->seg_handler = segment_handler_init(e);
   e->numkeys = numkeys;
   e->keys = keys;
+  e->mixer = audiomixer_init();
   return e;
 }
 
@@ -41,5 +42,6 @@ void engine_free(engine *e) {
   player_free(e->p);
   map_renderer_free(e->map_renderer);
   segment_handler_free(e->seg_handler);
+  audiomixer_free(e->mixer);
   free(e);
 }

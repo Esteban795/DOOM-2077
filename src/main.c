@@ -1,5 +1,6 @@
 #include "../include/engine.h"
 #include <SDL2/SDL_events.h>
+#include <SDL2/SDL_mixer.h>
 #include <SDL2/SDL_mouse.h>
 
 // handles all kind of error at SDL startup
@@ -22,10 +23,15 @@ int main(void) {
   SDL_Window *window;
   SDL_Renderer *renderer;
   int numkeys;
-  const uint8_t* keys = SDL_GetKeyboardState(&numkeys);
+  const uint8_t *keys = SDL_GetKeyboardState(&numkeys);
   int status = start_SDL(&window, &renderer, WIDTH, HEIGHT, "Map rendering..");
   if (status == 1) {
     printf("Error at SDL startup");
+    exit(-1);
+  }
+  status = Mix_Init(MIX_INIT_MOD);
+  if (status == 1) {
+    printf("Error at Mix startup");
     exit(-1);
   }
   uint64_t now;
@@ -43,5 +49,6 @@ int main(void) {
     old = now;
   }
   engine_free(e);
+  Mix_Quit();
   return 0;
 }

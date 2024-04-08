@@ -22,10 +22,11 @@ ALL_LDFLAGS = $(LDFLAGS) $(shell pkg-config --libs sdl2)
 # -  TARGETS  -  #
 CLIENT_SRC = sound.c blockmap.c bsp.c button.c byte_reader.c color.c engine.c geometry.c header.c \
 	keybindings.c linedef.c lump.c main.c map_renderer.c node.c player.c sector.c segment.c \
-	segment_handler.c sidedef.c subsector.c textarea.c thing.c timer.c util.c vertex.c wad_data.c 
+	segment_handler.c sidedef.c subsector.c textarea.c thing.c timer.c util.c vertex.c wad_data.c \
+	audio/mixer.c audio/emitter.c
 CLIENT_OBJ = $(CLIENT_SRC:%.c=%.o)
 CLIENT_LIB = 
-CLIENT_LDFLAGS = -lSDL2 -lSDL2_ttf
+CLIENT_LDFLAGS = -lSDL2 -lSDL2_ttf -lSDL2_mixer
 
 SERVER_SRC = server.c
 SERVER_OBJ = $(SERVER_SRC:%.c=%.o)

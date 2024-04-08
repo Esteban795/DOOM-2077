@@ -3,10 +3,11 @@
 
 #include <SDL2/SDL.h>
 
+#include "audio/mixer.h"
 #include "keybindings.h"
-#include "wad_data.h"
-#include "vec2.h"
 #include "settings.h"
+#include "vec2.h"
+#include "wad_data.h"
 
 struct Player;
 struct BSP;
@@ -35,6 +36,7 @@ struct Engine {
   int numkeys;
   const uint8_t *keys;
   int DT;
+  AudioMixer *mixer;
 };
 
 struct BSP {
