@@ -12,7 +12,7 @@ engine *init_engine(const char *wadPath, SDL_Renderer *renderer, int numkeys,
   e->seg_handler = segment_handler_init(e);
   e->numkeys = numkeys;
   e->keys = keys;
-  e->uimodules = get_ui_ingame(&e->nuimodules);
+  e->uimodules = get_ui_ingame(renderer, &e->nuimodules);
   return e;
 }
 
@@ -31,7 +31,7 @@ int update_engine(engine *e, int dt) {
   get_ssector_height(e->bsp);
   segment_handler_update(e->seg_handler);
   update_bsp(e->bsp);
-  for (int i=0; i<e->nuimodules; i++){
+  for (int i = 0; i < e->nuimodules; i++) {
     update_uimodule(e->map_renderer->renderer, e->uimodules[i], e->keys);
   }
   SDL_SetRelativeMouseMode(SDL_TRUE);

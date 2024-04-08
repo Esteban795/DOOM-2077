@@ -1,13 +1,13 @@
 #include "../../include/ui/def.h"
 
-UIModule **get_ui_ingame(int *nuimodules) {
+UIModule **get_ui_ingame(SDL_Renderer *r, int *nuimodules) {
   *nuimodules = 1;
   UIModule **modules = malloc(*nuimodules * sizeof(UIModule *));
 
   modules[0] = uimodule_create(0, 1);
 
   UIImage *image =
-      uiimage_create(0, 0, 0.5, 0.5, UIAP_TOP_LEFT, "assets/testimage.jpg");
+      uiimage_create(r, 0, 0, 0.5, 0.5, UIAP_TOP_LEFT, "assets/testimage.jpg");
 
   uimodule_set_element(modules[0], 0, UIET_Image, image);
 

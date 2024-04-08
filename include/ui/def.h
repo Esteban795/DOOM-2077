@@ -3,7 +3,7 @@
 
 #include "module.h"
 
-UIModule** get_ui_ingame(int* nuimodules);
-void free_ui_ingame(UIModule** o);
+UIModule **get_ui_ingame(SDL_Renderer *r, int *nuimodules);
+void free_ui_ingame(UIModule **o);
 
 #endif
