@@ -26,12 +26,12 @@ int main(void) {
   const uint8_t *keys = SDL_GetKeyboardState(&numkeys);
   int status = start_SDL(&window, &renderer, WIDTH, HEIGHT, "Map rendering..");
   if (status == 1) {
-    printf("Error at SDL startup");
+    printf("Error at SDL startup\n");
     exit(-1);
   }
   status = Mix_Init(MIX_INIT_MOD);
   if (status == 1) {
-    printf("Error at Mix startup");
+    printf("Error at Mix startup\n");
     exit(-1);
   }
   uint64_t now;
