@@ -43,7 +43,7 @@ int main(void) {
       break;
     printf("FPS: %f\n", 1000.0 / dt);
     old = now;
-    // SDL_Delay(5000);
+    // SDL_Delay(2000);
     // break;
   }
   engine_free(e);

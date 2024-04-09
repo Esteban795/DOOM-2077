@@ -53,7 +53,6 @@ void draw_solid_walls_range(segment_handler *sh, int x1, int x2) {
         (scale2 - scale1) /
         (x2 - x1); // interpolation to find the scale for second vertex
   }
-
   double middle_texture_alt = world_front_z1;
   if (ld->flag & LOWER_UNPEGGED) {
     int v_top = front_sector->floor_height - wall_texture->width;
@@ -78,9 +77,6 @@ void draw_solid_walls_range(segment_handler *sh, int x1, int x2) {
       -rw_scale_step *
       world_front_z2; // step to find the next y position of bottom of the wall
 
-  color middle_c =
-      get_color(sh->engine->wData->color_palette,
-                sh->seg->linedef->front_sidedef->hash_middle, light_level);
   for (int i = x1; i < x2; i++) {
     int draw_wall_y1 = (int)(wall_y1) - 1;
     int draw_wall_y2 = (int)wall_y2;
@@ -128,6 +124,11 @@ void draw_portal_walls_range(segment_handler *sh, int x1, int x2) {
   sidedef *front_sidedef = seg->linedef->front_sidedef;
   
   texture_map *upper_wall_texture = front_sidedef->upper_texture;
+  // if (upper_wall_texture == NULL){
+  //   printf("upper_wall_texture is NULL\n");
+  //   fflush(stdout);
+  //   exit(1);
+  // }
   texture_map *lower_wall_texture = front_sidedef->lower_texture;
   flat *ceiling_texture = front_sector->ceiling_texture;
   flat *floor_texture = front_sector->floor_texture;
@@ -217,6 +218,7 @@ void draw_portal_walls_range(segment_handler *sh, int x1, int x2) {
     rw_offset += seg->offset + front_sidedef->x_offset;
     center_angle = norm(normal_angle + sh->player->angle);
   }
+
   double wall_y1 =
       HALF_HEIGHT -
       world_front_z1 * scale1; // initial y position of top of the wall
@@ -265,6 +267,7 @@ void draw_portal_walls_range(segment_handler *sh, int x1, int x2) {
     if (seg_textured){
       angle = center_angle - rad_to_deg(atan((HALF_WIDTH - i) / SCREEN_DISTANCE));
       texture_column = raw_dist * tan(deg_to_rad(angle)) - rw_offset;
+      inverted_scale = 1 / scale1;
     }
 
 
