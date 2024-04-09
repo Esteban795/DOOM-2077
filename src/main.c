@@ -18,7 +18,7 @@ int start_SDL(SDL_Window **window, SDL_Renderer **renderer, int width,
   return 0;
 }
 
-int main() {
+int main(void) {
   SDL_Window *window;
   SDL_Renderer *renderer;
   int numkeys;
@@ -28,7 +28,6 @@ int main() {
     printf("Error at SDL startup");
     exit(-1);
   }
-  
   uint64_t now;
   uint64_t old = SDL_GetTicks64();
   SDL_ShowCursor(SDL_DISABLE);
