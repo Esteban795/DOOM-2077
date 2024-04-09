@@ -4,9 +4,7 @@
 #include <string.h>
 #include <stdint.h>
 
-#ifndef _LIB_DOOM_COLLECTION_VEC_H
 #include "../../include/collection/vec.h"
-#endif
 
 #ifndef ASSERT
 #define ASSERT(x, msg) if (!(x)) { printf("[%s:%d]assertion failed: %s\n", __FILE__, __LINE__, msg); return 1; } 
@@ -292,7 +290,7 @@ int test_vec_swap() {
         vec_push(&vec, a);
     }
 
-    swap(&vec, 1, 4);
+    vec_swap(&vec, 1, 4);
 
     for (int i = 0; i < 5; i++) {
         char msg[35] = "vec_swap: data[i] is not end[i]";
@@ -333,8 +331,13 @@ int test_vec_swap_remove() {
     return 0;
 }
 
-int int_cmp(const void* a, const void* b) {
-    return *(int*)b - *(int*)a;
+int compare_ints(const void* a, const void* b) {
+    int arg1 = **(int**) a;
+    int arg2 = **(int**) b;
+ 
+    if (arg1 < arg2) return -1;
+    if (arg1 > arg2) return 1;
+    return 0;
 }
 
 int test_vec_binary_search() {
@@ -351,14 +354,20 @@ int test_vec_binary_search() {
 
     int* a = malloc(sizeof(int));
     *a = 102;
-    int i = vec_binary_search(&vec, (void*) a, int_cmp);
+    int i = vec_binary_search(&vec, (void*) a, compare_ints);
     ASSERT(i == 9, "vec_binary_search: i is not 9");
     *a = 24;
-    i = vec_binary_search(&vec, (void*) a, int_cmp);
+    i = vec_binary_search(&vec, (void*) a, compare_ints);
     ASSERT(i == 1, "vec_binary_search: i is not 1");
     *a = 37;
-    i = vec_binary_search(&vec, (void*) a, int_cmp);
-    ASSERT(i == -1, "vec_binary_search: i is not -1");
+    i = vec_binary_search(&vec, (void*) a, compare_ints);
+    ASSERT(i == ~3, "vec_binary_search: i is not ~3");
+    *a = 0;
+    i = vec_binary_search(&vec, (void*) a, compare_ints);
+    ASSERT(i == ~0, "vec_binary_search: i is not ~0");
+    *a = 11;
+    i = vec_binary_search(&vec, (void*) a, compare_ints);
+    ASSERT(i == ~1, "vec_binary_search: i is not ~1");
     free(a);
     vec_destroy(&vec, true);
     return 0;
@@ -377,13 +386,15 @@ int test_vec_sort() {
         vec_push(&vec, a);
     }
 
-    vec_sort(&vec, int_cmp);
+    ASSERT(*(int*)vec.data[0] == 102, "vec_sort: data[0] is not 102");
+    ASSERT((int) vec_length(&vec) == 10, "vec_sort: length is not 10");
+
+    vec_sort(&vec, compare_ints);
 
     for (int i = 0; i < 10; i++) {
         char msg[35] = "vec_sort: data[i] is not end[i]";
         msg[15] = '0' + i;
         msg[29] = '0' + i;
-        //printf("testing l: %d r: %d\n", *(int*)vec.data[i], end[i]);
         ASSERT(*(int*)vec.data[i] == end[i], msg);
     }
 
