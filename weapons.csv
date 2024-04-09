@@ -1,0 +1,4 @@
+2
+id,weapon_name,sprite,magsize,max_damage,min_damage,fire_rate,spray,ammo_bounce,ammo_id,type
+0,Fists,../assets/sprites/HANDS001.png,-2,10,10,1,0,0,-1,-1
+1,Gun,../assets/sprites/TOADD,30,20,15,1.5,0.5,0,1,0
