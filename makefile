@@ -14,6 +14,7 @@ run:
 
 clean:
 	rm ./bin/doomlike
+	
 
 all:
 	make build

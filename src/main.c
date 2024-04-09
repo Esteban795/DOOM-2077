@@ -42,7 +42,7 @@ int main() {
     
     if (res == 1)
       break;
-    // printf("FPS: %f\n", 1000.0 / (now - old));
+      printf("FPS: %f\n", 1000.0 / (now - old));
     old = now;
   }
   player_free(p);

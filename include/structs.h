@@ -46,6 +46,7 @@ struct Player {
   int active_weapon;
 };
 
+
 struct Engine {
   const char *wadPath;
   bool running;

@@ -104,5 +104,3 @@ void add_ammo(player* p, int weapon_id, int ammo){
         p->ammo[weapon_id] += ammo;
     }
 }
-
-
