@@ -47,6 +47,7 @@ void archetype_destroy(archetype_t* archetype) {
         free(component);
     }
 
+    // Note that the components are destroyed in the loop above
     vec_destroy(&archetype->components, false);
     vec_destroy(&archetype->tags, true);
 }
@@ -114,6 +115,11 @@ void partition(archetype_t* archetype, int low, int high, int* pivot) {
 }
 
 // Quicksort of archetype entities
+//
+// Note: Why do we need a quicksort implentation when qsort is available?
+// Well actually this quicksort is very specific to the archetype structure, and it is not possible to use qsort 
+// (or at least not easily) because this quicksort is sorting the entities and their components at the same time,
+// to keep the components in the same order as the entities.
 void quicksort(archetype_t* archetype, int low, int high) {
     // WARN: This is a recursive quicksort implementation. It might stack overflow if the number of entities is too high.
     if (low < high) {
@@ -146,7 +152,7 @@ bool archetype_remove_entity_unordered(archetype_t* archetype, entity_t* entity,
     if (ind < 0) {
         return false;
     }
-    vec_swap_remove(&archetype->entities, ind, should_free);
+    vec_swap_remove(&archetype->entities, ind, false);
     for (int i = 0; (size_t) i < vec_length(&archetype->tags); i++) {
         vec_t* component = (vec_t*) vec_get(&archetype->components, i);
         vec_swap_remove(component, ind, should_free);
