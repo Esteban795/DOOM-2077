@@ -16,7 +16,7 @@
        
 
       devShells = {
-          default = pkgs.mkShell.override { stdenv = pkgs.clangStdenv; } {
+          default = pkgs.mkShell.override { stdenv = pkgs.gccStdenv; } {
             packages = with pkgs; [
               boost
               catch2
@@ -26,6 +26,7 @@
               SDL2_net.dev
               SDL2
               SDL2_net
+              SDL2_ttf
               pkg-config
             ];
           };
