@@ -51,8 +51,12 @@ int audiomixer_play(AudioMixer *am, sound *sound, float angle, float volume) {
       volume_min_index = i;
     }
   }
-  audioemitter_free(am->channels[volume_min_index]);
-  am->channels[volume_min_index] =
-      audioemitter_create(sound, angle, volume, volume_min_index);
-  return am->channels[volume_min_index]->uid;
+  if (volume > volume_min) {
+    audioemitter_free(am->channels[volume_min_index]);
+    am->channels[volume_min_index] =
+        audioemitter_create(sound, angle, volume, volume_min_index);
+    return am->channels[volume_min_index]->uid;
+  }
+
+  return -1;
 }

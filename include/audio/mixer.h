@@ -14,8 +14,9 @@ typedef struct _AudioMixer {
 AudioMixer *audiomixer_init();
 void audiomixer_free(AudioMixer *am);
 void audiomixer_update(AudioMixer *am, int dt);
+// INFO: audiomixer_play returns an integer corresponding the uid of the sound
+// you can pass it on to audiomixer_kill to stop it
 int audiomixer_play(AudioMixer *am, sound *sound, float angle, float volume);
-// TODO: stop a sound from its id
 void audiomixer_kill(AudioMixer *am, int uid);
 
 #endif
