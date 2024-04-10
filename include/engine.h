@@ -5,6 +5,7 @@
 #include "map_renderer.h"
 #include "player.h"
 #include "structs.h"
+#include "hitscan.h"
 #include "segment_handler.h"
 
 engine *init_engine(const char *wadPath, SDL_Renderer *renderer, int numkeys, const uint8_t *keys);

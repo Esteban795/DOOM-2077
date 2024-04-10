@@ -40,7 +40,8 @@ int main() {
     int res = update_engine(e, dt);
     if (res == 1)
       break;
-    printf("FPS: %f\n", 1000.0 / dt);
+    
+    //printf("FPS: %f\n", 1000.0 / dt);
     old = now;
   }
   engine_free(e);
