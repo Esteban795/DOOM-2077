@@ -16,7 +16,7 @@
        
 
       devShells = {
-          default = pkgs.mkShell.override { stdenv = pkgs.clangStdenv; } {
+          default = pkgs.mkShell.override { stdenv = pkgs.gccStdenv; } {
             packages = with pkgs; [
               boost
               catch2
