@@ -1,169 +1,125 @@
 
-#include <stdio.h>
-#include <stdlib.h>
 #include "../include/hitscan.h"
 
-#define player_hitbox_size 50
-#define hitscan_precision 10
+#define PLAYER_HITBOX_SIZE 50
+#define HITSCAN_PRECISION 10
 
-bullet* create_bullet(player *player_){
-    bullet *bullet_ = malloc(sizeof(bullet));
-    bullet_->posx = player_->pos.x;
-    bullet_->posy = player_->pos.y;
-    bullet_->angle = player_->angle;
-    return bullet_;
+bullet *create_bullet(player *player_) {
+  bullet *bullet_ = malloc(sizeof(bullet));
+  bullet_->posx = player_->pos.x;
+  bullet_->posy = player_->pos.y;
+  bullet_->angle = player_->angle;
+  return bullet_;
 }
 
-double distance(double posx_a,double posy_a,double posx_b,double posy_b){
-    return sqrt(pow((posx_b-posx_a),2)+pow((posy_b-posy_a),2));
+double distance(double posx_a, double posy_a, double posx_b, double posy_b) {
+  return sqrt(pow((posx_b - posx_a), 2) + pow((posy_b - posy_a), 2));
 }
 
-
-
-// void fire_bullet(player** players,int num_players,player* player_,int damage,int** collision_map){ //pour l'instant ne detecte que les joueurs, pas les murs
-//     if(player_->cooldown<50){
-//     int j=0;
-//     int has_hit=0;
-//     bullet* bullet_=create_bullet(player_);
-//     int xb=from_coords_to_collision_map(bullet_->posx);
-//     int yb=from_coords_to_collision_map(bullet_->posy);
-//     while (collision_map[xb][yb]==0&&has_hit==0){ //tant qu'une collison avec un mur n'est pas detectée(a implémenter)
-//         int i=0;
-//         for(i=0;i<num_players;i++){    
-//                 if (distance(bullet_->posx,bullet_->posy,players[i]->pos.x,players[i]->pos.y)<player_hitbox_size){//radius de distance nécéssaire pour toucher
-//                         printf("g touche le joueur %i\n longueur de trajet %i\n",i,j);
-//                         players[i]->life=players[i]->life-damage;
-//                 has_hit=1;}
-//         }
-//         bullet_->posx=bullet_->posx+cos(bullet_->angle)*hitscan_precision;
-//         bullet_->posy=bullet_->posy+sin(bullet_->angle)*hitscan_precision;
-//         xb=from_coords_to_collision_map(bullet_->posx);
-//         yb=from_coords_to_collision_map(bullet_->posy);
-//         printf("%i  %i\n",xb,yb);
-//         if(abs(xb)>999||abs(yb)>999||xb<1||yb<1){
-//             has_hit=2;
-//         }
-//         j++;
-//         printf("%lf,%lf, \n", bullet_->posx,bullet_->posy);
-//     }
-//     if(has_hit==0){
-//         printf("Pas touché, longueur de trajet %i\n",j);
-//     }
-//     if(has_hit==2){
-//         printf("balle enfuie !longueur de trajet %i\n",j);
-//     }
-//     player_->cooldown=player_->cooldown+100;
-//     free(bullet_);
-//     }
-//     else{
-//         //printf("je ne peux pas tirer\n");
-//     }
-// }
-
-void fire_bullet2(player** players,int num_players,player* player_,int damage){ //toutes les valeurs de y sont négatives
-    double distance_finale=10000; 
-    if(player_->cooldown<80){
-        player_->cooldown=player_->cooldown+100;
-        linedef* linedefs=player_->engine->wData->linedefs;
-        double x1=player_->pos.x;
-        double y1=-player_->pos.y;
-        double x2=x1+100*cos(deg_to_rad((player_->angle)));
-        double y2=y1+100*sin(deg_to_rad((player_->angle)));
-        double a =0;
-        double x_final=0;
-        double y_final=0;
-        int direction =1; // 0 correspond a ni droite ni auche 1 a gauche 2 a droite
-        double height=player_->height;
-        if(x1!=x2){
-            a=(y2-y1)/(x2-x1);
-            if(x1>x2){
-                direction=1; //vers la gauche
-            }
-            else{
-                direction=2;  //vers la droite
-            }
-        }
-        double b=y1-a*x1;
-        for(int i=0;i<player_->engine->wData->len_linedefs;i++){
-            double x=0;
-            double y=0;
-            if((!(linedefs[i].has_back_sidedef))||(correct_height(linedefs[i],height))){
-                double x1a=linedefs[i].start_vertex->x;
-                double y1a=-linedefs[i].start_vertex->y;
-                double x2a=linedefs[i].end_vertex->x;
-                double y2a=-linedefs[i].end_vertex->y;
-                double c =0;
-                double d=0;
-                if(x1a!=x2a){
-                    c=(y2a-y1a)/(x2a-x1a);
-                    d=y1a-c*x1a;
-                    x=(d-b)/(a-c);
-                    y=a*x+b;
-                    if(distance(x1,y1,x,y)<100){
-                    }
-                    if(((x1a<=x)&&(x<=x2a))||((x2a<=x)&&(x<=x1a))){
-                        if(((direction==1)&&(x1>x))||((direction==2)&&(x1<x))){
-                            if(distance(x1,y1,x,y)<distance_finale){
-                                distance_finale=distance(x1,y1,x,y);
-                                x_final=x;
-                                y_final=y;
-                            }
-                        }
-                    }
-
-                }
-                else{
-                    x=x1a;
-                    y=a*x+b;
-                    if(((y1a<=y)&&(y<=y2a))||((y2a<=y)&&(y<=y1a))){
-                        if(((direction==1)&&(x1>=x))||((direction==2)&&(x1<=x))){
-                            if(distance(x1,y1,x,y)<distance_finale){
-                                distance_finale=distance(x1,y1,x,y);
-                                x_final=x;
-                                y_final=y;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    for(int j=0;j<num_players;j++){
-        double dist_to_hitscan=(fabs(a*(players[j]->pos.x)+(players[j]->pos.y)+b))/(sqrt(pow(a,2)+pow(-1,2)));
-        if(dist_to_hitscan<player_hitbox_size){
-            if((min(x1,x_final)<players[j]->pos.x)
-            &&(max(x1,x_final)>players[j]->pos.x)
-            &&(min(y1,y_final)<-players[j]->pos.y)
-            &&(min(y1,y_final)<-players[j]->pos.y)){
-                players[j]->life-=damage;
-            }
-        }
+void fire_bullet(player **players, int num_players, player *player_,
+                  int damage) { // toutes les valeurs de y sont négatives
+  double distance_finale = 10000;
+  if (player_->cooldown < 80) {
+    player_->cooldown = player_->cooldown + 100;
+    linedef *linedefs = player_->engine->wData->linedefs;
+    double x1 = player_->pos.x;
+    double y1 = -player_->pos.y;
+    double x2 = x1 + 100 * cos(deg_to_rad((player_->angle)));
+    double y2 = y1 + 100 * sin(deg_to_rad((player_->angle)));
+    double a = 0;
+    double x_final = 0;
+    double y_final = 0;
+    int direction =
+        1; // 0 correspond a ni droite ni auche 1 a gauche 2 a droite
+    double height = player_->height;
+    if (x1 != x2) {
+      a = (y2 - y1) / (x2 - x1);
+      if (x1 > x2) {
+        direction = 1; // vers la gauche
+      } else {
+        direction = 2; // vers la droite
+      }
     }
+    double b = y1 - a * x1;
+    for (int i = 0; i < player_->engine->wData->len_linedefs; i++) {
+      double x = 0;
+      double y = 0;
+      if ((!(linedefs[i].has_back_sidedef)) ||
+          (correct_height(linedefs[i], height))) {
+        double x1a = linedefs[i].start_vertex->x;
+        double y1a = -linedefs[i].start_vertex->y;
+        double x2a = linedefs[i].end_vertex->x;
+        double y2a = -linedefs[i].end_vertex->y;
+        double c = 0;
+        double d = 0;
+        if (x1a != x2a) {
+          c = (y2a - y1a) / (x2a - x1a);
+          d = y1a - c * x1a;
+          x = (d - b) / (a - c);
+          y = a * x + b;
+          if (distance(x1, y1, x, y) < 100) {
+          }
+          if (((x1a <= x) && (x <= x2a)) || ((x2a <= x) && (x <= x1a))) {
+            if (((direction == 1) && (x1 > x)) ||
+                ((direction == 2) && (x1 < x))) {
+              if (distance(x1, y1, x, y) < distance_finale) {
+                distance_finale = distance(x1, y1, x, y);
+                x_final = x;
+                y_final = y;
+              }
+            }
+          }
+
+        } else {
+          x = x1a;
+          y = a * x + b;
+          if (((y1a <= y) && (y <= y2a)) || ((y2a <= y) && (y <= y1a))) {
+            if (((direction == 1) && (x1 >= x)) ||
+                ((direction == 2) && (x1 <= x))) {
+              if (distance(x1, y1, x, y) < distance_finale) {
+                distance_finale = distance(x1, y1, x, y);
+                x_final = x;
+                y_final = y;
+              }
+            }
+          }
+        }
+      }
     }
+    for (int j = 0; j < num_players; j++) {
+      double dist_to_hitscan =
+          (fabs(a * (players[j]->pos.x) + (players[j]->pos.y) + b)) /
+          (sqrt(pow(a, 2) + pow(-1, 2)));
+      if (dist_to_hitscan < PLAYER_HITBOX_SIZE) {
+        if ((min(x1, x_final) < players[j]->pos.x) &&
+            (max(x1, x_final) > players[j]->pos.x) &&
+            (min(y1, y_final) < -players[j]->pos.y) &&
+            (min(y1, y_final) < -players[j]->pos.y)) {
+          players[j]->life -= damage;
+        }
+      }
+    }
+  }
 }
 
-int correct_height(linedef wall,int height){
-    if(!(wall.has_back_sidedef)){
+int correct_height(linedef wall, int height) {
+  if (!(wall.has_back_sidedef)) {
+    return 0;
+  } else {
+    int ceil_height_1 = wall.back_sidedef->sector->ceiling_height;
+    int floor_height_1 = wall.back_sidedef->sector->floor_height;
+    int ceil_height_2 = wall.front_sidedef->sector->ceiling_height;
+    int floor_height_2 = wall.front_sidedef->sector->floor_height;
+    if ((min(ceil_height_1, ceil_height_2) < height) &&
+        (max(ceil_height_1, ceil_height_2) > height)) {
+      return 1;
+    } else {
+      if ((min(floor_height_1, floor_height_2) < height) &&
+          (max(floor_height_1, floor_height_2) > height)) {
+        return 1;
+      } else {
         return 0;
+      }
     }
-    else{
-        int ceil_height_1=wall.back_sidedef->sector->ceiling_height;
-        int floor_height_1=wall.back_sidedef->sector->floor_height;
-        int ceil_height_2=wall.front_sidedef->sector->ceiling_height;
-        int floor_height_2=wall.front_sidedef->sector->floor_height;
-        if((min(ceil_height_1,ceil_height_2)<height)&&(max(ceil_height_1,ceil_height_2)>height)){
-            return 1;
-        }
-        else{
-            if((min(floor_height_1,floor_height_2)<height)&&(max(floor_height_1,floor_height_2)>height)){
-                return 1;
-        }
-        else{
-            return 0;
-        }
-    }
+  }
 }
-}
-
-
-
-

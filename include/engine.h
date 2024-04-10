@@ -7,7 +7,6 @@
 #include "structs.h"
 #include "hitscan.h"
 #include "segment_handler.h"
-#include "engine.h"
 
 engine *init_engine(const char *wadPath, SDL_Renderer *renderer, int numkeys, const uint8_t *keys);
 
