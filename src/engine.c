@@ -13,9 +13,6 @@ engine *init_engine(const char *wadPath, SDL_Renderer *renderer, int numkeys,
   e->numkeys = numkeys;
   e->keys = keys;
   e->mixer = audiomixer_init();
-
-  audiomixer_play(e->mixer, &(e->wData->sounds[1]), 0, 1);
-
   return e;
 }
 

@@ -23,16 +23,17 @@ AudioEmitter *audioemitter_create(sound *sound, float angle, float volume,
   return ae;
 }
 
-void audioemitter_free(AudioEmitter *ae) {
-  Mix_FreeChunk(ae->chunk);
-  free(ae);
+void audioemitter_free(AudioEmitter **ae) {
+  Mix_FreeChunk((*ae)->chunk);
+  free(*ae);
+  *ae = 0;
 }
 
 void audioemitter_update(AudioEmitter **ae, int dt) {
   int dt_samples = (*ae)->current_sound->sample_rate * (float)dt / 1000.0;
   (*ae)->sample_position += dt_samples;
   if ((*ae)->sample_position > (*ae)->current_sound->sample_count) {
-    audioemitter_free(*ae);
+    audioemitter_free(ae);
     *ae = 0;
   }
 }

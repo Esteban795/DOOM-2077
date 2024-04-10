@@ -18,7 +18,7 @@ AudioMixer *audiomixer_init() {
 void audiomixer_free(AudioMixer *am) {
   for (int i = 0; i < AUDIO_MIXER_CHANNELS; i++) {
     if (am->channels[i] != 0) {
-      audioemitter_free(am->channels[i]);
+      audioemitter_free(&(am->channels[i]));
     }
   }
   free(am);
@@ -52,11 +52,20 @@ int audiomixer_play(AudioMixer *am, sound *sound, float angle, float volume) {
     }
   }
   if (volume > volume_min) {
-    audioemitter_free(am->channels[volume_min_index]);
+    audioemitter_free(&(am->channels[volume_min_index]));
     am->channels[volume_min_index] =
         audioemitter_create(sound, angle, volume, volume_min_index);
     return am->channels[volume_min_index]->uid;
   }
 
   return -1;
+}
+
+void audiomixer_kill(AudioMixer *am, int uid) {
+  for (int i = 0; i < AUDIO_MIXER_CHANNELS; i++) {
+    if (am->channels[i] != 0 && uid == am->channels[i]->uid) {
+      audioemitter_free(&(am->channels[i]));
+      printf("sound killed\n");
+    }
+  }
 }

@@ -19,7 +19,7 @@ typedef struct _AudioEmitter {
 
 AudioEmitter *audioemitter_create(sound *sound, float angle, float volume,
                                   int channel);
-void audioemitter_free(AudioEmitter *ae);
+void audioemitter_free(AudioEmitter **ae);
 void audioemitter_update(AudioEmitter **ae, int dt);
 
 #endif
