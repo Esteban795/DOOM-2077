@@ -1,6 +1,9 @@
 #include "../../include/audio/emitter.h"
+#include <SDL2/SDL_mixer.h>
+#include <SDL2/SDL_stdinc.h>
 
-AudioEmitter *audioemitter_create(sound *sound, float angle, float volume) {
+AudioEmitter *audioemitter_create(sound *sound, float angle, float volume,
+                                  int channel) {
   AudioEmitter *ae = malloc(sizeof(AudioEmitter));
 
   static int uid_gen = 0;
@@ -12,7 +15,10 @@ AudioEmitter *audioemitter_create(sound *sound, float angle, float volume) {
   ae->volume = volume;
 
   ae->chunk = Mix_QuickLoad_RAW(ae->current_sound->samples,
-                                ae->current_sound->sample_count);
+                                (Uint32)ae->current_sound->sample_count);
+  ae->channel = channel;
+
+  Mix_PlayChannel(channel, ae->chunk, 0);
 
   return ae;
 }
@@ -20,4 +26,13 @@ AudioEmitter *audioemitter_create(sound *sound, float angle, float volume) {
 void audioemitter_free(AudioEmitter *ae) {
   Mix_FreeChunk(ae->chunk);
   free(ae);
+}
+
+void audioemitter_update(AudioEmitter **ae, int dt) {
+  int dt_samples = (*ae)->current_sound->sample_rate * (float)dt / 1000.0;
+  (*ae)->sample_position += dt_samples;
+  if ((*ae)->sample_position > (*ae)->current_sound->sample_count) {
+    audioemitter_free(*ae);
+    *ae = 0;
+  }
 }

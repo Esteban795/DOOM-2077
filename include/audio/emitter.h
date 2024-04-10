@@ -13,11 +13,13 @@ typedef struct _AudioEmitter {
                 // plays positionally
   float volume; // used as priority when there are too many sounds playing.
   Mix_Chunk *chunk;
+  int sample_position;
+  int channel;
 } AudioEmitter;
 
-AudioEmitter *audioemitter_create(sound *sound, float angle, float volume);
+AudioEmitter *audioemitter_create(sound *sound, float angle, float volume,
+                                  int channel);
 void audioemitter_free(AudioEmitter *ae);
-// TODO:
-void audioemitter_update(AudioEmitter *ae, int dt);
+void audioemitter_update(AudioEmitter **ae, int dt);
 
 #endif

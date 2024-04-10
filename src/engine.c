@@ -13,6 +13,10 @@ engine *init_engine(const char *wadPath, SDL_Renderer *renderer, int numkeys,
   e->numkeys = numkeys;
   e->keys = keys;
   e->mixer = audiomixer_init();
+  int i = 1;
+  printf("%s\n", e->wData->sounds[i].name);
+
+  // audiomixer_play(e->mixer, &(e->wData->sounds[i]), 0, 1);
   return e;
 }
 
@@ -31,6 +35,7 @@ int update_engine(engine *e, int dt) {
   get_ssector_height(e->bsp);
   segment_handler_update(e->seg_handler);
   update_bsp(e->bsp);
+  audiomixer_update(e->mixer, dt);
   SDL_SetRelativeMouseMode(SDL_TRUE);
   SDL_RenderPresent(e->map_renderer->renderer);
   return 0;
