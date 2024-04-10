@@ -4,6 +4,7 @@
 #include "../sound.h"
 
 #include "SDL2/SDL_mixer.h"
+#include <math.h>
 #include <stdlib.h>
 
 typedef struct _AudioEmitter {

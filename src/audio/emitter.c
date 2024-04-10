@@ -1,6 +1,16 @@
 #include "../../include/audio/emitter.h"
 #include <SDL2/SDL_mixer.h>
-#include <SDL2/SDL_stdinc.h>
+
+#define MAX(x, y) (((x) > (y)) ? (x) : (y))
+#define SIGN(x) (int)(x > 0) ? 1 : ((x < 0) ? -1 : 0)
+
+Uint8 right_ear_amp(float angle) {
+  float r = (1 + MAX(cos(2 * angle), SIGN(sin(angle)))) / 2.0;
+  r *= 255;
+  return (Uint8)r;
+}
+
+Uint8 left_ear_amp(float angle) { return right_ear_amp(-angle); }
 
 AudioEmitter *audioemitter_create(sound *sound, float angle, float volume,
                                   int channel) {
@@ -17,6 +27,9 @@ AudioEmitter *audioemitter_create(sound *sound, float angle, float volume,
   ae->chunk = Mix_QuickLoad_RAW(ae->current_sound->samples,
                                 (Uint32)ae->current_sound->sample_count);
   ae->channel = channel;
+
+  Mix_VolumeChunk(ae->chunk, ae->volume * MIX_MAX_VOLUME);
+  Mix_SetPanning(ae->channel, left_ear_amp(angle), right_ear_amp(angle));
 
   Mix_PlayChannel(channel, ae->chunk, 0);
 
