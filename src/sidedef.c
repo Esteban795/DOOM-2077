@@ -10,7 +10,7 @@ sidedef read_sidedef(FILE *f, int offset,sector* sectors,texture_map* textures,i
   s.hash_lower = ElfHash(lower_texture);
   s.hash_upper = ElfHash(upper_texture);
   s.hash_middle = ElfHash(middle_texture);
-  s.upper_texture = s.hash_lower ==  NO_TEXTURE_HASH ? NULL : get_texture_from_name(textures, len_textures, upper_texture);
+  s.upper_texture = s.hash_upper ==  NO_TEXTURE_HASH ? NULL : get_texture_from_name(textures, len_textures, upper_texture);
   s.lower_texture = s.hash_lower == NO_TEXTURE_HASH ? NULL : get_texture_from_name(textures, len_textures, lower_texture);
   s.middle_texture = s.hash_middle == NO_TEXTURE_HASH ? NULL :get_texture_from_name(textures, len_textures, middle_texture);
   s.sector_id = read_i16(f, offset + 28);
