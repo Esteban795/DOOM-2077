@@ -26,6 +26,7 @@
               SDL2_net.dev
               SDL2
               SDL2_net
+              SDL2_ttf
               pkg-config
             ];
           };
