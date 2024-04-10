@@ -1,5 +1,7 @@
 #include "../include/player.h"
 #include <stdio.h>
+#include <math.h>
+#include <stdlib.h>
 
 #define SIGN(x) (int) (x > 0) ? 1 : ((x < 0) ? -1 : 0)
 #define DOT(a,b) (a.x * b.x) + (a.y * b.y)
@@ -23,8 +25,19 @@ player *player_init(engine *e) {
   p->settings = get_player_settings(SETTINGS_FILE);
   p->ammo = ammo;
   p->active_weapon=0;
+  p->cooldown = 0;
   return p;
 }
+
+player ** create_players(int num_players,engine *e){
+    player** Players = malloc(sizeof(player*)*num_players);
+    for(int i=0;i<num_players;i++){
+      Players[i]=player_init(e);
+    }
+    return(Players);
+}
+
+
 
 // size_t count_two_sided_linedefs(linedef* linedefs, size_t nlinedefs){
 //   size_t count = 0;
@@ -307,4 +320,11 @@ void player_free(player *p) {
   free_settings(p->settings);
   free(p->ammo);
   free(p);
+}
+
+void players_free(player** players, int num_players){
+  for(int i=0;i<num_players;i++){
+    player_free(players[i]);
+  }
+  free(players);
 }

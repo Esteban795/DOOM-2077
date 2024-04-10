@@ -47,6 +47,8 @@ struct Player {
   double height;
   int* ammo; /*Array of size weapon_number that indicates the number of ammo by weapon (id)*/
   int active_weapon;
+  int life;
+  int cooldown;
 };
 
 
@@ -61,6 +63,7 @@ struct Engine {
   int numkeys;
   const uint8_t *keys;
   int DT;
+  struct Player** players;
 };
 
 struct BSP {
