@@ -131,11 +131,13 @@ before_build:
 	@mkdir -p $(depsdir)
 
 clean:
-	rm ./bin/doomlike
-	
+	-rm -rf $(builddir)
+
+
 
 all:
 	-rm -rf $(builddir)
 	make build_client
-	make run
+	./build/client
+	
 	
