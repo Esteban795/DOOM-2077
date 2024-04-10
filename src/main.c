@@ -1,5 +1,6 @@
 #include "../include/engine.h"
-#include "../include/weapons.h"
+#include <SDL2/SDL_events.h>
+#include <SDL2/SDL_mouse.h>
 
 // handles all kind of error at SDL startup
 int start_SDL(SDL_Window **window, SDL_Renderer **renderer, int width,
@@ -21,7 +22,7 @@ int main() {
   SDL_Window *window;
   SDL_Renderer *renderer;
   int numkeys;
-  const uint8_t *keys = SDL_GetKeyboardState(&numkeys);
+  const uint8_t* keys = SDL_GetKeyboardState(&numkeys);
   int status = start_SDL(&window, &renderer, WIDTH, HEIGHT, "Map rendering..");
   if (status == 1) {
     printf("Error at SDL startup");
@@ -30,23 +31,18 @@ int main() {
   
   uint64_t now;
   uint64_t old = SDL_GetTicks64();
+  SDL_ShowCursor(SDL_DISABLE);
   engine *e = init_engine("maps/DOOM1.WAD", renderer, numkeys, keys);
-  weapons_array* wa = init_weapons_array();
-  player* p = player_init(e);
+  int dt = 0;
   while (e->running) {
     now = SDL_GetTicks64();
-    int res = update_engine(e);
-    add_weapon(p, 1, wa);
-    add_ammo(p, 1, 10);
-    switch_weapon(p, 0);
-    
+    dt = now - old;
+    int res = update_engine(e, dt);
     if (res == 1)
       break;
-      printf("FPS: %f\n", 1000.0 / (now - old));
+    printf("FPS: %f\n", 1000.0 / dt);
     old = now;
   }
-  player_free(p);
   engine_free(e);
-  free_weapons_array(wa);
   return 0;
 }
