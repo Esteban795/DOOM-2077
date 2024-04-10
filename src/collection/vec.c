@@ -94,7 +94,7 @@ void vec_clear(vec_t* vec, bool free_data) {
     vec->length = 0;
 }
 
-void swap(vec_t* vec, size_t index1, size_t index2) {
+void vec_swap(vec_t* vec, size_t index1, size_t index2) {
     assert(index1 < vec->length);
     assert(index2 < vec->length);
     void* temp = vec->data[index1];
@@ -116,17 +116,17 @@ int vec_binary_search(vec_t* vec, void* data, int (*cmp)(const void*, const void
     int right = vec->length - 1;
     while (left <= right) {
         int middle = left + (right - left) / 2;
-        int cmp_result = cmp(data, vec->data[middle]);
+        int cmp_result = cmp(&data, &vec->data[middle]);
         if (cmp_result == 0) {
             return middle;
         }
-        if (cmp_result > 0) {
+        if (cmp_result < 0) {
             right = middle - 1;
         } else {
             left = middle + 1;
         }
     }
-    return -1;
+    return ~left;
 }
 
 void vec_sort(vec_t* vec, int (*cmp)(const void*, const void*)) {

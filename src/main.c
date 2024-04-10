@@ -19,7 +19,7 @@ int start_SDL(SDL_Window **window, SDL_Renderer **renderer, int width,
   return 0;
 }
 
-int main(void) {
+int main() {
   SDL_Window *window;
   SDL_Renderer *renderer;
   int numkeys;
@@ -34,6 +34,7 @@ int main(void) {
     printf("Error at Mix startup\n");
     exit(-1);
   }
+  
   uint64_t now;
   uint64_t old = SDL_GetTicks64();
   SDL_ShowCursor(SDL_DISABLE);
@@ -45,7 +46,8 @@ int main(void) {
     int res = update_engine(e, dt);
     if (res == 1)
       break;
-    printf("FPS: %f\n", 1000.0 / dt);
+    
+    //printf("FPS: %f\n", 1000.0 / dt);
     old = now;
   }
   engine_free(e);

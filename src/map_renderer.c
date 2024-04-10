@@ -256,3 +256,14 @@ void draw_vline(map_renderer *mr, int x, int y1, int y2, color c) {
     SDL_RenderDrawLine(mr->renderer, x, y1, x, y2);
   }
 }
+
+void draw_crosshair(map_renderer *mr,color c,int size){
+  int middle_x = WIDTH/2;
+  int middle_y = HEIGHT/2;
+  
+  SDL_SetRenderDrawColor(mr->renderer, c.r, c.g, c.b, 255);
+  SDL_RenderDrawLine(mr->renderer, middle_x, middle_y+size, middle_x, middle_y-size);
+  SDL_RenderDrawLine(mr->renderer, middle_x + size, middle_y, middle_x -size, middle_y);
+}
+
+
