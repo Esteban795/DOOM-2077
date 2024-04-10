@@ -7,6 +7,7 @@
 
 #include "blockmap.h"
 #include "color.h"
+#include "flat.h"
 #include "header.h"
 #include "linedef.h"
 #include "node.h"
@@ -15,10 +16,9 @@
 #include "segment.h"
 #include "sidedef.h"
 #include "subsector.h"
+#include "texture.h"
 #include "thing.h"
 #include "vertex.h"
-#include "texture.h"
-#include "flat.h"
 
 struct WADData {
   header header;
@@ -54,7 +54,7 @@ struct WADData {
 
 typedef struct WADData wad_data;
 
-wad_data *init_wad_data(const char *path, SDL_Renderer *renderer);
+wad_data *init_wad_data(const char *path);
 
 void wad_data_free(wad_data *wd);
 #endif

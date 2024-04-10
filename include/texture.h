@@ -12,8 +12,8 @@ struct TextureMap {
   u32 column_dir; // obsolete and unused but it still lies in WAD files
   u16 patch_count;
   patch_map *patch_maps;
-  Uint32* pixels;
-  SDL_PixelFormat* format;
+  Uint32 *pixels;
+  SDL_PixelFormat *format;
 };
 
 typedef struct TextureMap texture_map;
@@ -29,8 +29,8 @@ typedef struct TextureHeader texture_header;
 void texture_maps_free(texture_map *texture_maps, int len_texture_maps);
 
 texture_map *get_texture_maps(FILE *f, lump *directory, header *header,
-                              patch *patches, SDL_Renderer *renderer,
-                              int *len_texture_maps);
+                              patch *patches, int *len_texture_maps);
 
-texture_map* get_texture_from_name(texture_map* texture_maps, int len_texture_maps, char* name);
+texture_map *get_texture_from_name(texture_map *texture_maps,
+                                   int len_texture_maps, char *name);
 #endif

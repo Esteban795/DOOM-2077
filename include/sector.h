@@ -2,8 +2,8 @@
 #define SECTOR_H
 
 #include "byte_reader.h"
-#include "lump.h"
 #include "flat.h"
+#include "lump.h"
 #include "util.h"
 #include <stdint.h>
 
@@ -26,5 +26,5 @@ sector *get_sectors_from_lump(FILE *f, lump *directory, int lump_index,
                               int num_bytes, int header_length, int len_sectors,
                               flat *flats, int len_flats);
 
-void sectors_free(sector *sectors, int len_sectors);
+void sectors_free(sector *sectors);
 #endif

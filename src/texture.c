@@ -1,7 +1,6 @@
 #include "../include/texture.h"
 
-Uint32 *get_pixels_from_patchmaps(texture_map tm, patch *patches,
-                                        SDL_Renderer *renderer) {
+Uint32 *get_pixels_from_patchmaps(texture_map tm, patch *patches) {
   Uint32 *pixels = malloc(sizeof(Uint32) * tm.width * tm.height);
   for (int k = 0; k < tm.patch_count; k++) {
     patch_map pm = tm.patch_maps[k];
@@ -21,8 +20,7 @@ Uint32 *get_pixels_from_patchmaps(texture_map tm, patch *patches,
   return pixels;
 }
 
-texture_map read_texture_map(FILE *f, int offset, patch *patches,
-                             SDL_Renderer *renderer) {
+texture_map read_texture_map(FILE *f, int offset, patch *patches) {
   texture_map tm;
   tm.name = read_texture_name(f, offset, 8);
   tm.masked = (bool)read_i32(f, offset + 8);
@@ -34,13 +32,12 @@ texture_map read_texture_map(FILE *f, int offset, patch *patches,
   for (int i = 0; i < tm.patch_count; i++) {
     tm.patch_maps[i] = read_patch_map(f, offset + 22 + i * 10);
   }
-  tm.pixels = get_pixels_from_patchmaps(tm, patches, renderer);
+  tm.pixels = get_pixels_from_patchmaps(tm, patches);
   tm.format = SDL_AllocFormat(SDL_PIXELFORMAT_RGBA8888);
   return tm;
 }
 
-texture_header read_texture_header(FILE *f, int offset, patch *patches,
-                                   SDL_Renderer *renderer) {
+texture_header read_texture_header(FILE *f, int offset, patch *patches) {
   texture_header th;
   th.num_textures = read_i32(f, offset);
   th.texture_map_offsets = malloc(sizeof(texture_map) * th.num_textures);
@@ -49,8 +46,8 @@ texture_header read_texture_header(FILE *f, int offset, patch *patches,
   }
   th.texture_maps = malloc(sizeof(texture_map) * th.num_textures);
   for (u32 i = 0; i < th.num_textures; i++) {
-    th.texture_maps[i] = read_texture_map(f, offset + th.texture_map_offsets[i],
-                                          patches, renderer);
+    th.texture_maps[i] =
+        read_texture_map(f, offset + th.texture_map_offsets[i], patches);
   }
   return th;
 }
@@ -69,13 +66,12 @@ void texture_maps_free(texture_map *texture_maps, int len_texture_maps) {
 }
 
 texture_map *get_texture_maps(FILE *f, lump *directory, header *header,
-                              patch *patches, SDL_Renderer *renderer,
-                              int *len_texture_maps) {
+                              patch *patches, int *len_texture_maps) {
   const int TEXTURE1_lump_index =
       get_lump_index(directory, "TEXTURE1", header->lump_count);
   lump TEXTURE1_lump = directory[TEXTURE1_lump_index];
   int offset = TEXTURE1_lump.lump_offset;
-  texture_header th = read_texture_header(f, offset, patches, renderer);
+  texture_header th = read_texture_header(f, offset, patches);
   *len_texture_maps = th.num_textures;
   texture_map *texture_maps = malloc(sizeof(texture_map) * th.num_textures);
   for (u32 i = 0; i < th.num_textures; i++) {
@@ -86,8 +82,8 @@ texture_map *get_texture_maps(FILE *f, lump *directory, header *header,
   return texture_maps;
 }
 
-
-texture_map* get_texture_from_name(texture_map* texture_maps, int len_texture_maps, char* name) {
+texture_map *get_texture_from_name(texture_map *texture_maps,
+                                   int len_texture_maps, char *name) {
   for (int i = 0; i < len_texture_maps; i++) {
     if (strcmp(texture_maps[i].name, name) == 0) {
       return &texture_maps[i];

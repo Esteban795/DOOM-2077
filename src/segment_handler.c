@@ -78,7 +78,7 @@ void draw_solid_walls_range(segment_handler *sh, int x1, int x2) {
       world_front_z2; // step to find the next y position of bottom of the wall
 
   for (int i = x1; i < x2; i++) {
-    int draw_wall_y1 = (int)(wall_y1) - 1;
+    int draw_wall_y1 = (int)(wall_y1)-1;
     int draw_wall_y2 = (int)wall_y2;
 
     if (draw_ceiling) {
@@ -118,17 +118,12 @@ void draw_solid_walls_range(segment_handler *sh, int x1, int x2) {
 
 void draw_portal_walls_range(segment_handler *sh, int x1, int x2) {
   segment *seg = sh->seg;
-  linedef* ld = seg->linedef;
+  linedef *ld = seg->linedef;
   sector *front_sector = seg->front_sector;
   sector *back_sector = seg->back_sector;
   sidedef *front_sidedef = seg->linedef->front_sidedef;
-  
+
   texture_map *upper_wall_texture = front_sidedef->upper_texture;
-  // if (upper_wall_texture == NULL){
-  //   printf("upper_wall_texture is NULL\n");
-  //   fflush(stdout);
-  //   exit(1);
-  // }
   texture_map *lower_wall_texture = front_sidedef->lower_texture;
   flat *ceiling_texture = front_sector->ceiling_texture;
   flat *floor_texture = front_sector->floor_texture;
@@ -190,7 +185,7 @@ void draw_portal_walls_range(segment_handler *sh, int x1, int x2) {
 
   // manage texture vertical alignment
   double upper_texture_alt = 0;
-  if (draw_upper_wall){
+  if (draw_upper_wall) {
     if (ld->flag & UPPER_UNPEGGED) {
       upper_texture_alt = world_front_z1;
     } else {
@@ -201,7 +196,7 @@ void draw_portal_walls_range(segment_handler *sh, int x1, int x2) {
   }
 
   double lower_texture_alt = 0;
-  if (draw_lower_wall){
+  if (draw_lower_wall) {
     if (ld->flag & LOWER_UNPEGGED) {
       lower_texture_alt = world_front_z1;
     } else {
@@ -257,19 +252,19 @@ void draw_portal_walls_range(segment_handler *sh, int x1, int x2) {
       portal_y2_step = wall_y1_step;
     }
   }
-  double angle;
-  double texture_column;
+  double angle = 0;
+  double texture_column = 0;
   double inverted_scale = 1.0 / scale1;
   for (int i = x1; i < x2; i++) {
     double draw_wall_y1 = wall_y1 - 1;
     double draw_wall_y2 = wall_y2;
 
-    if (seg_textured){
-      angle = center_angle - rad_to_deg(atan((HALF_WIDTH - i) / SCREEN_DISTANCE));
+    if (seg_textured) {
+      angle =
+          center_angle - rad_to_deg(atan((HALF_WIDTH - i) / SCREEN_DISTANCE));
       texture_column = raw_dist * tan(deg_to_rad(angle)) - rw_offset;
       inverted_scale = 1 / scale1;
     }
-
 
     if (draw_upper_wall) {
       double draw_upper_wall_y1 = wall_y1 - 1;
@@ -284,7 +279,9 @@ void draw_portal_walls_range(segment_handler *sh, int x1, int x2) {
 
       int wy1 = (int)fmax(draw_upper_wall_y1, sh->upper_clip[i] + 1);
       int wy2 = (int)fmin(draw_upper_wall_y2, sh->lower_clip[i] - 1);
-      draw_wall_column(sh->engine->map_renderer, upper_wall_texture, texture_column, i, wy1, wy2, upper_texture_alt, inverted_scale, light_level);
+      draw_wall_column(sh->engine->map_renderer, upper_wall_texture,
+                       texture_column, i, wy1, wy2, upper_texture_alt,
+                       inverted_scale, light_level);
       if (sh->upper_clip[i] < wy2) {
         sh->upper_clip[i] = wy2;
       }
@@ -312,9 +309,9 @@ void draw_portal_walls_range(segment_handler *sh, int x1, int x2) {
       int draw_lower_wall_y2 = wall_y2;
       int wy1 = (int)fmax(draw_lower_wall_y1, sh->upper_clip[i] + 1);
       int wy2 = (int)fmin(draw_lower_wall_y2, sh->lower_clip[i] - 1);
-
-      // draw_vline(sh->engine->map_renderer, i, wy1, wy2, lower_c);
-      draw_wall_column(sh->engine->map_renderer, lower_wall_texture, texture_column, i, wy1, wy2, lower_texture_alt, inverted_scale, light_level);
+      draw_wall_column(sh->engine->map_renderer, lower_wall_texture,
+                       texture_column, i, wy1, wy2, lower_texture_alt,
+                       inverted_scale, light_level);
       if (sh->lower_clip[i] > wy1) {
         sh->lower_clip[i] = wy1;
       }

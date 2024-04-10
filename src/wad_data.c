@@ -1,6 +1,6 @@
 #include "../include/wad_data.h"
 
-wad_data *init_wad_data(const char *path, SDL_Renderer *renderer) {
+wad_data *init_wad_data(const char *path) {
   FILE *file = fopen(path, "rb");
   if (file == NULL) {
     printf("Error opening file\n");
@@ -38,15 +38,15 @@ wad_data *init_wad_data(const char *path, SDL_Renderer *renderer) {
                           &wd->len_texture_patches);
   wd->texture_maps =
       get_texture_maps(file, wd->directory, &wd->header, wd->texture_patches,
-                       renderer, &wd->len_texture_maps);
-  wd->flats = get_flats(file, wd->directory, &wd->header,
-                        wd->color_palette, &wd->len_flats);
-  wd->sectors = get_sectors_from_lump(
-      file, wd->directory, wd->map_index + SECTORS, 26, 0, wd->len_sectors,
-      wd->flats, wd->len_flats);
-  wd->sidedefs =
-      get_sidedefs_from_lump(file, wd->directory, wd->map_index + SIDEDEFS, 30,
-                             0, wd->len_sidedefs, wd->sectors, wd->texture_maps,wd->len_texture_maps);
+                       &wd->len_texture_maps);
+  wd->flats = get_flats(file, wd->directory, &wd->header, wd->color_palette,
+                        &wd->len_flats);
+  wd->sectors =
+      get_sectors_from_lump(file, wd->directory, wd->map_index + SECTORS, 26, 0,
+                            wd->len_sectors, wd->flats, wd->len_flats);
+  wd->sidedefs = get_sidedefs_from_lump(
+      file, wd->directory, wd->map_index + SIDEDEFS, 30, 0, wd->len_sidedefs,
+      wd->sectors, wd->texture_maps, wd->len_texture_maps);
   wd->vertexes = get_vertexes_from_lump(
       file, wd->directory, wd->map_index + VERTEXES, 4, 0, wd->len_vertexes);
   wd->linedefs =
@@ -76,10 +76,10 @@ void wad_data_free(wad_data *wd) {
   free(wd->segments);
   free(wd->things);
   free(wd->header.wad_type);
-  sectors_free(wd->sectors, wd->len_sectors);
+  sectors_free(wd->sectors);
   blockmap_free(wd->blockmap);
   subsectors_free(wd->subsectors, wd->len_subsectors);
-  sidedefs_free(wd->sidedefs, wd->len_sidedefs);
+  sidedefs_free(wd->sidedefs);
   free(wd->color_palette);
   sprites_free(wd->sprites, wd->len_sprites);
   textures_patches_free(wd->texture_patches, wd->len_texture_patches);

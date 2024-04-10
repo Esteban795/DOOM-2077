@@ -1,18 +1,28 @@
 #include "../include/sidedef.h"
 
-sidedef read_sidedef(FILE *f, int offset,sector* sectors,texture_map* textures,int len_textures) {
+sidedef read_sidedef(FILE *f, int offset, sector *sectors,
+                     texture_map *textures, int len_textures) {
   sidedef s;
   s.x_offset = read_i16(f, offset);
   s.y_offset = read_i16(f, offset + 2);
-  char* upper_texture = read_string(f, offset + 4, 8);
+  char *upper_texture = read_string(f, offset + 4, 8);
   char *lower_texture = read_string(f, offset + 12, 8);
   char *middle_texture = read_string(f, offset + 20, 8);
   s.hash_lower = ElfHash(lower_texture);
   s.hash_upper = ElfHash(upper_texture);
   s.hash_middle = ElfHash(middle_texture);
-  s.upper_texture = s.hash_upper ==  NO_TEXTURE_HASH ? NULL : get_texture_from_name(textures, len_textures, upper_texture);
-  s.lower_texture = s.hash_lower == NO_TEXTURE_HASH ? NULL : get_texture_from_name(textures, len_textures, lower_texture);
-  s.middle_texture = s.hash_middle == NO_TEXTURE_HASH ? NULL :get_texture_from_name(textures, len_textures, middle_texture);
+  s.upper_texture =
+      s.hash_upper == NO_TEXTURE_HASH
+          ? NULL
+          : get_texture_from_name(textures, len_textures, upper_texture);
+  s.lower_texture =
+      s.hash_lower == NO_TEXTURE_HASH
+          ? NULL
+          : get_texture_from_name(textures, len_textures, lower_texture);
+  s.middle_texture =
+      s.hash_middle == NO_TEXTURE_HASH
+          ? NULL
+          : get_texture_from_name(textures, len_textures, middle_texture);
   s.sector_id = read_i16(f, offset + 28);
   s.sector = &sectors[s.sector_id];
   free(upper_texture);
@@ -23,17 +33,16 @@ sidedef read_sidedef(FILE *f, int offset,sector* sectors,texture_map* textures,i
 
 sidedef *get_sidedefs_from_lump(FILE *f, lump *directory, int lump_index,
                                 int num_bytes, int header_length,
-                                int len_sidedefs,sector* sectors,texture_map* textures,int len_textures) {
+                                int len_sidedefs, sector *sectors,
+                                texture_map *textures, int len_textures) {
   int offset = 0;
   lump lump_info = directory[lump_index];
   sidedef *sidedefs = malloc(sizeof(sidedef) * len_sidedefs);
   for (int i = 0; i < len_sidedefs; i++) {
     offset = lump_info.lump_offset + i * num_bytes + header_length;
-    sidedefs[i] = read_sidedef(f, offset,sectors,textures,len_textures);
+    sidedefs[i] = read_sidedef(f, offset, sectors, textures, len_textures);
   }
   return sidedefs;
 }
 
-void sidedefs_free(sidedef *sidedefs, int len_sidedefs) {
-  free(sidedefs);
-}
+void sidedefs_free(sidedef *sidedefs) { free(sidedefs); }
