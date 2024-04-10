@@ -10,6 +10,11 @@
 
 player *player_init(engine *e) {
   player *p = malloc(sizeof(player));
+  int* ammo = malloc(WEAPONS_NUMBER*sizeof(int));
+  ammo[0] = -2;
+  for (int i = 1; i < WEAPONS_NUMBER; i++) {
+    ammo[i] = -1;
+  }
   p->engine = e;
   p->thing = e->wData->things[0];
   p->pos.x = (double)p->thing.x;
@@ -18,6 +23,8 @@ player *player_init(engine *e) {
   p->height = PLAYER_HEIGHT;
   p->keybinds = get_player_keybinds(KEYBINDS_FILE);
   p->settings = get_player_settings(SETTINGS_FILE);
+  p->ammo = ammo;
+  p->active_weapon=0;
   p->cooldown = 0;
   return p;
 }
@@ -311,6 +318,7 @@ void update_player(player *p, int mouse_x, const uint8_t *keyboard_state) {
 void player_free(player *p) {
   free_keybinds(p->keybinds);
   free_settings(p->settings);
+  free(p->ammo);
   free(p);
 }
 
