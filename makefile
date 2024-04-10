@@ -10,7 +10,7 @@ testdepsdir = $(builddir)/test_deps
 
 AR = ar
 CC = gcc
-CFLAGS = -Wall -Wextra -Werror -std=gnu17 -pedantic
+CFLAGS = -Wall -Wextra -std=gnu17 -pedantic
 CFLAGS += -fsanitize=address,undefined -fno-omit-frame-pointer
 LDFLAGS = -lm 
 CDEBUG = -g -O3
@@ -131,13 +131,11 @@ before_build:
 	@mkdir -p $(depsdir)
 
 clean:
-<<<<<<< HEAD
 	rm ./bin/doomlike
 	
 
 all:
-	make build
-	make run
-=======
 	-rm -rf $(builddir)
->>>>>>> 0c3ad99e0028f5efe393bfb8f1d5c1106307c966
+	make build_client
+	make run
+	
