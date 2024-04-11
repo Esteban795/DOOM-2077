@@ -154,7 +154,7 @@ double get_wall_length(linedef *line) {
 }
 
 void get_projections(linedef *line, vec2 pos, vec2 *projected,
-                     vec2 *projected_hitbox) {
+                     vec2 *projected_hitbox, vec2 *projected_hitbox_back) {
   vertex *v1 = line->start_vertex;
   vertex *v2 = line->end_vertex;
 
@@ -166,6 +166,8 @@ void get_projections(linedef *line, vec2 pos, vec2 *projected,
   projected->x = (double)v1->x + projection_factor * l.x;
   projected->y = (double)v1->y + projection_factor * l.y;
 
+  // INFO: this is an artifact of old code. debating whether i need to remove
+  // this or not
   if (!projected_hitbox) {
     return;
   }
@@ -179,6 +181,11 @@ void get_projections(linedef *line, vec2 pos, vec2 *projected,
       pos.x + ((projected->x - pos.x) / norm_projection) * PLAYER_RADIUS * 2;
   projected_hitbox->y =
       pos.y + ((projected->y - pos.y) / norm_projection) * PLAYER_RADIUS * 2;
+
+  projected_hitbox_back->x =
+      pos.x - ((projected->x - pos.x) / norm_projection) * PLAYER_RADIUS * 2;
+  projected_hitbox_back->y =
+      pos.y - ((projected->y - pos.y) / norm_projection) * PLAYER_RADIUS * 2;
 
   // printf("projecting...\n");
   // printf("po: x=%f,y=%f\n", pos.x, pos.y);
@@ -198,6 +205,16 @@ void slide_against_wall(vec2 *pos_inside_wall, vec2 projected) {
   pos_inside_wall->y =
       projected.y -
       ((projected.y - pos_inside_wall->y) / norm) * (PLAYER_RADIUS * 2 + 0.1);
+}
+
+void slide_against_point(vertex point, vec2 *post_move) {
+  vec2 direction = {.x = post_move->x - point.x, .y = post_move->y - point.y};
+  float l = sqrt(pow(direction.x, 2) + pow(direction.y, 2));
+  direction.x *= PLAYER_RADIUS / l;
+  direction.y *= PLAYER_RADIUS / l;
+
+  post_move->x += direction.x;
+  post_move->y += direction.y;
 }
 
 bool can_collide_with_wall(double cp_after, linedef linedef) {
@@ -224,16 +241,9 @@ bool can_collide_with_wall(double cp_after, linedef linedef) {
       return true;
     }
   } else {
-    sidedef *sd; // this is the sidedef that faces the player upon bonking
-                 // against the wall
-    if (cp_after > 0) {
-      sd = linedef.back_sidedef;
-    } else {
-      sd = linedef.front_sidedef;
-    }
-    if (sd != NULL) {
-      return true;
-    }
+    return !(cp_after > 0);
+    // HACK: this assumes that all walls are facing inwards!
+    // if the wad has a wall facing outwards it will break!
   }
   return false;
 }
@@ -246,11 +256,10 @@ void move_and_slide(player *p, double *velocity) {
 
     int i = ii % nlinedefs;
 
-    vec2 p_b;  // projection before moving
-    vec2 ph_b; // projection hitbox before moving
-    vec2 p_a;  // projection after moving
+    vec2 p_a;   // projection after moving
+    vec2 phf_a; // projection of the hitbox after moving, front
+    vec2 phb_a; // projection of the hitbox after moving, back
 
-    get_projections(linedefs + i, p->pos, &p_b, &ph_b);
     // check if the player can actually collide with the wall in directions
     // parallel to the wall
     double d = dot_pos_linedef(linedefs + i, p->pos);
@@ -258,29 +267,24 @@ void move_and_slide(player *p, double *velocity) {
       vertex *linedef_a = linedefs[i].start_vertex;
       vertex *linedef_b = linedefs[i].end_vertex;
 
-      if (DISTANCE_VEC_VER(next_pos, linedef_a) < PLAYER_RADIUS ||
-          DISTANCE_VEC_VER(next_pos, linedef_b) < PLAYER_RADIUS) {
-        printf("hello!\n");
-
-        get_projections(linedefs + i, next_pos, &p_a, 0);
-        slide_against_wall(&next_pos, p_a);
+      if (DISTANCE_VEC_VER(next_pos, linedef_a) < PLAYER_RADIUS) {
+        slide_against_point(*linedef_a, &next_pos);
+      } else if (DISTANCE_VEC_VER(next_pos, linedef_b) < PLAYER_RADIUS) {
+        slide_against_point(*linedef_b, &next_pos);
       }
 
       continue;
     }
-    get_projections(linedefs + i, next_pos, &p_a, 0);
-    vec2 ph_bpm = {
-        .x = ph_b.x + (next_pos.x - p->pos.x),
-        .y = ph_b.y +
-             (next_pos.y - p->pos.y)}; // projection before moving + velocity
+    get_projections(linedefs + i, next_pos, &p_a, &phf_a, &phb_a);
 
-    double cp_before = cross_pos_linedef(linedefs + i, ph_b);
-    double cp_after = cross_pos_linedef(linedefs + i, ph_bpm);
-    if ((SIGN(cp_before)) != (SIGN(cp_after))) {
+    double cp_hb = cross_pos_linedef(linedefs + i, phb_a);
+    double cp_hf = cross_pos_linedef(linedefs + i, phf_a);
+
+    if ((SIGN(cp_hb)) != (SIGN(cp_hf))) {
       // collision happened
       // if cp_after < 0: use the second sidedef
       // else: use the first linedef (first linedef faces "clockwise")
-      if (can_collide_with_wall(cp_after, linedefs[i])) {
+      if (can_collide_with_wall(cp_hf, linedefs[i])) {
         slide_against_wall(&next_pos, p_a);
         continue;
       }
