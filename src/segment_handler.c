@@ -55,7 +55,7 @@ void draw_solid_walls_range(segment_handler *sh, int x1, int x2) {
   }
   double middle_texture_alt = world_front_z1;
   if (ld->flag & LOWER_UNPEGGED) {
-    int v_top = front_sector->floor_height - wall_texture->width;
+    int v_top = front_sector->floor_height + wall_texture->height;
     middle_texture_alt = v_top - sh->player->height;
   }
   middle_texture_alt += front_sidedef->y_offset;
@@ -189,7 +189,7 @@ void draw_portal_walls_range(segment_handler *sh, int x1, int x2) {
     if (ld->flag & UPPER_UNPEGGED) {
       upper_texture_alt = world_front_z1;
     } else {
-      int v_top = back_sector->ceiling_height - upper_wall_texture->width;
+      int v_top = back_sector->ceiling_height + upper_wall_texture->height;
       upper_texture_alt = v_top - sh->player->height;
     }
     upper_texture_alt += front_sidedef->y_offset;
