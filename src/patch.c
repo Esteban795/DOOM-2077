@@ -1,4 +1,5 @@
 #include "../include/patch.h"
+#include <ctype.h>
 
 patch_header read_patch_header(FILE *f, int offset) {
   patch_header ph;
@@ -202,6 +203,7 @@ patch *get_texture_patches(lump *directory, header *header, FILE *f,
   patch *texture_patches = malloc(sizeof(patch) * num_patches);
   for (int i = 0; i < *len_textures_patches; i++) {
     char *patch_name = read_texture_name(f, offset + i * 8, 8);
+    patch_name[0] = toupper(patch_name[0]); //because one letter randomly set to lowercase
     i16 patch_index = get_lump_index(directory, patch_name, header->lump_count);
     if (patch_index == -1) {
       free(patch_name);
