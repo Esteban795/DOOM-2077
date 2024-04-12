@@ -6,7 +6,7 @@
 #define FOV 90.0
 #define H_FOV (FOV / 2.0)
 
-SDL_PixelFormat* fmt = NULL;
+SDL_PixelFormat *fmt = NULL;
 
 color get_random_color2() {
   color c;
@@ -270,8 +270,7 @@ void map_renderer_free(map_renderer *mr) {
 
 void draw_vline(map_renderer *mr, int x, int y1, int y2, color c) {
   if (y1 < y2) {
-    Uint32 pixel = SDL_MapRGBA(fmt, c.r,
-                               c.g, c.b, 255);
+    Uint32 pixel = SDL_MapRGBA(fmt, c.r, c.g, c.b, 255);
     for (int y = y1; y < y2; y++) {
       mr->engine->pixels[y * WIDTH + x] = pixel;
     }
@@ -283,14 +282,10 @@ void draw_column(map_renderer *mr, int x, int y1, int y2, color c) {
   SDL_RenderDrawLine(mr->renderer, x, y1, x, y2);
 }
 
-Uint32 get_this_fucking_pixel(Uint32* pixels,int width,int x,int y){
+Uint32 get_this_fucking_pixel(Uint32 *pixels, int width, int x, int y) {
   return pixels[y * width + x];
 }
 
-
-double test(double angle,double mod) {
-  return fmod((fmod(angle, mod) + mod),mod);
-}
 void draw_wall_column(map_renderer *mr, texture_map *texture,
                       double texture_column, int x, int y1, int y2,
                       double texture_alt, double inverted_scale,
@@ -298,19 +293,19 @@ void draw_wall_column(map_renderer *mr, texture_map *texture,
   if (y1 < y2) {
     int texture_width = texture->width;
     int texture_height = texture->height;
-    int texture_column_int = (int)test(texture_column,(double)texture_width);
-        // ((int)texture_column) % texture_width; // texture repeatition
+    int texture_column_int = (int)mod(texture_column, (double)texture_width);
     double texture_y =
         texture_alt + ((double)y1 - HALF_HEIGHT) * inverted_scale;
     for (int y = y1; y < y2; y++) {
-      int texture_y_int = (int)test(texture_y,(double)texture_height);
-      Uint32 pixel = get_this_fucking_pixel(texture->pixels, texture_width, texture_column_int, texture_y_int);
+      int texture_y_int = (int)mod(texture_y, (double)texture_height);
+      Uint32 pixel = texture->pixels[texture_y_int * texture_width + texture_column_int];
       u8 r, g, b, a;
       SDL_GetRGBA(pixel, texture->format, &r, &g, &b, &a);
       r = r * light_level / 255;
       g = g * light_level / 255;
       b = b * light_level / 255;
-      mr->engine->pixels[y * WIDTH + x] = pixel;
+      Uint32 light_adjusted_pixel = SDL_MapRGBA(fmt, r, g, b, a);
+      mr->engine->pixels[y * WIDTH + x] = light_adjusted_pixel;
       texture_y += inverted_scale;
     }
   }
@@ -340,7 +335,8 @@ void draw_flat(map_renderer *mr, flat *texture, i16 light_level, int x, int y1,
       r = r * light_level / 255;
       g = g * light_level / 255;
       b = b * light_level / 255;
-      mr->engine->pixels[iy * WIDTH + x] = pixel;
+      Uint32 light_adjusted_pixel = SDL_MapRGBA(fmt, r, g, b, a);
+      mr->engine->pixels[iy * WIDTH + x] = light_adjusted_pixel;
     }
   }
 }
