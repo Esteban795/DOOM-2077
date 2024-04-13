@@ -40,6 +40,15 @@ void world_init(world_t* world);
 void world_destroy(world_t* world);
 
 /*
+* Insert an entity into the world
+*
+* If an entity with the same id already exists, the function will return NULL, and the entity will not be inserted.
+* This function is intented to be used on the client side, where all the entities are created by the server, and therefore
+* the client already knows the id of the entity.
+*/
+entity_t* world_insert_entity(world_t* world, uint64_t entity_id, component_t** components, int component_count);
+
+/*
 * Create a new entity
 */
 entity_t* world_create_entity(world_t* world, component_t** components, int component_count);

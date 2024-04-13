@@ -26,11 +26,16 @@ void world_destroy(world_t* world) {
     vec_destroy(&world->event_queue, true);
 }
 
-entity_t* world_create_entity(world_t* world, component_t** components, int component_count) {
+entity_t* world_insert_entity(world_t* world, uint64_t entity_id, component_t** components, int component_count) {
     // Create the entity
     entity_t* entity = malloc(sizeof(entity_t));
-    entity->id = vec_length(&world->entities) + 1;
-    vec_push(&world->entities, (void*) entity);
+    entity->id = entity_id;
+    int eind = vec_binary_search(&world->entities, entity, compare_entity);
+    if (eind >= 0) {
+        fprintf(stderr, "FATAL: Entity with id %ld already exists in world!\n", entity->id);
+        return NULL;
+    }
+    vec_insert(&world->entities, ~eind, (void*) entity);
 
     // Find the archetype corresponding to the components of the entity
     archetype_tag_t archetype_pat;
@@ -61,6 +66,10 @@ entity_t* world_create_entity(world_t* world, component_t** components, int comp
     vec_push(&world->entity_archetype, (void*) arch_index_ptr);
 
     return entity;
+}
+
+entity_t* world_create_entity(world_t* world, component_t** components, int component_count) {
+    return world_insert_entity(world, vec_length(&world->entities) + 1, components, component_count);
 }
 
 entity_t** world_create_bulk_entity(world_t* world, component_t*** components, int component_count, int count) {
