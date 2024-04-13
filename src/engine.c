@@ -46,7 +46,7 @@ int update_engine(engine *e, int dt) {
   audiomixer_update(e->mixer, dt);
   SDL_UpdateTexture(e->texture, NULL, e->pixels, WIDTH * 4);
   SDL_RenderCopy(e->map_renderer->renderer, e->texture, NULL, NULL);
-  draw_crosshair(e->map_renderer,get_color(50,0),20);
+  // draw_crosshair(e->map_renderer,get_color(50,0),20);
   SDL_RenderPresent(e->map_renderer->renderer);
   memset(e->pixels, 0, WIDTH * HEIGHT * 4);
   return 0;
