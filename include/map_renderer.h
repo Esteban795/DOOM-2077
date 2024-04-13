@@ -25,7 +25,6 @@ void draw_node(map_renderer *mr, int node_id);
 
 void draw_segment(map_renderer *mr, segment seg);
 
-
 void draw_linedefs(SDL_Renderer *renderer, linedef *linedefs, int len);
 
 void draw(map_renderer *mr);
@@ -33,6 +32,8 @@ void draw(map_renderer *mr);
 void map_renderer_free(map_renderer *mr);
 
 void draw_vline(map_renderer *mr, int x, int y1, int y2, color c);
+
+void draw_crosshair(map_renderer *mr,color c,int size);
 
 void draw_wall_column(map_renderer *mr, texture_map *texture,
                       double texture_column, int x, int y1, int y2,

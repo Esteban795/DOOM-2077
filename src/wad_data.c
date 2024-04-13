@@ -64,7 +64,7 @@ wad_data *init_wad_data(const char *path) {
                                     10, 0, wd->len_things);
   wd->blockmap = read_blockmap_from_lump(
       file, wd->directory, wd->map_index + BLOCKMAP, wd->linedefs);
-
+  wd->sounds = get_sounds(file, wd->directory, wd->header.lump_count, &wd->len_sounds);
   fclose(file);
   return wd;
 }
@@ -85,6 +85,7 @@ void wad_data_free(wad_data *wd) {
   textures_patches_free(wd->texture_patches, wd->len_texture_patches);
   texture_maps_free(wd->texture_maps, wd->len_texture_maps);
   flats_free(wd->flats, wd->len_flats);
+  sounds_free(wd->sounds, wd->len_sounds);
   for (int i = 0; i < wd->header.lump_count; i++) {
     free(wd->directory[i].lump_name);
   }

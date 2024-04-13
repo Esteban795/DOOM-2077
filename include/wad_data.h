@@ -19,6 +19,7 @@
 #include "texture.h"
 #include "thing.h"
 #include "vertex.h"
+#include "sound.h"
 
 struct WADData {
   header header;
@@ -33,6 +34,8 @@ struct WADData {
   blockmap *blockmap;
   sector *sectors;
   sidedef *sidedefs;
+  sound *sounds;
+  int len_sounds;
   color *color_palette;
   patch *sprites;
   patch *texture_patches;

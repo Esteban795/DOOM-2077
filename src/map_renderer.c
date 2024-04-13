@@ -340,3 +340,14 @@ void draw_flat(map_renderer *mr, flat *texture, i16 light_level, int x, int y1,
     }
   }
 }
+
+void draw_crosshair(map_renderer *mr,color c,int size){
+  int middle_x = WIDTH/2;
+  int middle_y = HEIGHT/2;
+  
+  SDL_SetRenderDrawColor(mr->renderer, c.r, c.g, c.b, 255);
+  SDL_RenderDrawLine(mr->renderer, middle_x, middle_y+size, middle_x, middle_y-size);
+  SDL_RenderDrawLine(mr->renderer, middle_x + size, middle_y, middle_x -size, middle_y);
+}
+
+

@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/types.h>
 
 typedef int8_t i8;
 typedef int16_t i16;
@@ -12,6 +13,8 @@ typedef uint16_t u16;
 typedef int32_t i32;
 typedef uint8_t u8;
 typedef uint32_t u32;
+typedef uint32_t u32;
+typedef uint8_t u8;
 typedef unsigned char byte;
 
 #define THINGS 1
@@ -28,6 +31,8 @@ typedef unsigned char byte;
 byte read_1_byte(FILE *f, int offset);
 
 byte *read_bytes(FILE *f, int offset, int num_bytes);
+
+u8 read_u8(FILE *f, int offset);
 
 i16 read_i16(FILE *f, int offset);
 
