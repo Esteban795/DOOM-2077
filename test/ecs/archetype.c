@@ -297,6 +297,7 @@ int test_archetype_remove_entity_unordered(void) {
     // Free archetype
     archetype_destroy(&archetype);
     free(components);
+    free(entity);
     return 0;
 }
 

@@ -1,5 +1,6 @@
 #include "../include/engine.h"
 #include <SDL2/SDL_events.h>
+#include <SDL2/SDL_mixer.h>
 #include <SDL2/SDL_mouse.h>
 #include <SDL2/SDL_net.h>
 
@@ -19,14 +20,14 @@ int start_SDL(SDL_Window **window, SDL_Renderer **renderer, int width,
   return 0;
 }
 
-int main(void) {
+int main() {
   SDL_Window *window;
   SDL_Renderer *renderer;
   int numkeys;
-  const uint8_t* keys = SDL_GetKeyboardState(&numkeys);
+  const uint8_t *keys = SDL_GetKeyboardState(&numkeys);
   int status = start_SDL(&window, &renderer, WIDTH, HEIGHT, "Map rendering..");
   if (status == 1) {
-    printf("Error at SDL startup");
+    printf("Error at SDL startup\n");
     exit(-1);
   }
   status = SDLNet_Init();
@@ -34,6 +35,12 @@ int main(void) {
     printf("Error at SDLNet startup");
     exit(-2);
   }
+  status = Mix_Init(MIX_INIT_MOD);
+  if (status == 1) {
+    printf("Error at Mix startup\n");
+    exit(-1);
+  }
+  
   uint64_t now;
   uint64_t old = SDL_GetTicks64();
   SDL_ShowCursor(SDL_DISABLE);
@@ -45,10 +52,12 @@ int main(void) {
     int res = update_engine(e, dt);
     if (res == 1)
       break;
-    printf("FPS: %f\n", 1000.0 / dt);
+    
+    //printf("FPS: %f\n", 1000.0 / dt);
     old = now;
   }
   engine_free(e);
   SDLNet_Quit();
+  Mix_Quit();
   return 0;
 }
