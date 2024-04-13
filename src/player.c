@@ -1,14 +1,22 @@
 #include "../include/player.h"
 #include <SDL2/SDL_render.h>
 #include <stdio.h>
+#include <math.h>
+#include <stdlib.h>
 
 #define SIGN(x) (int)(x > 0) ? 1 : ((x < 0) ? -1 : 0)
 #define DOT(a, b) (a.x * b.x) + (a.y * b.y)
+#define DISTANCE_VEC_VER(a, b) (sqrt(pow(b->x - a.x, 2) + pow(b->y - a.y, 2)))
 
 #define M_PI 3.14159265358979323846
 
 player *player_init(engine *e) {
   player *p = malloc(sizeof(player));
+  int* ammo = malloc(WEAPONS_NUMBER*sizeof(int));
+  ammo[0] = -2;
+  for (int i = 1; i < WEAPONS_NUMBER; i++) {
+    ammo[i] = -1;
+  }
   p->engine = e;
   p->thing = e->wData->things[0];
   p->pos.x = (double)p->thing.x;
@@ -17,8 +25,21 @@ player *player_init(engine *e) {
   p->height = PLAYER_HEIGHT;
   p->keybinds = get_player_keybinds(KEYBINDS_FILE);
   p->settings = get_player_settings(SETTINGS_FILE);
+  p->ammo = ammo;
+  p->active_weapon=0;
+  p->cooldown = 0;
   return p;
 }
+
+player ** create_players(int num_players,engine *e){
+    player** Players = malloc(sizeof(player*)*num_players);
+    for(int i=0;i<num_players;i++){
+      Players[i]=player_init(e);
+    }
+    return(Players);
+}
+
+
 
 // size_t count_two_sided_linedefs(linedef* linedefs, size_t nlinedefs){
 //   size_t count = 0;
@@ -154,7 +175,7 @@ double get_wall_length(linedef *line) {
 }
 
 void get_projections(linedef *line, vec2 pos, vec2 *projected,
-                     vec2 *projected_hitbox) {
+                     vec2 *projected_hitbox, vec2 *projected_hitbox_back) {
   vertex *v1 = line->start_vertex;
   vertex *v2 = line->end_vertex;
 
@@ -166,6 +187,8 @@ void get_projections(linedef *line, vec2 pos, vec2 *projected,
   projected->x = (double)v1->x + projection_factor * l.x;
   projected->y = (double)v1->y + projection_factor * l.y;
 
+  // INFO: this is an artifact of old code. debating whether i need to remove
+  // this or not
   if (!projected_hitbox) {
     return;
   }
@@ -179,6 +202,11 @@ void get_projections(linedef *line, vec2 pos, vec2 *projected,
       pos.x + ((projected->x - pos.x) / norm_projection) * PLAYER_RADIUS * 2;
   projected_hitbox->y =
       pos.y + ((projected->y - pos.y) / norm_projection) * PLAYER_RADIUS * 2;
+
+  projected_hitbox_back->x =
+      pos.x - ((projected->x - pos.x) / norm_projection) * PLAYER_RADIUS * 2;
+  projected_hitbox_back->y =
+      pos.y - ((projected->y - pos.y) / norm_projection) * PLAYER_RADIUS * 2;
 
   // printf("projecting...\n");
   // printf("po: x=%f,y=%f\n", pos.x, pos.y);
@@ -194,10 +222,51 @@ void slide_against_wall(vec2 *pos_inside_wall, vec2 projected) {
                      pow((projected.y - pos_inside_wall->y), 2));
   pos_inside_wall->x =
       projected.x -
-      ((projected.x - pos_inside_wall->x) / norm) * (PLAYER_RADIUS * 2 + 2);
+      ((projected.x - pos_inside_wall->x) / norm) * (PLAYER_RADIUS * 2 + 0.1);
   pos_inside_wall->y =
       projected.y -
-      ((projected.y - pos_inside_wall->y) / norm) * (PLAYER_RADIUS * 2 + 2);
+      ((projected.y - pos_inside_wall->y) / norm) * (PLAYER_RADIUS * 2 + 0.1);
+}
+
+void slide_against_point(vertex point, vec2 *post_move) {
+  vec2 direction = {.x = post_move->x - point.x, .y = post_move->y - point.y};
+  float l = sqrt(pow(direction.x, 2) + pow(direction.y, 2));
+  direction.x *= PLAYER_RADIUS / l;
+  direction.y *= PLAYER_RADIUS / l;
+
+  post_move->x += direction.x;
+  post_move->y += direction.y;
+}
+
+bool can_collide_with_wall(double cp_after, linedef linedef) {
+  if (linedef.has_back_sidedef) {
+    // we are handling a two-sided linedef, so most probably a portal, or an
+    // epic awesome sauce fail
+    sector *from;
+    sector *to;
+    if (cp_after > 0) {
+      from = linedef.back_sidedef->sector;
+      to = linedef.front_sidedef->sector;
+      // from =
+      // p->engine->wData->sectors[p->engine->wData->sidedefs[linedefs[i].back_sidedef_id].sector];
+      // to =
+      // p->engine->wData->sectors[p->engine->wData->sidedefs[linedefs[i].front_sidedef_id].sector];
+    } else {
+      from = linedef.front_sidedef->sector;
+      to = linedef.back_sidedef->sector;
+    }
+    if (to->floor_height - from->floor_height > PLAYER_STEP) {
+      return true;
+    }
+    if (to->ceiling_height - to->floor_height < PLAYER_HEIGHT) {
+      return true;
+    }
+  } else {
+    return !(cp_after > 0);
+    // HACK: this assumes that all walls are facing inwards!
+    // if the wad has a wall facing outwards it will break!
+  }
+  return false;
 }
 
 void move_and_slide(player *p, double *velocity) {
@@ -208,67 +277,37 @@ void move_and_slide(player *p, double *velocity) {
 
     int i = ii % nlinedefs;
 
-    vec2 p_b;  // projection before moving
-    vec2 ph_b; // projection hitbox before moving
-    vec2 p_a;  // projection after moving
+    vec2 p_a;   // projection after moving
+    vec2 phf_a; // projection of the hitbox after moving, front
+    vec2 phb_a; // projection of the hitbox after moving, back
 
-    get_projections(linedefs + i, p->pos, &p_b, &ph_b);
     // check if the player can actually collide with the wall in directions
     // parallel to the wall
     double d = dot_pos_linedef(linedefs + i, p->pos);
-    if (d < -pow(PLAYER_RADIUS + 1, 2) ||
-        d > pow(get_wall_length(linedefs + i) + PLAYER_RADIUS + 1, 2)) {
-      //? why -1?
-      // i got no fucking clue mate.
+    if (d < 0 || d > pow(get_wall_length(linedefs + i), 2)) {
+      vertex *linedef_a = linedefs[i].start_vertex;
+      vertex *linedef_b = linedefs[i].end_vertex;
+
+      if (DISTANCE_VEC_VER(next_pos, linedef_a) < PLAYER_RADIUS) {
+        slide_against_point(*linedef_a, &next_pos);
+      } else if (DISTANCE_VEC_VER(next_pos, linedef_b) < PLAYER_RADIUS) {
+        slide_against_point(*linedef_b, &next_pos);
+      }
+
       continue;
     }
-    get_projections(linedefs + i, next_pos, &p_a, 0);
-    vec2 ph_bpm = {
-        .x = ph_b.x + (next_pos.x - p->pos.x),
-        .y = ph_b.y +
-             (next_pos.y - p->pos.y)}; // projection before moving + velocity
+    get_projections(linedefs + i, next_pos, &p_a, &phf_a, &phb_a);
 
-    double cp_before = cross_pos_linedef(linedefs + i, ph_b);
-    double cp_after = cross_pos_linedef(linedefs + i, ph_bpm);
-    if ((SIGN(cp_before)) != (SIGN(cp_after))) {
+    double cp_hb = cross_pos_linedef(linedefs + i, phb_a);
+    double cp_hf = cross_pos_linedef(linedefs + i, phf_a);
+
+    if ((SIGN(cp_hb)) != (SIGN(cp_hf))) {
       // collision happened
       // if cp_after < 0: use the second sidedef
       // else: use the first linedef (first linedef faces "clockwise")
-      if (linedefs[i].has_back_sidedef) {
-        // we are handling a two-sided linedef, so most probably a portal, or an
-        // epic awesome sauce fail
-        sector *from;
-        sector *to;
-        if (cp_after > 0) {
-          from = linedefs[i].back_sidedef->sector;
-          to = linedefs[i].front_sidedef->sector;
-          // from =
-          // p->engine->wData->sectors[p->engine->wData->sidedefs[linedefs[i].back_sidedef_id].sector];
-          // to =
-          // p->engine->wData->sectors[p->engine->wData->sidedefs[linedefs[i].front_sidedef_id].sector];
-        } else {
-          from = linedefs[i].front_sidedef->sector;
-          to = linedefs[i].back_sidedef->sector;
-        }
-        if (to->floor_height - from->floor_height > PLAYER_STEP) {
-          slide_against_wall(&next_pos, p_a);
-          continue;
-        }
-        if (to->ceiling_height - to->floor_height < PLAYER_HEIGHT) {
-          slide_against_wall(&next_pos, p_a);
-          continue;
-        }
-      } else {
-        sidedef *sd; // this is the sidedef that faces the player upon bonking
-                     // against the wall
-        if (cp_after > 0) {
-          sd = linedefs[i].back_sidedef;
-        } else {
-          sd = linedefs[i].front_sidedef;
-        }
-        if (sd != NULL) {
-          slide_against_wall(&next_pos, p_a);
-        }
+      if (can_collide_with_wall(cp_hf, linedefs[i])) {
+        slide_against_wall(&next_pos, p_a);
+        continue;
       }
     }
   }
@@ -279,7 +318,8 @@ void move_and_slide(player *p, double *velocity) {
   free(linedefs);
 }
 
-void update_height(player *p, double z) {
+
+void update_height(player* p,double z){
   double target_height = z + PLAYER_HEIGHT;
   double grav_height =
       p->height - G * 10e-2 / 2.0 * p->engine->DT * p->engine->DT / 2;
@@ -331,5 +371,13 @@ void update_player(player *p) {
 void player_free(player *p) {
   free_keybinds(p->keybinds);
   free_settings(p->settings);
+  free(p->ammo);
   free(p);
+}
+
+void players_free(player** players, int num_players){
+  for(int i=0;i<num_players;i++){
+    player_free(players[i]);
+  }
+  free(players);
 }

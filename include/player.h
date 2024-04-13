@@ -15,5 +15,9 @@ void update_player(player *p);
 
 void player_free(player *p);
 
+void players_free(player** players, int num_players);
+
+player** create_players(int num_players,engine* e);
+
 void update_height(player* p,double z);
 #endif

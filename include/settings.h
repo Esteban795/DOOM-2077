@@ -10,7 +10,7 @@
 
 #define RES_W 320
 #define RES_H 200
-#define SCALE 5
+#define SCALE 3
 
 #define WIDTH RES_W *SCALE
 #define HEIGHT RES_H *SCALE
@@ -35,5 +35,15 @@
 #define PLAYER_ROTATION_SPEED .2
 #define MOUSE_SENSITIVITY 10
 #define DIAGONAL_CORRECTION 1 / sqrt(2)
+
+#define WEAPONS_NUMBER 2 
+
+
+#define AUDIO_SAMPLE_RATE 11025
+#define AUDIO_MIXER_CHANNELS 16
+
+#define AL_REFERENCE_DISTANCE 30
+#define AL_ROLLOFF_FACTOR 0.5
+#define AL_MAX_DISTANCE 500
 
 #endif

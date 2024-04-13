@@ -10,7 +10,7 @@
 
 #define RES_W 320
 #define RES_H 200
-#define SCALE 5
+#define SCALE 3
 
 #define WIDTH RES_W *SCALE
 #define HEIGHT RES_H *SCALE
@@ -38,7 +38,6 @@ void draw_node(map_renderer *mr, int node_id);
 
 void draw_segment(map_renderer *mr, segment seg);
 
-
 void draw_linedefs(SDL_Renderer *renderer, linedef *linedefs, int len);
 
 void draw(map_renderer *mr);
@@ -46,4 +45,6 @@ void draw(map_renderer *mr);
 void map_renderer_free(map_renderer *mr);
 
 void draw_vline(map_renderer *mr, int x, int y1, int y2, color c);
+
+void draw_crosshair(map_renderer *mr,color c,int size);
 #endif

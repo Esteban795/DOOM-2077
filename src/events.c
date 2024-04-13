@@ -16,6 +16,9 @@ void handle_events(engine *e) {
       e->running = 0;
       break;
     case SDL_KEYDOWN:
+      if (event.key.keysym.sym == SDLK_ESCAPE) {
+        e->running = 0;
+      }
       scancode = event.key.keysym.scancode;
       keys[scancode] = 1;
       break;

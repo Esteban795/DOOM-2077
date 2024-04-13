@@ -20,13 +20,14 @@ ALL_CFLAGS = $(CFLAGS) $(shell pkg-config --cflags sdl2) $(CDEBUG)
 ALL_LDFLAGS = $(LDFLAGS) $(shell pkg-config --libs sdl2)
 
 # -  TARGETS  -  #
-CLIENT_SRC = blockmap.c bsp.c button.c byte_reader.c color.c engine.c geometry.c header.c \
+CLIENT_SRC = sound.c blockmap.c bsp.c button.c byte_reader.c color.c engine.c geometry.c header.c \
 	keybindings.c linedef.c lump.c main.c map_renderer.c node.c player.c sector.c segment.c \
-	segment_handler.c sidedef.c subsector.c textarea.c thing.c timer.c util.c vertex.c wad_data.c \
+	segment_handler.c sidedef.c subsector.c textarea.c thing.c timer.c util.c vertex.c wad_data.c weapons.c hitscan.c\
+	audio/mixer.c audio/emitter.c\
 	game_states.c events.c
 CLIENT_OBJ = $(CLIENT_SRC:%.c=%.o)
 CLIENT_LIB = 
-CLIENT_LDFLAGS = -lSDL2 -lSDL2_ttf
+CLIENT_LDFLAGS = -lSDL2 -lSDL2_ttf -lSDL2_mixer
 
 SERVER_SRC = server.c
 SERVER_OBJ = $(SERVER_SRC:%.c=%.o)
@@ -49,9 +50,16 @@ LIBCOLLECTION_TEST_SRC = $(patsubst $(testdir)/%, %, $(wildcard $(testdir)/colle
 LIBCOLLECTION_TEST_OBJ = $(LIBCOLLECTION_TEST_SRC:%.c=%.o)
 LIBCOLLECTION_LIB =
 LIBCOLLECTION_LDFLAGS = 
+
+LIBECS_SRC = $(patsubst $(srcdir)/%, %, $(wildcard $(srcdir)/ecs/*.c))
+LIBECS_OBJ = $(LIBECS_SRC:%.c=%.o)
+LIBECS_TEST_SRC = $(patsubst $(testdir)/%, %, $(wildcard $(testdir)/ecs/*.c))
+LIBECS_TEST_OBJ = $(LIBECS_TEST_SRC:%.c=%.o)
+LIBECS_LIB = libcollection.a
 # - END OF TARGETS  -  #
 
-.PHONY: all clean test before_build run_server run_client build_server build_client test_collection
+.PHONY: all clean test before_build run_server run_client build_server build_client test test_collection \
+	test_ecs
 all: $(builddir)/server $(builddir)/client
 
 # helper targets
@@ -59,9 +67,11 @@ run_server: build_server
 	$(builddir)/server 9999
 run_client: build_client
 	$(builddir)/client
-test: test_collection
+test: test_collection test_ecs
 test_collection: $(builddir)/test_collection
 	@$(builddir)/test_collection
+test_ecs: $(builddir)/test_ecs
+	@$(builddir)/test_ecs
 build_client: $(builddir)/client
 build_server: $(builddir)/server
 
@@ -94,6 +104,16 @@ $(depsdir)/libcollection.a: $(addprefix $(depsdir)/, $(LIBCOLLECTION_OBJ)) $(add
 $(builddir)/test_collection: $(addprefix $(testdepsdir)/, $(LIBCOLLECTION_TEST_OBJ)) $(addprefix $(depsdir)/, $(LIBCOLLECTION_LIB)) $(depsdir)/libcollection.a | before_build
 	@echo "Building test_collection..."
 	$(CC) $(ALL_CFLAGS) -o $@ $^ $(ALL_LDFLAGS) $(LIBCOLLECTION_LDFLAGS)
+
+# libecs - build archive target
+$(depsdir)/libecs.a: $(addprefix $(depsdir)/, $(LIBECS_OBJ)) | before_build
+	@echo "Building libecs..."
+	$(AR) rcs $@ $^
+
+# libecs - test target
+$(builddir)/test_ecs: $(addprefix $(testdepsdir)/, $(LIBECS_TEST_OBJ)) $(depsdir)/libecs.a $(addprefix $(depsdir)/, $(LIBECS_LIB)) | before_build
+	@echo "Building test_ecs..."
+	$(CC) $(ALL_CFLAGS) -o $@ $^ $(ALL_LDFLAGS)
 
 # compilation target
 $(depsdir)/%.o: $(srcdir)/%.c | before_build
