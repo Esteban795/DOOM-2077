@@ -20,7 +20,7 @@
 
 #define MAX_CLIENTS 4
 // 20 tick per second
-#define SERVER_TICK_MS 50 
+#define SERVER_TICK_MS 33 
 
 #define INSTANT_NOW(t) clock_gettime(CLOCK_MONOTONIC, t)
 #define INSTANT_DIFF_MS(a, b) ((a.tv_sec - b.tv_sec) * 1000 + (a.tv_nsec - b.tv_nsec) / 1000000)
@@ -151,9 +151,9 @@ int run_server(uint16_t port) {
                             printf("Unknown client %s intended to quit the game.\n", addrstr);
                         }
                     } else if (strncmp(cmd, CLIENT_COMMAND_MOVE, 4) == 0) {
-                        double x = ((double) read_uint64be(payload)) / 1000.0;
-                        double y = ((double) read_uint64be(payload + 8)) / 1000.0;
-                        double angle = ((double) read_uint64be(payload + 16)) / 1000.0;
+                        double x = ((double) read_int64be(payload)) / 1000.0;
+                        double y = ((double) read_int64be(payload + 8)) / 1000.0;
+                        double angle = ((double) read_int64be(payload + 16)) / 1000.0;
                         printf("Player %s moved to (%.2f, %.2f) at %.2f degrees.\n", addrstr, x, y, angle);
                     } else {
                         printf("Unknown command: %s.\n", cmd);
