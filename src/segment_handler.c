@@ -17,7 +17,6 @@ double scale_from_global_angle(segment_handler *sh, int x, double normal_angle,
 }
 
 void draw_solid_walls_range(segment_handler *sh, int x1, int x2) {
-  // will be used soon while applying textures on walls
   segment *seg = sh->seg;
   sector *front_sector = seg->front_sector;
   sidedef *front_sidedef = seg->linedef->front_sidedef;
@@ -26,8 +25,8 @@ void draw_solid_walls_range(segment_handler *sh, int x1, int x2) {
   flat *ceiling_texture = front_sector->ceiling_texture;
   flat *floor_texture = front_sector->floor_texture;
   i16 light_level = front_sector->light_level;
-  int world_front_z1 = front_sector->ceiling_height - sh->player->height;
-  int world_front_z2 = front_sector->floor_height - sh->player->height;
+  int world_front_z1 = (int)(front_sector->ceiling_height - sh->player->height);
+  int world_front_z2 = (int)(front_sector->floor_height - sh->player->height);
 
   // check which parts need to be rendered
   bool draw_wall = front_sidedef->hash_middle != NO_TEXTURE_HASH;
@@ -129,14 +128,10 @@ void draw_portal_walls_range(segment_handler *sh, int x1, int x2) {
   flat *floor_texture = front_sector->floor_texture;
   i16 light_level = front_sector->light_level;
 
-  int world_front_z1 =
-      (int)front_sector->ceiling_height - (int)sh->player->height;
-  int world_front_z2 =
-      (int)front_sector->floor_height - (int)sh->player->height;
-  int world_back_z1 =
-      (int)back_sector->ceiling_height - (int)sh->player->height;
-  int world_back_z2 = (int)back_sector->floor_height - (int)sh->player->height;
-
+  int world_front_z1 = (int)(front_sector->ceiling_height - sh->player->height);
+  int world_front_z2 = (int)(front_sector->floor_height - sh->player->height);
+  int world_back_z1 = (int)(back_sector->ceiling_height - sh->player->height);
+  int world_back_z2 = (int)(back_sector->floor_height - sh->player->height);
   bool draw_upper_wall = false;
   bool draw_ceiling = false;
   if (world_front_z1 != world_back_z1 ||
@@ -396,10 +391,11 @@ void classify_segment(segment_handler *sh, segment *seg, int x1, int x2,
              front_sector->floor_height !=
                  back_sector->floor_height) { // its a window
     clip_portal_walls(sh, x1, x2);
-  } else if (front_sector->hash_ceiling != back_sector->hash_ceiling &&
-             front_sector->hash_floor != back_sector->hash_floor &&
-             back_sector->light_level ==
-                 front_sector->light_level) { // its a portal
+  } else if (front_sector->hash_ceiling == back_sector->hash_ceiling &&
+             front_sector->hash_floor == back_sector->hash_floor &&
+             back_sector->light_level == front_sector->light_level &&
+             seg->linedef->front_sidedef->hash_middle ==
+                 NO_TEXTURE_HASH) { // its a portal
     return;
   } else { // its a wall
     clip_portal_walls(sh, x1, x2);
