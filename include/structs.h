@@ -1,3 +1,5 @@
+#include <time.h>
+
 #ifndef STRUCTS_H
 #define STRUCTS_H
 
@@ -60,6 +62,7 @@ struct RemoteServer {
     IPaddress addr;
     UDPsocket socket;
     UDPpacket* packet;
+    struct timespec next_tick;
 };
 
 struct Engine {

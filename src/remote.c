@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <time.h>
 
 #include "../include/structs.h"
 #include "../include/remote.h"
@@ -17,6 +18,17 @@
 #ifndef PLAYER_USERNAME
 #define PLAYER_USERNAME "player"
 #endif
+
+#ifndef NETWORK_TICK_MS
+// 30 tick per second
+#define NETWORK_TICK_MS 33
+#endif
+
+#define INSTANT_NOW(t) clock_gettime(CLOCK_MONOTONIC, t)
+#define INSTANT_DIFF_MS(a, b) ((a.tv_sec - b.tv_sec) * 1000 + (a.tv_nsec - b.tv_nsec) / 1000000)
+#define INSTANT_ADD_MS(a, ms) a.tv_sec += ms / 1000; a.tv_nsec += (ms % 1000) * 1000000; if (a.tv_nsec >= 1000000000) { a.tv_sec++; a.tv_nsec -= 1000000000; }
+
+typedef struct timespec Instant;
 
 int remote_init(remote_server_t* server, char* addr, int port) {
     if (strncat(addr, "", 1) == 0) {
@@ -55,6 +67,10 @@ int remote_init(remote_server_t* server, char* addr, int port) {
         return -1;
     }
 
+    // Register the next tick
+    INSTANT_NOW((&server->next_tick));
+    INSTANT_ADD_MS(server->next_tick, NETWORK_TICK_MS);
+
     return 0;
 }
 
@@ -72,6 +88,17 @@ int remote_update(engine* e, remote_server_t* r) {
         // If dest port is 0, we're not connected to a server
         return 0;
     }
+
+    // Wait for the next tick
+    Instant now;
+    INSTANT_NOW(&now);
+    int elapsed = INSTANT_DIFF_MS(now, r->next_tick);
+    if (elapsed < 0) {
+        return 0;
+    }
+    // Register the next tick
+    INSTANT_ADD_MS(r->next_tick, NETWORK_TICK_MS);
+
 
     // Receive a packet from the server
     if (SDLNet_UDP_Recv(r->socket, r->packet) > 0) {
