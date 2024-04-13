@@ -1,5 +1,6 @@
 #include "../include/engine.h"
 #include "../include/remote.h"
+#include "../include/ecs/world.h"
 
 #ifndef SERVER_ADDR
 #define SERVER_ADDR ""
@@ -28,6 +29,8 @@ engine *init_engine(const char *wadPath, SDL_Renderer *renderer, int numkeys,
   e->keys = keys;
   e->players = create_players(num_players,e);
   e->mixer = audiomixer_init();
+  e->world = malloc(sizeof(world_t));
+  world_init(e->world);
   return e;
 }
 
@@ -50,6 +53,7 @@ int update_engine(engine *e, int dt) {
   SDL_SetRenderDrawColor(e->map_renderer->renderer, 0, 0, 0, 255);
   SDL_RenderClear(e->map_renderer->renderer);
   update_player(e->p, mouse_x, e->keys);
+  world_update(e->world);
   get_ssector_height(e->bsp);
   segment_handler_update(e->seg_handler);
   update_bsp(e->bsp);
@@ -70,5 +74,7 @@ void engine_free(engine *e) {
   remote_destroy(e->remote);
   players_free(e->players,num_players);
   audiomixer_free(e->mixer);
+  world_destroy(e->world);
+  free(e->world);
   free(e);
 }

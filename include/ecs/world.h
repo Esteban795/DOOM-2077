@@ -1,6 +1,8 @@
 #ifndef _LIB_DOOM_ECS_WORLD_H
 #define _LIB_DOOM_ECS_WORLD_H
 
+#include <time.h>
+
 #include "../event/event.h"
 #include "../collection/vec.h"
 
@@ -23,6 +25,10 @@ typedef struct {
     vec_t systems;
     // vec_t<event_t>
     vec_t event_queue;
+    // last_tick
+    struct timespec last_tick;
+    // delta_time (in us)
+    uint64_t delta_time;
 } world_t;
 
 typedef struct {

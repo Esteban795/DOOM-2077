@@ -1,9 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 
 #include "../../include/ecs/archetype.h"
 #include "../../include/collection/vec.h"
 #include "../../include/ecs/world.h"
+
+#define INSTANT_NOW(t) clock_gettime(CLOCK_MONOTONIC, t)
+#define INSTANT_DIFF_US(a, b) ((a.tv_sec - b.tv_sec) * 1000000 + (a.tv_nsec - b.tv_nsec) / 1000)
 
 void world_init(world_t* world) {
     vec_init(&world->entities);
@@ -11,6 +15,8 @@ void world_init(world_t* world) {
     vec_init(&world->archetypes);
     vec_init(&world->systems);
     vec_init(&world->event_queue);
+    INSTANT_NOW(&world->last_tick);
+    world->delta_time = 0;
 }
 
 void world_destroy(world_t* world) {
@@ -294,6 +300,9 @@ void world_update(world_t* world) {
     // IMPORTANT NOTE: We process each event one after the other by all systems. 
     // This is to ensure that the order of events is maintained, and that systems can create new events
     // that are processed in the same tick. (This is why we don't use a for loop here and we iterate these items like this)
+    struct timespec now;
+    INSTANT_NOW(&now);
+    world->delta_time = INSTANT_DIFF_US(now, world->last_tick);
     int i = 0;
     while (i < (int) vec_length(&world->event_queue)) {
         event_t* event = (event_t*) vec_get(&world->event_queue, i);
@@ -304,4 +313,5 @@ void world_update(world_t* world) {
         i++;
     }
     vec_clear(&world->event_queue, true);
+    world->last_tick = now;
 }

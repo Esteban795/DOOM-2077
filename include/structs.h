@@ -14,6 +14,7 @@
 #include "remote.h"
 #include "vec2.h"
 #include "wad_data.h"
+#include "ecs/world.h"
 
 struct Player;
 struct BSP;
@@ -77,8 +78,9 @@ struct Engine {
   int numkeys;
   const uint8_t *keys;
   int DT;
-  struct Player** players;
+  struct Player **players;
   AudioMixer *mixer;
+  world_t *world;
 };
 
 struct BSP {
