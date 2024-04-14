@@ -120,7 +120,7 @@ void draw_portal_walls_range(segment_handler *sh, int x1, int x2) {
   linedef *ld = seg->linedef;
   sector *front_sector = seg->front_sector;
   sector *back_sector = seg->back_sector;
-  sidedef *front_sidedef = seg->linedef->front_sidedef;
+  sidedef *front_sidedef = seg->direction ? seg->linedef->back_sidedef : seg->linedef->front_sidedef;
 
   texture_map *upper_wall_texture = front_sidedef->upper_texture;
   texture_map *lower_wall_texture = front_sidedef->lower_texture;
