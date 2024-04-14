@@ -139,7 +139,7 @@ void draw_portal_walls_range(segment_handler *sh, int x1, int x2) {
       front_sector->hash_ceiling != back_sector->hash_ceiling) {
     draw_upper_wall = front_sidedef->hash_upper != NO_TEXTURE_HASH &&
                       world_back_z1 < world_front_z1;
-    draw_ceiling = world_front_z1 >= 0;
+    draw_ceiling = world_front_z1 >= 0 || front_sector->hash_ceiling == SKY_TEXTURE_HASH;
   }
 
   bool draw_lower_wall = false;
