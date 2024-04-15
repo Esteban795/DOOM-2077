@@ -6,6 +6,7 @@
 #include "geometry.h"
 #include "structs.h"
 #include "events.h"
+#include "door.h"
 
 double deg_to_rad(double deg);
 

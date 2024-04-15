@@ -15,27 +15,26 @@ door *door_create(entity_t *id, enum DoorTransitionSpeed speed,
   d->is_open = is_open;
   d->is_switching = false;
   d->delta_height = MINIMUM_FLOOR_HEIGHT;
+  d->max_height = sector->ceiling_height;
   d->sector = sector;
   return d;
 }
 
-void door_timeout(door *d, int DT) {
-  d->time_elapsed += DT;
-  if (d->time_elapsed >= d->wait_time) { // time's up
-    d->is_switching = true;
-    d->time_elapsed = 0;
-  }
+void door_trigger_switch(door *d) {
+  d->is_switching = true;
 }
 
 void door_update(door *d, int DT) {
-  door_timeout(d, DT);   // check for timeout
-  if (d->is_switching) { // time elapsed, should we switch ?
-    int max_height = d->sector->ceiling_height + d->delta_height;
+  if (d->speed == NO_SPEED) {
+    return;
+  }
+  if (d->is_switching) {
+    int max_height = d->max_height;
     int min_height = d->sector->floor_height;
-    int multiplier =
+    double multiplier =
         d->is_open ? -1 : 1; // determines which side the wall is going
-    int new_height = d->sector->ceiling_height +
-                     (d->speed / 100 * d->delta_height * DT * multiplier);
+    double height_gained = multiplier * d->speed * d->delta_height * DT / 500;
+    int new_height = (int)(d->sector->ceiling_height + height_gained);
     d->sector->ceiling_height =
         max(min_height,
             min(max_height, new_height)); // make sure we don't get under or
@@ -54,6 +53,7 @@ void door_update(door *d, int DT) {
 
 void door_update_height(door *d, int delta_height) {
   d->delta_height = delta_height;
+  d->max_height = d->sector->ceiling_height + delta_height;
 }
 
 void door_print(door *d) {

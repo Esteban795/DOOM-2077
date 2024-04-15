@@ -3,6 +3,7 @@
 
 door **door_sector = NULL;
 int *height_neighboring_sectors = NULL;
+int DOORS_COUNT = 0;
 
 vertex *get_vertex_from_linedef(i16 vertex_id, vertex *vertexes) {
   return &vertexes[vertex_id];
@@ -65,20 +66,24 @@ linedef read_linedef(FILE *f, int offset, vertex *vertexes, sidedef *sidedefs) {
 
   if (!line.has_back_sidedef || !is_a_door(line.line_type)) return line; // make sure it is both two sided and a door
   sidedef* sd = NULL;
+  sidedef* other_sd;
   if (line.front_sidedef->sector->ceiling_height == line.front_sidedef->sector->floor_height) { // which sidedef is actually the door ? depends if linedef is correctly oriented
     sd = line.front_sidedef;
+    other_sd = line.back_sidedef;
   } else if (line.back_sidedef->sector->ceiling_height == line.back_sidedef->sector->floor_height) {
     sd = line.back_sidedef;
+    other_sd = line.front_sidedef;
   }
   if (height_neighboring_sectors[sd->sector_id] == MINIMUM_FLOOR_HEIGHT) { //first linedef of the two that are important for doors
-    height_neighboring_sectors[sd->sector_id] = sd->sector->ceiling_height;
-    door_sector[sd->sector_id] = create_door_from_linedef(sd, line.line_type);
+    height_neighboring_sectors[sd->sector_id] = other_sd->sector->ceiling_height;
+    line.door = create_door_from_linedef(sd, line.line_type);
+    door_sector[sd->sector_id] = line.door;
+    DOORS_COUNT++;
   } else {
     line.door = door_sector[sd->sector_id];
-    
-    int delta_height = min(sd->sector->ceiling_height, height_neighboring_sectors[sd->sector_id]) - sd->sector->ceiling_height;
+    int delta_height = min(other_sd->sector->ceiling_height, height_neighboring_sectors[sd->sector_id]) - sd->sector->ceiling_height;
     door_update_height(line.door, delta_height);
-    door_print(line.door);
+    DOORS_COUNT++;
   }
   return line;
 }
@@ -91,6 +96,7 @@ linedef *get_linedefs_from_lump(FILE *f, lump *directory, int lump_index,
   linedef *linedefs = malloc(sizeof(linedef) * len_linedefs);
   door_sector = malloc(sizeof(door*) * len_sectors);
   height_neighboring_sectors = malloc(sizeof(int) * len_sectors);
+  printf("\n");
   for (int i = 0; i < len_sectors; i++) {
     height_neighboring_sectors[i] = MINIMUM_FLOOR_HEIGHT;
   }
@@ -101,4 +107,18 @@ linedef *get_linedefs_from_lump(FILE *f, lump *directory, int lump_index,
   free(door_sector);
   free(height_neighboring_sectors);
   return linedefs;
+}
+
+int* get_doors(linedef* linedefs, int len_linedefs,int* doors_count){
+  printf("DOORS_COUNT: %d\n",DOORS_COUNT);
+  int* linedefs_index = malloc(sizeof(int) * DOORS_COUNT);
+  int j = 0;
+  for (int i = 0; i < len_linedefs; i++) {
+    if (linedefs[i].door != NULL) {
+      linedefs_index[j] = i;
+      j++;
+    }
+  }
+  *doors_count = DOORS_COUNT;
+  return linedefs_index;
 }

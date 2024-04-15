@@ -302,6 +302,9 @@ void move_and_slide(player *p, double *velocity) {
     double cp_hf = cross_pos_linedef(linedefs + i, phf_a);
 
     if ((SIGN(cp_hb)) != (SIGN(cp_hf))) {
+      if (linedefs[i].door != NULL) {
+        door_trigger_switch(linedefs[i].door);
+      }
       // collision happened
       // if cp_after < 0: use the second sidedef
       // else: use the first linedef (first linedef faces "clockwise")
@@ -363,9 +366,9 @@ void update_player(player *p) {
     vec[0] *= DIAGONAL_CORRECTION;
     vec[1] *= DIAGONAL_CORRECTION;
   }
-  p->pos.x += vec[0];
-  p->pos.y += vec[1];
-  // move_and_slide(p, vec);
+  // p->pos.x += vec[0];
+  // p->pos.y += vec[1];
+  move_and_slide(p, vec);
 }
 
 void player_free(player *p) {

@@ -8,6 +8,9 @@ void handle_menu_state(engine* e){
 
 void handle_ingame_state(engine* e) {
     update_player(e->p);
+    for (int i = 0; i < e->num_doors; i++) {
+        door_update(e->wData->linedefs[e->linedefs_doors_index[i]].door, e->DT);
+    }
     get_ssector_height(e->bsp);
     segment_handler_update(e->seg_handler);
     update_bsp(e->bsp);

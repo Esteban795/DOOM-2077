@@ -11,9 +11,9 @@
 
 enum DoorTransitionSpeed { // percentage of total height achieved per second
     NO_SPEED = 0,
-    SLOW = 10,
-    FAST = 20,
-    TURBO = 30,
+    SLOW = 1,
+    FAST = 2,
+    TURBO = 3,
 };
 
 enum DoorFunction { //how the door behaves
@@ -32,6 +32,7 @@ struct Door {
     bool is_open;
     bool is_switching;
     i16 delta_height;
+    i16 max_height;
     sector* sector;
 };
 
@@ -50,4 +51,6 @@ void door_update(door *d, int DT);
 void door_print(door* d);
 
 void door_update_height(door *d, int delta_height);
+
+void door_trigger_switch(door *d);
 #endif

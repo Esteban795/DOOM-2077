@@ -10,7 +10,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-
+extern int DOORS_COUNT;
 // https://doomwiki.org/wiki/Linedef_type#Door_linedef_types
 
 // OWC = open wait close 
@@ -62,4 +62,6 @@ linedef *get_linedefs_from_lump(FILE *f, lump *directory, int lump_index,
                                 int num_bytes, int header_length,
                                 int len_linedefs, vertex *vertexes,
                                 sidedef *sidedefs,int len_sectors);
+
+int* get_doors(linedef* linedefs, int len_linedefs,int* doors_count);
 #endif
