@@ -1,6 +1,6 @@
 #include "../include/wad_data.h"
 
-wad_data *init_wad_data(const char *path) {
+wad_data *init_wad_data(const char *path,char* map_name) {
   FILE *file = fopen(path, "rb");
   if (file == NULL) {
     printf("Error opening file\n");
@@ -10,7 +10,7 @@ wad_data *init_wad_data(const char *path) {
   wd->header = read_header(file);
 
   wd->directory = read_directory(file, wd->header);
-  wd->map_index = get_lump_index(wd->directory, "E1M1", wd->header.lump_count);
+  wd->map_index = get_lump_index(wd->directory, map_name, wd->header.lump_count);
   wd->len_vertexes = wd->directory[wd->map_index + VERTEXES].lump_size /
                      4; // 4 = number of bytes per vertex
   wd->len_linedefs = wd->directory[wd->map_index + LINEDEFS].lump_size /

@@ -1,8 +1,5 @@
 #include "../include/engine.h"
-#include <SDL2/SDL_events.h>
-#include <SDL2/SDL_mixer.h>
-#include <SDL2/SDL_mouse.h>
-#include <stdio.h>
+
 
 // handles all kind of error at SDL startup
 int start_SDL(SDL_Window **window, SDL_Renderer **renderer, int width,
@@ -23,8 +20,6 @@ int start_SDL(SDL_Window **window, SDL_Renderer **renderer, int width,
 int main() {
   SDL_Window *window;
   SDL_Renderer *renderer;
-  int numkeys;
-  const uint8_t *keys = SDL_GetKeyboardState(&numkeys);
   int status = start_SDL(&window, &renderer, WIDTH, HEIGHT, "Map rendering..");
   if (status == 1) {
     printf("Error at SDL startup\n");
@@ -40,7 +35,8 @@ int main() {
   uint64_t old = SDL_GetTicks();
   SDL_ShowCursor(SDL_DISABLE);
   SDL_SetRelativeMouseMode(SDL_TRUE);
-  engine *e = init_engine("maps/DOOM1.WAD", renderer, numkeys, keys);
+  engine *e = init_engine("maps/DOOM1.WAD",renderer);
+  read_map(e, renderer, "E1M2");
   int dt = 0;
   while (e->running) {
     now = SDL_GetTicks();
@@ -56,3 +52,4 @@ int main() {
   Mix_Quit();
   return 0;
 }
+
