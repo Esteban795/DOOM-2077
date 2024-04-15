@@ -7,6 +7,7 @@
 #include "geometry.h"
 
 enum DoorTransitionSpeed { // percentage of total height achieved per second
+    NO_SPEED = 0,
     SLOW = 10,
     FAST = 20,
     TURBO = 30,
@@ -34,4 +35,14 @@ struct Door {
 typedef struct Door door;
 
 extern door* COLLISIONNED_DOOR;
+
+door *door_create(entity_t *id, enum DoorTransitionSpeed speed,
+                  enum DoorFunction function, int wait_time, bool is_open,
+                  i16 delta_height, sector *sector);
+
+void door_timeout(door *d, int DT);
+
+void door_update(door *d, int DT);
+
+void door_print(door* d);
 #endif
