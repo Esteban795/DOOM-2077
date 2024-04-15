@@ -9,8 +9,8 @@
 #include "segment_handler.h"
 #include "events.h"
 #include "game_states.h"
-
-engine *init_engine(const char *wadPath);
+#include "timer.h"
+engine *init_engine(const char *wadPath, SDL_Renderer *renderer);
 
 int update_engine(engine *e,int dt);
 

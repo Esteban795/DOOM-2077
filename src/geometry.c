@@ -28,6 +28,10 @@ float norm(double angle) {
   return fmod((fmod(angle, 360.0) + 360.0),360.0);
 }
 
+double mod(double f,double mod) {
+  return fmod((fmod(f, mod) + mod),mod);
+}
+
 double dist(vec2 pos1, vec2 pos2){
   return sqrt((pos1.x - pos2.x) * (pos1.x - pos2.x) + (pos1.y - pos2.y) * (pos1.y - pos2.y));
 }

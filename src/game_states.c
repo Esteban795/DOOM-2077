@@ -11,7 +11,7 @@ void handle_ingame_state(engine* e) {
     get_ssector_height(e->bsp);
     segment_handler_update(e->seg_handler);
     update_bsp(e->bsp);
-    draw_crosshair(e->map_renderer,get_color(50,0),20);
+    // draw_crosshair(e->map_renderer,get_color(50,0),20);
     return;
 }
 
