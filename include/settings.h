@@ -8,12 +8,15 @@
 #define FOV 90.0
 #define HALF_FOV (FOV / 2.0)
 
-#define RES_W 320
-#define RES_H 200
-#define SCALE 3
+// #define RES_W 320
+// #define RES_H 200
+// #define SCALE 5
 
-#define WIDTH RES_W *SCALE
-#define HEIGHT RES_H *SCALE
+// #define WIDTH RES_W *SCALE
+// #define HEIGHT RES_H *SCALE
+
+#define WIDTH 800
+#define HEIGHT 600
 #define HALF_WIDTH (WIDTH / 2.0)
 #define HALF_HEIGHT (HEIGHT / 2.0)
 #define OUT_MIN 30
@@ -28,7 +31,7 @@
 
 #define SUBSECTOR_IDENTIFIER (size_t)0x8000
 
-#define PLAYER_HEIGHT 56
+#define PLAYER_HEIGHT 41
 #define PLAYER_STEP 24
 #define PLAYER_RADIUS 6
 #define PLAYER_SPEED .3

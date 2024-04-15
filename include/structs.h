@@ -67,6 +67,8 @@ struct Engine {
   const char *wadPath;
   bool running;
   wad_data *wData;
+  Uint32 pixels[WIDTH * HEIGHT];
+  SDL_Texture *texture;
   struct Player *p;
   struct BSP *bsp;
   struct MapRenderer *map_renderer;
