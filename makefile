@@ -20,13 +20,13 @@ ALL_CFLAGS = $(CFLAGS) $(shell pkg-config --cflags sdl2) $(CDEBUG)
 ALL_LDFLAGS = $(LDFLAGS) $(shell pkg-config --libs sdl2)
 
 # -  TARGETS  -  #
-CLIENT_SRC = sound.c blockmap.c bsp.c button.c byte_reader.c color.c engine.c geometry.c header.c \
+CLIENT_SRC = sound.c blockmap.c bsp.c byte_reader.c color.c engine.c geometry.c header.c \
 	keybindings.c linedef.c lump.c main.c map_renderer.c node.c player.c sector.c segment.c \
-	segment_handler.c sidedef.c subsector.c textarea.c thing.c timer.c util.c vertex.c wad_data.c weapons.c hitscan.c\
+	segment_handler.c sidedef.c subsector.c thing.c timer.c util.c vertex.c wad_data.c weapons.c hitscan.c\
 	audio/mixer.c audio/emitter.c ui/def.c ui/module.c ui/common.c ui/label.c ui/button.c ui/image.c
 CLIENT_OBJ = $(CLIENT_SRC:%.c=%.o)
 CLIENT_LIB = 
-CLIENT_LDFLAGS = -lSDL2 -lSDL2_ttf -LSDL2_image -lSDL2_mixer
+CLIENT_LDFLAGS = -lSDL2 -lSDL2_ttf -lSDL2_image -lSDL2_mixer
 
 SERVER_SRC = server.c
 SERVER_OBJ = $(SERVER_SRC:%.c=%.o)
@@ -134,11 +134,3 @@ before_build:
 clean:
 	-rm -rf $(builddir)
 
-
-
-all:
-	-rm -rf $(builddir)
-	make build_client
-	./build/client
-	
-	
