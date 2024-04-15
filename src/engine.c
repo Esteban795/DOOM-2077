@@ -4,7 +4,6 @@
 engine *init_engine(const char *wadPath) {
   engine *e = malloc(sizeof(engine));
   e->wadPath = wadPath;
-  e->running = true;
   e->state = STATE_INGAME;
   e->DT = 0;
   return e;
@@ -26,7 +25,7 @@ int update_engine(engine *e, int dt) {
 
   SDL_SetRenderDrawColor(e->map_renderer->renderer, 0, 0, 0, 255);
   SDL_RenderClear(e->map_renderer->renderer);
-  handle_events(e);
+  handle_events();
   game_states[e->state](e);
   audiomixer_update(e->mixer, dt);
   SDL_RenderPresent(e->map_renderer->renderer);

@@ -42,7 +42,7 @@ int main() {
   engine *e = init_engine("maps/DOOM1.WAD");
   read_map(e, renderer, "E1M1");
   int dt = 0;
-  while (e->running) {
+  while (running) {
     now = SDL_GetTicks();
     dt = now - old;
     int res = update_engine(e, dt);

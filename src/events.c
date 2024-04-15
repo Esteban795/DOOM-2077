@@ -2,8 +2,9 @@
 
 uint8_t keys[SDL_NUM_SCANCODES] = {0};
 int mouse[NUM_MOUSE_BUTTONS + 2] = {0}; // left, middle, right, mouse_motion_x, mouse_motion_y
+bool running = 1;
 
-void handle_events(engine *e) {
+void handle_events() {
   SDL_Event event;
   SDL_Scancode scancode;
   int mouse_x, mouse_y;
@@ -13,11 +14,11 @@ void handle_events(engine *e) {
   while (SDL_PollEvent(&event)) {
     switch (event.type) {
     case SDL_QUIT:
-      e->running = 0;
+      running = 0;
       break;
     case SDL_KEYDOWN:
       if (event.key.keysym.sym == SDLK_ESCAPE) {
-        e->running = 0;
+        running = 0;
       }
       scancode = event.key.keysym.scancode;
       keys[scancode] = 1;

@@ -67,7 +67,6 @@ struct Player {
 
 struct Engine {
   const char *wadPath;
-  bool running;
   wad_data *wData;
   struct Player *p;
   struct BSP *bsp;
