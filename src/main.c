@@ -1,10 +1,4 @@
 #include "../include/engine.h"
-#include <SDL2/SDL_events.h>
-#include <SDL2/SDL_image.h>
-#include <SDL2/SDL_mixer.h>
-#include <SDL2/SDL_mouse.h>
-#include <SDL2/SDL_ttf.h>
-
 // handles all kind of error at SDL startup
 int start_SDL(SDL_Window **window, SDL_Renderer **renderer, int width,
               int height, const char *title) {
@@ -24,8 +18,6 @@ int start_SDL(SDL_Window **window, SDL_Renderer **renderer, int width,
 int main() {
   SDL_Window *window;
   SDL_Renderer *renderer;
-  int numkeys;
-  const uint8_t *keys = SDL_GetKeyboardState(&numkeys);
   int status = start_SDL(&window, &renderer, WIDTH, HEIGHT, "Map rendering..");
   if (status == 1) {
     printf("Error at SDL startup\n");
@@ -44,12 +36,14 @@ int main() {
   }
 
   uint64_t now;
-  uint64_t old = SDL_GetTicks64();
+  uint64_t old = SDL_GetTicks();
   SDL_ShowCursor(SDL_DISABLE);
-  engine *e = init_engine("maps/DOOM1.WAD", renderer, numkeys, keys);
+  SDL_SetRelativeMouseMode(SDL_TRUE);
+  engine *e = init_engine("maps/DOOM1.WAD");
+  read_map(e, renderer, "E1M1");
   int dt = 0;
   while (e->running) {
-    now = SDL_GetTicks64();
+    now = SDL_GetTicks();
     dt = now - old;
     int res = update_engine(e, dt);
     if (res == 1)

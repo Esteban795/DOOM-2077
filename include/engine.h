@@ -2,16 +2,20 @@
 #define ENGINE_H
 
 #include "bsp.h"
+#include "events.h"
+#include "game_states.h"
+#include "hitscan.h"
 #include "map_renderer.h"
 #include "player.h"
-#include "structs.h"
-#include "hitscan.h"
 #include "segment_handler.h"
+#include "structs.h"
 #include "ui/def.h"
 
-engine *init_engine(const char *wadPath, SDL_Renderer *renderer, int numkeys, const uint8_t *keys);
+engine *init_engine(const char *wadPath);
 
-int update_engine(engine *e,int dt);
+int update_engine(engine *e, int dt);
+
+void read_map(engine *e, SDL_Renderer *renderer, char *map_name);
 
 void engine_free(engine *e);
 #endif
