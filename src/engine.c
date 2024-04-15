@@ -1,4 +1,5 @@
 #include "../include/engine.h"
+#define num_players 1 // autres joueurs
 
 engine *init_engine(const char *wadPath, SDL_Renderer *renderer, int numkeys,
                     const uint8_t *keys) {
@@ -13,6 +14,8 @@ engine *init_engine(const char *wadPath, SDL_Renderer *renderer, int numkeys,
   e->numkeys = numkeys;
   e->keys = keys;
   e->uimodules = get_ui_ingame(renderer, &e->nuimodules);
+  e->players = create_players(num_players, e);
+  e->mixer = audiomixer_init();
   return e;
 }
 
@@ -23,7 +26,14 @@ int update_engine(engine *e, int dt) {
     e->running = false;
     return 1;
   }
+  if (e->keys[SDL_SCANCODE_SPACE]) {
+    fire_bullet(e->players, num_players, e->p, 3);
+  }
   int mouse_x, mouse_y;
+  if (e->p->cooldown > 1) {
+    e->p->cooldown = e->p->cooldown - 1;
+  }
+
   SDL_GetRelativeMouseState(&mouse_x, &mouse_y);
   SDL_SetRenderDrawColor(e->map_renderer->renderer, 0, 0, 0, 255);
   SDL_RenderClear(e->map_renderer->renderer);
@@ -34,7 +44,9 @@ int update_engine(engine *e, int dt) {
   for (int i = 0; i < e->nuimodules; i++) {
     update_uimodule(e->map_renderer->renderer, e->uimodules[i], e->keys);
   }
+  audiomixer_update(e->mixer, dt);
   SDL_SetRelativeMouseMode(SDL_TRUE);
+  draw_crosshair(e->map_renderer, get_color(50, 0), 20);
   SDL_RenderPresent(e->map_renderer->renderer);
   return 0;
 }
@@ -46,5 +58,7 @@ void engine_free(engine *e) {
   player_free(e->p);
   map_renderer_free(e->map_renderer);
   segment_handler_free(e->seg_handler);
+  players_free(e->players, num_players);
+  audiomixer_free(e->mixer);
   free(e);
 }
