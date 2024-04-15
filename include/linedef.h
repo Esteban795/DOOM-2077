@@ -2,13 +2,33 @@
 #define LINEDEF_H
 
 #include "byte_reader.h"
+#include "door.h"
 #include "lump.h"
-#include "vertex.h"
 #include "sidedef.h"
+#include "vertex.h"
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdbool.h>
 
+
+// https://doomwiki.org/wiki/Linedef_type#Door_linedef_types
+
+// OWC = open wait close 
+// OSO = open stay open
+// CSC = close stay closed
+// CWO = close wait open
+// S = slow 
+// F = fast
+// number = seconds it waits
+enum LinedefDoorTypes {
+  OWC_S_4 = 1,
+  OWC_F_4 = 117,
+  OSO_S = 31,
+  OSO_F = 118,
+  CSC_S = 42,
+  CSC_F = 116,
+  CWO_S = 196
+};
 
 enum LinedefFlags {
   BLOCKING = 1,
@@ -23,21 +43,23 @@ enum LinedefFlags {
 };
 
 struct Linedef {
-  vertex* start_vertex;
-  vertex* end_vertex;
+  vertex *start_vertex;
+  vertex *end_vertex;
   u16 flag;
   u16 line_type;
   u16 sector_tag;
-  sidedef* front_sidedef;
-  sidedef* back_sidedef;
+  sidedef *front_sidedef;
+  sidedef *back_sidedef;
   bool has_back_sidedef;
+  door *door;
 };
 
 typedef struct Linedef linedef;
 
-linedef read_linedef(FILE *f, int offset, vertex *vertexes,sidedef *sidedefs);
+linedef read_linedef(FILE *f, int offset, vertex *vertexes, sidedef *sidedefs);
 
 linedef *get_linedefs_from_lump(FILE *f, lump *directory, int lump_index,
                                 int num_bytes, int header_length,
-                                int len_linedefs, vertex *vertexes,sidedef *sidedefs);
+                                int len_linedefs, vertex *vertexes,
+                                sidedef *sidedefs,int len_sectors);
 #endif

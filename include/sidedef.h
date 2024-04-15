@@ -6,6 +6,7 @@
 #include "sector.h"
 #include "texture.h"
 #include "util.h"
+#include <assert.h>
 
 struct Sidedef {
   i16 x_offset;

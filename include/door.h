@@ -6,6 +6,9 @@
 #include "sector.h"
 #include "geometry.h"
 
+
+#define MINIMUM_FLOOR_HEIGHT -512
+
 enum DoorTransitionSpeed { // percentage of total height achieved per second
     NO_SPEED = 0,
     SLOW = 10,
@@ -38,11 +41,13 @@ extern door* COLLISIONNED_DOOR;
 
 door *door_create(entity_t *id, enum DoorTransitionSpeed speed,
                   enum DoorFunction function, int wait_time, bool is_open,
-                  i16 delta_height, sector *sector);
+                  sector *sector);
 
 void door_timeout(door *d, int DT);
 
 void door_update(door *d, int DT);
 
 void door_print(door* d);
+
+void door_update_height(door *d, int delta_height);
 #endif

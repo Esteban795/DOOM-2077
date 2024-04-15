@@ -363,9 +363,9 @@ void update_player(player *p) {
     vec[0] *= DIAGONAL_CORRECTION;
     vec[1] *= DIAGONAL_CORRECTION;
   }
-  // p->pos.x += vec[0];
-  // p->pos.y += vec[1];
-  move_and_slide(p, vec);
+  p->pos.x += vec[0];
+  p->pos.y += vec[1];
+  // move_and_slide(p, vec);
 }
 
 void player_free(player *p) {
