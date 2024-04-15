@@ -35,7 +35,7 @@ int main() {
   uint64_t old = SDL_GetTicks();
   SDL_ShowCursor(SDL_DISABLE);
   SDL_SetRelativeMouseMode(SDL_TRUE);
-  engine *e = init_engine("maps/DOOM1.WAD", renderer);
+  engine *e = init_engine("maps/DOOM1.WAD");
   read_map(e, renderer, "E1M1");
   int dt = 0;
   while (e->running) {

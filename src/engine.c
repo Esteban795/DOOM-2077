@@ -2,7 +2,7 @@
 #define num_players 1 //autres joueurs
 
 
-engine *init_engine(const char *wadPath, SDL_Renderer *renderer) {
+engine *init_engine(const char *wadPath) {
   engine *e = malloc(sizeof(engine));
   e->wadPath = wadPath;
   e->running = true;

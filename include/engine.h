@@ -10,7 +10,7 @@
 #include "events.h"
 #include "game_states.h"
 
-engine *init_engine(const char *wadPath, SDL_Renderer *renderer);
+engine *init_engine(const char *wadPath);
 
 int update_engine(engine *e,int dt);
 
