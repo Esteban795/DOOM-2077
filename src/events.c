@@ -1,7 +1,9 @@
 #include "../include/events.h"
+#include <SDL2/SDL_mouse.h>
 
 uint8_t keys[SDL_NUM_SCANCODES] = {0};
-int mouse[NUM_MOUSE_BUTTONS + 2] = {0}; // left, middle, right, mouse_motion_x, mouse_motion_y
+int mouse[NUM_MOUSE_BUTTONS + 4] = {
+    0}; // left, middle, right, mouse_motion_x, mouse_motion_y, mx, my
 bool running = 1;
 
 void handle_events() {
@@ -11,6 +13,9 @@ void handle_events() {
   SDL_GetRelativeMouseState(&mouse_x, &mouse_y);
   mouse[NUM_MOUSE_BUTTONS] = mouse_x;
   mouse[NUM_MOUSE_BUTTONS + 1] = mouse_y;
+  SDL_GetMouseState(&mouse_x, &mouse_y);
+  mouse[NUM_MOUSE_BUTTONS + 2] = mouse_x;
+  mouse[NUM_MOUSE_BUTTONS + 3] = mouse_y;
   while (SDL_PollEvent(&event)) {
     switch (event.type) {
     case SDL_QUIT:

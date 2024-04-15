@@ -45,7 +45,7 @@ void uimodule_set_element(UIModule *module, int index, UIElementType type,
   }
 }
 
-void update_uimodule(SDL_Renderer *r, UIModule *module, const uint8_t *keys) {
+void update_uimodule(SDL_Renderer *r, UIModule *module) {
   for (int i = 0; i < module->nelements; i++) {
     if (module->elements[i] != 0) {
       switch (module->elements[i]->type) {
@@ -53,7 +53,9 @@ void update_uimodule(SDL_Renderer *r, UIModule *module, const uint8_t *keys) {
         uilabel_update(r, module->elements[i]->element);
         break;
       case UIET_Button:
-        uibutton_update(r, module->elements[i]->element, keys);
+        // TODO: fix this to work with the new event handler
+
+        // uibutton_update(r, module->elements[i]->element, keys);
         break;
       case UIET_Image:
         uiimage_update(r, module->elements[i]->element);
