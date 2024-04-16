@@ -4,8 +4,10 @@
 #include <stdlib.h>
 
 #include "button.h"
+#include "common.h"
 #include "image.h"
 #include "label.h"
+#include "textbox.h"
 
 typedef enum _UIElementType {
   UIET_Label,

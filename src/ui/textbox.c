@@ -1,9 +1,15 @@
 #include "../../include/ui/textbox.h"
+#include <SDL2/SDL_keycode.h>
+
+#define MOUSE_X_INDEX (NUM_MOUSE_BUTTONS + 2)
+#define MOUSE_Y_INDEX (NUM_MOUSE_BUTTONS + 3)
+#define MOUSE_LEFT 0
 
 UITextBox *uitextbox_create(float x, float y, float w, float h,
                             UIAnchorPoint anchor, TTF_Font *font,
-                            int buffer_size, SDL_Color bg, SDL_Color border,
-                            char *placeholder) {
+                            UIAnchorPoint text_anchor, int buffer_size,
+                            SDL_Color bg, SDL_Color border,
+                            SDL_Color text_color, char *placeholder) {
   UITextBox *tb = malloc(sizeof(UITextBox));
 
   tb->common.x = x;
@@ -16,17 +22,19 @@ UITextBox *uitextbox_create(float x, float y, float w, float h,
   // INFO: why +1 ? to account for null byte.
   // if you want to limit the textbox to n characters, set the buffer size to
   // exactly that. the code will take care of it all ^ ^
-  tb->buffer_size = buffer_size + 1;
+  tb->buffer_size = buffer_size;
 
   tb->bg_color = bg;
   tb->border_color = border;
+  tb->text_color = text_color;
 
   tb->placeholder = placeholder;
   tb->text_index = 0;
-  tb->text = malloc(tb->buffer_size * sizeof(char));
+  tb->text = malloc((tb->buffer_size + 1) * sizeof(char));
   tb->text[0] = '\0';
 
   tb->font = font;
+  tb->anchor = text_anchor;
 
   tb->focused = false;
 
@@ -49,11 +57,86 @@ void uitextbox_update(SDL_Renderer *r, UITextBox *tb) {
   SDL_Color bg = tb->bg_color;
   SDL_Color border = tb->border_color;
 
+  if (tb->focused) {
+    bg = border;
+  }
+
   SDL_SetRenderDrawColor(r, bg.r, bg.g, bg.b, bg.a);
   SDL_RenderFillRect(r, &destrect);
 
   SDL_SetRenderDrawColor(r, border.r, border.g, border.b, border.a);
   SDL_RenderDrawRect(r, &destrect);
 
-  if (mouse[0])
+  if (mouse[MOUSE_LEFT]) {
+    printf("%i,%i\n", mouse[MOUSE_X_INDEX], mouse[MOUSE_Y_INDEX]);
+    tb->focused = (mouse[MOUSE_X_INDEX] >= destrect.x &&
+                   mouse[MOUSE_X_INDEX] <= destrect.x + destrect.y &&
+                   mouse[MOUSE_Y_INDEX] >= destrect.y &&
+                   mouse[MOUSE_Y_INDEX] <= destrect.y + destrect.h);
+  }
+
+  if (tb->focused && textinput[0] != '\0') {
+    uitextbox_string_add(tb);
+  }
+
+  static bool bspace_buffer = false;
+  if (!bspace_buffer && keys[SDL_SCANCODE_BACKSPACE]) {
+    uitextbox_char_remove(tb);
+  }
+  bspace_buffer = keys[SDL_SCANCODE_BACKSPACE];
+
+  SDL_Surface *text =
+      TTF_RenderText_Blended(tb->font, tb->text, tb->text_color);
+  SDL_Texture *texture = SDL_CreateTextureFromSurface(r, text);
+
+  int tw, th;
+  TTF_SizeText(tb->font, tb->text, &tw, &th);
+
+  switch (tb->anchor) {
+  case UIAP_CENTER:
+    destrect.x += destrect.w / 2 - tw / 2;
+    destrect.y += destrect.h / 2 - th / 2;
+    break;
+  case UIAP_BOTTOM_RIGHT:
+    destrect.x += destrect.w - tw;
+    destrect.y += destrect.h - th;
+    break;
+  case UIAP_BOTTOM_LEFT:
+    destrect.y += destrect.h - th;
+    break;
+  case UIAP_TOP_RIGHT:
+    destrect.x += destrect.w - tw;
+    break;
+  default:
+    break;
+  }
+
+  destrect.w = tw;
+  destrect.h = th;
+
+  SDL_RenderCopy(r, texture, NULL, &destrect);
+  SDL_DestroyTexture(texture);
+  SDL_FreeSurface(text);
+}
+
+void uitextbox_char_add(UITextBox *tb, char c) {
+  if (tb->text_index < tb->buffer_size) {
+    tb->text[tb->text_index] = c;
+    tb->text_index++;
+    tb->text[tb->text_index] = '\0';
+  }
+}
+
+void uitextbox_string_add(UITextBox *tb) {
+  for (int i = 0; textinput[i] != '\0'; i++) {
+    uitextbox_char_add(tb, textinput[i]);
+    textinput[i] = '\0';
+  }
+}
+
+void uitextbox_char_remove(UITextBox *tb) {
+  if (tb->text_index > 0) {
+    tb->text_index--;
+    tb->text[tb->text_index] = '\0';
+  }
 }

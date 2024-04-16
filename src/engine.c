@@ -27,6 +27,9 @@ int update_engine(engine *e, int dt) {
   SDL_RenderClear(e->map_renderer->renderer);
   handle_events();
   game_states[e->state](e);
+  for (int i = 0; i < e->nuimodules; i++) {
+    update_uimodule(e->map_renderer->renderer, e->uimodules[i]);
+  }
   audiomixer_update(e->mixer, dt);
   SDL_RenderPresent(e->map_renderer->renderer);
   return 0;

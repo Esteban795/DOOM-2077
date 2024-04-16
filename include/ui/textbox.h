@@ -9,6 +9,8 @@ typedef struct _UITextBox {
   bool focused;
   SDL_Color bg_color;
   SDL_Color border_color;
+  SDL_Color text_color;
+  UIAnchorPoint anchor;
   char *placeholder;
   TTF_Font *font;
   char *text;
@@ -18,11 +20,16 @@ typedef struct _UITextBox {
 
 UITextBox *uitextbox_create(float x, float y, float w, float h,
                             UIAnchorPoint anchor, TTF_Font *font,
-                            int buffer_size, SDL_Color bg, SDL_Color border,
-                            char *placeholder);
+                            UIAnchorPoint text_anchor, int buffer_size,
+                            SDL_Color bg, SDL_Color border,
+                            SDL_Color text_color, char *placeholder);
 
 void uitextbox_free(UITextBox *tb);
 
 void uitextbox_update(SDL_Renderer *r, UITextBox *tb);
+
+void uitextbox_string_add(UITextBox *tb);
+
+void uitextbox_char_remove(UITextBox *tb);
 
 #endif

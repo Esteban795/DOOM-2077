@@ -1,9 +1,11 @@
 #include "../include/events.h"
+#include <SDL2/SDL_events.h>
 #include <SDL2/SDL_mouse.h>
 
 uint8_t keys[SDL_NUM_SCANCODES] = {0};
 int mouse[NUM_MOUSE_BUTTONS + 4] = {
-    0}; // left, middle, right, mouse_motion_x, mouse_motion_y, mx, my
+    0}; // left, right, middle, mouse_motion_x, mouse_motion_y, mx, my
+char textinput[SDL_TEXTINPUTEVENT_TEXT_SIZE] = {'\0'};
 bool running = 1;
 
 void handle_events() {
@@ -33,11 +35,19 @@ void handle_events() {
       keys[scancode] = 0;
       break;
     case SDL_MOUSEBUTTONDOWN:
-      mouse[event.button.button] = 1;
+      mouse[event.button.button - 1] = 1;
       break;
     case SDL_MOUSEBUTTONUP:
-      mouse[event.button.button] = 0;
+      mouse[event.button.button - 1] = 0;
       break;
+    case SDL_TEXTINPUT: {
+      int i;
+      for (i = 0; event.text.text[i] != '\0'; i++) {
+        textinput[i] = event.text.text[i];
+      }
+      textinput[i + 1] = '\0';
+      break;
+    }
     default:
       break;
     }

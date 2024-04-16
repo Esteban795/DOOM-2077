@@ -6,6 +6,7 @@
 #include "audio/mixer.h"
 #include "keybindings.h"
 #include "settings.h"
+#include "ui/common.h"
 #include "ui/module.h"
 #include "vec2.h"
 #include "wad_data.h"
@@ -120,7 +121,7 @@ struct SegmentHandler {
 typedef struct SegmentHandler segment_handler;
 
 typedef struct {
-  struct Engine* engine;
+  struct Engine *engine;
   bool *isFirstTime;
   bool isRunning;
 } GameStateArgs;

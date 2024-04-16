@@ -26,6 +26,9 @@ void uimodule_free(UIModule *module) {
       case UIET_Image:
         uiimage_free(module->elements[i]->element);
         break;
+      case UIET_Textbox:
+        uitextbox_free(module->elements[i]->element);
+        break;
       default:
         break;
       }
@@ -59,6 +62,9 @@ void update_uimodule(SDL_Renderer *r, UIModule *module) {
         break;
       case UIET_Image:
         uiimage_update(r, module->elements[i]->element);
+        break;
+      case UIET_Textbox:
+        uitextbox_update(r, module->elements[i]->element);
         break;
       default:
         break;
