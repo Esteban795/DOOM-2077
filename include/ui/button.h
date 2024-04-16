@@ -1,6 +1,7 @@
 #ifndef UI_BUTTON_H
 #define UI_BUTTON_H
 
+#include "../events.h"
 #include "common.h"
 
 #include <stdlib.h>
@@ -25,6 +26,6 @@ UIButton *uibutton_create(float x, float y, float w, float h,
 
 void uibutton_free(UIButton *uibutton);
 
-void uibutton_update(SDL_Renderer *r, UIButton *uibutton, const uint8_t *keys);
+void uibutton_update(SDL_Renderer *r, UIButton *uibutton);
 
 #endif

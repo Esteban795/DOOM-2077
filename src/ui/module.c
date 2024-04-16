@@ -56,9 +56,7 @@ void update_uimodule(SDL_Renderer *r, UIModule *module) {
         uilabel_update(r, module->elements[i]->element);
         break;
       case UIET_Button:
-        // TODO: fix this to work with the new event handler
-
-        // uibutton_update(r, module->elements[i]->element, keys);
+        uibutton_update(r, module->elements[i]->element);
         break;
       case UIET_Image:
         uiimage_update(r, module->elements[i]->element);
