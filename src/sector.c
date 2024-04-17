@@ -1,10 +1,15 @@
 #include "../include/sector.h"
 #include <stdio.h>
 
+int DOORS_COUNT = 0;
+
 sector read_sector(FILE *f, int offset,flat* flats,int len_flats) {
   sector s;
   s.floor_height = read_i16(f, offset);
   s.ceiling_height = read_i16(f, offset + 2);
+  if (s.floor_height == s.ceiling_height) {
+    DOORS_COUNT++;
+  }
   char* floor_texture = read_string(f, offset + 4, 8);
   char* ceiling_texture = read_string(f, offset + 12, 8);
   s.hash_ceiling = ElfHash(ceiling_texture);

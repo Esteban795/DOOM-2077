@@ -1,9 +1,9 @@
 #include "../include/linedef.h"
 #include <stdio.h>
 
+tuple_index *linedefs_tuples = NULL;
 door **door_sector = NULL;
 int *height_neighboring_sectors = NULL;
-int DOORS_COUNT = 0;
 
 vertex *get_vertex_from_linedef(i16 vertex_id, vertex *vertexes) {
   return &vertexes[vertex_id];
@@ -13,14 +13,31 @@ sidedef *get_sidedef_from_linedef(i16 sidedef_id, sidedef *sidedefs) {
   return &sidedefs[sidedef_id];
 }
 
-bool is_a_door(u16 line_type) {
-  return line_type == OWC_S_4 || line_type == OWC_F_4 || line_type == OSO_S ||
-         line_type == OSO_F || line_type == CSC_S || line_type == CSC_F ||
-         line_type == CWO_S;
+bool is_a_door(linedef line) {
+  i16 line_type = line.line_type;
+  return line.has_back_sidedef &&
+         (line_type == OWC_S_4 || line_type == OWC_F_4 || line_type == OSO_S ||
+          line_type == OSO_F || line_type == CSC_S || line_type == CSC_F ||
+          line_type == CWO_S || line_type == DRK || line_type == ACCEPTED);
+}
+
+void set_correct_sidedefs(linedef line, sidedef **sector_sidedef,
+                          sidedef **neighbor_sidedef) {
+  if (line.front_sidedef->sector->ceiling_height ==
+      line.front_sidedef->sector
+          ->floor_height) { // which sidedef is actually the door ? depends if
+                            // linedef is correctly oriented
+    *sector_sidedef = line.front_sidedef;
+    *neighbor_sidedef = line.back_sidedef;
+  } else if (line.back_sidedef->sector->ceiling_height ==
+             line.back_sidedef->sector->floor_height) {
+    *sector_sidedef = line.back_sidedef;
+    *neighbor_sidedef = line.front_sidedef;
+  }
 }
 
 door *create_door_from_linedef(sidedef *sd, enum LinedefDoorTypes line_type) {
-  door* d;
+  door *d;
   switch (line_type) {
   case OWC_S_4:
     d = door_create(NULL, SLOW, OPEN_WAIT_CLOSE, 4, false, sd->sector);
@@ -43,8 +60,11 @@ door *create_door_from_linedef(sidedef *sd, enum LinedefDoorTypes line_type) {
   case CWO_S:
     d = door_create(NULL, SLOW, CLOSE_WAIT_OPEN, 0, false, sd->sector);
     break;
+  case ACCEPTED:
+    d = door_create(NULL, FAST, OPEN_WAIT_CLOSE, 4, false, sd->sector);
+    break;
   default:
-    d = NULL;
+    d = door_create(NULL, FAST, OPEN_WAIT_CLOSE, 4, false, sd->sector);
     break;
   }
   return d;
@@ -62,28 +82,45 @@ linedef read_linedef(FILE *f, int offset, vertex *vertexes, sidedef *sidedefs) {
   line.has_back_sidedef = back_sidedef_id != -1;
   line.front_sidedef = get_sidedef_from_linedef(front_sidedef_id, sidedefs);
   line.door = NULL;
-  line.back_sidedef = line.has_back_sidedef ? get_sidedef_from_linedef(back_sidedef_id, sidedefs) : NULL;
-
-  if (!line.has_back_sidedef || !is_a_door(line.line_type)) return line; // make sure it is both two sided and a door
-  sidedef* sd = NULL;
-  sidedef* other_sd;
-  if (line.front_sidedef->sector->ceiling_height == line.front_sidedef->sector->floor_height) { // which sidedef is actually the door ? depends if linedef is correctly oriented
+  line.back_sidedef = line.has_back_sidedef
+                          ? get_sidedef_from_linedef(back_sidedef_id, sidedefs)
+                          : NULL;
+  line.door = NULL;
+  return line;
+  sidedef *sd = NULL;
+  sidedef *other_sd = NULL;
+  if (line.front_sidedef->sector->ceiling_height ==
+      line.front_sidedef->sector
+          ->floor_height) { // which sidedef is actually the door ? depends if
+                            // linedef is correctly oriented
     sd = line.front_sidedef;
     other_sd = line.back_sidedef;
-  } else if (line.back_sidedef->sector->ceiling_height == line.back_sidedef->sector->floor_height) {
+  } else if (line.back_sidedef->sector->ceiling_height ==
+             line.back_sidedef->sector->floor_height) {
     sd = line.back_sidedef;
     other_sd = line.front_sidedef;
+  } else { // should be an impossible case, but let's be cautious
+    return line;
   }
-  if (height_neighboring_sectors[sd->sector_id] == MINIMUM_FLOOR_HEIGHT) { //first linedef of the two that are important for doors
-    height_neighboring_sectors[sd->sector_id] = other_sd->sector->ceiling_height;
+  printf(
+      "Linedef is a door. Start vertex is (%d,%d) and end vertex is (%d,%d)\n",
+      line.start_vertex->x, line.start_vertex->y, line.end_vertex->x,
+      line.end_vertex->y);
+  if (height_neighboring_sectors[sd->sector_id] ==
+      MINIMUM_FLOOR_HEIGHT) { // first linedef of the two that are important for
+                              // doors
+    height_neighboring_sectors[sd->sector_id] =
+        other_sd->sector->ceiling_height;
     line.door = create_door_from_linedef(sd, line.line_type);
     door_sector[sd->sector_id] = line.door;
-    DOORS_COUNT++;
   } else {
     line.door = door_sector[sd->sector_id];
-    int delta_height = min(other_sd->sector->ceiling_height, height_neighboring_sectors[sd->sector_id]) - sd->sector->ceiling_height;
+    door_sector[other_sd->sector_id] = NULL;
+    int delta_height = min(other_sd->sector->ceiling_height,
+                           height_neighboring_sectors[sd->sector_id]) -
+                       sd->sector->ceiling_height;
     door_update_height(line.door, delta_height);
-    DOORS_COUNT++;
+    door_print(line.door);
   }
   return line;
 }
@@ -94,9 +131,8 @@ linedef *get_linedefs_from_lump(FILE *f, lump *directory, int lump_index,
                                 sidedef *sidedefs, int len_sectors) {
   lump lump_info = directory[lump_index];
   linedef *linedefs = malloc(sizeof(linedef) * len_linedefs);
-  door_sector = malloc(sizeof(door*) * len_sectors);
+  door_sector = malloc(sizeof(door *) * len_sectors);
   height_neighboring_sectors = malloc(sizeof(int) * len_sectors);
-  printf("\n");
   for (int i = 0; i < len_sectors; i++) {
     height_neighboring_sectors[i] = MINIMUM_FLOOR_HEIGHT;
   }
@@ -109,16 +145,49 @@ linedef *get_linedefs_from_lump(FILE *f, lump *directory, int lump_index,
   return linedefs;
 }
 
-int* get_doors(linedef* linedefs, int len_linedefs,int* doors_count){
-  printf("DOORS_COUNT: %d\n",DOORS_COUNT);
-  int* linedefs_index = malloc(sizeof(int) * DOORS_COUNT);
-  int j = 0;
+door **get_doors(linedef *linedefs, int len_linedefs, int *doors_count,
+                 int len_sectors) {
+  printf("DOORS_COUNT: %d\n", DOORS_COUNT);
+  *doors_count = DOORS_COUNT;
+  linedefs_tuples = malloc(sizeof(tuple_index) * len_sectors);
+  for (int i = 0; i < len_sectors; i++) { // init
+    linedefs_tuples[i].index1 = -1;
+    linedefs_tuples[i].index2 = -1;
+  }
+
+  sidedef *sector_sidedef = NULL;
+  sidedef *neighbor_sidedef = NULL;
   for (int i = 0; i < len_linedefs; i++) {
-    if (linedefs[i].door != NULL) {
-      linedefs_index[j] = i;
-      j++;
+    if (is_a_door(linedefs[i])) {
+      set_correct_sidedefs(linedefs[i], &sector_sidedef, &neighbor_sidedef);
+      if (linedefs_tuples[sector_sidedef->sector_id].index1 == -1) {
+        linedefs_tuples[sector_sidedef->sector_id].index1 = i;
+      } else {
+        linedefs_tuples[sector_sidedef->sector_id].index2 = i;
+      }
     }
   }
-  *doors_count = DOORS_COUNT;
-  return linedefs_index;
+  door **doors = malloc(sizeof(door *) * DOORS_COUNT);
+  int door_index = 0;
+  sidedef *sector_sidedef1 = NULL;
+  sidedef *neighbor_sidedef1 = NULL;
+  sidedef *sector_sidedef2 = NULL;
+  sidedef *neighbor_sidedef2 = NULL;
+  for (int i = 0; i < len_sectors; i++) {
+    if (linedefs_tuples[i].index1 != -1 && linedefs_tuples[i].index2 != -1) {
+      linedef line1 = linedefs[linedefs_tuples[i].index1];
+      linedef line2 = linedefs[linedefs_tuples[i].index2];
+      set_correct_sidedefs(line1, &sector_sidedef1, &neighbor_sidedef1);
+      set_correct_sidedefs(line2, &sector_sidedef2, &neighbor_sidedef2);
+      door *door = create_door_from_linedef(sector_sidedef1, line1.line_type);
+      line1.door = door;
+      line2.door = door;
+      int delta_height = min(neighbor_sidedef1->sector->ceiling_height,
+                             neighbor_sidedef2->sector->ceiling_height) -
+                         sector_sidedef1->sector->ceiling_height;
+      door_update_height(door, delta_height);
+    }
+  }
 }
+
+void linedefs_free(linedef *linedefs, int len_linedefs) { free(linedefs); }

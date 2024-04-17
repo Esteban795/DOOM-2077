@@ -10,14 +10,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-extern int DOORS_COUNT;
 // https://doomwiki.org/wiki/Linedef_type#Door_linedef_types
 
-// OWC = open wait close 
+// OWC = open wait close
 // OSO = open stay open
 // CSC = close stay closed
 // CWO = close wait open
-// S = slow 
+// S = slow
 // F = fast
 // number = seconds it waits
 enum LinedefDoorTypes {
@@ -27,7 +26,9 @@ enum LinedefDoorTypes {
   OSO_F = 118,
   CSC_S = 42,
   CSC_F = 116,
-  CWO_S = 196
+  CWO_S = 196,
+  DRK = 28,
+  ACCEPTED = 46
 };
 
 enum LinedefFlags {
@@ -56,12 +57,22 @@ struct Linedef {
 
 typedef struct Linedef linedef;
 
+struct TupleIndex {
+  int index1;
+  int index2;
+};
+
+typedef struct TupleIndex tuple_index;
+
 linedef read_linedef(FILE *f, int offset, vertex *vertexes, sidedef *sidedefs);
 
 linedef *get_linedefs_from_lump(FILE *f, lump *directory, int lump_index,
                                 int num_bytes, int header_length,
                                 int len_linedefs, vertex *vertexes,
-                                sidedef *sidedefs,int len_sectors);
+                                sidedef *sidedefs, int len_sectors);
 
-int* get_doors(linedef* linedefs, int len_linedefs,int* doors_count);
+door **get_doors(linedef *linedefs, int len_linedefs, int *doors_count,
+                 int len_sectors);
+
+void linedefs_free(linedef *linedefs, int len_linedefs);
 #endif

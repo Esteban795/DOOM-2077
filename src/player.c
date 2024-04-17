@@ -302,14 +302,19 @@ void move_and_slide(player *p, double *velocity) {
     double cp_hf = cross_pos_linedef(linedefs + i, phf_a);
 
     if ((SIGN(cp_hb)) != (SIGN(cp_hf))) {
-      if (linedefs[i].door != NULL) {
-        door_trigger_switch(linedefs[i].door);
-      }
+      // if (linedefs[i].door != NULL) {
+      //   printf("Linedef sector tag %d\n", linedefs[i].sector_tag);
+      //   door_trigger_switch(linedefs[i].door);
+      // }
       // collision happened
       // if cp_after < 0: use the second sidedef
       // else: use the first linedef (first linedef faces "clockwise")
       if (can_collide_with_wall(cp_hf, linedefs[i])) {
         slide_against_wall(&next_pos, p_a);
+        if (linedefs[i].door != NULL) {
+          printf("Linedef sector tag %d\n", linedefs[i].sector_tag);
+          door_trigger_switch(linedefs[i].door);
+        }
         continue;
       }
     }

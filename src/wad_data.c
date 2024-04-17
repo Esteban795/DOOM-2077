@@ -71,6 +71,7 @@ wad_data *init_wad_data(const char *path,char* map_name) {
 
 void wad_data_free(wad_data *wd) {
   free(wd->vertexes);
+  linedefs_free(wd->linedefs, wd->len_linedefs);
   free(wd->linedefs);
   free(wd->nodes);
   free(wd->segments);
