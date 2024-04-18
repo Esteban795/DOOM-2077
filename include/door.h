@@ -54,5 +54,5 @@ void door_update_height(door *d, int delta_height);
 
 void door_trigger_switch(door *d);
 
-void doors_free(int* linedefs_doors_index, int len_doors);
+void doors_free(door** doors,int len_doors);
 #endif

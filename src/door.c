@@ -70,3 +70,10 @@ void door_print(door *d) {
   printf("light level : %d\n", d->sector->light_level);
   printf("\n");
 }
+
+void doors_free(door** doors,int len_doors){
+  for(int i = 0; i < len_doors; i++){
+    free(doors[i]);
+  }
+  free(doors);
+}

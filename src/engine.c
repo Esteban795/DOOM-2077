@@ -11,7 +11,7 @@ engine *init_engine(const char *wadPath, SDL_Renderer *renderer) {
   e->DT = 0;
   e->texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
                                  SDL_TEXTUREACCESS_STREAMING, WIDTH, HEIGHT);
-  e->linedefs_doors_index = NULL;
+  e->doors = NULL;
   e->num_doors = 0;
   e->wData = NULL;
   e->p = NULL;
@@ -31,7 +31,7 @@ void read_map(engine *e, SDL_Renderer *renderer, char *map_name) {
   e->seg_handler = segment_handler_init(e);
   e->players = create_players(num_players, e);
   e->mixer = audiomixer_init();
-  e->linedefs_doors_index = get_doors(e->wData->linedefs, e->wData->len_linedefs, &e->num_doors);
+  e->doors = get_doors(e->wData->linedefs, e->wData->len_linedefs, &e->num_doors, e->wData->len_sectors);
 }
 
 int update_engine(engine *e, int dt) {
@@ -57,5 +57,6 @@ void engine_free(engine *e) {
   segment_handler_free(e->seg_handler);
   players_free(e->players, num_players);
   audiomixer_free(e->mixer);
+  doors_free(e->doors, e->num_doors);
   free(e);
 }

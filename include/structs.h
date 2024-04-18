@@ -76,7 +76,7 @@ struct Engine {
   GameState state;
   int DT;
   struct Player** players;
-  int* linedefs_doors_index;
+  door** doors;
   int num_doors;
   AudioMixer *mixer;
 };

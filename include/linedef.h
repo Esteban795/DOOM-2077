@@ -64,15 +64,15 @@ struct TupleIndex {
 
 typedef struct TupleIndex tuple_index;
 
-linedef read_linedef(FILE *f, int offset, vertex *vertexes, sidedef *sidedefs);
+linedef* read_linedef(FILE *f, int offset, vertex *vertexes, sidedef *sidedefs);
 
-linedef *get_linedefs_from_lump(FILE *f, lump *directory, int lump_index,
+linedef **get_linedefs_from_lump(FILE *f, lump *directory, int lump_index,
                                 int num_bytes, int header_length,
                                 int len_linedefs, vertex *vertexes,
                                 sidedef *sidedefs, int len_sectors);
 
-door **get_doors(linedef *linedefs, int len_linedefs, int *doors_count,
+door **get_doors(linedef **linedefs, int len_linedefs, int *doors_count,
                  int len_sectors);
-
-void linedefs_free(linedef *linedefs, int len_linedefs);
+                 
+void linedefs_free(linedef **linedefs, int len_linedefs);
 #endif

@@ -21,7 +21,7 @@ void fire_bullet(player **players, int num_players, player *player_,
   double distance_finale = 10000;
   if (player_->cooldown < 80) {
     player_->cooldown = player_->cooldown + 100;
-    linedef *linedefs = player_->engine->wData->linedefs;
+    linedef **linedefs = player_->engine->wData->linedefs;
     double x1 = player_->pos.x;
     double y1 = -player_->pos.y;
     double x2 = x1 + 100 * cos(deg_to_rad((player_->angle)));
@@ -44,12 +44,12 @@ void fire_bullet(player **players, int num_players, player *player_,
     for (int i = 0; i < player_->engine->wData->len_linedefs; i++) {
       double x = 0;
       double y = 0;
-      if ((!(linedefs[i].has_back_sidedef)) ||
+      if ((!(linedefs[i]->has_back_sidedef)) ||
           (correct_height(linedefs[i], height))) {
-        double x1a = linedefs[i].start_vertex->x;
-        double y1a = -linedefs[i].start_vertex->y;
-        double x2a = linedefs[i].end_vertex->x;
-        double y2a = -linedefs[i].end_vertex->y;
+        double x1a = linedefs[i]->start_vertex->x;
+        double y1a = -linedefs[i]->start_vertex->y;
+        double x2a = linedefs[i]->end_vertex->x;
+        double y2a = -linedefs[i]->end_vertex->y;
         double c = 0;
         double d = 0;
         if (x1a != x2a) {
@@ -102,14 +102,14 @@ void fire_bullet(player **players, int num_players, player *player_,
   }
 }
 
-int correct_height(linedef wall, int height) {
-  if (!(wall.has_back_sidedef)) {
+int correct_height(linedef* wall, int height) {
+  if (!(wall->has_back_sidedef)) {
     return 0;
   } else {
-    int ceil_height_1 = wall.back_sidedef->sector->ceiling_height;
-    int floor_height_1 = wall.back_sidedef->sector->floor_height;
-    int ceil_height_2 = wall.front_sidedef->sector->ceiling_height;
-    int floor_height_2 = wall.front_sidedef->sector->floor_height;
+    int ceil_height_1 = wall->back_sidedef->sector->ceiling_height;
+    int floor_height_1 = wall->back_sidedef->sector->floor_height;
+    int ceil_height_2 = wall->front_sidedef->sector->ceiling_height;
+    int floor_height_2 = wall->front_sidedef->sector->floor_height;
     if ((min(ceil_height_1, ceil_height_2) < height) &&
         (max(ceil_height_1, ceil_height_2) > height)) {
       return 1;
