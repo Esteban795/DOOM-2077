@@ -31,6 +31,7 @@ struct Door {
     int time_elapsed; //time elapsed since the door started moving
     bool is_open;
     bool is_switching;
+    bool is_colllidable;
     i16 delta_height;
     i16 max_height;
     sector* sector;

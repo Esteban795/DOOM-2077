@@ -31,7 +31,7 @@ void read_map(engine *e, SDL_Renderer *renderer, char *map_name) {
   e->seg_handler = segment_handler_init(e);
   e->players = create_players(num_players, e);
   e->mixer = audiomixer_init();
-  e->doors = get_doors(e->wData->linedefs, e->wData->len_linedefs, &e->num_doors, e->wData->len_sectors);
+  e->doors = get_doors(e->wData->linedefs, e->wData->len_linedefs, &e->num_doors, e->wData->sectors,e->wData->len_sectors);
 }
 
 int update_engine(engine *e, int dt) {

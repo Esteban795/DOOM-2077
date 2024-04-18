@@ -28,6 +28,7 @@ enum LinedefDoorTypes {
   CSC_F = 116,
   CWO_S = 196,
   DRK = 28,
+  REMOTE_OPEN_STAY_OPEN = 31,
   ACCEPTED = 46
 };
 
@@ -72,7 +73,7 @@ linedef **get_linedefs_from_lump(FILE *f, lump *directory, int lump_index,
                                 sidedef *sidedefs, int len_sectors);
 
 door **get_doors(linedef **linedefs, int len_linedefs, int *doors_count,
-                 int len_sectors);
+                 sector* sectors,int len_sectors);
                  
 void linedefs_free(linedef **linedefs, int len_linedefs);
 #endif

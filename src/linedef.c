@@ -2,8 +2,6 @@
 #include <stdio.h>
 
 tuple_index *linedefs_tuples = NULL;
-door **door_sector = NULL;
-int *height_neighboring_sectors = NULL;
 
 vertex *get_vertex_from_linedef(i16 vertex_id, vertex *vertexes) {
   return &vertexes[vertex_id];
@@ -99,24 +97,26 @@ linedef **get_linedefs_from_lump(FILE *f, lump *directory, int lump_index,
                                  sidedef *sidedefs, int len_sectors) {
   lump lump_info = directory[lump_index];
   linedef **linedefs = malloc(sizeof(linedef *) * len_linedefs);
-  door_sector = malloc(sizeof(door *) * len_sectors);
-  height_neighboring_sectors = malloc(sizeof(int) * len_sectors);
-  for (int i = 0; i < len_sectors; i++) {
-    height_neighboring_sectors[i] = MINIMUM_FLOOR_HEIGHT;
-  }
   for (int i = 0; i < len_linedefs; i++) {
     int offset = lump_info.lump_offset + i * num_bytes + header_length;
     linedefs[i] = read_linedef(f, offset, vertexes, sidedefs);
   }
-  free(door_sector);
-  free(height_neighboring_sectors);
   return linedefs;
 }
 
+linedef* get_linedef_by_sector_tag(linedef **linedefs, int len_linedefs, u16 sector_tag) {
+  for (int i = 0; i < len_linedefs; i++) {
+    if (linedefs[i]->sector_tag == sector_tag) {
+      return linedefs[i];
+    }
+  }
+  return NULL;
+}
+
 door **get_doors(linedef **linedefs, int len_linedefs, int *doors_count,
-                 int len_sectors) {
+                 sector* sectors,int len_sectors) {
   *doors_count = DOORS_COUNT;
-  linedefs_tuples = malloc(sizeof(tuple_index) * len_sectors);
+  linedefs_tuples = malloc(sizeof(tuple_index) * len_sectors); // for each sector, have an entry (index1, index2) that are the index of collidable linedefs to open a door
   for (int i = 0; i < len_sectors; i++) { // init
     linedefs_tuples[i].index1 = -1;
     linedefs_tuples[i].index2 = -1;
@@ -124,6 +124,8 @@ door **get_doors(linedef **linedefs, int len_linedefs, int *doors_count,
 
   sidedef *sector_sidedef = NULL;
   sidedef *neighbor_sidedef = NULL;
+  door **doors = malloc(sizeof(door *) * DOORS_COUNT);
+  int door_index = 0;
   for (int i = 0; i < len_linedefs; i++) {
     if (is_a_door(linedefs[i])) {
       set_correct_sidedefs(linedefs[i], &sector_sidedef, &neighbor_sidedef);
@@ -134,14 +136,41 @@ door **get_doors(linedef **linedefs, int len_linedefs, int *doors_count,
       }
     }
   }
-  door **doors = malloc(sizeof(door *) * DOORS_COUNT);
-  int door_index = 0;
+
   sidedef *sector_sidedef1 = NULL;
   sidedef *neighbor_sidedef1 = NULL;
   sidedef *sector_sidedef2 = NULL;
   sidedef *neighbor_sidedef2 = NULL;
+  linedef* line1 = NULL;
+  linedef* line2 = NULL;
   for (int i = 0; i < len_sectors; i++) {
-    if (linedefs_tuples[i].index1 != -1 && linedefs_tuples[i].index2 != -1) {
+    line1 = NULL;
+    line2 = NULL;
+    if (sectors[i].tag_number != 0) { //sector is subject to an action from another linedef, lets find which one
+      linedef* trigger_linedef = get_linedef_by_sector_tag(linedefs, len_linedefs, sectors[i].tag_number);
+      // we then need to find the properties of the door, which is hidden in one of the linedefs that are part of the sector...
+      for (int i = 0; i < len_linedefs;i++){
+        if (linedefs[i]->has_back_sidedef && (linedefs[i]->front_sidedef->sector_id == i || linedefs[i]->back_sidedef->sector_id == i)) {
+          if (line1 == NULL) {
+            line1 = linedefs[i];
+          } else {
+            line2 = linedefs[i];
+            break;
+          }
+        }
+      }
+      // we found the two linedefs that are each side of the door, we can now create the door
+      set_correct_sidedefs(line1, &sector_sidedef1, &neighbor_sidedef1);
+      set_correct_sidedefs(line2, &sector_sidedef2, &neighbor_sidedef2);
+      door *door = create_door_from_linedef(sector_sidedef1, trigger_linedef->line_type);
+      trigger_linedef->door = door; // this is linedef that will be able to trigger the door
+      int delta_height = min(neighbor_sidedef1->sector->ceiling_height,
+                             neighbor_sidedef2->sector->ceiling_height) -
+                         sector_sidedef1->sector->ceiling_height;
+      door_update_height(door, delta_height);
+      doors[door_index] = door;
+      door_index++;
+    } else if (linedefs_tuples[i].index1 != -1 && linedefs_tuples[i].index2 != -1) {
       linedef *line1 = linedefs[linedefs_tuples[i].index1];
       linedef *line2 = linedefs[linedefs_tuples[i].index2];
       set_correct_sidedefs(line1, &sector_sidedef1, &neighbor_sidedef1);
