@@ -142,7 +142,7 @@ door **get_doors(linedef **linedefs, int len_linedefs, int *doors_count,
       linedef *line1 = linedefs[linedefs_tuples[i].index1];
       linedef *line2 = linedefs[linedefs_tuples[i].index2];
       set_correct_sidedefs(line1, &sector_sidedef1, &neighbor_sidedef1);
-      set_correct_sidedefs(line1, &sector_sidedef2, &neighbor_sidedef2);
+      set_correct_sidedefs(line2, &sector_sidedef2, &neighbor_sidedef2);
       door *door = create_door_from_linedef(sector_sidedef1, line1->line_type);
       line1->door = door;
       line2->door = door;
