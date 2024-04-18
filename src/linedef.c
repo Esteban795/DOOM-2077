@@ -40,10 +40,10 @@ door *create_door_from_linedef(sidedef *sd, enum LinedefDoorTypes line_type) {
   door *d;
   switch (line_type) {
   case OWC_S_4:
-    d = door_create(NULL, SLOW, OPEN_WAIT_CLOSE, 4, false, sd->sector);
+    d = door_create(NULL, SLOW, OPEN_WAIT_CLOSE, 4000, false, sd->sector);
     break;
   case OWC_F_4:
-    d = door_create(NULL, FAST, OPEN_WAIT_CLOSE, 4, false, sd->sector);
+    d = door_create(NULL, FAST, OPEN_WAIT_CLOSE, 4000, false, sd->sector);
     break;
   case OSO_S:
     d = door_create(NULL, SLOW, OPEN_STAY_OPEN, 0, false, sd->sector);
@@ -61,10 +61,13 @@ door *create_door_from_linedef(sidedef *sd, enum LinedefDoorTypes line_type) {
     d = door_create(NULL, SLOW, CLOSE_WAIT_OPEN, 0, false, sd->sector);
     break;
   case ACCEPTED:
-    d = door_create(NULL, FAST, OPEN_WAIT_CLOSE, 4, false, sd->sector);
+    d = door_create(NULL, FAST, OPEN_WAIT_CLOSE, 4000, false, sd->sector);
+    break;
+  case DRK:
+    d = door_create(NULL, FAST, OPEN_STAY_OPEN, 0, false, sd->sector);
     break;
   default:
-    d = door_create(NULL, FAST, OPEN_WAIT_CLOSE, 4, false, sd->sector);
+    d = door_create(NULL, FAST, OPEN_WAIT_CLOSE, 4000, false, sd->sector);
     break;
   }
   return d;

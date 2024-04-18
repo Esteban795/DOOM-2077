@@ -28,6 +28,13 @@ void door_update(door *d, int DT) {
   if (d->speed == NO_SPEED) {
     return;
   }
+  if (d->is_open) {
+    d->time_elapsed += DT;
+    if (d->time_elapsed >= d->wait_time) {
+      d->time_elapsed = 0;
+      door_trigger_switch(d);
+    }
+  }
   if (d->is_switching) {
     int max_height = d->max_height;
     int min_height = d->sector->floor_height;
@@ -39,10 +46,11 @@ void door_update(door *d, int DT) {
         max(min_height,
             min(max_height, new_height)); // make sure we don't get under or
                                           // over the target heights
-    if (new_height == min_height ||
-        new_height == max_height) { // wall is at the top or bottom
+    if (new_height <= min_height ||
+        new_height >= max_height) { // wall is at the top or bottom
       d->is_switching = false;
       d->is_open = !d->is_open; // transition is done , switch state
+      d->sector->ceiling_height = d->is_open ? max_height : min_height;
       if (d->function == OPEN_STAY_OPEN ||
           d->function == CLOSE_STAY_CLOSED) { // one time transition
         d->speed = NO_SPEED;
