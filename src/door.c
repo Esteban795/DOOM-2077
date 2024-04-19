@@ -1,18 +1,21 @@
 #include "../include/door.h"
+#include <stdbool.h>
 #include <stdio.h>
 
 door *COLLISIONNED_DOOR = NULL;
 
 door *door_create(entity_t *id, enum DoorTransitionSpeed speed,
-                  enum DoorFunction function, int wait_time, bool is_open,
-                  sector *sector) {
+                  enum DoorFunction function, int wait_time, bool is_collidable,bool is_shootable,
+                  sector *sector){
   door *d = malloc(sizeof(door));
   d->id = id;
   d->speed = speed;
   d->function = function;
   d->wait_time = wait_time;
   d->time_elapsed = 0;
-  d->is_open = is_open;
+  d->is_open = false;
+  d->is_colllidable = is_collidable;
+  d->is_shootable = is_shootable;
   d->is_switching = false;
   d->delta_height = MINIMUM_FLOOR_HEIGHT;
   d->max_height = sector->ceiling_height;

@@ -28,7 +28,7 @@ enum LinedefDoorTypes {
   CSC_F = 116,
   CWO_S = 196,
   DRK = 28,
-  REMOTE_OPEN_STAY_OPEN = 31,
+  REMOTE_OPEN_STAY_OPEN = 103,
   ACCEPTED = 46
 };
 

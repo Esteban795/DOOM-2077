@@ -32,6 +32,7 @@ struct Door {
     bool is_open;
     bool is_switching;
     bool is_colllidable;
+    bool is_shootable;
     i16 delta_height;
     i16 max_height;
     sector* sector;
@@ -42,7 +43,7 @@ typedef struct Door door;
 extern door* COLLISIONNED_DOOR;
 
 door *door_create(entity_t *id, enum DoorTransitionSpeed speed,
-                  enum DoorFunction function, int wait_time, bool is_open,
+                  enum DoorFunction function, int wait_time, bool is_collidable,bool is_shootable,
                   sector *sector);
 
 void door_timeout(door *d, int DT);
