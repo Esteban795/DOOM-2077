@@ -68,9 +68,9 @@ typedef struct TupleIndex tuple_index;
 linedef* read_linedef(FILE *f, int offset, vertex *vertexes, sidedef *sidedefs);
 
 linedef **get_linedefs_from_lump(FILE *f, lump *directory, int lump_index,
-                                int num_bytes, int header_length,
-                                int len_linedefs, vertex *vertexes,
-                                sidedef *sidedefs, int len_sectors);
+                                 int num_bytes, int header_length,
+                                 int len_linedefs, vertex *vertexes,
+                                 sidedef *sidedefs);
 
 door **get_doors(linedef **linedefs, int len_linedefs, int *doors_count,
                  sector* sectors,int len_sectors);

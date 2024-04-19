@@ -353,7 +353,6 @@ int correct_height(linedef *wall, int height) {
 
 linedef *cast_ray(linedef **linedefs, int len_linedefs, vec2 player_pos,
                   double player_angle, double height) {
-  printf("Fired ray\n");
   double distance_finale = 100000;
   linedef *target_linedef = NULL;
   double x1 = player_pos.x;
@@ -430,9 +429,11 @@ void update_player(player *p) {
     linedef *trigger_linedef =
         cast_ray(p->engine->wData->linedefs, p->engine->wData->len_linedefs,
                  p->pos, p->angle, p->height);
-    printf("Trigger linedef: %p\n", (void *)trigger_linedef);
-    if (trigger_linedef != NULL)
-      door_trigger_switch(trigger_linedef->door);
+    if (trigger_linedef != NULL) {
+      if (trigger_linedef->door != NULL) {
+        door_trigger_switch(trigger_linedef->door);
+      }
+    }
   }
   bool forward = keys[get_key_from_action(p->keybinds, "MOVE_FORWARD")];
   bool left = keys[get_key_from_action(p->keybinds, "MOVE_LEFT")];
