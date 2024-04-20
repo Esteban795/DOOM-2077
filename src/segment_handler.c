@@ -19,8 +19,8 @@ double scale_from_global_angle(segment_handler *sh, int x, double normal_angle,
 void draw_solid_walls_range(segment_handler *sh, int x1, int x2) {
   segment *seg = sh->seg;
   sector *front_sector = seg->front_sector;
-  sidedef *front_sidedef = seg->linedef->front_sidedef;
   linedef *ld = seg->linedef;
+  sidedef *front_sidedef = seg->direction ? ld->back_sidedef : ld->front_sidedef;
   texture_map *wall_texture = front_sidedef->middle_texture;
   flat *ceiling_texture = front_sector->ceiling_texture;
   flat *floor_texture = front_sector->floor_texture;
