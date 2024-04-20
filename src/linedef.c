@@ -222,6 +222,7 @@ door **get_doors(linedef **linedefs, int len_linedefs, int *doors_count,
                                    sector_sidedef1->sector->ceiling_height);
     }
   }
+  *doors_count = door_index;
   free(linedefs_tuples);
   return doors;
 }
