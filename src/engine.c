@@ -1,4 +1,5 @@
 #include "../include/engine.h"
+#include <SDL2/SDL_render.h>
 #include "../include/remote.h"
 #include "../include/ecs/world.h"
 
@@ -10,23 +11,27 @@
 #define SERVER_PORT 6942
 #endif
 
-#define num_players 1 //autres joueurs
+#define num_players 1 // autres joueurs
 
-
-engine *init_engine(const char *wadPath, SDL_Renderer *renderer, int numkeys,
-                    const uint8_t *keys) {
+engine *init_engine(const char *wadPath, SDL_Renderer *renderer) {
   engine *e = malloc(sizeof(engine));
   e->wadPath = wadPath;
   e->running = true;
-  e->wData = init_wad_data(e->wadPath);
+  e->state = STATE_INGAME;
+  e->DT = 0;
+  e->texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
+                                 SDL_TEXTUREACCESS_STREAMING, WIDTH, HEIGHT);
+  e->remote = malloc(sizeof(remote_server_t));
+  remote_init(e->remote, SERVER_ADDR, SERVER_PORT);
+  return e;
+}
+
+void read_map(engine *e, SDL_Renderer *renderer, char *map_name) {
+  e->wData = init_wad_data(e->wadPath, map_name);
   e->p = player_init(e);
   e->bsp = bsp_init(e, e->p);
   e->map_renderer = map_renderer_init(e, renderer);
   e->seg_handler = segment_handler_init(e);
-  e->remote = malloc(sizeof(remote_server_t));
-  remote_init(e->remote, SERVER_ADDR, SERVER_PORT);
-  e->numkeys = numkeys;
-  e->keys = keys;
   e->players = create_players(num_players,e);
   e->mixer = audiomixer_init();
   e->world = malloc(sizeof(world_t));
@@ -36,32 +41,18 @@ engine *init_engine(const char *wadPath, SDL_Renderer *renderer, int numkeys,
 
 int update_engine(engine *e, int dt) {
   e->DT = dt;
-  SDL_PumpEvents(); // updates keys state
-  if (e->keys[SDL_SCANCODE_ESCAPE]) {
-    e->running = false;
-    return 1;
-  }
-  if (e->keys[SDL_SCANCODE_SPACE]){
-    fire_bullet(e->players,num_players,e->p,3);
-  }
-  int mouse_x, mouse_y;
-  if(e->p->cooldown>1){
-    e->p->cooldown=e->p->cooldown-1;
-  }
-  
-  SDL_GetRelativeMouseState(&mouse_x, &mouse_y);
   SDL_SetRenderDrawColor(e->map_renderer->renderer, 0, 0, 0, 255);
   SDL_RenderClear(e->map_renderer->renderer);
-  update_player(e->p, mouse_x, e->keys);
   world_update(e->world);
-  get_ssector_height(e->bsp);
-  segment_handler_update(e->seg_handler);
-  update_bsp(e->bsp);
+  handle_events(e);
+  game_states[e->state](e);
   remote_update(e, e->remote);
   audiomixer_update(e->mixer, dt);
-  SDL_SetRelativeMouseMode(SDL_TRUE);
-  draw_crosshair(e->map_renderer,get_color(50,0),20);
+  SDL_UpdateTexture(e->texture, NULL, e->pixels, WIDTH * 4);
+  SDL_RenderCopy(e->map_renderer->renderer, e->texture, NULL, NULL);
+  // draw_crosshair(e->map_renderer,get_color(50,0),20);
   SDL_RenderPresent(e->map_renderer->renderer);
+  memset(e->pixels, 0, WIDTH * HEIGHT * 4);
   return 0;
 }
 

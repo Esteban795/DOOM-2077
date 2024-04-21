@@ -6,6 +6,7 @@ double bams_to_degrees(i16 bams) {
   return res < 0 ? 360 + res : res;
 }
 
+
 sector *get_sector_from_id(i16 sector_id, sector *sectors) {
   return &sectors[sector_id];
 }

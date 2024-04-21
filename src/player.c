@@ -1,4 +1,5 @@
 #include "../include/player.h"
+#include <SDL2/SDL_render.h>
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
@@ -317,23 +318,24 @@ void move_and_slide(player *p, double *velocity) {
   free(linedefs);
 }
 
-void update_height(player *p, double z) {
+
+void update_height(player* p,double z){
   double target_height = z + PLAYER_HEIGHT;
   double grav_height =
       p->height - G * 10e-2 / 2.0 * p->engine->DT * p->engine->DT / 2;
   p->height = fmax(grav_height, target_height);
 }
 
-void update_player(player *p, int mouse_x, const uint8_t *keyboard_state) {
+void update_player(player *p) {
   int DT = p->engine->DT;
-  bool forward =
-      keyboard_state[get_key_from_action(p->keybinds, "MOVE_FORWARD")];
-  bool left = keyboard_state[get_key_from_action(p->keybinds, "MOVE_LEFT")];
-  bool backward =
-      keyboard_state[get_key_from_action(p->keybinds, "MOVE_BACKWARD")];
-  bool right_d = keyboard_state[get_key_from_action(p->keybinds, "MOVE_RIGHT")];
+  bool forward = keys[get_key_from_action(p->keybinds, "MOVE_FORWARD")];
+  bool left = keys[get_key_from_action(p->keybinds, "MOVE_LEFT")];
+  bool backward = keys[get_key_from_action(p->keybinds, "MOVE_BACKWARD")];
+  bool right_d = keys[get_key_from_action(p->keybinds, "MOVE_RIGHT")];
   double speed = DT * PLAYER_SPEED;
   double rot_speed = DT * PLAYER_ROTATION_SPEED;
+  p->angle += rot_speed * ((double)mouse[NUM_MOUSE_BUTTONS]);
+  p->angle = norm(p->angle);
   double vec[2] = {0.0, 0.0};
   int count_dir = 0;
   int count_strafe = 0;
@@ -364,9 +366,6 @@ void update_player(player *p, int mouse_x, const uint8_t *keyboard_state) {
   // p->pos.x += vec[0];
   // p->pos.y += vec[1];
   move_and_slide(p, vec);
-  p->angle += rot_speed * mouse_x;
-  p->angle = fmod(p->angle, 360);
-  p->angle = p->angle < 0 ? 360 + p->angle : p->angle;
 }
 
 void player_free(player *p) {

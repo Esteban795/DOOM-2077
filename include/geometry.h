@@ -13,6 +13,8 @@ double point_to_angle(vec2 p1, vec2 p2);
 
 float norm(double angle);
 
+double mod(double f,double mod);
+
 double deg_to_rad(double deg);
 
 double dist(vec2 pos1, vec2 pos2);

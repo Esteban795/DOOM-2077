@@ -6,13 +6,17 @@
 #include <stdlib.h>
 
 #include "blockmap.h"
+#include "color.h"
+#include "flat.h"
 #include "header.h"
 #include "linedef.h"
 #include "node.h"
+#include "patch.h"
 #include "sector.h"
 #include "segment.h"
 #include "sidedef.h"
 #include "subsector.h"
+#include "texture.h"
 #include "thing.h"
 #include "vertex.h"
 #include "sound.h"
@@ -32,6 +36,15 @@ struct WADData {
   sidedef *sidedefs;
   sound *sounds;
   int len_sounds;
+  color *color_palette;
+  patch *sprites;
+  patch *texture_patches;
+  texture_map *texture_maps;
+  flat *flats;
+  int len_flats;
+  int len_texture_maps;
+  int len_texture_patches;
+  int len_sprites;
   int len_vertexes;
   int len_linedefs;
   int len_nodes;
@@ -44,7 +57,7 @@ struct WADData {
 
 typedef struct WADData wad_data;
 
-wad_data *init_wad_data(const char *path);
+wad_data *init_wad_data(const char *path,char* map_name);
 
 void wad_data_free(wad_data *wd);
 #endif
