@@ -36,7 +36,6 @@ void read_map(engine *e, SDL_Renderer *renderer, char *map_name) {
   e->mixer = audiomixer_init();
   e->world = malloc(sizeof(world_t));
   world_init(e->world);
-  return e;
 }
 
 int update_engine(engine *e, int dt) {
