@@ -1,15 +1,19 @@
-#include "../include/segment_handler.h"
 #include <stdio.h>
+
+#include "../include/segment_handler.h"
+#include "../include/player.h"
+#include "../include/component/position.h"
 
 bool BSP_TRAVERSE = true;
 
 double scale_from_global_angle(segment_handler *sh, int x, double normal_angle,
                                double dist) {
+  position_ct *player_pos = player_get_position(sh->player);
 
   double x_angle = rad_to_deg(atan((HALF_WIDTH - x) / SCREEN_DISTANCE));
   double num =
       fabs(SCREEN_DISTANCE *
-           cos(deg_to_rad(-normal_angle + x_angle - sh->player->angle)));
+           cos(deg_to_rad(-normal_angle + x_angle - position_get_angle(player_pos))));
   double den = dist * cos(deg_to_rad(x_angle));
   double scale = num / den;
   scale = fmin(MAX_SCALE, fmax(MIN_SCALE, scale));
@@ -17,6 +21,7 @@ double scale_from_global_angle(segment_handler *sh, int x, double normal_angle,
 }
 
 void draw_solid_walls_range(segment_handler *sh, int x1, int x2) {
+  position_ct *player_pos = player_get_position(sh->player);
   segment *seg = sh->seg;
   sector *front_sector = seg->front_sector;
   sidedef *front_sidedef = seg->linedef->front_sidedef;
@@ -25,8 +30,8 @@ void draw_solid_walls_range(segment_handler *sh, int x1, int x2) {
   flat *ceiling_texture = front_sector->ceiling_texture;
   flat *floor_texture = front_sector->floor_texture;
   i16 light_level = front_sector->light_level;
-  int world_front_z1 = (int)(front_sector->ceiling_height - sh->player->height);
-  int world_front_z2 = (int)(front_sector->floor_height - sh->player->height);
+  int world_front_z1 = (int)(front_sector->ceiling_height - position_get_z(player_pos));
+  int world_front_z2 = (int)(front_sector->floor_height -position_get_z(player_pos));
 
   // check which parts need to be rendered
   bool draw_wall = front_sidedef->hash_middle != NO_TEXTURE_HASH;
@@ -36,10 +41,9 @@ void draw_solid_walls_range(segment_handler *sh, int x1, int x2) {
   double normal_angle = sh->seg->angle + 90.0; // get normal angle of segment
   double offset_angle = normal_angle - sh->raw_angle_1;
 
-  player *p = sh->engine->p;
   vec2 start_vertex_pos = {.x = sh->seg->start_vertex->x,
                            .y = sh->seg->start_vertex->y};
-  double hyp = dist(p->pos,
+  double hyp = dist(position_get_pos(player_pos),
                     start_vertex_pos); // distance from player to start vertex
   double raw_dist =
       hyp * cos(deg_to_rad(offset_angle)); // distance from player to wall
@@ -55,13 +59,13 @@ void draw_solid_walls_range(segment_handler *sh, int x1, int x2) {
   double middle_texture_alt = world_front_z1;
   if (ld->flag & LOWER_UNPEGGED) {
     int v_top = front_sector->floor_height + wall_texture->height;
-    middle_texture_alt = v_top - sh->player->height;
+    middle_texture_alt = v_top - position_get_z(player_pos);
   }
   middle_texture_alt += front_sidedef->y_offset;
   double rw_offset = hyp * sin(deg_to_rad(offset_angle));
   rw_offset += seg->offset + front_sidedef->x_offset;
 
-  double center_angle = norm(normal_angle + sh->player->angle);
+  double center_angle = norm(normal_angle + position_get_angle(player_pos));
   double wall_y1 =
       HALF_HEIGHT -
       world_front_z1 * scale1; // initial y position of top of the wall
@@ -128,10 +132,12 @@ void draw_portal_walls_range(segment_handler *sh, int x1, int x2) {
   flat *floor_texture = front_sector->floor_texture;
   i16 light_level = front_sector->light_level;
 
-  int world_front_z1 = (int)(front_sector->ceiling_height - sh->player->height);
-  int world_front_z2 = (int)(front_sector->floor_height - sh->player->height);
-  int world_back_z1 = (int)(back_sector->ceiling_height - sh->player->height);
-  int world_back_z2 = (int)(back_sector->floor_height - sh->player->height);
+  position_ct *player_pos = player_get_position(sh->player);
+
+  int world_front_z1 = (int)(front_sector->ceiling_height - player_pos->z);
+  int world_front_z2 = (int)(front_sector->floor_height - player_pos->z);
+  int world_back_z1 = (int)(back_sector->ceiling_height - player_pos->z);
+  int world_back_z2 = (int)(back_sector->floor_height - player_pos->z);
   bool draw_upper_wall = false;
   bool draw_ceiling = false;
   if (world_front_z1 != world_back_z1 ||
@@ -161,10 +167,9 @@ void draw_portal_walls_range(segment_handler *sh, int x1, int x2) {
   double normal_angle = sh->seg->angle + 90.0; // get normal angle of segment
   double offset_angle = normal_angle - sh->raw_angle_1;
 
-  player *p = sh->engine->p;
   vec2 start_vertex_pos = {.x = sh->seg->start_vertex->x,
                            .y = sh->seg->start_vertex->y};
-  double hyp = dist(p->pos,
+  double hyp = dist(position_get_pos(player_pos),
                     start_vertex_pos); // distance from player to start vertex
   double raw_dist =
       hyp * cos(deg_to_rad(offset_angle)); // distance from player to wall
@@ -185,7 +190,7 @@ void draw_portal_walls_range(segment_handler *sh, int x1, int x2) {
       upper_texture_alt = world_front_z1;
     } else {
       int v_top = back_sector->ceiling_height + upper_wall_texture->height;
-      upper_texture_alt = v_top - sh->player->height;
+      upper_texture_alt = v_top - player_pos->z;
     }
     upper_texture_alt += front_sidedef->y_offset;
   }
@@ -206,7 +211,7 @@ void draw_portal_walls_range(segment_handler *sh, int x1, int x2) {
   if (seg_textured) {
     rw_offset = hyp * sin(deg_to_rad(offset_angle));
     rw_offset += seg->offset + front_sidedef->x_offset;
-    center_angle = norm(normal_angle + sh->player->angle);
+    center_angle = norm(normal_angle + player_pos->angle);
   }
 
   double wall_y1 =

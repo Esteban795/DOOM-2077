@@ -11,7 +11,7 @@
 #define SERVER_PORT 6942
 #endif
 
-#define num_players 1 // autres joueurs
+#define PLAYER_MAXIMUM 4 // autres joueurs
 
 engine *init_engine(const char *wadPath, SDL_Renderer *renderer) {
   engine *e = malloc(sizeof(engine));
@@ -28,14 +28,14 @@ engine *init_engine(const char *wadPath, SDL_Renderer *renderer) {
 
 void read_map(engine *e, SDL_Renderer *renderer, char *map_name) {
   e->wData = init_wad_data(e->wadPath, map_name);
+  e->world = malloc(sizeof(world_t));
+  world_init(e->world);
   e->p = player_init(e);
   e->bsp = bsp_init(e, e->p);
   e->map_renderer = map_renderer_init(e, renderer);
   e->seg_handler = segment_handler_init(e);
-  e->players = create_players(num_players,e);
+  e->players = malloc(sizeof(entity_t*) * PLAYER_MAXIMUM);
   e->mixer = audiomixer_init();
-  e->world = malloc(sizeof(world_t));
-  world_init(e->world);
 }
 
 int update_engine(engine *e, int dt) {
@@ -62,7 +62,7 @@ void engine_free(engine *e) {
   map_renderer_free(e->map_renderer);
   segment_handler_free(e->seg_handler);
   remote_destroy(e->remote);
-  players_free(e->players,num_players);
+  free(e->players);
   audiomixer_free(e->mixer);
   world_destroy(e->world);
   free(e->world);

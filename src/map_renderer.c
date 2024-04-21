@@ -1,7 +1,11 @@
-#include "../include/map_renderer.h"
 #include <SDL2/SDL_pixels.h>
 #include <SDL2/SDL_stdinc.h>
 #include <stdio.h>
+
+#include "../include/map_renderer.h"
+#include "../include/player.h"
+#include "../include/component/position.h"
+
 
 #define FOV 90.0
 #define H_FOV (FOV / 2.0)
@@ -154,11 +158,13 @@ void draw_node(map_renderer *mr, int node_id) {
 }
 
 static void draw_player(map_renderer *mr) {
+  position_ct *pos = player_get_position(mr->engine->p);
+
   SDL_SetRenderDrawColor(mr->renderer, 0, 0, 255, 255);
   i16 x =
-      remap_x(mr->engine->p->pos.x, mr->map_bounds.left, mr->map_bounds.right);
+      remap_x(pos->x, mr->map_bounds.left, mr->map_bounds.right);
   i16 y =
-      remap_y(mr->engine->p->pos.y, mr->map_bounds.top, mr->map_bounds.bottom);
+      remap_y(pos->y, mr->map_bounds.top, mr->map_bounds.bottom);
   DrawCircle(mr->renderer, x, y, PLAYER_RADIUS);
 }
 
@@ -179,16 +185,17 @@ void draw_subsector(map_renderer *mr, i16 subsector_id) {
 
 void draw_fov(map_renderer *mr) {
   const int RAY_LENGTH = 200;
+  position_ct *pos = player_get_position(mr->engine->p);
   int x =
-      remap_x(mr->engine->p->pos.x, mr->map_bounds.left, mr->map_bounds.right);
+      remap_x(pos->x, mr->map_bounds.left, mr->map_bounds.right);
   int y =
-      remap_y(mr->engine->p->pos.y, mr->map_bounds.top, mr->map_bounds.bottom);
-  int x1 = x + RAY_LENGTH * cos(deg_to_rad(mr->engine->p->angle + H_FOV));
-  int y1 = y + RAY_LENGTH * sin(deg_to_rad(mr->engine->p->angle + H_FOV));
-  int x2 = x + RAY_LENGTH * cos(deg_to_rad(mr->engine->p->angle - H_FOV));
-  int y2 = y + RAY_LENGTH * sin(deg_to_rad(mr->engine->p->angle - H_FOV));
-  int x3 = x + RAY_LENGTH * cos(deg_to_rad(mr->engine->p->angle));
-  int y3 = y + RAY_LENGTH * sin(deg_to_rad(mr->engine->p->angle));
+      remap_y(pos->y, mr->map_bounds.top, mr->map_bounds.bottom);
+  int x1 = x + RAY_LENGTH * cos(deg_to_rad(pos->angle + H_FOV));
+  int y1 = y + RAY_LENGTH * sin(deg_to_rad(pos->angle + H_FOV));
+  int x2 = x + RAY_LENGTH * cos(deg_to_rad(pos->angle - H_FOV));
+  int y2 = y + RAY_LENGTH * sin(deg_to_rad(pos->angle - H_FOV));
+  int x3 = x + RAY_LENGTH * cos(deg_to_rad(pos->angle));
+  int y3 = y + RAY_LENGTH * sin(deg_to_rad(pos->angle));
   SDL_SetRenderDrawColor(mr->renderer, 0, 120, 255, 255);
   SDL_RenderDrawLine(mr->renderer, x, y, x1, y1);
   SDL_RenderDrawLine(mr->renderer, x, y, x2, y2);
@@ -225,11 +232,13 @@ void draw_block(map_renderer *mr, int block_index) {
 void draw_active_blocks(map_renderer *mr) {
   SDL_SetRenderDrawColor(mr->renderer, 255, 255, 255, 255);
 
+  position_ct* pos = player_get_position(mr->engine->p);
+
   for (int y = -1; y <= 1; y++) {
     for (int x = -1; x <= 1; x++) {
       int block_index = blockmap_get_block_index(
-          mr->engine->wData->blockmap, mr->engine->p->pos.x + x * 128,
-          mr->engine->p->pos.y + y * 128);
+          mr->engine->wData->blockmap, pos->x + x * 128,
+          pos->y + y * 128);
       draw_block(mr, block_index);
     }
   }
@@ -314,13 +323,15 @@ void draw_wall_column(map_renderer *mr, texture_map *texture,
 void draw_flat(map_renderer *mr, flat *texture, i16 light_level, int x, int y1,
                int y2, int world_z) {
   if (y1 < y2) {
-    double player_dir_x = cos(deg_to_rad(mr->engine->p->angle));
+    position_ct* pos = player_get_position(mr->engine->p);
+
+    double player_dir_x = cos(deg_to_rad(pos->angle));
     double player_dir_y = -sin(deg_to_rad(
-        mr->engine->p->angle)); // - because the fucking y axis is reversed
+        pos->angle)); // - because the fucking y axis is reversed
     for (int iy = y1; iy < y2; iy++) {
       double z = HALF_WIDTH * world_z / (HALF_HEIGHT - iy);
-      double px = player_dir_x * z + mr->engine->p->pos.x;
-      double py = player_dir_y * z + mr->engine->p->pos.y;
+      double px = player_dir_x * z + pos->x;
+      double py = player_dir_y * z + pos->y;
       double left_x = -player_dir_y * z + px;
       double left_y = player_dir_x * z + py;
       double right_x = player_dir_y * z + px;

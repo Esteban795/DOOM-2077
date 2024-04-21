@@ -8,6 +8,8 @@
 #include "../include/net/packet/client.h"
 #include "../include/net/packet/server.h"
 #include "../include/net/util.h"
+#include "../include/player.h"
+#include "../include/component/position.h"
 
 #ifndef _LIB_SDL_NET_H
 #define _LIB_SDL_NET_H
@@ -34,6 +36,7 @@ int remote_init(remote_server_t* server, char* addr, int port) {
     if (strncat(addr, "", 1) == 0) {
         fprintf(stderr, "WARN: No SERVER_ADDR found! No connection will be initiated!\n");
         server->addr.port = 0;
+        server->connected = false;
         return 0;
     }
 
@@ -84,8 +87,7 @@ void remote_destroy(remote_server_t* r) {
 
 
 int remote_update(engine* e, remote_server_t* r) {
-    if (r->addr.port == 0) {
-        // If dest port is 0, we're not connected to a server
+    if (!r->connected) {
         return 0;
     }
 
@@ -118,7 +120,13 @@ int remote_update(engine* e, remote_server_t* r) {
                 return 1;
             } else if (strncmp(cmd, SERVER_COMMAND_ACPT, 4) == 0) {
                 uint64_t player_id = read_uint64be(payload);
-                printf("Accepted by server as %lu\n", player_id);
+                if (!r->connected) {
+                    printf("Accepted by server as %lu\n", player_id);
+                    r->connected = true;
+                    r->player_id = player_id;
+                } else {
+                    printf("Ignoring server ACPT for %lu.\n", player_id);
+                }
             } else if (strncmp(cmd, SERVER_COMMAND_PONG, 4) == 0) {
                 uint64_t data = read_uint64be(payload);
                 printf("Pong from server: %lu\n", data);
@@ -138,7 +146,8 @@ int remote_update(engine* e, remote_server_t* r) {
     }
 
     // Send the player data for the current frame
-    int len = client_move(r->packet->data, e->p->pos.x, e->p->pos.y, e->p->angle);
+    position_ct* pos = player_get_position(e->p);
+    int len = client_move(r->packet->data, position_get_x(pos), position_get_y(pos), position_get_angle(pos));
     r->packet->len = len;
     r->packet->address.host = r->addr.host;
     r->packet->address.port = r->addr.port;

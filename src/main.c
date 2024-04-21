@@ -40,6 +40,20 @@ int main() {
   SDL_ShowCursor(SDL_DISABLE);
   SDL_SetRelativeMouseMode(SDL_TRUE);
   engine *e = init_engine("maps/DOOM1.WAD",renderer);
+  
+  // Waiting for connection to server
+  old = SDL_GetTicks();
+  while(SDL_GetTicks() - old < 5000) {
+    int status = remote_update(e, e->remote);
+    if (status == 0)
+      break; // Connection established
+    if (status == -1) {
+      printf("Network error occured! Pursuing in solo...\n");
+    } else {
+      printf("Server refused the connection! Pursuing in solo...\n");
+    }
+    e->remote->player_id = 0;
+  }
   read_map(e, renderer, "E1M2");
   int dt = 0;
   while (e->running) {

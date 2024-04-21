@@ -1,4 +1,5 @@
 #include <time.h>
+#include <stdint.h>
 
 #ifndef STRUCTS_H
 #define STRUCTS_H
@@ -58,15 +59,9 @@ struct WeaponsArray{
 struct Player {
   struct Engine *engine;
   thing thing;
-  vec2 pos;
-  double angle;
+  entity_t* entity;
   struct PlayerSetting *settings;
   struct PlayerKeybind *keybinds;
-  double height;
-  int* ammo; /*Array of size weapon_number that indicates the number of ammo by weapon (id)*/
-  int active_weapon;
-  int life;
-  int cooldown;
 };
 
 struct RemoteServer {
@@ -74,6 +69,8 @@ struct RemoteServer {
     UDPsocket socket;
     UDPpacket* packet;
     struct timespec next_tick;
+    bool connected;
+    uint64_t player_id;
 };
 
 struct Engine {
@@ -89,7 +86,7 @@ struct Engine {
   struct RemoteServer *remote;
   GameState state;
   int DT;
-  struct Player **players;
+  struct entity_t **players;
   AudioMixer *mixer;
   world_t *world;
 };

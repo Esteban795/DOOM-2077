@@ -1,8 +1,16 @@
-#include "../include/player.h"
 #include <SDL2/SDL_render.h>
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
+
+#include "../include/player.h"
+#include "../include/ecs/world.h"
+#include "../include/ecs/entity.h"
+#include "../include/ecs/archetype.h"
+#include "../include/ecs/component.h"
+#include "../include/component/position.h"
+#include "../include/component/health.h"
+#include "../include/component/weapon.h"
 
 #define SIGN(x) (int)(x > 0) ? 1 : ((x < 0) ? -1 : 0)
 #define DOT(a, b) (a.x * b.x) + (a.y * b.y)
@@ -12,34 +20,27 @@
 
 player *player_init(engine *e) {
   player *p = malloc(sizeof(player));
-  int* ammo = malloc(WEAPONS_NUMBER*sizeof(int));
+  unsigned int* ammo = malloc(WEAPONS_NUMBER*sizeof(unsigned int));
   ammo[0] = -2;
   for (int i = 1; i < WEAPONS_NUMBER; i++) {
     ammo[i] = -1;
   }
   p->engine = e;
   p->thing = e->wData->things[0];
-  p->pos.x = (double)p->thing.x;
-  p->pos.y = (double)p->thing.y;
-  p->angle = (double)p->thing.angle + 180.0;
-  p->height = PLAYER_HEIGHT;
   p->keybinds = get_player_keybinds(KEYBINDS_FILE);
   p->settings = get_player_settings(SETTINGS_FILE);
-  p->ammo = ammo;
-  p->active_weapon=0;
-  p->cooldown = 0;
+
+  // Add player to the ECS world
+  double coords[3] = {p->thing.x, p->thing.y, PLAYER_HEIGHT};
+  component_t** comps = malloc(sizeof(component_t*) * 3);
+  comps[0] = position_create(coords, p->thing.angle + 180.0);
+  comps[1] = health_create(100.0, 100.0);
+  comps[2] = weapon_create(ammo);
+  p->entity = world_insert_entity(e->world, e->remote->player_id, comps, 3);
+  free(comps);
+  
   return p;
 }
-
-player ** create_players(int num_players,engine *e){
-    player** Players = malloc(sizeof(player*)*num_players);
-    for(int i=0;i<num_players;i++){
-      Players[i]=player_init(e);
-    }
-    return(Players);
-}
-
-
 
 // size_t count_two_sided_linedefs(linedef* linedefs, size_t nlinedefs){
 //   size_t count = 0;
@@ -125,11 +126,12 @@ player ** create_players(int num_players,engine *e){
 
 linedef *get_linedefs_in_active_blocks(player *p, int *nlinedefs) {
   blockmap *bmap = p->engine->wData->blockmap;
+  position_ct* pos = player_get_position(p);
 
   for (int x = -1; x <= 1; x++) {
     for (int y = -1; y <= 1; y++) {
-      int block_index = blockmap_get_block_index(bmap, p->pos.x + x * 128,
-                                                 p->pos.y + y * 128);
+      int block_index = blockmap_get_block_index(bmap, position_get_x(pos) + x * 128,
+                                                 position_get_y(pos) + y * 128);
       (*nlinedefs) += bmap->blocks[block_index].nlinedefs;
     }
   }
@@ -139,8 +141,8 @@ linedef *get_linedefs_in_active_blocks(player *p, int *nlinedefs) {
 
   for (int x = -1; x <= 1; x++) {
     for (int y = -1; y <= 1; y++) {
-      int block_index = blockmap_get_block_index(bmap, p->pos.x + x * 128,
-                                                 p->pos.y + y * 128);
+      int block_index = blockmap_get_block_index(bmap, position_get_x(pos) + x * 128,
+                                                 position_get_y(pos) + y * 128);
       for (int i = 0; i < (int)bmap->blocks[block_index].nlinedefs; i++) {
         linedefs[offset] = bmap->blocks[block_index].linedefs[i];
         offset++;
@@ -270,9 +272,11 @@ bool can_collide_with_wall(double cp_after, linedef linedef) {
 }
 
 void move_and_slide(player *p, double *velocity) {
+  position_ct* pos = player_get_position(p);
+
   int nlinedefs = 0;
   linedef *linedefs = get_linedefs_in_active_blocks(p, &nlinedefs);
-  vec2 next_pos = {.x = p->pos.x + velocity[0], .y = p->pos.y + velocity[1]};
+  vec2 next_pos = {.x = position_get_x(pos) + velocity[0], .y = position_get_y(pos) + velocity[1]};
   for (int ii = 0; ii < 2 * nlinedefs; ii++) {
 
     int i = ii % nlinedefs;
@@ -283,7 +287,7 @@ void move_and_slide(player *p, double *velocity) {
 
     // check if the player can actually collide with the wall in directions
     // parallel to the wall
-    double d = dot_pos_linedef(linedefs + i, p->pos);
+    double d = dot_pos_linedef(linedefs + i, position_get_pos(pos));
     if (d < 0 || d > pow(get_wall_length(linedefs + i), 2)) {
       vertex *linedef_a = linedefs[i].start_vertex;
       vertex *linedef_b = linedefs[i].end_vertex;
@@ -312,21 +316,24 @@ void move_and_slide(player *p, double *velocity) {
     }
   }
 
-  p->pos.x = next_pos.x;
-  p->pos.y = next_pos.y;
+  position_set_pos(pos, next_pos);
 
   free(linedefs);
 }
 
 
 void update_height(player* p,double z){
+  position_ct* pos = player_get_position(p);
+
   double target_height = z + PLAYER_HEIGHT;
   double grav_height =
-      p->height - G * 10e-2 / 2.0 * p->engine->DT * p->engine->DT / 2;
-  p->height = fmax(grav_height, target_height);
+      position_get_z(pos) - G * 10e-2 / 2.0 * p->engine->DT * p->engine->DT / 2;
+  position_set_z(pos, fmax(grav_height, target_height));
 }
 
 void update_player(player *p) {
+  position_ct* pos = player_get_position(p);
+
   int DT = p->engine->DT;
   bool forward = keys[get_key_from_action(p->keybinds, "MOVE_FORWARD")];
   bool left = keys[get_key_from_action(p->keybinds, "MOVE_LEFT")];
@@ -334,29 +341,28 @@ void update_player(player *p) {
   bool right_d = keys[get_key_from_action(p->keybinds, "MOVE_RIGHT")];
   double speed = DT * PLAYER_SPEED;
   double rot_speed = DT * PLAYER_ROTATION_SPEED;
-  p->angle += rot_speed * ((double)mouse[NUM_MOUSE_BUTTONS]);
-  p->angle = norm(p->angle);
+  position_set_angle(pos, norm(position_get_angle(pos) + rot_speed * ((double)mouse[NUM_MOUSE_BUTTONS])));
   double vec[2] = {0.0, 0.0};
   int count_dir = 0;
   int count_strafe = 0;
   if (forward) {
-    vec[0] += speed * cos(deg_to_rad(p->angle));
-    vec[1] -= speed * sin(deg_to_rad(p->angle));
+    vec[0] += speed * cos(deg_to_rad(position_get_angle(pos)));
+    vec[1] -= speed * sin(deg_to_rad(position_get_angle(pos)));
     count_dir++;
   }
   if (backward) {
-    vec[0] -= speed * cos(deg_to_rad(p->angle));
-    vec[1] += speed * sin(deg_to_rad(p->angle));
+    vec[0] -= speed * cos(deg_to_rad(position_get_angle(pos)));
+    vec[1] += speed * sin(deg_to_rad(position_get_angle(pos)));
     count_dir++;
   }
   if (left) {
-    vec[0] += speed * sin(deg_to_rad(p->angle));
-    vec[1] += speed * cos(deg_to_rad(p->angle));
+    vec[0] += speed * sin(deg_to_rad(position_get_angle(pos)));
+    vec[1] += speed * cos(deg_to_rad(position_get_angle(pos)));
     count_strafe++;
   }
   if (right_d) {
-    vec[0] -= speed * sin(deg_to_rad(p->angle));
-    vec[1] -= speed * cos(deg_to_rad(p->angle));
+    vec[0] -= speed * sin(deg_to_rad(position_get_angle(pos)));
+    vec[1] -= speed * cos(deg_to_rad(position_get_angle(pos)));
     count_strafe++;
   }
   if (count_dir && count_strafe) {
@@ -371,13 +377,22 @@ void update_player(player *p) {
 void player_free(player *p) {
   free_keybinds(p->keybinds);
   free_settings(p->settings);
-  free(p->ammo);
+  free(player_get_weapon(p)->ammunitions);
+  world_remove_entity(p->engine->world, p->entity);
   free(p);
 }
 
-void players_free(player** players, int num_players){
-  for(int i=0;i<num_players;i++){
-    player_free(players[i]);
-  }
-  free(players);
+position_ct* player_get_position(player* p) {
+  engine* e = p->engine;
+  return (position_ct*)world_get_component(e->world, p->entity, COMPONENT_TAG_POSITION);
+}
+
+health_ct* player_get_health(player* p) {
+  engine* e = p->engine;
+  return (health_ct*)world_get_component(e->world, p->entity, COMPONENT_TAG_HEALTH);
+}
+
+weapon_ct* player_get_weapon(player* p) {
+  engine* e = p->engine;
+  return (weapon_ct*)world_get_component(e->world, p->entity, COMPONENT_TAG_WEAPON);
 }
