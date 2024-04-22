@@ -11,14 +11,11 @@
 #include "vec2.h"
 #include "wad_data.h"
 
-#define STATE_COUNT 5
+#define STATE_COUNT 2
 
 typedef enum {
   STATE_MENU,
   STATE_INGAME,
-  STATE_PAUSE,
-  STATE_GAMEOVER,
-  STATE_SETTINGS
 } GameState;
 
 struct Player;
