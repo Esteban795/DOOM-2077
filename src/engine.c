@@ -7,6 +7,7 @@ engine *init_engine(const char *wadPath, SDL_Renderer *renderer) {
   e->wadPath = wadPath;
   e->running = true;
   e->state = STATE_INGAME;
+  game_states_init[e->state](e);
   e->DT = 0;
   e->texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
                                  SDL_TEXTUREACCESS_STREAMING, WIDTH, HEIGHT);
@@ -28,7 +29,7 @@ int update_engine(engine *e, int dt) {
   SDL_SetRenderDrawColor(e->map_renderer->renderer, 0, 0, 0, 255);
   SDL_RenderClear(e->map_renderer->renderer);
   handle_events(e);
-  game_states[e->state](e);
+  game_states_update[e->state](e);
   audiomixer_update(e->mixer, dt);
   SDL_UpdateTexture(e->texture, NULL, e->pixels, WIDTH * 4);
   SDL_RenderCopy(e->map_renderer->renderer, e->texture, NULL, NULL);
@@ -39,6 +40,7 @@ int update_engine(engine *e, int dt) {
 }
 
 void engine_free(engine *e) {
+  game_states_free[e->state](e);
   wad_data_free(e->wData);
   bsp_free(e->bsp);
   player_free(e->p);
