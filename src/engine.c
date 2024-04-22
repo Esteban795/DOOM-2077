@@ -1,11 +1,13 @@
 #include "../include/engine.h"
 #define num_players 1 // autres joueurs
 
-engine *init_engine(const char *wadPath) {
+engine *init_engine(const char *wadPath, SDL_Renderer *renderer) {
   engine *e = malloc(sizeof(engine));
   e->wadPath = wadPath;
   e->state = STATE_INGAME;
   e->DT = 0;
+  e->texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
+                                 SDL_TEXTUREACCESS_STREAMING, WIDTH, HEIGHT);
   return e;
 }
 
@@ -31,7 +33,11 @@ int update_engine(engine *e, int dt) {
     update_uimodule(e->map_renderer->renderer, e->uimodules[i]);
   }
   audiomixer_update(e->mixer, dt);
+  SDL_UpdateTexture(e->texture, NULL, e->pixels, WIDTH * 4);
+  SDL_RenderCopy(e->map_renderer->renderer, e->texture, NULL, NULL);
+  // draw_crosshair(e->map_renderer,get_color(50,0),20);
   SDL_RenderPresent(e->map_renderer->renderer);
+  memset(e->pixels, 0, WIDTH * HEIGHT * 4);
   return 0;
 }
 

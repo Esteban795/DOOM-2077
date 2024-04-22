@@ -9,9 +9,9 @@
 #include "player.h"
 #include "segment_handler.h"
 #include "structs.h"
+#include "timer.h"
 #include "ui/def.h"
-
-engine *init_engine(const char *wadPath);
+engine *init_engine(const char *wadPath, SDL_Renderer *renderer);
 
 int update_engine(engine *e, int dt);
 

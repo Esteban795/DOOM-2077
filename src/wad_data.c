@@ -1,5 +1,4 @@
 #include "../include/wad_data.h"
-#include <stdio.h>
 
 wad_data *init_wad_data(const char *path,char* map_name) {
   FILE *file = fopen(path, "rb");
@@ -9,6 +8,7 @@ wad_data *init_wad_data(const char *path,char* map_name) {
   }
   wad_data *wd = malloc(sizeof(wad_data));
   wd->header = read_header(file);
+
   wd->directory = read_directory(file, wd->header);
   wd->map_index = get_lump_index(wd->directory, map_name, wd->header.lump_count);
   wd->len_vertexes = wd->directory[wd->map_index + VERTEXES].lump_size /
@@ -27,10 +27,26 @@ wad_data *init_wad_data(const char *path,char* map_name) {
                     26; // 26 = number of bytes per sector
   wd->len_sidedefs = wd->directory[wd->map_index + SIDEDEFS].lump_size /
                      30; // 30 = number of bytes per sidedef
-  wd->sectors = get_sectors_from_lump(
-      file, wd->directory, wd->map_index + SECTORS, 26, 0, wd->len_sectors);
+  const int PLAYPAL =
+      get_lump_index(wd->directory, "PLAYPAL", wd->header.lump_count);
+  wd->color_palette =
+      get_color_palette_from_lump(file, wd->directory, PLAYPAL, 3, 0);
+  wd->sprites = get_sprites(wd->directory, &wd->header, file, wd->color_palette,
+                            &wd->len_sprites);
+  wd->texture_patches =
+      get_texture_patches(wd->directory, &wd->header, file, wd->color_palette,
+                          &wd->len_texture_patches);
+  wd->texture_maps =
+      get_texture_maps(file, wd->directory, &wd->header, wd->texture_patches,
+                       &wd->len_texture_maps);
+  wd->flats = get_flats(file, wd->directory, &wd->header, wd->color_palette,
+                        &wd->len_flats);
+  wd->sectors =
+      get_sectors_from_lump(file, wd->directory, wd->map_index + SECTORS, 26, 0,
+                            wd->len_sectors, wd->flats, wd->len_flats);
   wd->sidedefs = get_sidedefs_from_lump(
-      file, wd->directory, wd->map_index + SIDEDEFS, 30, 0, wd->len_sidedefs,wd->sectors);
+      file, wd->directory, wd->map_index + SIDEDEFS, 30, 0, wd->len_sidedefs,
+      wd->sectors, wd->texture_maps, wd->len_texture_maps);
   wd->vertexes = get_vertexes_from_lump(
       file, wd->directory, wd->map_index + VERTEXES, 4, 0, wd->len_vertexes);
   wd->linedefs =
@@ -38,9 +54,9 @@ wad_data *init_wad_data(const char *path,char* map_name) {
                              0, wd->len_linedefs, wd->vertexes, wd->sidedefs);
   wd->nodes = get_nodes_from_lump(file, wd->directory, wd->map_index + NODES,
                                   28, 0, wd->len_nodes);
-  wd->segments =
-      get_segments_from_lump(file, wd->directory, wd->map_index + SEGS, 12, 0,
-                             wd->len_segments, wd->vertexes, wd->linedefs,wd->sectors);
+  wd->segments = get_segments_from_lump(
+      file, wd->directory, wd->map_index + SEGS, 12, 0, wd->len_segments,
+      wd->vertexes, wd->linedefs, wd->sectors);
   wd->subsectors =
       get_subsectors_from_lump(file, wd->directory, wd->map_index + SSECTORS, 4,
                                0, wd->len_subsectors, wd->segments);
@@ -60,10 +76,15 @@ void wad_data_free(wad_data *wd) {
   free(wd->segments);
   free(wd->things);
   free(wd->header.wad_type);
-  sectors_free(wd->sectors, wd->len_sectors);
+  sectors_free(wd->sectors);
   blockmap_free(wd->blockmap);
   subsectors_free(wd->subsectors, wd->len_subsectors);
-  sidedefs_free(wd->sidedefs, wd->len_sidedefs);
+  sidedefs_free(wd->sidedefs);
+  free(wd->color_palette);
+  sprites_free(wd->sprites, wd->len_sprites);
+  textures_patches_free(wd->texture_patches, wd->len_texture_patches);
+  texture_maps_free(wd->texture_maps, wd->len_texture_maps);
+  flats_free(wd->flats, wd->len_flats);
   sounds_free(wd->sounds, wd->len_sounds);
   for (int i = 0; i < wd->header.lump_count; i++) {
     free(wd->directory[i].lump_name);
