@@ -277,7 +277,6 @@ void move_and_slide(player *p, double *velocity) {
   for (int ii = 0; ii < 2 * nlinedefs; ii++) {
 
     int i = ii % nlinedefs;
-
     vec2 p_a;   // projection after moving
     vec2 phf_a; // projection of the hitbox after moving, front
     vec2 phb_a; // projection of the hitbox after moving, back
@@ -303,13 +302,14 @@ void move_and_slide(player *p, double *velocity) {
     double cp_hf = cross_pos_linedef(linedefs[i], phf_a);
 
     if ((SIGN(cp_hb)) != (SIGN(cp_hf))) {
+
       // collision happened
       // if cp_after < 0: use the second sidedef
       // else: use the first linedef (first linedef faces "clockwise")
+      if (linedefs[i]->door != NULL) {
+        door_trigger_switch(linedefs[i]->door);
+      }
       if (can_collide_with_wall(cp_hf, linedefs[i])) {
-        if (linedefs[i]->door != NULL && linedefs[i]->door->is_colllidable) {
-          door_trigger_switch(linedefs[i]->door);
-        }
         slide_against_wall(&next_pos, p_a);
         continue;
       }
@@ -373,8 +373,8 @@ linedef *cast_ray(linedef **linedefs, int len_linedefs, vec2 player_pos,
   for (int i = 0; i < len_linedefs; i++) {
     double x = 0;
     double y = 0;
-    if (!linedefs[i]->has_back_sidedef ||
-        correct_height(linedefs[i], height) || linedefs[i]->sector_tag != 0) {
+    if (!linedefs[i]->has_back_sidedef || correct_height(linedefs[i], height) ||
+        linedefs[i]->sector_tag != 0) {
       double x1a = linedefs[i]->start_vertex->x;
       double y1a = -linedefs[i]->start_vertex->y;
       double x2a = linedefs[i]->end_vertex->x;

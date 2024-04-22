@@ -5,8 +5,8 @@
 door *COLLISIONNED_DOOR = NULL;
 
 door *door_create(entity_t *id, enum DoorTransitionSpeed speed,
-                  enum DoorFunction function, int wait_time, bool is_collidable,bool is_shootable,
-                  sector *sector){
+                  enum DoorFunction function, int wait_time, bool is_collidable,
+                  bool is_shootable, sector *sector) {
   door *d = malloc(sizeof(door));
   d->id = id;
   d->speed = speed;
@@ -24,7 +24,8 @@ door *door_create(entity_t *id, enum DoorTransitionSpeed speed,
 }
 
 void door_trigger_switch(door *d) {
-  d->is_switching = true;
+  if (!d->is_open)
+    d->is_switching = true;
 }
 
 void door_update(door *d, int DT) {
@@ -35,7 +36,7 @@ void door_update(door *d, int DT) {
     d->time_elapsed += DT;
     if (d->time_elapsed >= d->wait_time) {
       d->time_elapsed = 0;
-      door_trigger_switch(d);
+      d->is_switching = true;
     }
   }
   if (d->is_switching) {
@@ -82,8 +83,8 @@ void door_print(door *d) {
   printf("\n");
 }
 
-void doors_free(door** doors,int len_doors){
-  for(int i = 0; i < len_doors; i++){
+void doors_free(door **doors, int len_doors) {
+  for (int i = 0; i < len_doors; i++) {
     free(doors[i]);
   }
   free(doors);
