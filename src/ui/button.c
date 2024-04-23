@@ -3,8 +3,9 @@
 #define MOUSE_LEFT 0
 
 UIButton *uibutton_create(float x, float y, float w, float h,
-                          UIAnchorPoint uianchor, SDL_Color bg_color,
-                          SDL_Color border_color, SDL_Color bg_color_pressed,
+                          UIAnchorPoint uianchor, int *as, int nas,
+                          SDL_Color bg_color, SDL_Color border_color,
+                          SDL_Color bg_color_pressed,
                           SDL_Color border_color_pressed,
                           void (*on_click)(void)) {
   UIButton *b = malloc(sizeof(UIButton));
@@ -15,6 +16,8 @@ UIButton *uibutton_create(float x, float y, float w, float h,
   b->common.height = h;
   b->common.anchor = uianchor;
   b->common.active = true;
+  b->common.active_substates = as;
+  b->common.n_active_substates = nas;
 
   b->pressed = false;
   b->hovered = false;
@@ -48,8 +51,16 @@ void uibutton_detect_click(UIButton *uibutton, SDL_Rect *rect,
   }
 }
 
-void uibutton_update(SDL_Renderer *r, UIButton *uibutton) {
+void uibutton_update(SDL_Renderer *r, int substate, UIButton *uibutton) {
   if (!uibutton->common.active) {
+    return;
+  }
+
+  bool found_in_substates = false;
+  for (int i = 0; i < uibutton->common.n_active_substates; i++) {
+    found_in_substates |= substate == uibutton->common.active_substates[i];
+  }
+  if (!found_in_substates) {
     return;
   }
 

@@ -4,7 +4,7 @@
 engine *init_engine(const char *wadPath, SDL_Renderer *renderer) {
   engine *e = malloc(sizeof(engine));
   e->wadPath = wadPath;
-  e->state = STATE_INGAME;
+  e->state = STATE_MENU;
   e->DT = 0;
   e->texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
                                  SDL_TEXTUREACCESS_STREAMING, WIDTH, HEIGHT);
@@ -29,6 +29,9 @@ int update_engine(engine *e, int dt) {
   SDL_RenderClear(e->map_renderer->renderer);
   handle_events(e);
   game_states_update[e->state](e);
+  for (int i = 0; i < e->nuimodules; i++) {
+    update_uimodule(e->map_renderer->renderer, e->substate, e->uimodules[i]);
+  }
   audiomixer_update(e->mixer, dt);
   SDL_UpdateTexture(e->texture, NULL, e->pixels, WIDTH * 4);
   SDL_RenderCopy(e->map_renderer->renderer, e->texture, NULL, NULL);

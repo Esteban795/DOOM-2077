@@ -6,9 +6,9 @@
 #define MOUSE_LEFT 0
 
 UITextBox *uitextbox_create(float x, float y, float w, float h,
-                            UIAnchorPoint anchor, TTF_Font *font,
-                            UIAnchorPoint text_anchor, int buffer_size,
-                            SDL_Color bg, SDL_Color border,
+                            UIAnchorPoint anchor, int *as, int nas,
+                            TTF_Font *font, UIAnchorPoint text_anchor,
+                            int buffer_size, SDL_Color bg, SDL_Color border,
                             SDL_Color text_color, char *placeholder) {
   UITextBox *tb = malloc(sizeof(UITextBox));
 
@@ -18,6 +18,8 @@ UITextBox *uitextbox_create(float x, float y, float w, float h,
   tb->common.height = h;
   tb->common.anchor = anchor;
   tb->common.active = true;
+  tb->common.active_substates = as;
+  tb->common.n_active_substates = nas;
 
   // INFO: why +1 ? to account for null byte.
   // if you want to limit the textbox to n characters, set the buffer size to
@@ -46,8 +48,16 @@ void uitextbox_free(UITextBox *tb) {
   free(tb);
 }
 
-void uitextbox_update(SDL_Renderer *r, UITextBox *tb) {
+void uitextbox_update(SDL_Renderer *r, int substate, UITextBox *tb) {
   if (!tb->common.active) {
+    return;
+  }
+
+  bool found_in_substates = false;
+  for (int i = 0; i < tb->common.n_active_substates; i++) {
+    found_in_substates |= substate == tb->common.active_substates[i];
+  }
+  if (!found_in_substates) {
     return;
   }
 

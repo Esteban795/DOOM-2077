@@ -30,6 +30,9 @@ typedef struct _UICommon {
   float height; // in [0,1]
 
   UIAnchorPoint anchor;
+
+  int *active_substates;
+  int n_active_substates;
 } UICommon;
 
 void get_absolute_position(UICommon *common, SDL_Rect *rect);

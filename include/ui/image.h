@@ -16,11 +16,12 @@ typedef struct _UIImage {
 } UIImage;
 
 UIImage *uiimage_create(SDL_Renderer *r, float x, float y, float w, float h,
-                        UIAnchorPoint uianchor, UIImage_Fit fit, char *filename,
+                        UIAnchorPoint uianchor, int *as, int nas,
+                        UIImage_Fit fit, char *filename,
                         UIAnchorPoint *image_anchor);
 
 void uiimage_free(UIImage *uiimage);
 
-void uiimage_update(SDL_Renderer *r, UIImage *uiimage);
+void uiimage_update(SDL_Renderer *r, int substate, UIImage *uiimage);
 
 #endif

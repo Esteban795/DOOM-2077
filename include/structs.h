@@ -73,6 +73,9 @@ struct Engine {
   struct MapRenderer *map_renderer;
   struct SegmentHandler *seg_handler;
   GameState state;
+  int substate;
+  // INFO: substate is used for UI stuff
+  // substates are defined in ui/def.c for each state!
   int DT;
   UIModule **uimodules;
   int nuimodules;

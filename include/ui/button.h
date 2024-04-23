@@ -19,13 +19,14 @@ typedef struct _UIButton {
 } UIButton;
 
 UIButton *uibutton_create(float x, float y, float w, float h,
-                          UIAnchorPoint uianchor, SDL_Color bg_color,
-                          SDL_Color border_color, SDL_Color bg_color_pressed,
+                          UIAnchorPoint uianchor, int *as, int nas,
+                          SDL_Color bg_color, SDL_Color border_color,
+                          SDL_Color bg_color_pressed,
                           SDL_Color border_color_pressed,
                           void (*on_click)(void));
 
 void uibutton_free(UIButton *uibutton);
 
-void uibutton_update(SDL_Renderer *r, UIButton *uibutton);
+void uibutton_update(SDL_Renderer *r, int substate, UIButton *uibutton);
 
 #endif

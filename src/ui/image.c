@@ -2,7 +2,8 @@
 #include <SDL2/SDL_render.h>
 
 UIImage *uiimage_create(SDL_Renderer *r, float x, float y, float w, float h,
-                        UIAnchorPoint uianchor, UIImage_Fit fit, char *filename,
+                        UIAnchorPoint uianchor, int *as, int nas,
+                        UIImage_Fit fit, char *filename,
                         UIAnchorPoint *image_anchor) {
   UIImage *uiimage = malloc(sizeof(UIImage));
 
@@ -11,6 +12,9 @@ UIImage *uiimage_create(SDL_Renderer *r, float x, float y, float w, float h,
   uiimage->common.width = w;
   uiimage->common.height = h;
   uiimage->common.anchor = uianchor;
+  uiimage->common.active = true;
+  uiimage->common.active_substates = as;
+  uiimage->common.n_active_substates = nas;
 
   uiimage->surface = IMG_Load(filename);
   uiimage->texture = SDL_CreateTextureFromSurface(r, uiimage->surface);
@@ -34,7 +38,19 @@ void uiimage_free(UIImage *uiimage) {
   free(uiimage);
 }
 
-void uiimage_update(SDL_Renderer *r, UIImage *uiimage) {
+void uiimage_update(SDL_Renderer *r, int substate, UIImage *uiimage) {
+  if (!uiimage->common.active) {
+    return;
+  }
+
+  bool found_in_substates = false;
+  for (int i = 0; i < uiimage->common.n_active_substates; i++) {
+    found_in_substates |= substate == uiimage->common.active_substates[i];
+  }
+  if (!found_in_substates) {
+    return;
+  }
+
   SDL_Rect destrect;
   get_absolute_position(&(uiimage->common), &destrect);
 

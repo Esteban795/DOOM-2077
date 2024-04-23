@@ -8,8 +8,12 @@ void switch_scene(engine *e, int scene) {
   game_states_init[e->state](e);
 }
 
-void init_menu_state(engine *e) {}
+void init_menu_state(engine *e) {
+  e->substate = 0;
+  e->uimodules = get_ui_menu(e->map_renderer->renderer, &e->nuimodules);
+}
 void init_ingame_state(engine *e) {
+  e->substate = 0;
   e->uimodules = get_ui_ingame(e->map_renderer->renderer, &e->nuimodules);
 }
 
@@ -27,7 +31,7 @@ void update_ingame_state(engine *e) {
 }
 
 void free_menu_state(engine *e) {}
-void free_ingame_state(engine *e) { free_ui_ingame(e->uimodules); }
+void free_ingame_state(engine *e) { free_ui(e->uimodules, e->nuimodules); }
 
 GameStateFunction game_states_init[] = {init_menu_state, init_ingame_state};
 
