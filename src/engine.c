@@ -5,7 +5,6 @@ engine *init_engine(const char *wadPath, SDL_Renderer *renderer) {
   engine *e = malloc(sizeof(engine));
   e->wadPath = wadPath;
   e->state = STATE_INGAME;
-  game_states_init[e->state](e);
   e->DT = 0;
   e->texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
                                  SDL_TEXTUREACCESS_STREAMING, WIDTH, HEIGHT);
@@ -18,9 +17,9 @@ void read_map(engine *e, SDL_Renderer *renderer, char *map_name) {
   e->bsp = bsp_init(e, e->p);
   e->map_renderer = map_renderer_init(e, renderer);
   e->seg_handler = segment_handler_init(e);
-  e->uimodules = get_ui_ingame(renderer, &e->nuimodules);
   e->players = create_players(num_players, e);
   e->mixer = audiomixer_init();
+  game_states_init[e->state](e);
 }
 
 int update_engine(engine *e, int dt) {
