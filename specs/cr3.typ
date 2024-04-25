@@ -1,10 +1,10 @@
-= PPII2 - CR2
+= PPII2 - CR3
 
 == Présents:
 - Esteban MANDJUKOWSKI
 - Tom BLOCH
 - Axelle HUMBERT
-- Timothée BRILLAUD (nomic)
+- Timothée BRILLAUD
 - Zoé LE GLEUT
 
 == Ordre du jour
