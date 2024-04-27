@@ -49,3 +49,24 @@ int max(int x, int y){
 int min(int x, int y){
   return x < y ? x : y;
 }
+
+bool is_point_in_FOV(double origin_x, double origin_y, double origin_angle,
+                     double fov, double px, double py) {
+  // Direction vector from camera to point
+  origin_angle = deg_to_rad(origin_angle);
+  fov = deg_to_rad(fov);
+  double dx = px - origin_x;
+  double dy = py - origin_y;
+
+  // Calculate the angle between camera orientation and the point
+  double theta_p = atan2(-dy, dx); // Angle from camera to point
+  theta_p = mod(theta_p, 2 * M_PI);
+  origin_angle = mod(origin_angle, 2 * M_PI);
+
+  // Angular distance between camera angle and point
+  double delta_theta = fabs(theta_p - origin_angle);
+
+  // Ensure angles are within the FOV range (0 to 2*PI)
+  delta_theta = mod(delta_theta, 2 * M_PI);
+  return delta_theta <= fov / 2;
+};

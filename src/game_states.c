@@ -26,7 +26,10 @@ void update_ingame_state(engine *e) {
   patch *p =
       get_patch_from_name(e->wData->sprites, e->wData->len_sprites, "SARGE1");
   if (p != NULL) {
-    SDL_RenderCopy(e->map_renderer->renderer, p->tex, NULL, NULL);
+    if (is_point_in_FOV(e->p->pos.x, e->p->pos.y, e->p->angle, FOV, 0, 0)) {
+      SDL_RenderCopy(e->map_renderer->renderer, p->tex, NULL, NULL);
+    }
+    
   }
   return;
 }

@@ -4,7 +4,7 @@
 #include "settings.h"
 #include "vec2.h"
 #include <math.h>
-
+#include <stdbool.h>
 double rad_to_deg(double rad);
 
 int angle_to_x_pos(double angle);
@@ -26,4 +26,7 @@ double fmax(double x, double y);
 int max(int x, int y);
 
 int min(int x, int y);
+
+bool is_point_in_FOV(double origin_x, double origin_y, double origin_angle,
+                     double fov, double px, double py);
 #endif
