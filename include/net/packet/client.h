@@ -12,11 +12,18 @@ extern const char* CLIENT_COMMAND_KATC;
 extern const char* CLIENT_COMMAND_PONG;
 extern const char* CLIENT_COMMAND_QUIT;
 extern const char* CLIENT_COMMAND_MOVE;
+extern const char* CLIENT_COMMAND_CHAT;
 
 int client_join(uint8_t* buf, char* player_name);
 int client_keep_alive(uint8_t* buf);
 int client_ping(uint8_t* buf, uint64_t data);
 int client_quit(uint8_t* buf);
-int client_move(uint8_t* buf, double x, double y, double angle);
-// TODO: client_player_list
+int client_move(uint8_t* buf, double x, double y, double z, double angle);
+int client_chat(uint8_t* buf, char* message);
+
+int client_join_from(uint8_t* buf, char** player_name);
+int client_ping_from(uint8_t* buf, uint64_t* data);
+int client_move_from(uint8_t* buf, double* x, double* y, double* z, double* angle);
+int client_chat_from(uint8_t* buf, char** message);
+
 #endif
