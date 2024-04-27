@@ -2,6 +2,7 @@
 #define UTIL_H
 
 #include "byte_reader.h"
+#include <ctype.h>
 
 unsigned long ElfHash(char *s);
 
@@ -11,4 +12,6 @@ unsigned long ElfHash(char *s);
 void fast_srand(int seed);
 
 int fast_rand(void);
+
+char *strtoupper(char *dest, const char *src);
 #endif

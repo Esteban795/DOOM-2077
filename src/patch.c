@@ -1,5 +1,7 @@
 #include "../include/patch.h"
-#include <ctype.h>
+#include <SDL2/SDL_render.h>
+#include <stdio.h>
+#include <strings.h>
 
 patch_header read_patch_header(FILE *f, int offset) {
   patch_header ph;
@@ -98,7 +100,7 @@ patch_column *read_patch_columns(FILE *f, patch_header ph, int offset,
   return columns;
 }
 
-Uint32 *get_pixels_from_patch(patch p) {
+Uint32 *get_pixels_from_patch(SDL_Renderer *renderer, patch p) {
   int ix = 0;
   int color_idx;
   SDL_PixelFormat *fmt = SDL_AllocFormat(SDL_PIXELFORMAT_RGBA8888);
@@ -125,7 +127,17 @@ Uint32 *get_pixels_from_patch(patch p) {
   return row_based;
 }
 
-patch create_patch(FILE *f, int patch_offset, char *patchname, color *palette) {
+SDL_Texture *get_texture_from_pixels(SDL_Renderer *renderer, Uint32 *pixels,
+                                     int width, int height) {
+  SDL_Surface *surface = SDL_CreateRGBSurfaceWithFormatFrom(
+      pixels, width, height, 32, width * 4, SDL_PIXELFORMAT_RGBA32);
+  SDL_Texture *tex = SDL_CreateTextureFromSurface(renderer, surface);
+  SDL_FreeSurface(surface);
+  return tex;
+}
+
+patch create_patch(FILE *f, SDL_Renderer *renderer, int patch_offset,
+                   char *patchname, color *palette) {
   patch p;
   p.patchname = patchname;
   p.palette = palette;
@@ -134,7 +146,8 @@ patch create_patch(FILE *f, int patch_offset, char *patchname, color *palette) {
   p.nb_columns = actual_number_of_columns;
   p.columns =
       read_patch_columns(f, p.header, patch_offset, actual_number_of_columns);
-  p.pixels = get_pixels_from_patch(p);
+  p.pixels = get_pixels_from_patch(renderer, p);
+  p.tex = get_texture_from_pixels(renderer, p.pixels, p.header.width, p.header.height);
   return p;
 }
 
@@ -175,8 +188,8 @@ void textures_patches_free(patch *patches, int patch_count) {
   free(patches);
 }
 
-patch *get_sprites(lump *directory, header *header, FILE *f, color *palette,
-                   int *patch_count) {
+patch *get_sprites(SDL_Renderer *renderer, lump *directory, header *header,
+                   FILE *f, color *palette, int *patch_count) {
   int start_patches =
       get_lump_index(directory, PATCHES_START, header->lump_count);
   int end_patches = get_lump_index(directory, PATCHES_END, header->lump_count);
@@ -185,14 +198,15 @@ patch *get_sprites(lump *directory, header *header, FILE *f, color *palette,
   for (int i = 0; i < *patch_count;
        i++) { // skip start_patches because it's only the marker
     patches[i] =
-        create_patch(f, directory[start_patches + i + 1].lump_offset,
+        create_patch(f, renderer, directory[start_patches + i + 1].lump_offset,
                      directory[start_patches + i + 1].lump_name, palette);
   }
   return patches;
 }
 
-patch *get_texture_patches(lump *directory, header *header, FILE *f,
-                           color *palette, int *len_textures_patches) {
+patch *get_texture_patches(SDL_Renderer *rendererer, lump *directory,
+                           header *header, FILE *f, color *palette,
+                           int *len_textures_patches) {
   int PNAMES_lump_index =
       get_lump_index(directory, "PNAMES", header->lump_count);
   lump PNAMES_lump = directory[PNAMES_lump_index];
@@ -203,14 +217,27 @@ patch *get_texture_patches(lump *directory, header *header, FILE *f,
   patch *texture_patches = malloc(sizeof(patch) * num_patches);
   for (int i = 0; i < *len_textures_patches; i++) {
     char *patch_name = read_texture_name(f, offset + i * 8, 8);
-    patch_name[0] = toupper(patch_name[0]); //because one letter randomly set to lowercase
-    i16 patch_index = get_lump_index(directory, patch_name, header->lump_count);
+    char *upper_patch_name = malloc(sizeof(char) * 9);
+    strtoupper(upper_patch_name, patch_name);
+    free(patch_name);
+    i16 patch_index =
+        get_lump_index(directory, upper_patch_name, header->lump_count);
     if (patch_index == -1) {
-      free(patch_name);
+      free(upper_patch_name);
       continue;
     }
-    texture_patches[i] = create_patch(f, directory[patch_index].lump_offset,
-                                      patch_name, palette);
+    texture_patches[i] =
+        create_patch(f, rendererer, directory[patch_index].lump_offset,
+                     upper_patch_name, palette);
   }
   return texture_patches;
+}
+
+patch *get_patch_from_name(patch *patches, int len_patches, char *name) {
+  for (int i = 0; i < len_patches; i++) {
+    if (!strcasecmp(patches[i].patchname, name)) {
+      return &patches[i];
+    }
+  }
+  return NULL;
 }

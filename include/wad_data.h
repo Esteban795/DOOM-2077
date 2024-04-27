@@ -57,7 +57,7 @@ struct WADData {
 
 typedef struct WADData wad_data;
 
-wad_data *init_wad_data(const char *path,char* map_name);
+wad_data *init_wad_data(SDL_Renderer* renderer,const char *path,char* map_name);
 
 void wad_data_free(wad_data *wd);
 #endif

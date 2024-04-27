@@ -1,6 +1,6 @@
 #include "../include/wad_data.h"
 
-wad_data *init_wad_data(const char *path,char* map_name) {
+wad_data *init_wad_data(SDL_Renderer* renderer,const char *path,char* map_name) {
   FILE *file = fopen(path, "rb");
   if (file == NULL) {
     printf("Error opening file\n");
@@ -31,10 +31,10 @@ wad_data *init_wad_data(const char *path,char* map_name) {
       get_lump_index(wd->directory, "PLAYPAL", wd->header.lump_count);
   wd->color_palette =
       get_color_palette_from_lump(file, wd->directory, PLAYPAL, 3, 0);
-  wd->sprites = get_sprites(wd->directory, &wd->header, file, wd->color_palette,
+  wd->sprites = get_sprites(renderer,wd->directory, &wd->header, file, wd->color_palette,
                             &wd->len_sprites);
   wd->texture_patches =
-      get_texture_patches(wd->directory, &wd->header, file, wd->color_palette,
+      get_texture_patches(renderer,wd->directory, &wd->header, file, wd->color_palette,
                           &wd->len_texture_patches);
   wd->texture_maps =
       get_texture_maps(file, wd->directory, &wd->header, wd->texture_patches,
