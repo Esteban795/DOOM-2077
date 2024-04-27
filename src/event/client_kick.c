@@ -6,7 +6,7 @@
 
 #include "../../include/event/client_kick.h"
 
-client_player_kick_event_t* client_player_kick_event_new(uint64_t entity_id) {
+client_player_kick_event_t* ClientPlayerKickEvent_new(uint64_t entity_id) {
     client_player_kick_event_t* e = malloc(sizeof(client_player_kick_event_t));
     e->tag = CLIENT_PLAYER_KICK_EVENT_TAG;
     e->entity_id = entity_id;
