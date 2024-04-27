@@ -28,14 +28,12 @@ int update_engine(engine *e, int dt) {
   e->DT = dt;
   SDL_SetRenderDrawColor(e->map_renderer->renderer, 0, 0, 0, 255);
   SDL_RenderClear(e->map_renderer->renderer);
+  memset(e->pixels, 0, WIDTH * HEIGHT * 4);
   handle_events(e);
   game_states_update[e->state](e);
   audiomixer_update(e->mixer, dt);
-  SDL_UpdateTexture(e->texture, NULL, e->pixels, WIDTH * 4);
-  SDL_RenderCopy(e->map_renderer->renderer, e->texture, NULL, NULL);
   // draw_crosshair(e->map_renderer,get_color(50,0),20);
   SDL_RenderPresent(e->map_renderer->renderer);
-  memset(e->pixels, 0, WIDTH * HEIGHT * 4);
   return 0;
 }
 
