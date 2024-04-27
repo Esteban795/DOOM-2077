@@ -9,7 +9,7 @@
 
 extern const char* CLIENT_COMMAND_JOIN;
 extern const char* CLIENT_COMMAND_KATC;
-extern const char* CLIENT_COMMAND_PONG;
+extern const char* CLIENT_COMMAND_PING;
 extern const char* CLIENT_COMMAND_QUIT;
 extern const char* CLIENT_COMMAND_MOVE;
 extern const char* CLIENT_COMMAND_CHAT;

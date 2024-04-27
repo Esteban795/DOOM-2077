@@ -15,7 +15,7 @@ const char* SERVER_COMMAND_QUIT = "QUIT";
 const char* SERVER_COMMAND_CHAT = "CHAT";
 const char* SERVER_COMMAND_TELL = "TELL";
 const char* SERVER_COMMAND_SCOR = "SCOR";
-
+const char* SERVER_COMMAND_MOVE = "MOVE";
 
 int server_acpt(uint8_t* buf, uint64_t player_id) {
     memcpy(buf, SERVER_COMMAND_ACPT, 4);

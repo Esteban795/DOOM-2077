@@ -10,10 +10,10 @@
 
 const char* CLIENT_COMMAND_JOIN = "JOIN";
 const char* CLIENT_COMMAND_KATC = "KATC";
-const char* CLIENT_COMMAND_PONG = "PING";
+const char* CLIENT_COMMAND_PING = "PING";
 const char* CLIENT_COMMAND_QUIT = "QUIT";
 const char* CLIENT_COMMAND_MOVE = "MOVE";
-const char* CLIENT_COMMAND_MOVE = "CHAT";
+const char* CLIENT_COMMAND_CHAT = "CHAT";
 
 int client_join(uint8_t* buf, char* player_name) {
     memcpy(buf, CLIENT_COMMAND_JOIN, 4);
@@ -31,7 +31,7 @@ int client_keep_alive(uint8_t* buf) {
 }
 
 int client_ping(uint8_t* buf, uint64_t data) {
-    memcpy(buf, CLIENT_COMMAND_PONG, 4);
+    memcpy(buf, CLIENT_COMMAND_PING, 4);
     write_uint16be(buf + 4, 8);
     write_uint64be(buf + 6, data);
     buf[14] = '\n';

@@ -29,9 +29,9 @@ CLIENT_OBJ = $(CLIENT_SRC:%.c=%.o)
 CLIENT_LIB = libnet.a libevent.a libecs.a libcollection.a
 CLIENT_LDFLAGS = -lSDL2 -lSDL2_ttf -lSDL2_mixer -lSDL2_net
 
-SERVER_SRC = server.c
+SERVER_SRC = server.c server/state.c $(patsubst $(srcdir)/%, %, $(wildcard $(srcdir)/event/*.c))
 SERVER_OBJ = $(SERVER_SRC:%.c=%.o)
-SERVER_LIB = libnet.a libevent.a
+SERVER_LIB = libnet.a libevent.a libecs.a libcollection.a
 SERVER_LDFLAGS = -lSDL2 -lSDL2_net
 
 LIBNET_SRC = net/util.c net/tracked_connection.c net/packet/client.c net/packet/server.c
