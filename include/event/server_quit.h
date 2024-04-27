@@ -14,11 +14,11 @@
 // server_player_quit_event_t is an event that is triggered when a player quits the server.
 typedef struct {
     uint16_t tag;
-    // name of the player that left the server.
-    char* name;
+    // entity_id of the player that left the server.
+    uint64_t entity_id;
 } server_player_quit_event_t;
 
 // ServerPlayerQuitEvent_new creates a new ServerPlayerQuitEvent.
-server_player_quit_event_t* ServerPlayerQuitEvent_new(char* name);
+server_player_quit_event_t* ServerPlayerQuitEvent_new(uint64_t entity_id);
 
 #endif
