@@ -84,8 +84,8 @@ int run_server(uint16_t port)
     world_register_system(&SERVER_STATE->world, BROADCAST_EVENT_SYSTEM.fn);
 
     // Listen for incoming packets
-    SERVER_STATE->incoming = SDLNet_AllocPacket(1024);
-    SERVER_STATE->outgoing = SDLNet_AllocPacket(1024);
+    SERVER_STATE->incoming = SDLNet_AllocPacket(4096);
+    SERVER_STATE->outgoing = SDLNet_AllocPacket(4096);
     assert(SERVER_STATE->incoming != NULL);
     assert(SERVER_STATE->outgoing != NULL);
 
@@ -94,6 +94,9 @@ int run_server(uint16_t port)
     {
         INSTANT_NOW(&cur_time);
         int elapsed = INSTANT_DIFF_MS(cur_time, SERVER_STATE->last_tick);
+
+        uint64_t entity_bin[32] = {0};
+        int entity_bin_count = 0;
         // While there's time left in this tick, process incoming packets.
         while (elapsed < SERVER_TICK_MS)
         {
@@ -171,10 +174,15 @@ int run_server(uint16_t port)
                         display_name_ct* display_name = (display_name_ct*) world_get_component(&SERVER_STATE->world, &ENTITY_BY_ID(SERVER_STATE->conns[conn_i].player_id), COMPONENT_TAG_DISPLAY_NAME);
                         server_player_quit_event_t* ev = ServerPlayerQuitEvent_new(SERVER_STATE->conns[conn_i].player_id, display_name_get(display_name));
                         world_queue_event(&SERVER_STATE->world, (event_t*) ev);
-                        entity_t e = ENTITY_BY_ID(SERVER_STATE->conns[conn_i].player_id);
-                        world_remove_entity(&SERVER_STATE->world, &e);  
                         SERVER_STATE->conns[conn_i] = SERVER_STATE->conns[SERVER_STATE->conn_count - 1];
-                        SERVER_STATE->conn_count--;                    
+                        SERVER_STATE->conn_count--;         
+
+                        // Add the player to the entity bin
+                        if (entity_bin_count < 32) {
+                            entity_bin[entity_bin_count++] = SERVER_STATE->conns[conn_i].player_id;           
+                        } else {
+                            printf("Entity bin is full! Leaking the entity...\n");
+                        }
                     } else {
                         printf("Unknown command: %s\n", cmd);
                     }
@@ -200,18 +208,36 @@ int run_server(uint16_t port)
             world_update(&SERVER_STATE->world);
         }
 
+        // Time to clean-up the entity bin
+        for (int i = 0; i < entity_bin_count; i++) {
+            world_remove_entity_by_id(&SERVER_STATE->world, entity_bin[i]);
+        }
+
         // Update the elapsed time since the last tick
         INSTANT_NOW(&SERVER_STATE->last_tick);
     }
-    // TODO: Kick all players
+    printf("Shutting down...\n");
 
-    SDLNet_FreePacket(SERVER_STATE->incoming);
-    SDLNet_FreePacket(SERVER_STATE->outgoing);
+    // Kill remaining players
+    for (int i = 0; i < SERVER_STATE->conn_count; i++) {
+        SERVER_STATE->outgoing->len = server_kick(SERVER_STATE->outgoing->data, "Server shutting down.");
+        SERVER_STATE->outgoing->address = SERVER_STATE->conns[i].ip;
+        if (SDLNet_UDP_Send(server, -1, SERVER_STATE->outgoing) > 0)
+        {
+            printf("Kicked %s.\n", addrstr);
+        }
+        world_remove_entity_by_id(&SERVER_STATE->world, SERVER_STATE->conns[i].player_id);
+    }
+    SERVER_STATE->conn_count = 0;
+
+    usleep(100000);
 
     // Clean-up
-    printf("Shutting down...\n");
+    printf("Cleaning-up...\n");
     world_destroy(&SERVER_STATE->world);
     SDLNet_UDP_Close(server);
+    SDLNet_FreePacket(SERVER_STATE->incoming);
+    SDLNet_FreePacket(SERVER_STATE->outgoing);
     SDLNet_Quit();
     return 0;
 }

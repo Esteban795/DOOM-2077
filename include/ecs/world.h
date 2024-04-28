@@ -72,6 +72,11 @@ entity_t** world_create_bulk_entity(world_t* world, component_t*** components, i
 void world_remove_entity(world_t* world, entity_t* entity);
 
 /*
+* Remove an entity from the world using only its ID.
+*/
+void world_remove_entity_by_id(world_t* world, uint64_t entity_id);
+
+/*
 * Register a new system
 */
 void world_register_system(world_t* world, int (*system_fn)(world_t*, event_t*));

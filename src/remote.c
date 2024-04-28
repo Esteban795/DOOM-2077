@@ -78,6 +78,25 @@ int remote_init(remote_server_t* server, char* addr, int port) {
     return 0;
 }
 
+void remote_disconnect(remote_server_t* r) {
+    if (r->connected < 2) {
+        return;
+    }
+
+    // Send a QUIT packet to the server
+    int len = client_quit(r->packet->data);
+    r->packet->len = len;
+    r->packet->address.host = r->addr.host;
+    r->packet->address.port = r->addr.port;
+    if (SDLNet_UDP_Send(r->socket, -1, r->packet) == 0) {
+        fprintf(stderr, "SDLNet_UDP_Send: %s\n", SDLNet_GetError());
+    } else {
+        printf("Disconnected from server.\n");
+    }
+
+    r->connected = -1;
+}
+
 void remote_destroy(remote_server_t* r) {
     SDLNet_FreePacket(r->packet);
     SDLNet_UDP_Close(r->socket);
@@ -85,7 +104,6 @@ void remote_destroy(remote_server_t* r) {
     r->packet = NULL;
     free(r);
 }
-
 
 int remote_update(engine* e, remote_server_t* r) {
     if (r->connected < 0) {

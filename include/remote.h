@@ -23,6 +23,9 @@ int remote_init(remote_server_t* server, char* host, int port);
 // Returns 0 on success, -1 on failure
 void remote_destroy(remote_server_t* server);
 
+// Disconnect from the server
+// By sending a QUIT packet to the server
+void remote_disconnect(remote_server_t* r);
 
 // Update the remote connection to the server
 //

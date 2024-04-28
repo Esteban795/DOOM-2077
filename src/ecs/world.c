@@ -136,6 +136,27 @@ void world_remove_entity(world_t* world, entity_t* entity) {
     free(entity);
 }
 
+void world_remove_entity_by_id(world_t* world, uint64_t entity_id) {
+    entity_t e = {.id = entity_id};
+
+    // Find the entity in the world
+    int ind = vec_binary_search(&world->entities, &e, compare_entity);
+    if (ind < 0) {
+        fprintf(stderr, "FATAL: Entity with id %ld not found in world!\n", entity_id);
+        return;
+    }
+
+    // Remove the entity from the world
+    entity_t* entity = (entity_t*) vec_get(&world->entities, ind);
+    vec_remove(&world->entities, ind, false);
+    int arch_index = *(int*) vec_get(&world->entity_archetype, ind);
+    archetype_t* archetype = (archetype_t*) vec_get(&world->archetypes, arch_index);
+    archetype_remove_entity(archetype, entity, true);
+    vec_remove(&world->entity_archetype, ind, true);
+
+    free(entity);
+}
+
 void world_register_system(world_t* world, int (*system_fn)(world_t*, event_t*)) {
     system_t* s = malloc(sizeof(system_t));
     s->fn = system_fn;

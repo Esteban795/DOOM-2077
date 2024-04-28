@@ -74,6 +74,7 @@ int main() {
     printf("FPS: %f\n", 1000.0 / dt);
     old = now;
   }
+  remote_disconnect(e->remote);
   engine_free(e);
   SDLNet_Quit();
   Mix_Quit();

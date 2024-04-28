@@ -47,7 +47,7 @@ int client_quit(uint8_t* buf) {
 
 int client_move(uint8_t* buf, double x, double y, double z, double angle) {
     memcpy(buf, CLIENT_COMMAND_MOVE, 4);
-    write_uint16be(buf + 4, 8*3);
+    write_uint16be(buf + 4, 8*4);
     write_uint64be(buf + 6,  (uint64_t) (x*1000));
     write_uint64be(buf + 14, (uint64_t) (y*1000));
     write_uint64be(buf + 22, (uint64_t) (z*1000));
