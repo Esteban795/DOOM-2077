@@ -129,10 +129,10 @@ Uint32 *get_pixels_from_patch(SDL_Renderer *renderer, patch p) {
 
 SDL_Texture *get_texture_from_pixels(SDL_Renderer *renderer, Uint32 *pixels,
                                      int width, int height) {
-  SDL_Surface *surface = SDL_CreateRGBSurfaceWithFormatFrom(
-      pixels, width, height, 32, width * 4, SDL_PIXELFORMAT_RGBA32);
-  SDL_Texture *tex = SDL_CreateTextureFromSurface(renderer, surface);
-  SDL_FreeSurface(surface);
+  SDL_Texture* tex = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
+                                       SDL_TEXTUREACCESS_STATIC, width, height);
+  SDL_SetTextureBlendMode(tex, SDL_BLENDMODE_BLEND);
+  SDL_UpdateTexture(tex, NULL, pixels, width * sizeof(Uint32));
   return tex;
 }
 
