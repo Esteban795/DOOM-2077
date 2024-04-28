@@ -351,3 +351,24 @@ void draw_crosshair(map_renderer *mr,color c,int size){
 }
 
 
+void render_sprite(map_renderer *mr, patch* sprite,int x,int y){
+  player* player = mr->engine->p;
+  double player_x = player->pos.x;
+  double player_y = player->pos.y;
+  double player_angle = mr->engine->p->angle;
+  vec2 sprite_pos = {.x = x, .y = y};
+  if (!is_point_in_FOV(player_x,player_y ,player_angle, FOV, x,y)) return;
+  double sprite_angle = point_to_angle(player->pos, sprite_pos);
+  double x1 = angle_to_x_pos(player_angle + sprite_angle);
+  double x_angle = norm(rad_to_deg(atan((HALF_WIDTH - x) / SCREEN_DISTANCE)));
+  double D = SCREEN_DISTANCE / cos(deg_to_rad(x_angle));
+  double d = dist(player->pos, sprite_pos);
+  double scale1 = fmin(MAX_SCALE, fmax(MIN_SCALE, D / d));
+  // int floor_height = mr->engine->seg_handler->lower_clip[(int)x1];
+  // printf("floor height: %d\n",floor_height);
+  SDL_Rect dst_rect = {.x = x1 - scale1 * sprite->header.width / 2,
+                       .y = HALF_HEIGHT - scale1 * sprite->header.height / 2,
+                       .w = scale1 * sprite->header.width,
+                       .h = scale1 * sprite->header.height};
+  SDL_RenderCopy(mr->renderer, sprite->tex, NULL, &dst_rect);
+}

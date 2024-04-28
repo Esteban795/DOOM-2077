@@ -5,6 +5,11 @@
 #include "vec2.h"
 #include <math.h>
 #include <stdbool.h>
+#include <stdlib.h>
+#include <stdio.h>
+#define MAX_SCALE 64.0
+#define MIN_SCALE 0.00390625
+
 double rad_to_deg(double rad);
 
 int angle_to_x_pos(double angle);
@@ -29,4 +34,9 @@ int min(int x, int y);
 
 bool is_point_in_FOV(double origin_x, double origin_y, double origin_angle,
                      double fov, double px, double py);
+
+double scale_from_global_angle(double angle, int x, double normal_angle,
+                               double dist);
+
+vec2 find_segments_intersection(vec2 p1, vec2 q1, vec2 p2, vec2 q2);
 #endif

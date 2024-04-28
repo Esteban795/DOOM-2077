@@ -3,18 +3,6 @@
 
 bool BSP_TRAVERSE = true;
 
-double scale_from_global_angle(segment_handler *sh, int x, double normal_angle,
-                               double dist) {
-
-  double x_angle = rad_to_deg(atan((HALF_WIDTH - x) / SCREEN_DISTANCE));
-  double num =
-      fabs(SCREEN_DISTANCE *
-           cos(deg_to_rad(-normal_angle + x_angle - sh->player->angle)));
-  double den = dist * cos(deg_to_rad(x_angle));
-  double scale = num / den;
-  scale = fmin(MAX_SCALE, fmax(MIN_SCALE, scale));
-  return scale;
-}
 
 void draw_solid_walls_range(segment_handler *sh, int x1, int x2) {
   segment *seg = sh->seg;
@@ -45,9 +33,9 @@ void draw_solid_walls_range(segment_handler *sh, int x1, int x2) {
       hyp * cos(deg_to_rad(offset_angle)); // distance from player to wall
 
   double rw_scale_step = 0.0;
-  double scale1 = scale_from_global_angle(sh, x1, normal_angle, raw_dist);
+  double scale1 = scale_from_global_angle(sh->engine->p->angle, x1, normal_angle, raw_dist);
   if (x1 < x2) {
-    double scale2 = scale_from_global_angle(sh, x2, normal_angle, raw_dist);
+    double scale2 = scale_from_global_angle(sh->engine->p->angle, x2, normal_angle, raw_dist);
     rw_scale_step =
         (scale2 - scale1) /
         (x2 - x1); // interpolation to find the scale for second vertex
@@ -93,6 +81,7 @@ void draw_solid_walls_range(segment_handler *sh, int x1, int x2) {
       int wy2 = (int)fmin(draw_wall_y2,
                           sh->lower_clip[i] - 1); // min(HEIGHT, lower_clip)
       if (wy1 < wy2) {
+        sh->screen_range[i] = wy2;
         double angle =
             center_angle - rad_to_deg(atan((HALF_WIDTH - i) / SCREEN_DISTANCE));
         double texture_column = raw_dist * tan(deg_to_rad(angle)) - rw_offset;
@@ -170,9 +159,9 @@ void draw_portal_walls_range(segment_handler *sh, int x1, int x2) {
       hyp * cos(deg_to_rad(offset_angle)); // distance from player to wall
 
   double rw_scale_step = 0.0;
-  double scale1 = scale_from_global_angle(sh, x1, normal_angle, raw_dist);
+  double scale1 = scale_from_global_angle(sh->engine->p->angle, x1, normal_angle, raw_dist);
   if (x1 < x2) {
-    double scale2 = scale_from_global_angle(sh, x2, normal_angle, raw_dist);
+    double scale2 = scale_from_global_angle(sh->engine->p->angle, x2, normal_angle, raw_dist);
     rw_scale_step =
         (scale2 - scale1) /
         (x2 - x1); // interpolation to find the scale for second vertex

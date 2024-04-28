@@ -41,4 +41,7 @@ void draw_wall_column(map_renderer *mr, texture_map *texture,
 
 void draw_flat(map_renderer *mr, flat *texture, i16 light_level, int x,
                int y1, int y2, int world_z);
+
+
+void render_sprite(map_renderer *mr, patch* sprite,int x,int y);
 #endif

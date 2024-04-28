@@ -35,6 +35,7 @@ int main() {
   uint64_t old = SDL_GetTicks();
   SDL_ShowCursor(SDL_DISABLE);
   SDL_SetRelativeMouseMode(SDL_TRUE);
+  SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
   engine *e = init_engine("maps/DOOM1.WAD",renderer);
   read_map(e, renderer, "E1M2");
   int dt = 0;
@@ -45,8 +46,9 @@ int main() {
     if (res == 1)
       break;
     
-    //printf("FPS: %f\n", 1000.0 / dt);
+    printf("FPS: %f\n", 1000.0 / dt);
     old = now;
+    // break;
   }
   engine_free(e);
   Mix_Quit();
