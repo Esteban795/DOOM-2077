@@ -15,7 +15,7 @@
 typedef struct {
     uint16_t tag;
     // name of the player that joined the server.
-    char* name;
+    char name[128];
 } server_player_join_event_t;
 
 // ServerPlayerJoinEvent_new creates a new ServerPlayerJoinEvent.

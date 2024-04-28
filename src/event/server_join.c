@@ -9,7 +9,7 @@
 server_player_join_event_t* ServerPlayerJoinEvent_new(char* name) {
     server_player_join_event_t* e = malloc(sizeof(server_player_join_event_t));
     e->tag = SERVER_PLAYER_JOIN_EVENT_TAG;
-    e->name = malloc(strlen(name) + 1);
-    strcpy(e->name, name);
+    strncpy(e->name, name, 127);
+    e->name[127] = '\0';
     return e;
 }

@@ -178,6 +178,9 @@ void world_queue_event(world_t* world, event_t* event) {
     vec_push(&world->event_queue, (void*) event);
 }
 
+unsigned int world_queue_length(world_t* world) {
+    return (unsigned int) vec_length(&world->event_queue);
+}
 
 void world_add_components(world_t* world, entity_t* entity, component_t** components, int component_count) {
     // Find the entity in the world
@@ -308,7 +311,10 @@ void world_update(world_t* world) {
         event_t* event = (event_t*) vec_get(&world->event_queue, i);
         for (int j = 0; j < (int) vec_length(&world->systems); j++) {
             system_t* system = (system_t*) vec_get(&world->systems, j);
-            system->fn(world, event);
+            if (system->fn(world, event) < 0) {
+                // Prevent further processing of the event if the system returns a negative value.
+                break;
+            } 
         }
         i++;
     }

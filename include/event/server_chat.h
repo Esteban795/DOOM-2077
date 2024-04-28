@@ -16,7 +16,7 @@
 typedef struct {
     uint16_t tag;
     // The message is a null-terminated string.
-    char* message;
+    char message[1024];
     // length of the message.
     uint16_t message_length;
     // is this a broadcast message?

@@ -15,7 +15,7 @@
 typedef struct {
     uint16_t tag;
     // name of the player that joined the server.
-    char* name;
+    char name[128];
     // entity_id of the player that joined the server.
     uint64_t entity_id;
 } client_player_join_event_t;

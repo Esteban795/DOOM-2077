@@ -21,15 +21,19 @@ ALL_LDFLAGS = $(LDFLAGS) $(shell pkg-config --libs sdl2)
 
 # -  TARGETS  -  #
 CLIENT_SRC = audio/mixer.c audio/emitter.c blockmap.c bsp.c button.c byte_reader.c color.c \
-    component/health.c component/position.c component/weapon.c engine.c events.c flat.c game_states.c \
+    engine.c events.c flat.c game_states.c \
 	geometry.c header.c hitscan.c keybindings.c linedef.c lump.c main.c map_renderer.c node.c \
 	patch.c player.c remote.c sector.c segment.c segment_handler.c sidedef.c sound.c subsector.c \
-	textarea.c texture.c thing.c timer.c util.c vertex.c wad_data.c weapons.c 
+	textarea.c texture.c thing.c timer.c util.c vertex.c wad_data.c weapons.c \
+	$(patsubst $(srcdir)/%, %, $(wildcard $(srcdir)/component/*.c)) 
 CLIENT_OBJ = $(CLIENT_SRC:%.c=%.o)
 CLIENT_LIB = libnet.a libevent.a libecs.a libcollection.a
 CLIENT_LDFLAGS = -lSDL2 -lSDL2_ttf -lSDL2_mixer -lSDL2_net
 
-SERVER_SRC = server.c server/state.c $(patsubst $(srcdir)/%, %, $(wildcard $(srcdir)/event/*.c))
+SERVER_SRC = server.c server/state.c \
+ 	$(patsubst $(srcdir)/%, %, $(wildcard $(srcdir)/event/*.c)) \
+	$(patsubst $(srcdir)/%, %, $(wildcard $(srcdir)/system/server/*.c)) \
+	$(patsubst $(srcdir)/%, %, $(wildcard $(srcdir)/component/*.c)) 
 SERVER_OBJ = $(SERVER_SRC:%.c=%.o)
 SERVER_LIB = libnet.a libevent.a libecs.a libcollection.a
 SERVER_LDFLAGS = -lSDL2 -lSDL2_net

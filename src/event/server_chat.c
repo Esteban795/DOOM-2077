@@ -9,8 +9,9 @@
 server_chat_event_t* server_chat_event_new(uint16_t tag, char* message, bool is_broadcast, bool is_title) {
     server_chat_event_t* event = malloc(sizeof(server_chat_event_t));
     event->tag = tag;
-    event->message = message;
-    event->message_length = strlen(message);
+    strncpy(event->message, message, 1023);
+    event->message[1023] = '\0';
+    event->message_length = strlen(event->message);
     event->is_broadcast = is_broadcast;
     event->is_title = is_title;
     return event;

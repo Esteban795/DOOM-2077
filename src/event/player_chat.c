@@ -10,8 +10,9 @@ player_chat_event_t* player_chat_event_new(uint16_t tag, uint64_t entity_id, cha
     player_chat_event_t* event = malloc(sizeof(player_chat_event_t));
     event->tag = tag;
     event->entity_id = entity_id;
-    event->message = message;
-    event->message_length = strlen(message);
+    strncpy(event->message, message, 1023);
+    event->message[1023] = '\0';
+    event->message_length = strlen(event->message);
     return event;
 }
 

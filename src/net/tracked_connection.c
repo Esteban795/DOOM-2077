@@ -26,6 +26,28 @@ int broadcast(UDPsocket* sock, tracked_connection_t* connections, int num_connec
     return result;
 }
 
+int broadcast_except(UDPsocket* sock, tracked_connection_t* connections, int num_connections, uint64_t player_id, uint8_t* buf, int len) {
+    UDPpacket** packets = SDLNet_AllocPacketV(num_connections, len);
+    for (int i = 0; i < num_connections; i++) {
+        packets[i]->channel = -1;
+        packets[i]->address = connections[i].ip;
+        memcpy(packets[i]->data, buf, len);
+        packets[i]->len = len;
+    }
+
+    int idx = find_conn_by_id(connections, num_connections, player_id);
+    int result;
+    if (idx >= 0) {
+        // Swap the last packet with the one we want to exclude
+        packets[idx] = packets[num_connections - 1];
+        result = SDLNet_UDP_SendV(*sock, packets, num_connections - 1);
+    } else {
+        result = SDLNet_UDP_SendV(*sock, packets, num_connections);
+    }
+    SDLNet_FreePacketV(packets);
+    return result;
+}
+
 int find_conn_by_ip(tracked_connection_t* connections, int num_connections, IPaddress* ip) {
     for (int i = 0; i < num_connections; i++) {
         if (cmp_addr(&connections[i].ip, ip) == 0) {

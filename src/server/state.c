@@ -16,6 +16,7 @@
 #include "../../include/server/state.h"
 
 static server_state_t* SERVER_STATE = NULL; 
+static int SERVER_RUNNING = 1;
 
 int compare_instant(const Instant* a, const Instant* b)
 {

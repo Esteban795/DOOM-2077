@@ -6,6 +6,7 @@
 #include <assert.h>
 #include <signal.h>
 #include <time.h>
+#include <unistd.h>
 
 #ifndef _LIB_SDL_NET_H
 #define _LIB_SDL_NET_H
@@ -24,25 +25,21 @@
 #include "../include/event/server_quit.h"
 #include "../include/event/player_chat.h"
 #include "../include/event/player_move.h"
+#include "../include/system/server/broadcast_event.h"
 
 // Interrupt signal handler
 //
 // Handle in particular SIGINT (Ctrl+C), SIGQUIT, and SIGTERM, for a graceful shutdown.
 void signal_handler(int sig)
 {
-    if (SERVER_STATE == NULL)
-    {
-        printf("Caught signal %d.\n", sig);
-        return;
-    }
     switch (sig)
     {
     case SIGINT:
-        SERVER_STATE->running = -1;
+        SERVER_RUNNING = -1;
         break;
     case SIGQUIT:
     case SIGTERM:
-        SERVER_STATE->running = -2;
+        SERVER_RUNNING = -2;
         break;
     default:
         printf("Caught signal %d.\n", sig);
@@ -78,9 +75,12 @@ int run_server(uint16_t port)
     assert(SERVER_STATE != NULL);
     SERVER_STATE->sock = server;
     SERVER_STATE->conn_count = 0;
-    SERVER_STATE->running = 1;
+    SERVER_RUNNING = 1;
     INSTANT_NOW(&SERVER_STATE->last_tick);
     world_init(&SERVER_STATE->world);
+
+    // Register the systems
+    world_register_system(&SERVER_STATE->world, BROADCAST_EVENT_SYSTEM.fn);
 
     // Listen for incoming packets
     SERVER_STATE->incoming = SDLNet_AllocPacket(1024);
@@ -89,10 +89,10 @@ int run_server(uint16_t port)
     assert(SERVER_STATE->outgoing != NULL);
 
     Instant cur_time;
-    while (SERVER_STATE->running > 0)
+    while (SERVER_RUNNING > 0)
     {
         INSTANT_NOW(&cur_time);
-        int elapsed = INSTANT_DIFF_MS(SERVER_STATE->last_tick, cur_time);
+        int elapsed = INSTANT_DIFF_MS(cur_time, SERVER_STATE->last_tick);
         // While there's time left in this tick, process incoming packets.
         while (elapsed < SERVER_TICK_MS)
         {
@@ -139,13 +139,11 @@ int run_server(uint16_t port)
                     {
                         double x, y, z, angle;
                         client_move_from(payload, &x, &y, &z, &angle);
-                        printf("Player %ld moved to (%f, %f, %f) at angle %f.\n", SERVER_STATE->conns[conn_i].player_id, x, y, z, angle);
                         player_move_event_t* ev = ServerPlayerMoveEvent_new(SERVER_STATE->conns[conn_i].player_id, x, y, z, angle);
                         world_queue_event(&SERVER_STATE->world, (event_t*) ev);
                     } else if (strncmp(cmd, CLIENT_COMMAND_CHAT, 4) == 0) {
                         char* message;
                         client_chat_from(payload, &message);
-                        printf("Player %ld says: %s\n", SERVER_STATE->conns[conn_i].player_id, message);
                         player_chat_event_t* ev = ServerPlayerChatEvent_new(SERVER_STATE->conns[conn_i].player_id, message);
                         world_queue_event(&SERVER_STATE->world, (event_t*) ev);
                     } else {
@@ -160,9 +158,19 @@ int run_server(uint16_t port)
                 printf("SDLNet_UDP_Recv: %s\n", SDLNet_GetError());
             }
 
-            // Update the world state
+            usleep(1000);
+            // Update the elapsed time since the last tick
+            INSTANT_NOW(&cur_time);
+            elapsed = INSTANT_DIFF_MS(cur_time, SERVER_STATE->last_tick);
+        }
+
+        // Update the world state
+        if (world_queue_length(&SERVER_STATE->world) > 0)
+        {
+            printf("Processing %d events...\n", world_queue_length(&SERVER_STATE->world));
             world_update(&SERVER_STATE->world);
         }
+
         // Update the elapsed time since the last tick
         INSTANT_NOW(&SERVER_STATE->last_tick);
     }

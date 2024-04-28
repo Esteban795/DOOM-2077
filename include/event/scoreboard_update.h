@@ -18,7 +18,7 @@ typedef struct {
     // number of entries in the scoreboard.
     uint16_t entries_count;
     // entries' names.
-    char** entries;
+    char entries[10][128];
     // entries' deaths.
     uint16_t* deaths;
     // entries' kills.

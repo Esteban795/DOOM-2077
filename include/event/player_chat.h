@@ -19,7 +19,7 @@ typedef struct {
     uint64_t entity_id;
     // message that the player sent.
     // The message is a null-terminated string.
-    char* message;
+    char message[1024];
     // length of the message.
     uint16_t message_length;
 } player_chat_event_t;

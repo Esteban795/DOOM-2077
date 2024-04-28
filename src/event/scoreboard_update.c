@@ -9,8 +9,14 @@
 scoreboard_update_event_t* scoreboard_update_event_new(uint16_t tag, uint16_t entries_count, char** entries, uint16_t* deaths, uint16_t* kills) {
     scoreboard_update_event_t* event = malloc(sizeof(scoreboard_update_event_t));
     event->tag = tag;
+    if (entries_count > 10) {
+        entries_count = 10;
+    }
     event->entries_count = entries_count;
-    event->entries = entries;
+    for (int i = 0; i < entries_count; i++) {
+        strncpy(event->entries[i], entries[i], 127);
+        event->entries[i][127] = '\0';
+    }
     event->deaths = deaths;
     event->kills = kills;
     return event;

@@ -97,6 +97,11 @@ archetype_t* world_get_archetype_by_tags(world_t* world, int component_tags[], i
 void world_queue_event(world_t* world, event_t* event);
 
 /*
+* Get the length of the event queue
+*/
+unsigned int world_queue_length(world_t* world);
+
+/*
 * Add components to an entity
 */
 void world_add_components(world_t* world, entity_t* entity, component_t** components, int component_count);
