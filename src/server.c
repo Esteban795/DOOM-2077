@@ -14,7 +14,9 @@
 #include <SDL2/SDL_net.h>
 #endif
 
+
 #include "../include/server/state.h"
+#include "../include/server/player.h"
 #include "../include/net/util.h"
 #include "../include/net/tracked_connection.h"
 #include "../include/net/packet/server.h"
@@ -71,7 +73,6 @@ int run_server(uint16_t port)
     printf("Listening on %s...\n", addrstr);
 
     // Initialize server state
-    SERVER_STATE = (server_state_t *)malloc(sizeof(server_state_t));
     assert(SERVER_STATE != NULL);
     SERVER_STATE->sock = server;
     SERVER_STATE->conn_count = 0;
@@ -101,20 +102,18 @@ int run_server(uint16_t port)
             if (ready == 1)
             {
                 addrtocstr(&SERVER_STATE->incoming->address, addrstr);
-                char sdata[2048] = {0};
-                memcpy(sdata, (char *)SERVER_STATE->incoming->data, SERVER_STATE->incoming->len);
+                uint8_t sdata[2048] = {0};
+                memcpy(sdata, SERVER_STATE->incoming->data, SERVER_STATE->incoming->len);
                 printf("incoming packet from %s > %s\n", addrstr, sdata);
 
                 int cursor = 0;
                 char cmd[5] = {0};
                 int16_t payload_len = 0;
-                uint8_t *payload = NULL;
                 // For each message in the packet
                 while (cursor + 6 <= SERVER_STATE->incoming->len)
                 {
-                    memcpy(cmd, sdata + cursor, 4);
-                    payload_len = read_uint16be((uint8_t *)(sdata + cursor + 4));
-                    payload = (uint8_t *)(sdata + cursor + 6);
+                    memcpy(cmd, (char*) (sdata + cursor), 4);
+                    payload_len = read_uint16be(sdata + cursor + 4);
                     if (cursor + 6 + payload_len + 1 > SERVER_STATE->incoming->len)
                     {
                         printf("Invalid packet: message length exceeds packet length.\n");
@@ -126,7 +125,7 @@ int run_server(uint16_t port)
                     if (strncmp(cmd, CLIENT_COMMAND_PING, 4) == 0)
                     {
                         uint64_t data;
-                        client_ping_from(payload, &data);
+                        client_ping_from(sdata + cursor, &data);
                         int len = server_pong(SERVER_STATE->outgoing->data, data);
                         SERVER_STATE->outgoing->address = SERVER_STATE->incoming->address;
                         SERVER_STATE->outgoing->len = len;
@@ -138,14 +137,44 @@ int run_server(uint16_t port)
                     else if (strncmp(cmd, CLIENT_COMMAND_MOVE, 4) == 0)
                     {
                         double x, y, z, angle;
-                        client_move_from(payload, &x, &y, &z, &angle);
+                        client_move_from(sdata + cursor, &x, &y, &z, &angle);
                         player_move_event_t* ev = ServerPlayerMoveEvent_new(SERVER_STATE->conns[conn_i].player_id, x, y, z, angle);
                         world_queue_event(&SERVER_STATE->world, (event_t*) ev);
                     } else if (strncmp(cmd, CLIENT_COMMAND_CHAT, 4) == 0) {
                         char* message;
-                        client_chat_from(payload, &message);
+                        client_chat_from(sdata + cursor, &message);
                         player_chat_event_t* ev = ServerPlayerChatEvent_new(SERVER_STATE->conns[conn_i].player_id, message);
                         world_queue_event(&SERVER_STATE->world, (event_t*) ev);
+                    } else if (strncmp(cmd, CLIENT_COMMAND_JOIN, 4) == 0)  {
+                        char name_[128] = {0};
+                        char* name = (char*) name_;
+                        client_join_from(sdata + cursor, &name);
+                        if (SERVER_STATE->conn_count < MAX_CLIENTS) {
+                            SERVER_STATE->conns[SERVER_STATE->conn_count].ip = SERVER_STATE->incoming->address;
+                            SERVER_STATE->conns[SERVER_STATE->conn_count].player_id = server_create_player(&SERVER_STATE->world, name)->id;
+                            server_player_join_event_t* ev = ServerPlayerJoinEvent_new(SERVER_STATE->conns[SERVER_STATE->conn_count].player_id, name);
+                            world_queue_event(&SERVER_STATE->world, (event_t*) ev);
+                            SERVER_STATE->conn_count++;
+
+                            // Send the ACPT message
+                            int len = server_acpt(SERVER_STATE->outgoing->data, SERVER_STATE->conns[SERVER_STATE->conn_count - 1].player_id);
+                            SERVER_STATE->outgoing->address = SERVER_STATE->incoming->address;
+                            SERVER_STATE->outgoing->len = len;
+                            if (SDLNet_UDP_Send(server, -1, SERVER_STATE->outgoing) > 0)
+                            {
+                                printf("Accepted %s as %lu.\n", name, SERVER_STATE->conns[SERVER_STATE->conn_count - 1].player_id);
+                            }
+                        } else {
+                            printf("%s tried to join but the server is full!\n", name);
+                        }
+                    } else if (strncmp(cmd, CLIENT_COMMAND_QUIT, 4) == 0) {
+                        display_name_ct* display_name = (display_name_ct*) world_get_component(&SERVER_STATE->world, &ENTITY_BY_ID(SERVER_STATE->conns[conn_i].player_id), COMPONENT_TAG_DISPLAY_NAME);
+                        server_player_quit_event_t* ev = ServerPlayerQuitEvent_new(SERVER_STATE->conns[conn_i].player_id, display_name_get(display_name));
+                        world_queue_event(&SERVER_STATE->world, (event_t*) ev);
+                        entity_t e = ENTITY_BY_ID(SERVER_STATE->conns[conn_i].player_id);
+                        world_remove_entity(&SERVER_STATE->world, &e);  
+                        SERVER_STATE->conns[conn_i] = SERVER_STATE->conns[SERVER_STATE->conn_count - 1];
+                        SERVER_STATE->conn_count--;                    
                     } else {
                         printf("Unknown command: %s\n", cmd);
                     }
@@ -182,7 +211,6 @@ int run_server(uint16_t port)
     // Clean-up
     printf("Shutting down...\n");
     world_destroy(&SERVER_STATE->world);
-    free(SERVER_STATE);
     SDLNet_UDP_Close(server);
     SDLNet_Quit();
     return 0;

@@ -30,7 +30,8 @@ CLIENT_OBJ = $(CLIENT_SRC:%.c=%.o)
 CLIENT_LIB = libnet.a libevent.a libecs.a libcollection.a
 CLIENT_LDFLAGS = -lSDL2 -lSDL2_ttf -lSDL2_mixer -lSDL2_net
 
-SERVER_SRC = server.c server/state.c \
+SERVER_SRC = server.c \
+	$(patsubst $(srcdir)/%, %, $(wildcard $(srcdir)/server/*.c)) \
  	$(patsubst $(srcdir)/%, %, $(wildcard $(srcdir)/event/*.c)) \
 	$(patsubst $(srcdir)/%, %, $(wildcard $(srcdir)/system/server/*.c)) \
 	$(patsubst $(srcdir)/%, %, $(wildcard $(srcdir)/component/*.c)) 

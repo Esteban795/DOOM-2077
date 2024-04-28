@@ -49,7 +49,7 @@ int broadcast_event(world_t* world, event_t* event) {
             printf("%s joined the server.\n", server_player_join_event->name);
 
             char msg[256];
-            strncat(msg, server_player_join_event->name, 128);
+            strncat(msg, server_player_join_event->name, 127);
             strcat(msg, " joined the server.");
             //len = server_join(buf, server_player_join_event->name);
             len = 0;
@@ -59,12 +59,10 @@ int broadcast_event(world_t* world, event_t* event) {
         }
         case SERVER_PLAYER_QUIT_EVENT_TAG: {
             server_player_quit_event_t* server_player_quit_event = (server_player_quit_event_t*)event;
-            pid = ENTITY_BY_ID(server_player_quit_event->entity_id);
-            display_name_ct* display_name = (display_name_ct*) world_get_component(world, &pid, COMPONENT_TAG_DISPLAY_NAME);
-            printf("%s left the server.\n", display_name_get(display_name));
+            printf("%s left the server.\n", server_player_quit_event->name);
 
             char msg[256];
-            strncat(msg, display_name_get(display_name), 128);
+            strncat(msg, server_player_quit_event->name, 127);
             strcat(msg, " left the server.");
             len = server_quit(buf, server_player_quit_event->entity_id);
             len += server_server_chat(buf + len, msg, true, false);
@@ -84,4 +82,6 @@ int broadcast_event(world_t* world, event_t* event) {
             printf("Unimplemented event tag: %d\n", event->tag);
             break;
     }
+    
+    return 0;
 }

@@ -16,9 +16,11 @@ typedef struct {
     uint16_t tag;
     // entity_id of the player that left the server.
     uint64_t entity_id;
+    // name of the player that left the server.
+    char name[128];
 } server_player_quit_event_t;
 
 // ServerPlayerQuitEvent_new creates a new ServerPlayerQuitEvent.
-server_player_quit_event_t* ServerPlayerQuitEvent_new(uint64_t entity_id);
+server_player_quit_event_t* ServerPlayerQuitEvent_new(uint64_t entity_id, char* name);
 
 #endif

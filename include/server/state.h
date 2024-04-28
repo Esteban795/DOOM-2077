@@ -30,8 +30,10 @@ typedef struct {
     UDPpacket* outgoing;
 } server_state_t;
 
-static server_state_t* SERVER_STATE;
-static int SERVER_RUNNING;
+#define SERVER_STATE (&server_state)
+extern server_state_t server_state;
+
+extern int SERVER_RUNNING;
 
 int compare_instant(const Instant* a, const Instant* b);
 

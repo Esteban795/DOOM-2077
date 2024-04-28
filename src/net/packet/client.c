@@ -66,9 +66,12 @@ int client_chat(uint8_t* buf, char* message) {
 
 int client_join_from(uint8_t* buf, char** player_name) {
     int clen = read_uint16be(buf + 4);
-    *player_name = malloc(clen * sizeof(char));
-    memcpy(*player_name, buf + 6, clen);
-    *player_name[clen-1] = '\0';
+    int clen_ = clen;
+    if (clen >= 128) {
+        clen_ = 128;
+    }
+    memcpy(*player_name, buf + 6, clen_-1);
+    (*player_name)[clen_-1] = '\0';
     return 4 + 2 + clen + 1;
 }
 
@@ -88,8 +91,11 @@ int client_move_from(uint8_t* buf, double* x, double* y, double* z, double* angl
 
 int client_chat_from(uint8_t* buf, char** message) {
     int clen = read_uint16be(buf + 4);
-    *message = malloc(clen * sizeof(char));
-    memcpy(*message, buf + 6, clen);
-    *message[clen-1] = '\0';
+    int clen_ = clen;
+    if (clen >= 1024) {
+        clen_ = 1024;
+    }
+    memcpy(*message, buf + 6, clen_);
+    (*message)[clen_-1] = '\0';
     return 4 + 2 + clen + 1;
 }

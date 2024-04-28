@@ -123,18 +123,24 @@ int server_acpt_from(uint8_t* buf, uint64_t* player_id) {
 int server_join_from(uint8_t* buf, uint64_t* player_id, char** player_name) {
     *player_id = read_uint64be(buf + 6);
     int clen = read_uint16be(buf + 4) - 8;
-    *player_name = malloc(clen * sizeof(char));
-    memcpy(*player_name, buf + 14, clen);
-    *player_name[clen-1] = '\0';
+    int clen_ = clen;
+    if (clen >= 128) {
+        clen_ = 128;
+    }
+    memcpy(*player_name, buf + 14, clen_);
+    (*player_name)[clen_-1] = '\0';
     return 4 + 2 + 8 + clen + 1;
 
 }
 
 int server_kick_from(uint8_t* buf, char** reason) {
     int clen = read_uint16be(buf + 4);
-    *reason = malloc(clen * sizeof(char));
-    memcpy(*reason, buf + 6, clen);
-    *reason[clen-1] = '\0';
+    int clen_ = clen;
+    if (clen >= 1024) {
+        clen_ = 1024;
+    }
+    memcpy(*reason, buf + 6, clen_);
+    *reason[clen_-1] = '\0';
     return 4 + 2 + clen + 1;
 }
 
@@ -160,19 +166,25 @@ int server_player_move_from(uint8_t* buf, uint64_t* player_id, double* x, double
 int server_player_chat_from(uint8_t* buf, uint64_t* player_id, char** message) {
     *player_id = read_uint64be(buf + 6);
     int clen = read_uint16be(buf + 4) - 8;
-    *message = malloc(clen * sizeof(char));
-    memcpy(*message, buf + 14, clen);
-    *message[clen-1] = '\0';
+    int clen_ = clen;
+    if (clen >= 1024) {
+        clen_ = 1024;
+    }
+    memcpy(*message, buf + 14, clen_);
+    (*message)[clen_-1] = '\0';
     return 4 + 2 + 8 + clen + 1;
 }
 
 int server_server_chat_from(uint8_t* buf, char** message, bool* is_broadcast, bool* is_title) {
     int clen = read_uint16be(buf + 4) - 1;
+    int clen_ = clen;
+    if (clen >= 1024) {
+        clen_ = 1024;
+    }
     *is_broadcast = (buf[6] & 0x01) != 0;
     *is_title = (buf[6] & 0x02) != 0;
-    *message = malloc(clen * sizeof(char));
-    memcpy(*message, buf + 7, clen);
-    *message[clen-1] = '\0';
+    memcpy(*message, buf + 7, clen_);
+    (*message)[clen_-1] = '\0';
     return 4 + 2 + 1 + clen + 1;
 }
 
@@ -181,7 +193,7 @@ int server_scoreboard_update_from(uint8_t* buf, uint16_t* entries_count, char***
     int plen = 2;
     *names = malloc(*entries_count * sizeof(char*));
     for (int i = 0; i < *entries_count; i++) {
-        int clen = strnlen((char*) buf + 8 + plen, 128);
+        int clen = strnlen((char*) buf + 8 + plen, 127);
         (*names)[i] = malloc(clen * sizeof(char));
         (*names)[i][clen-1] = '\0';
         plen += clen;

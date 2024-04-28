@@ -36,9 +36,10 @@ int remote_init(remote_server_t* server, char* addr, int port) {
     if (strncat(addr, "", 1) == 0) {
         fprintf(stderr, "WARN: No SERVER_ADDR found! No connection will be initiated!\n");
         server->addr.port = 0;
-        server->connected = false;
+        server->connected = -1;
         return 0;
     }
+    server->connected = 0;
 
     printf("Connecting to %s:%d...\n", addr, port);
 
@@ -87,7 +88,7 @@ void remote_destroy(remote_server_t* r) {
 
 
 int remote_update(engine* e, remote_server_t* r) {
-    if (!r->connected) {
+    if (r->connected < 0) {
         return 0;
     }
 
@@ -120,9 +121,9 @@ int remote_update(engine* e, remote_server_t* r) {
                 return 1;
             } else if (strncmp(cmd, SERVER_COMMAND_ACPT, 4) == 0) {
                 uint64_t player_id = read_uint64be(payload);
-                if (!r->connected) {
+                if (r->connected == 0) {
                     printf("Accepted by server as %lu\n", player_id);
-                    r->connected = true;
+                    r->connected = 1;
                     r->player_id = player_id;
                 } else {
                     printf("Ignoring server ACPT for %lu.\n", player_id);
@@ -145,9 +146,14 @@ int remote_update(engine* e, remote_server_t* r) {
         }
     }
 
+    if (r->connected < 2) {
+        // No need to send any more packets if the connection is not fully established!
+        return 0;
+    }
+
     // Send the player data for the current frame
     position_ct* pos = player_get_position(e->p);
-    int len = client_move(r->packet->data, position_get_x(pos), position_get_y(pos), position_get_angle(pos));
+    int len = client_move(r->packet->data, position_get_x(pos), position_get_y(pos), position_get_z(pos), position_get_angle(pos));
     r->packet->len = len;
     r->packet->address.host = r->addr.host;
     r->packet->address.port = r->addr.port;

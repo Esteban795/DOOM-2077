@@ -45,13 +45,21 @@ int main() {
   old = SDL_GetTicks();
   while(SDL_GetTicks() - old < 5000) {
     int status = remote_update(e, e->remote);
-    if (status == 0)
+    if (e->remote->connected == 1) {
+      e->remote->connected = 2;
       break; // Connection established
-    if (status == -1) {
-      printf("Network error occured! Pursuing in solo...\n");
-    } else {
-      printf("Server refused the connection! Pursuing in solo...\n");
+    } else if (e->remote->connected == -2) {
+      e->remote->player_id = 0;
+      printf("Error at remote connection\n");
+      break;
+    } else if (e->remote->connected == -1) {
+      e->remote->player_id = 0;
+      break; // Solo mode
     }
+  }
+  if (e->remote->connected == 0) {
+    printf("Connection to server failed! Pursuing in solo...\n");
+    e->remote->connected = -1;
     e->remote->player_id = 0;
   }
   read_map(e, renderer, "E1M2");

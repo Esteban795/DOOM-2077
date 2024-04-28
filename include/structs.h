@@ -67,7 +67,7 @@ struct RemoteServer {
     UDPsocket socket;
     UDPpacket* packet;
     struct timespec next_tick;
-    bool connected;
+    int connected; // 0: not connected (waiting for connection), 1: handshake completed, 2: connected, -1: disconnected, -2: error
     uint64_t player_id;
 };
 
