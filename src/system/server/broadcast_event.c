@@ -59,7 +59,6 @@ int broadcast_event(world_t* world, event_t* event) {
             broadcast(&SERVER_STATE->sock, SERVER_STATE->conns, SERVER_STATE->conn_count, buf, len);
 
             // Send the latest info on the other players.
-            /*
             SERVER_STATE->outgoing->len = 0;
             for (int i = 0; i < SERVER_STATE->conn_count; i++) {
                 if (SERVER_STATE->conns[i].player_id == server_player_join_event->entity_id) {
@@ -75,7 +74,6 @@ int broadcast_event(world_t* world, event_t* event) {
                 SERVER_STATE->outgoing->len += server_player_move(SERVER_STATE->outgoing->data + SERVER_STATE->outgoing->len, SERVER_STATE->conns[i].player_id, pos->x, pos->y, pos->z, pos->angle);
             }
             SDLNet_UDP_Send(SERVER_STATE->sock, -1, SERVER_STATE->outgoing);
-            */
             break;
         }
         case SERVER_PLAYER_QUIT_EVENT_TAG: {
