@@ -7,6 +7,7 @@
 #include "../../../include/event/event.h"
 #include "../../../include/system/server/broadcast_event.h"
 #include "../../../include/component/display_name.h"
+#include "../../../include/component/position.h"
 #include "../../../include/net/packet/server.h"
 #include "../../../include/net/tracked_connection.h"
 
@@ -49,13 +50,32 @@ int broadcast_event(world_t* world, event_t* event) {
             server_player_join_event_t* server_player_join_event = (server_player_join_event_t*)event;
             printf("%s joined the server.\n", server_player_join_event->name);
 
+            // Broadcast the other players!
             char msg[256];
             strncat(msg, server_player_join_event->name, 128);
             strcat(msg, " joined the server.");
-            //len = server_join(buf, server_player_join_event->name);
-            len = 0;
+            len = server_join(buf, server_player_join_event->entity_id, server_player_join_event->name);
             len += server_server_chat(buf + len, msg, true, false);
             broadcast(&SERVER_STATE->sock, SERVER_STATE->conns, SERVER_STATE->conn_count, buf, len);
+
+            // Send the latest info on the other players.
+            /*
+            SERVER_STATE->outgoing->len = 0;
+            for (int i = 0; i < SERVER_STATE->conn_count; i++) {
+                if (SERVER_STATE->conns[i].player_id == server_player_join_event->entity_id) {
+                    SERVER_STATE->outgoing->address = SERVER_STATE->conns[i].ip;
+                    continue;
+                }
+                pid = ENTITY_BY_ID(SERVER_STATE->conns[i].player_id);
+                display_name_ct* display_name = (display_name_ct*) world_get_component(world, &pid, COMPONENT_TAG_DISPLAY_NAME);
+                position_ct* pos = (position_ct*) world_get_component(world, &pid, COMPONENT_TAG_POSITION);
+                if (display_name == NULL) continue;
+                SERVER_STATE->outgoing->len += server_join(SERVER_STATE->outgoing->data, SERVER_STATE->conns[i].player_id, display_name_get(display_name));
+                if (pos == NULL) continue;
+                SERVER_STATE->outgoing->len += server_player_move(SERVER_STATE->outgoing->data + SERVER_STATE->outgoing->len, SERVER_STATE->conns[i].player_id, pos->x, pos->y, pos->z, pos->angle);
+            }
+            SDLNet_UDP_Send(SERVER_STATE->sock, -1, SERVER_STATE->outgoing);
+            */
             break;
         }
         case SERVER_PLAYER_QUIT_EVENT_TAG: {

@@ -86,7 +86,7 @@ void switch_weapon(player* p, int weapon_id){
 
 void add_weapon(player* p, int weapon_id,weapons_array* wa){
     /*If the player doesnt have the weapon and the weapon have a limited magsize*/
-    unsigned int* ammo = player_get_weapon(p)->ammunitions;
+    int* ammo = player_get_weapon(p)->ammunitions;
     printf("tout va  bien\n");
     assert(weapon_id < wa->weapons_number);
     assert(wa->weapons[weapon_id] != NULL);

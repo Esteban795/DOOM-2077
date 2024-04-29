@@ -45,7 +45,7 @@ int update_engine(engine *e, int dt) {
   SDL_SetRenderDrawColor(e->map_renderer->renderer, 0, 0, 0, 255);
   SDL_RenderClear(e->map_renderer->renderer);
   if (world_queue_length(e->world) > 0) {
-    printf("Processing %d events...\n", world_queue_length(e->world));
+    //printf("Processing %d events...\n", world_queue_length(e->world));
     world_update(e->world);
   }
   memset(e->pixels, 0, WIDTH * HEIGHT * 4);

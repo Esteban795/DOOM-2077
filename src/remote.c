@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <time.h>
+#include <assert.h>
 
 #include "../include/settings.h"
 #include "../include/structs.h"
@@ -141,6 +142,8 @@ int remote_update(engine* e, remote_server_t* r) {
             memcpy(cmd, (char*) sdata + offset, 4);
             uint16_t len = read_uint16be(sdata + offset + 4);
 
+            printf("Got command: %s\n", cmd);
+
             if (strncmp(cmd, SERVER_COMMAND_KICK, 4) == 0) {
                 char reason_[1024] = {0};
                 char* reason = (char*) reason_;
@@ -200,14 +203,18 @@ int remote_update(engine* e, remote_server_t* r) {
                     comps[2] = weapon_create(ammo);
                     comps[3] = display_name_create(player_name);
                     entity_t* entity = world_insert_entity(e->world, player_id, comps, 4);
-                    // If e == NULL, an entity already exists with this id, replacing it.
-                    world_remove_entity_by_id(e->world, player_id);
-                    entity = world_insert_entity(e->world, player_id, comps, 4);
+                    // If entity == NULL, an entity already exists with this id, replacing it.
+                    if (entity == NULL) {
+                        world_remove_entity_by_id(e->world, player_id);
+                        entity = world_insert_entity(e->world, player_id, comps, 4);
+                    }
+                    assert(entity != NULL);
 
                     // Insert the player entity in the recorded playerlist.
                     for (int i = 0; i < PLAYER_MAXIMUM; i++) {
                         if (e->players[i] == NULL) {
                             e->players[i] = entity;
+                            assert(e->players[i] != NULL);
                             break;
                         }
                     }
@@ -229,7 +236,7 @@ int remote_update(engine* e, remote_server_t* r) {
                     // Move the selected player
                     int ind = player_find_by_id(e->players, player_id);
                     if (ind >= 0) {
-                        pos = (position_ct*)world_get_component(e->world, e->p->entity, COMPONENT_TAG_POSITION);
+                        pos = (position_ct*)world_get_component(e->world, e->players[ind], COMPONENT_TAG_POSITION);
                     }
                 }
                 if (pos != NULL) {
@@ -267,7 +274,7 @@ int remote_update(engine* e, remote_server_t* r) {
                 printf("Unknown command: %s\n", cmd);
             }
 
-            offset += (6 + len);
+            offset += (6 + len + 1);
         }
     }
 
