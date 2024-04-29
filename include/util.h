@@ -14,4 +14,6 @@ void fast_srand(int seed);
 int fast_rand(void);
 
 char *strtoupper(char *dest, const char *src);
+
+void swap(void** arr,int i,int j);
 #endif

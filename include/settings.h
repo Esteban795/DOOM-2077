@@ -49,4 +49,6 @@
 #define AL_ROLLOFF_FACTOR 0.5
 #define AL_MAX_DISTANCE 500
 
+#define NUM_PLAYERS 3
+
 #endif

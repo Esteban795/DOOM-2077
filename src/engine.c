@@ -1,7 +1,5 @@
 #include "../include/engine.h"
 #include <SDL2/SDL_render.h>
-#define num_players 1 // autres joueurs
-
 engine *init_engine(const char *wadPath, SDL_Renderer *renderer) {
   engine *e = malloc(sizeof(engine));
   e->wadPath = wadPath;
@@ -20,7 +18,7 @@ void read_map(engine *e, SDL_Renderer *renderer, char *map_name) {
   e->bsp = bsp_init(e, e->p);
   e->map_renderer = map_renderer_init(e, renderer);
   e->seg_handler = segment_handler_init(e);
-  e->players = create_players(num_players, e);
+  e->players = create_players(NUM_PLAYERS, e);
   e->mixer = audiomixer_init();
 }
 
@@ -44,7 +42,7 @@ void engine_free(engine *e) {
   player_free(e->p);
   map_renderer_free(e->map_renderer);
   segment_handler_free(e->seg_handler);
-  players_free(e->players, num_players);
+  players_free(e->players, NUM_PLAYERS);
   audiomixer_free(e->mixer);
   free(e);
 }

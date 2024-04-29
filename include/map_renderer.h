@@ -9,6 +9,9 @@
 #include "vertex.h"
 #include "settings.h"
 
+extern player* players_to_draw[NUM_PLAYERS];
+extern int next_index;
+
 int *get_map_bounds(vertex *vertexes, int len);
 
 int remap_x(int current_x, int x_min, int x_max);
@@ -44,4 +47,6 @@ void draw_flat(map_renderer *mr, flat *texture, i16 light_level, int x,
 
 
 void render_sprite(map_renderer *mr, patch* sprite,int x,int y);
+
+void render_players(map_renderer* mr);
 #endif

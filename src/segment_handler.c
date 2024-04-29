@@ -81,7 +81,6 @@ void draw_solid_walls_range(segment_handler *sh, int x1, int x2) {
       int wy2 = (int)fmin(draw_wall_y2,
                           sh->lower_clip[i] - 1); // min(HEIGHT, lower_clip)
       if (wy1 < wy2) {
-        sh->screen_range[i] = wy2;
         double angle =
             center_angle - rad_to_deg(atan((HALF_WIDTH - i) / SCREEN_DISTANCE));
         double texture_column = raw_dist * tan(deg_to_rad(angle)) - rw_offset;

@@ -59,6 +59,7 @@ struct Player {
   int active_weapon;
   int life;
   int cooldown;
+  i16 subsector_id;
 };
 
 struct Engine {

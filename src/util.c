@@ -28,3 +28,9 @@ char *strtoupper(char *dest, const char *src) {
   while (*dest++ = toupper(*src++));
   return result;
 }
+
+void swap(void** arr,int i,int j){
+  void* tmp = arr[i];
+  arr[i] = arr[j];
+  arr[j] = tmp;
+}

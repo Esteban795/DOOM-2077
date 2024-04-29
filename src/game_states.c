@@ -19,18 +19,14 @@ void update_menu_state(engine *e) {
 void update_ingame_state(engine *e) {
   update_player(e->p);
   get_ssector_height(e->bsp);
+  update_players_subsectors(e->bsp);
   segment_handler_update(e->seg_handler);
   update_bsp(e->bsp);
+  render_players(e->map_renderer);
   // draw_crosshair(e->map_renderer,get_color(50,0),20);
   SDL_UpdateTexture(e->texture, NULL, e->pixels, WIDTH * 4);
+  SDL_SetTextureBlendMode(e->texture, SDL_BLENDMODE_BLEND);
   SDL_RenderCopy(e->map_renderer->renderer, e->texture, NULL, NULL);
-  patch *p =
-      get_patch_from_name(e->wData->sprites, e->wData->len_sprites, "SARGE1");
-  if (p != NULL) {
-    render_sprite(e->map_renderer, p, 0, 0);
-    render_sprite(e->map_renderer, p, 448,128);
-    render_sprite(e->map_renderer, p, -1792,1024);
-  }
   return;
 }
 
