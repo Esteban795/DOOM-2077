@@ -8,6 +8,30 @@
 
 SDL_PixelFormat *fmt = NULL;
 
+
+static bool is_on_back_side(node n,vec2 pos) {
+  i16 dx = pos.x - n.x_partition;
+  i16 dy = pos.y - n.y_partition;
+  return dx * n.dy_partition - dy * n.dx_partition <= 0;
+}
+
+double get_xy_floor_height(bsp *b, vec2 pos) {
+  size_t node_id = b->root_node_id;
+  while (node_id < SUBSECTOR_IDENTIFIER) {
+    node n = b->nodes[node_id];
+    bool is_back_side = is_on_back_side(n,pos);
+    if (is_back_side) {
+      node_id = n.back_child_id;
+    } else {
+      node_id = n.front_child_id;
+    }
+  }
+  i16 subsector_id = node_id - SUBSECTOR_IDENTIFIER;
+  subsector ssector = b->subsectors[subsector_id];
+  segment seg = ssector.segs[0];
+  return seg.front_sector->floor_height;
+}
+
 color get_random_color2() {
   color c;
   c.r = rand() % 256;
@@ -360,15 +384,17 @@ void render_sprite(map_renderer *mr, patch* sprite,int x,int y){
   if (!is_point_in_FOV(player_x,player_y ,player_angle, FOV, x,y)) return;
   double sprite_angle = point_to_angle(player->pos, sprite_pos);
   double x1 = angle_to_x_pos(player_angle + sprite_angle);
-  double x_angle = norm(rad_to_deg(atan((HALF_WIDTH - x) / SCREEN_DISTANCE)));
+  double x_angle = norm(rad_to_deg(atan((HALF_WIDTH - x1) / SCREEN_DISTANCE)));
   double D = SCREEN_DISTANCE / cos(deg_to_rad(x_angle));
   double d = dist(player->pos, sprite_pos);
   double scale1 = fmin(MAX_SCALE, fmax(MIN_SCALE, D / d));
-  // int floor_height = mr->engine->seg_handler->lower_clip[(int)x1];
-  // printf("floor height: %d\n",floor_height);
+  double sprite_floor_height = get_xy_floor_height(mr->engine->bsp, sprite_pos);
+  double player_floor_height = get_xy_floor_height(mr->engine->bsp, player->pos);
+  double sprite_z = sprite_floor_height - player_floor_height; // used to adjust sprite height from player higher or lower z index
   SDL_Rect dst_rect = {.x = x1 - scale1 * sprite->header.width / 2,
-                       .y = HALF_HEIGHT - scale1 * sprite->header.height / 2,
+                       .y = HALF_HEIGHT - sprite_z * scale1,
                        .w = scale1 * sprite->header.width,
                        .h = scale1 * sprite->header.height};
   SDL_RenderCopy(mr->renderer, sprite->tex, NULL, &dst_rect);
 }
+

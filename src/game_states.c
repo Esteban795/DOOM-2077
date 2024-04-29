@@ -29,7 +29,7 @@ void update_ingame_state(engine *e) {
   if (p != NULL) {
     render_sprite(e->map_renderer, p, 0, 0);
     render_sprite(e->map_renderer, p, 448,128);
-    printf("\n");
+    render_sprite(e->map_renderer, p, -1792,1024);
   }
   return;
 }
