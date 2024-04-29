@@ -101,7 +101,7 @@ void add_weapon(player* p, int weapon_id,weapons_array* wa){
 }
 
 void add_ammo(player* p, int weapon_id, int ammo){
-    unsigned int* ammos = player_get_weapon(p)->ammunitions;
+    int* ammos = player_get_weapon(p)->ammunitions;
     if (ammos[weapon_id] >= 0){
         ammos[weapon_id] += ammo;
     }

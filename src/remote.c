@@ -11,6 +11,13 @@
 #include "../include/player.h"
 #include "../include/component/position.h"
 
+#include "../include/event/client_join.h"
+#include "../include/event/client_quit.h"
+#include "../include/event/player_chat.h"
+#include "../include/event/player_move.h"
+#include "../include/event/server_chat.h"
+#include "../include/event/scoreboard_update.h"
+
 #ifndef _LIB_SDL_NET_H
 #define _LIB_SDL_NET_H
 #define WITHOUT_SDL
@@ -123,22 +130,25 @@ int remote_update(engine* e, remote_server_t* r) {
 
     // Receive a packet from the server
     if (SDLNet_UDP_Recv(r->socket, r->packet) > 0) {
-        char sdata[2048] = {0};
+        uint8_t sdata[2048] = {0};
         memcpy(sdata, r->packet->data, r->packet->len);
         int offset = 0;
 
         // Process one message at a time
         char cmd[5] = {0};
         while (offset + 5 < r->packet->len) {
-            memcpy(cmd, sdata + offset, 4);
-            uint16_t len = read_uint16be((uint8_t*) (sdata + offset + 4));
-            uint8_t* payload = (uint8_t*) (sdata + offset + 6);
+            memcpy(cmd, (char*) sdata + offset, 4);
+            uint16_t len = read_uint16be(sdata + offset + 4);
 
             if (strncmp(cmd, SERVER_COMMAND_KICK, 4) == 0) {
-                printf("Kicked by server: %s\n", payload);
+                char reason[1024];
+                server_kick_from(sdata + offset, (char**) &reason);
+                printf("Kicked by server: %s\n", reason);
+                r->connected = -1;
                 return 1;
             } else if (strncmp(cmd, SERVER_COMMAND_ACPT, 4) == 0) {
-                uint64_t player_id = read_uint64be(payload);
+                uint64_t player_id;
+                server_acpt_from(sdata+offset, &player_id);
                 if (r->connected == 0) {
                     printf("Accepted by server as %lu\n", player_id);
                     r->connected = 1;
@@ -147,15 +157,51 @@ int remote_update(engine* e, remote_server_t* r) {
                     printf("Ignoring server ACPT for %lu.\n", player_id);
                 }
             } else if (strncmp(cmd, SERVER_COMMAND_PONG, 4) == 0) {
-                uint64_t data = read_uint64be(payload);
+                uint64_t data;
+                server_pong_from(sdata+offset, &data);
                 printf("Pong from server: %lu\n", data);
             } else if (strncmp(cmd, SERVER_COMMAND_QUIT, 4) == 0) {
-                uint64_t player_id = read_uint64be(payload);
+                uint64_t player_id;
+                server_quit_from(sdata+offset, &player_id);
+                event_t* event = (event_t*) ClientPlayerQuitEvent_new(player_id);
+                world_queue_event(e->world, event);
                 printf("Player %lu quit\n", player_id);
             } else if (strncmp(cmd, SERVER_COMMAND_JOIN, 4) == 0) {
-                uint64_t player_id = read_uint64be(payload);
-                char* player_name = read_cstring(payload + 8);
+                uint64_t player_id;
+                char player_name[128];
+                server_join_from(sdata+offset, &player_id, (char**) &player_name);
+                event_t* event = (event_t*) ClientPlayerJoinEvent_new(player_name, player_id);
+                world_queue_event(e->world, event);
                 printf("Player %s joined as %lu\n", player_name, player_id);
+            } else if (strncmp(cmd, SERVER_COMMAND_MOVE, 4) == 0) {
+                uint64_t player_id;
+                double x,y,z,angle;
+                server_player_move_from(sdata+offset, &player_id, &x, &y, &z, &angle);
+                event_t* event = (event_t*) ClientPlayerMoveEvent_new(player_id, x, y, z, angle);
+                world_queue_event(e->world, event);
+            } else if (strncmp(cmd, SERVER_COMMAND_CHAT, 4) == 0) {
+                uint64_t player_id;
+                char message[1024];
+                server_player_chat_from(sdata+offset, &player_id, (char**) &message);
+                event_t* event = (event_t*) ClientPlayerChatEvent_new(player_id, message);
+                world_queue_event(e->world, event);
+            } else if (strncmp(cmd, SERVER_COMMAND_TELL, 4) == 0) {
+                bool is_title, is_broadcast;
+                char message[1024];
+                server_server_chat_from(sdata+offset, (char**) &message, &is_broadcast, &is_title);
+                event_t* event = (event_t*) ClientServerChatEvent_new(message, is_broadcast, is_title);
+                world_queue_event(e->world, event);
+            } else if (strncmp(cmd, SERVER_COMMAND_SCOR, 4) == 0) {
+                char** names = NULL;
+                uint16_t* deaths = NULL;
+                uint16_t* kills  = NULL;
+                uint16_t entry_count;
+                server_scoreboard_update_from(sdata+offset, &entry_count, &names, &deaths, &kills);
+                event_t* event = (event_t*) ClientScoreboardUpdateEvent_new(entry_count, names, deaths, kills);
+                world_queue_event(e->world, event);
+                free(names);
+                free(deaths);
+                free(kills);
             } else {
                 printf("Unknown command: %s\n", cmd);
             }

@@ -49,15 +49,16 @@ int main() {
       e->remote->connected = 2;
       break; // Connection established
     } else if (e->remote->connected == -2) {
-      e->remote->player_id = 0;
       printf("Error at remote connection\n");
       break;
     } else if (e->remote->connected == -1) {
-      e->remote->player_id = 0;
       break; // Solo mode
     }
+    if (status < 0) {
+      printf("Error while initializing the remote sync...");
+    }
   }
-  if (e->remote->connected == 0) {
+  if (e->remote->connected < 2) {
     printf("Connection to server failed! Pursuing in solo...\n");
     e->remote->connected = -1;
     e->remote->player_id = 0;

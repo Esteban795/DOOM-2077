@@ -20,7 +20,7 @@
 
 player *player_init(engine *e) {
   player *p = malloc(sizeof(player));
-  unsigned int* ammo = malloc(WEAPONS_NUMBER*sizeof(unsigned int));
+  int ammo[WEAPONS_NUMBER];
   ammo[0] = -2;
   for (int i = 1; i < WEAPONS_NUMBER; i++) {
     ammo[i] = -1;
@@ -377,7 +377,6 @@ void update_player(player *p) {
 void player_free(player *p) {
   free_keybinds(p->keybinds);
   free_settings(p->settings);
-  free(player_get_weapon(p)->ammunitions);
   world_remove_entity(p->engine->world, p->entity);
   free(p);
 }

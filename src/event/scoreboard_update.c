@@ -16,9 +16,9 @@ scoreboard_update_event_t* scoreboard_update_event_new(uint16_t tag, uint16_t en
     for (int i = 0; i < entries_count; i++) {
         strncpy(event->entries[i], entries[i], 127);
         event->entries[i][127] = '\0';
+        event->deaths[i] = deaths[i];
+        event->kills[i] = kills[i];
     }
-    event->deaths = deaths;
-    event->kills = kills;
     return event;
 }
 

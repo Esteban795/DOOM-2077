@@ -7,12 +7,11 @@
 #define SERVER_PLAYER_HEIGHT 41.0
 
 entity_t* server_create_player(world_t* world, char* name) {
-    unsigned int* ammo = malloc(SERVER_WEAPON_NUMBER*sizeof(unsigned int));
+    int ammo[WEAPONS_NUMBER];
     ammo[0] = -2;
-    for (int i = 1; i < SERVER_WEAPON_NUMBER; i++) {
+    for (int i = 1; i < WEAPONS_NUMBER; i++) {
         ammo[i] = -1;
     }
-
     double coords[3] = {0.0, 0.0, SERVER_PLAYER_HEIGHT};
     component_t** comps = malloc(sizeof(component_t*) * 4);
     comps[0] = position_create(coords, 180.0);
@@ -21,5 +20,6 @@ entity_t* server_create_player(world_t* world, char* name) {
     comps[3] = display_name_create(name);
         
     entity_t* player = world_create_entity(world, comps, 4);
+    free(comps);
     return player;
 }

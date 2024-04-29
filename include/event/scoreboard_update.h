@@ -20,9 +20,9 @@ typedef struct {
     // entries' names.
     char entries[10][128];
     // entries' deaths.
-    uint16_t* deaths;
+    uint16_t deaths[10];
     // entries' kills.
-    uint16_t* kills;
+    uint16_t kills[10];
 } scoreboard_update_event_t;
 
 // ClientScoreboardUpdateEvent_new creates a new ClientScoreboardUpdateEvent.

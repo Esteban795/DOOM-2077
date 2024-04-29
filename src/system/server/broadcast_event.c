@@ -49,7 +49,7 @@ int broadcast_event(world_t* world, event_t* event) {
             printf("%s joined the server.\n", server_player_join_event->name);
 
             char msg[256];
-            strncat(msg, server_player_join_event->name, 127);
+            strncat(msg, server_player_join_event->name, 128);
             strcat(msg, " joined the server.");
             //len = server_join(buf, server_player_join_event->name);
             len = 0;
@@ -62,7 +62,7 @@ int broadcast_event(world_t* world, event_t* event) {
             printf("%s left the server.\n", server_player_quit_event->name);
 
             char msg[256];
-            strncat(msg, server_player_quit_event->name, 127);
+            strncat(msg, server_player_quit_event->name, 128);
             strcat(msg, " left the server.");
             len = server_quit(buf, server_player_quit_event->entity_id);
             len += server_server_chat(buf + len, msg, true, false);
