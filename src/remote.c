@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include <time.h>
 
+#include "../include/settings.h"
 #include "../include/structs.h"
 #include "../include/remote.h"
 #include "../include/net/packet/client.h"
@@ -10,6 +11,10 @@
 #include "../include/net/util.h"
 #include "../include/player.h"
 #include "../include/component/position.h"
+#include "../include/component/health.h"
+#include "../include/component/weapon.h"
+#include "../include/component/display_name.h"
+
 
 #include "../include/event/client_join.h"
 #include "../include/event/client_quit.h"
@@ -22,10 +27,6 @@
 #define _LIB_SDL_NET_H
 #define WITHOUT_SDL
 #include <SDL2/SDL_net.h>
-#endif
-
-#ifndef PLAYER_USERNAME
-#define PLAYER_USERNAME "player"
 #endif
 
 #ifndef NETWORK_TICK_MS
@@ -141,7 +142,8 @@ int remote_update(engine* e, remote_server_t* r) {
             uint16_t len = read_uint16be(sdata + offset + 4);
 
             if (strncmp(cmd, SERVER_COMMAND_KICK, 4) == 0) {
-                char reason[1024];
+                char reason_[1024] = {0};
+                char* reason = (char*) reason_;
                 server_kick_from(sdata + offset, (char**) &reason);
                 printf("Kicked by server: %s\n", reason);
                 r->connected = -1;
@@ -166,28 +168,87 @@ int remote_update(engine* e, remote_server_t* r) {
                 event_t* event = (event_t*) ClientPlayerQuitEvent_new(player_id);
                 world_queue_event(e->world, event);
                 printf("Player %lu quit\n", player_id);
+
+                // Removing the player from the playerlist.
+                // TODO: Remove the player from the ECS.
+                int ind = player_find_by_id(e->players, player_id);
+                if (ind >= 0) {
+                    e->players[ind] = NULL;
+                }
             } else if (strncmp(cmd, SERVER_COMMAND_JOIN, 4) == 0) {
                 uint64_t player_id;
-                char player_name[128];
+                char player_name_[128] = {0};
+                char* player_name = (char*) player_name_;
                 server_join_from(sdata+offset, &player_id, (char**) &player_name);
                 event_t* event = (event_t*) ClientPlayerJoinEvent_new(player_name, player_id);
                 world_queue_event(e->world, event);
                 printf("Player %s joined as %lu\n", player_name, player_id);
+
+                // If the player is not us, then insert the player in the ECCS
+                if (player_id != e->p->entity->id) {
+                    int ammo[WEAPONS_NUMBER];
+                    ammo[0] = -2;
+                    for (int i = 1; i < WEAPONS_NUMBER; i++) {
+                        ammo[i] = -1;
+                    }
+
+                    // Add player to the ECS world
+                    double coords[3] = {0.0, 0.0, PLAYER_HEIGHT};
+                    component_t** comps = malloc(sizeof(component_t*) * 4);
+                    comps[0] = position_create(coords, 180.0);
+                    comps[1] = health_create(100.0, 100.0);
+                    comps[2] = weapon_create(ammo);
+                    comps[3] = display_name_create(player_name);
+                    entity_t* entity = world_insert_entity(e->world, player_id, comps, 4);
+                    // If e == NULL, an entity already exists with this id, replacing it.
+                    world_remove_entity_by_id(e->world, player_id);
+                    entity = world_insert_entity(e->world, player_id, comps, 4);
+
+                    // Insert the player entity in the recorded playerlist.
+                    for (int i = 0; i < PLAYER_MAXIMUM; i++) {
+                        if (e->players[i] == NULL) {
+                            e->players[i] = entity;
+                            break;
+                        }
+                    }
+                    free(comps);
+                }
             } else if (strncmp(cmd, SERVER_COMMAND_MOVE, 4) == 0) {
                 uint64_t player_id;
                 double x,y,z,angle;
                 server_player_move_from(sdata+offset, &player_id, &x, &y, &z, &angle);
                 event_t* event = (event_t*) ClientPlayerMoveEvent_new(player_id, x, y, z, angle);
                 world_queue_event(e->world, event);
+
+                // Moving the player
+                position_ct* pos = NULL;
+                if (player_id == e->p->entity->id) {
+                    // Rollback / TP my position
+                    pos = player_get_position(e->p);
+                } else {
+                    // Move the selected player
+                    int ind = player_find_by_id(e->players, player_id);
+                    if (ind >= 0) {
+                        pos = (position_ct*)world_get_component(e->world, e->p->entity, COMPONENT_TAG_POSITION);
+                    }
+                }
+                if (pos != NULL) {
+                    pos->x = x;
+                    pos->y = y;
+                    pos->z = z;
+                    pos->angle = angle;
+                }
             } else if (strncmp(cmd, SERVER_COMMAND_CHAT, 4) == 0) {
                 uint64_t player_id;
-                char message[1024];
+                char message_[1024] = {0};
+                char* message = (char*) message_;
                 server_player_chat_from(sdata+offset, &player_id, (char**) &message);
                 event_t* event = (event_t*) ClientPlayerChatEvent_new(player_id, message);
                 world_queue_event(e->world, event);
             } else if (strncmp(cmd, SERVER_COMMAND_TELL, 4) == 0) {
                 bool is_title, is_broadcast;
-                char message[1024];
+                char message_[1024] = {0};
+                char* message = (char*) message_;
                 server_server_chat_from(sdata+offset, (char**) &message, &is_broadcast, &is_title);
                 event_t* event = (event_t*) ClientServerChatEvent_new(message, is_broadcast, is_title);
                 world_queue_event(e->world, event);

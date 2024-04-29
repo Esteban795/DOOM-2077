@@ -30,6 +30,7 @@ int broadcast_event(world_t* world, event_t* event) {
             player_chat_event_t* player_chat_event = (player_chat_event_t*)event;
             pid = ENTITY_BY_ID(player_chat_event->entity_id);
             display_name_ct* display_name = (display_name_ct*) world_get_component(world, &pid, COMPONENT_TAG_DISPLAY_NAME);
+            if (display_name == NULL) break;
             printf("%s (%ld)> %s\n", display_name_get(display_name), player_chat_event->entity_id, player_chat_event->message);
 
             len = server_player_chat(buf, player_chat_event->entity_id, player_chat_event->message);
@@ -73,6 +74,7 @@ int broadcast_event(world_t* world, event_t* event) {
             player_move_event_t* player_move_event = (player_move_event_t*)event;
             pid = ENTITY_BY_ID(player_move_event->entity_id);
             display_name_ct* display_name = (display_name_ct*) world_get_component(world, &pid, COMPONENT_TAG_DISPLAY_NAME);
+            if (display_name == NULL) break;
             printf("%s moved to (%f, %f, %f) at angle %f.\n", display_name_get(display_name), player_move_event->x, player_move_event->y, player_move_event->z, player_move_event->angle);
             len = server_player_move(buf, player_move_event->entity_id, player_move_event->x, player_move_event->y, player_move_event->z, player_move_event->angle);
             broadcast_except(&SERVER_STATE->sock, SERVER_STATE->conns, SERVER_STATE->conn_count, player_move_event->entity_id, buf, len);

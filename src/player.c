@@ -3,6 +3,7 @@
 #include <math.h>
 #include <stdlib.h>
 
+#include "../include/settings.h"
 #include "../include/player.h"
 #include "../include/ecs/world.h"
 #include "../include/ecs/entity.h"
@@ -11,6 +12,7 @@
 #include "../include/component/position.h"
 #include "../include/component/health.h"
 #include "../include/component/weapon.h"
+#include "../include/component/display_name.h"
 
 #define SIGN(x) (int)(x > 0) ? 1 : ((x < 0) ? -1 : 0)
 #define DOT(a, b) (a.x * b.x) + (a.y * b.y)
@@ -32,11 +34,12 @@ player *player_init(engine *e) {
 
   // Add player to the ECS world
   double coords[3] = {p->thing.x, p->thing.y, PLAYER_HEIGHT};
-  component_t** comps = malloc(sizeof(component_t*) * 3);
+  component_t** comps = malloc(sizeof(component_t*) * 4);
   comps[0] = position_create(coords, p->thing.angle + 180.0);
   comps[1] = health_create(100.0, 100.0);
   comps[2] = weapon_create(ammo);
-  p->entity = world_insert_entity(e->world, e->remote->player_id, comps, 3);
+  comps[3] = display_name_create(PLAYER_USERNAME);
+  p->entity = world_insert_entity(e->world, e->remote->player_id, comps, 4);
   free(comps);
   
   return p;
@@ -379,6 +382,19 @@ void player_free(player *p) {
   free_settings(p->settings);
   world_remove_entity(p->engine->world, p->entity);
   free(p);
+}
+
+int player_find(entity_t** list, entity_t* p) {
+  return player_find_by_id(list, p->id); 
+}
+
+int player_find_by_id(entity_t** list, uint64_t id) {
+  for (int i = 0; i < PLAYER_MAXIMUM; i++) {
+    if (list[i] != NULL && list[i]->id == id) {
+      return i;
+    }
+  }
+  return -1;
 }
 
 position_ct* player_get_position(player* p) {

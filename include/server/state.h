@@ -3,6 +3,7 @@
 
 #include "../ecs/world.h"
 #include "../net/tracked_connection.h"
+#include "../settings.h"
 
 #ifndef _LIB_SDL_NET_H
 #define _LIB_SDL_NET_H
@@ -10,7 +11,13 @@
 #include <SDL2/SDL_net.h>
 #endif
 
+#ifndef PLAYER_MAXIMUM
 #define MAX_CLIENTS 4
+#endif
+
+#ifdef PLAYER_MAXIMUM
+#define MAX_CLIENTS PLAYER_MAXIMUM
+#endif
 
 // 60 ticks per second
 #define SERVER_TICK_MS 16 

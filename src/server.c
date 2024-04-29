@@ -144,7 +144,8 @@ int run_server(uint16_t port)
                         player_move_event_t* ev = ServerPlayerMoveEvent_new(SERVER_STATE->conns[conn_i].player_id, x, y, z, angle);
                         world_queue_event(&SERVER_STATE->world, (event_t*) ev);
                     } else if (strncmp(cmd, CLIENT_COMMAND_CHAT, 4) == 0) {
-                        char* message;
+                        char message_[128] = {0};
+                        char* message = (char*) message_;
                         client_chat_from(sdata + cursor, &message);
                         player_chat_event_t* ev = ServerPlayerChatEvent_new(SERVER_STATE->conns[conn_i].player_id, message);
                         world_queue_event(&SERVER_STATE->world, (event_t*) ev);

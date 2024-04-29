@@ -1,3 +1,5 @@
+#include "unistd.h"
+
 #include "../include/engine.h"
 
 // handles all kind of error at SDL startup
@@ -72,9 +74,15 @@ int main() {
     if (res == 1)
       break;
     
-    printf("FPS: %f\n", 1000.0 / dt);
+    //printf("FPS: %f\n", 1000.0 / dt);
     old = now;
   }
+  // Wait 100ms to be sure no other packet is sent during the same server tick.
+  // Bug was: Segfault because we tried to access a component of a now removed entity
+  // (for instance during a MOVE event)...
+  // While the bug is fixed, it might reappear in the future (because C)! 
+  // So just in case!
+  usleep(100000);
   remote_disconnect(e->remote);
   engine_free(e);
   SDLNet_Quit();

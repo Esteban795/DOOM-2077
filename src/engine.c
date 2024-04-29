@@ -2,6 +2,8 @@
 #include <SDL2/SDL_render.h>
 #include "../include/remote.h"
 #include "../include/ecs/world.h"
+#include "../include/ecs/entity.h"
+#include "../include/settings.h"
 
 #ifndef SERVER_ADDR
 #define SERVER_ADDR ""
@@ -11,7 +13,6 @@
 #define SERVER_PORT 6942
 #endif
 
-#define PLAYER_MAXIMUM 4 // autres joueurs
 
 engine *init_engine(const char *wadPath, SDL_Renderer *renderer) {
   engine *e = malloc(sizeof(engine));
@@ -35,7 +36,7 @@ void read_map(engine *e, SDL_Renderer *renderer, char *map_name) {
   e->bsp = bsp_init(e, e->p);
   e->map_renderer = map_renderer_init(e, renderer);
   e->seg_handler = segment_handler_init(e);
-  e->players = malloc(sizeof(entity_t*) * PLAYER_MAXIMUM);
+  e->players = calloc(PLAYER_MAXIMUM, sizeof(entity_t*));
   e->mixer = audiomixer_init();
 }
 
@@ -43,7 +44,10 @@ int update_engine(engine *e, int dt) {
   e->DT = dt;
   SDL_SetRenderDrawColor(e->map_renderer->renderer, 0, 0, 0, 255);
   SDL_RenderClear(e->map_renderer->renderer);
-  world_update(e->world);
+  if (world_queue_length(e->world) > 0) {
+    printf("Processing %d events...\n", world_queue_length(e->world));
+    world_update(e->world);
+  }
   memset(e->pixels, 0, WIDTH * HEIGHT * 4);
   handle_events(e);
   game_states_update[e->state](e);

@@ -3,6 +3,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include <stdint.h>
+#include <assert.h>
 
 #include "../../include/net/tracked_connection.h"
 #include "../../include/net/util.h"
@@ -15,6 +16,7 @@
 
 int broadcast(UDPsocket* sock, tracked_connection_t* connections, int num_connections, uint8_t* buf, int len) {
     UDPpacket** packets = SDLNet_AllocPacketV(num_connections, len);
+    assert(packets != NULL);
     for (int i = 0; i < num_connections; i++) {
         packets[i]->channel = -1;
         packets[i]->address = connections[i].ip;
@@ -28,6 +30,7 @@ int broadcast(UDPsocket* sock, tracked_connection_t* connections, int num_connec
 
 int broadcast_except(UDPsocket* sock, tracked_connection_t* connections, int num_connections, uint64_t player_id, uint8_t* buf, int len) {
     UDPpacket** packets = SDLNet_AllocPacketV(num_connections, len);
+    assert(packets != NULL);
     for (int i = 0; i < num_connections; i++) {
         packets[i]->channel = -1;
         packets[i]->address = connections[i].ip;
@@ -39,7 +42,9 @@ int broadcast_except(UDPsocket* sock, tracked_connection_t* connections, int num
     int result;
     if (idx >= 0) {
         // Swap the last packet with the one we want to exclude
+        UDPpacket* tmp = packets [idx];
         packets[idx] = packets[num_connections - 1];
+        packets[num_connections - 1] = tmp;
         result = SDLNet_UDP_SendV(*sock, packets, num_connections - 1);
     } else {
         result = SDLNet_UDP_SendV(*sock, packets, num_connections);

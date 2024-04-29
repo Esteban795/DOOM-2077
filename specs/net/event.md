@@ -8,10 +8,9 @@
 
 * [x] 0x0001 - PlayerJoinEvent {CS} - a player has joined the party
 * [x] 0x0002 - PlayerQuitEvent {CS} - a player has quitted the party
-* [x] 0x0003 - PlayerKickEvent {C} - a player is kicked from the server
-* [ ] 0x0004 - GameStartCooldownEvent {CS} - start the cooldown before the party actually starts
-* [ ] 0x0005 - GameStartEvent {CS} - start the party
-* [ ] 0x0006 - GameEndEvent {CS} - end the party
+* [ ] 0x0003 - GameStartCooldownEvent {CS} - start the cooldown before the party actually starts
+* [ ] 0x0004 - GameStartEvent {CS} - start the party
+* [ ] 0x0005 - GameEndEvent {CS} - end the party
 
 ## Player-specific events
 
