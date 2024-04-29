@@ -391,10 +391,10 @@ void render_sprite(map_renderer *mr, patch* sprite,int x,int y){
   double sprite_floor_height = get_xy_floor_height(mr->engine->bsp, sprite_pos);
   double player_floor_height = get_xy_floor_height(mr->engine->bsp, player->pos);
   double sprite_z = sprite_floor_height - player_floor_height; // used to adjust sprite height from player higher or lower z index
-  SDL_Rect dst_rect = {.x = x1 - scale1 * sprite->header.width / 2,
-                       .y = HALF_HEIGHT - sprite_z * scale1,
-                       .w = scale1 * sprite->header.width,
-                       .h = scale1 * sprite->header.height};
+  SDL_Rect dst_rect = {.x = x1 - scale1 * sprite->header.width ,
+                       .y = HALF_HEIGHT - scale1 * sprite->header.height - sprite_z * scale1,
+                       .w = 2 * scale1 * sprite->header.width,
+                       .h = 2 * scale1 * sprite->header.height};
   SDL_RenderCopy(mr->renderer, sprite->tex, NULL, &dst_rect);
 }
 
