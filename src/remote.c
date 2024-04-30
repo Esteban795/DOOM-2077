@@ -142,7 +142,7 @@ int remote_update(engine* e, remote_server_t* r) {
             memcpy(cmd, (char*) sdata + offset, 4);
             uint16_t len = read_uint16be(sdata + offset + 4);
 
-            printf("Got command: %s\n", cmd);
+            // DEBUG: printf("Got command: %s\n", cmd);
 
             if (strncmp(cmd, SERVER_COMMAND_KICK, 4) == 0) {
                 char reason_[1024] = {0};
@@ -284,7 +284,11 @@ int remote_update(engine* e, remote_server_t* r) {
     }
 
     // Send the player data for the current frame
+    static double x,y,z,angle = 0.0;
     position_ct* pos = player_get_position(e->p);
+    if (x == pos->x && y == pos->y && z == pos->z && angle == pos->angle) {
+        return 0;
+    }
     int len = client_move(r->packet->data, position_get_x(pos), position_get_y(pos), position_get_z(pos), position_get_angle(pos));
     r->packet->len = len;
     r->packet->address.host = r->addr.host;
@@ -293,6 +297,11 @@ int remote_update(engine* e, remote_server_t* r) {
         fprintf(stderr, "SDLNet_UDP_Send: move command: %s\n", SDLNet_GetError());
         return -1;
     }
+
+    x = pos->x;
+    y = pos->y;
+    z = pos->z;
+    angle = pos->angle;
 
     return 0;
 }

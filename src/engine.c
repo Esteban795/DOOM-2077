@@ -44,6 +44,7 @@ int update_engine(engine *e, int dt) {
   e->DT = dt;
   SDL_SetRenderDrawColor(e->map_renderer->renderer, 0, 0, 0, 255);
   SDL_RenderClear(e->map_renderer->renderer);
+  remote_update(e, e->remote);
   if (world_queue_length(e->world) > 0) {
     //printf("Processing %d events...\n", world_queue_length(e->world));
     world_update(e->world);
@@ -51,7 +52,6 @@ int update_engine(engine *e, int dt) {
   memset(e->pixels, 0, WIDTH * HEIGHT * 4);
   handle_events(e);
   game_states_update[e->state](e);
-  remote_update(e, e->remote);
   audiomixer_update(e->mixer, dt);
   // draw_crosshair(e->map_renderer,get_color(50,0),20);
   SDL_RenderPresent(e->map_renderer->renderer);

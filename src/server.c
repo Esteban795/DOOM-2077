@@ -107,7 +107,7 @@ int run_server(uint16_t port)
                 addrtocstr(&SERVER_STATE->incoming->address, addrstr);
                 uint8_t sdata[2048] = {0};
                 memcpy(sdata, SERVER_STATE->incoming->data, SERVER_STATE->incoming->len);
-                printf("incoming packet from %s > %s\n", addrstr, sdata);
+                //printf("incoming packet from %s > %s\n", addrstr, sdata);
 
                 int cursor = 0;
                 char cmd[5] = {0};
@@ -132,10 +132,7 @@ int run_server(uint16_t port)
                         int len = server_pong(SERVER_STATE->outgoing->data, data);
                         SERVER_STATE->outgoing->address = SERVER_STATE->incoming->address;
                         SERVER_STATE->outgoing->len = len;
-                        if (SDLNet_UDP_Send(server, -1, SERVER_STATE->outgoing) > 0)
-                        {
-                            printf("Ponged %s.\n", addrstr);
-                        }
+                        SDLNet_UDP_Send(server, -1, SERVER_STATE->outgoing);
                     }
                     else if (strncmp(cmd, CLIENT_COMMAND_MOVE, 4) == 0)
                     {
@@ -205,7 +202,7 @@ int run_server(uint16_t port)
         // Update the world state
         if (world_queue_length(&SERVER_STATE->world) > 0)
         {
-            printf("Processing %d events...\n", world_queue_length(&SERVER_STATE->world));
+            // printf("Processing %d events...\n", world_queue_length(&SERVER_STATE->world));
             world_update(&SERVER_STATE->world);
         }
 
