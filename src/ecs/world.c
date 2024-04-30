@@ -189,8 +189,12 @@ void world_add_components(world_t* world, entity_t* entity, component_t** compon
         new_components[old_tag_count + i] = components[i];
     }
     
+    archetype_tag_t archtag;
+    archtag.component_count = old_tag_count + component_count;
+    archtag.component_tags = new_tags;
+
     // Find the new archetype
-    int dest_index = vec_binary_search(&world->archetypes, new_tags, archetype_match);
+    int dest_index = vec_binary_search(&world->archetypes, &archtag, archetype_match);
     if (dest_index < 0) {
         // Create a new archetype if it doesn't exist
         archetype_t* dest_archetype = malloc(sizeof(archetype_t));
@@ -250,8 +254,12 @@ void world_remove_components(world_t* world, entity_t* entity, int* component_ta
         return;
     }
 
+    archetype_tag_t archtag;
+    archtag.component_count = new_tag_count;
+    archtag.component_tags = new_tags;
+
     // Find the new archetype
-    int dest_index = vec_binary_search(&world->archetypes, new_tags, archetype_match);
+    int dest_index = vec_binary_search(&world->archetypes, &archtag, archetype_match);
     if (dest_index < 0) {
         // Create a new archetype if it doesn't exist
         archetype_t* dest_archetype = malloc(sizeof(archetype_t));

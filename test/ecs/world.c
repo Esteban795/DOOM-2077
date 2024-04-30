@@ -47,7 +47,7 @@ int test_world_create_entity(void) {
     world_t world;
     world_init(&world);
 
-    component_t* components[2];
+    component_t* components[4];
     // Create a component with 2 integers (for example, a position component)
     components[0] = malloc(sizeof(component_t) + 2 * sizeof(int));
     components[0]->tag = 0; 
@@ -57,15 +57,70 @@ int test_world_create_entity(void) {
     components[1] = malloc(sizeof(component_t) + sizeof(int));
     components[1]->tag = 1;
     *((int*)components[1]->data) = 100; // 100 HP
+    // Do the same for the second entity.
+    components[2] = malloc(sizeof(component_t) + 2 * sizeof(int));
+    memcpy(components[2], components[0], sizeof(component_t) + 2 * sizeof(int));
+    components[3] = malloc(sizeof(component_t) + sizeof(int));
+    components[3]->tag = 1;
+    *((int*)components[3]->data) = 12; // 12 HP
 
-    // Create an entity with the components
-    entity_t* entity = world_create_entity(&world, components, 2);
+        // Create an entity with the components
+    entity_t* entity2 = world_create_entity(&world, components, 2);
+    entity_t* entity1 = world_create_entity(&world, components + 2, 2);
 
     // Check if the entity was created
-    ASSERT(entity != NULL, "world_create_entity failed");
-    ASSERT(world.entities.length == 1, "world_create_entity failed -> world.entities.length != 1");
-    ASSERT(world.entity_archetype.length == 1, "world_create_entity failed -> world.entity_archetype.length != 1");
+    ASSERT(entity1 != NULL, "world_create_entity failed on insert 2 (entity1)");
+    ASSERT(entity2 != NULL, "world_create_entity failed on insert 1 (entity2)");
+    ASSERT(world.entities.length == 2, "world_create_entity failed -> world.entities.length != 2");
+    ASSERT(world.entity_archetype.length == 2, "world_create_entity failed -> world.entity_archetype.length != 2");
     ASSERT(world.archetypes.length == 1, "world_create_entity failed -> world.archetypes.length != 1");
+    world_destroy(&world);
+    return 0;
+}
+
+int test_world_insert_entity(void) {
+    printf("Testing ecs::world::world_insert_entity...\n");
+    world_t world;
+    world_init(&world);
+
+    component_t* components[4];
+    // Create a component with 2 integers (for example, a position component)
+    components[0] = malloc(sizeof(component_t) + 2 * sizeof(int));
+    components[0]->tag = 0; 
+    *((int*)components[0]->data) = 12; // x: 12
+    *((int*)(components[0]->data) + 1) = 34; // y: 34
+    // Create a component with 1 integer (for example, a health component)
+    components[1] = malloc(sizeof(component_t) + sizeof(int));
+    components[1]->tag = 1;
+    *((int*)components[1]->data) = 100; // 100 HP
+    // Do the same for the second entity.
+    components[2] = malloc(sizeof(component_t) + 2 * sizeof(int));
+    memcpy(components[2], components[0], sizeof(component_t) + 2 * sizeof(int));
+    components[3] = malloc(sizeof(component_t) + sizeof(int));
+    components[3]->tag = 1;
+    *((int*)components[3]->data) = 12; // 12 HP
+
+    // Create an entity with the components
+    entity_t* entity2 = world_insert_entity(&world, 2, components, 2);
+    entity_t* entity1 = world_insert_entity(&world, 1, components + 2, 2);
+
+    // Check if the entity was created
+    ASSERT(entity1 != NULL, "world_insert_entity failed on insert 2 (entity1)");
+    ASSERT(entity2 != NULL, "world_insert_entity failed on insert 1 (entity2)");
+    ASSERT(world.entities.length == 2, "world_insert_entity failed -> world.entities.length != 2");
+    ASSERT(world.entity_archetype.length == 2, "world_insert_entity failed -> world.entity_archetype.length != 2");
+    ASSERT(world.archetypes.length == 1, "world_insert_entity failed -> world.archetypes.length != 1");
+    // Check the number of entity in the archetype
+    archetype_t* arch = vec_get(&world.archetypes, 0);
+    ASSERT(arch->entities.length == 2, "world_insert_entity failed -> arch->entities.length != 2");
+
+    // Check if the entities have the correct components
+    component_t* e1_health = world_get_component(&world, entity1, 1);
+    ASSERT(e1_health != NULL, "world_insert_entity failed -> e1_health == NULL");
+    ASSERT(*(int*)e1_health->data == 12, "world_insert_entity failed -> *(int*)e1_health->data != 12");
+    component_t* e2_health = world_get_component(&world, entity2, 1);
+    ASSERT(e2_health != NULL, "world_insert_entity failed -> e1_health == NULL");
+    ASSERT(*(int*)e2_health->data == 100, "world_insert_entity failed -> *(int*)e2_health->data != 100");
     
     world_destroy(&world);
     return 0;
@@ -330,6 +385,7 @@ int test_world(void) {
     failed += test_world_queue_event();
     failed += test_world_add_components();
     failed += test_world_remove_components();
+    failed += test_world_insert_entity();
     printf("libecs/world tests finished with %d failures.\n", failed);
     return failed;
 }
