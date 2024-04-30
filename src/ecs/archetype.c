@@ -4,6 +4,10 @@
 #include "../../include/collection/vec.h"
 #include "../../include/ecs/archetype.h"
 
+int qsort_compare_int(const void* a, const void* b) {
+    return (*(int*) a - *(int*) b);
+}
+
 int compare_int(const void* a, const void* b) {
     return (**(int**) a - **(int**) b);
 }
@@ -178,6 +182,11 @@ component_t* archetype_get_component(archetype_t* archetype, entity_t* entity, i
 int archetype_match(const void* _archetype_tag, const void* _archetype) {
     archetype_t* archetype = *(archetype_t**) _archetype;
     archetype_tag_t* archetype_tag = *(archetype_tag_t**) _archetype_tag;
+
+    // Sort the component tags of the archetype tag, otherwise it will fail miserably
+    // if the order of the tags is not the same as the archetype.
+    qsort(archetype_tag->component_tags, archetype_tag->component_count, sizeof(int), qsort_compare_int);
+
     int i = 0;
     while (i < (int) vec_length(&archetype->tags) && i < archetype_tag->component_count) {
         int tag = *(int*) vec_get(&archetype->tags, i);
