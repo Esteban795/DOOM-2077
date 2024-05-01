@@ -169,11 +169,10 @@ int run_server(uint16_t port)
                             printf("%s tried to join but the server is full!\n", name);
                         }
                     } else if (strncmp(cmd, CLIENT_COMMAND_QUIT, 4) == 0) {
-                        display_name_ct* display_name = (display_name_ct*) world_get_component(&SERVER_STATE->world, &ENTITY_BY_ID(SERVER_STATE->conns[conn_i].player_id), COMPONENT_TAG_DISPLAY_NAME);
+                        entity_t pid = ENTITY_BY_ID(SERVER_STATE->conns[conn_i].player_id);
+                        display_name_ct* display_name = (display_name_ct*) world_get_component(&SERVER_STATE->world, &pid, COMPONENT_TAG_DISPLAY_NAME);
                         server_player_quit_event_t* ev = ServerPlayerQuitEvent_new(SERVER_STATE->conns[conn_i].player_id, display_name_get(display_name));
-                        world_queue_event(&SERVER_STATE->world, (event_t*) ev);
-                        SERVER_STATE->conns[conn_i] = SERVER_STATE->conns[SERVER_STATE->conn_count - 1];
-                        SERVER_STATE->conn_count--;         
+                        world_queue_event(&SERVER_STATE->world, (event_t*) ev);         
 
                         // Add the player to the entity bin
                         if (entity_bin_count < 32) {
@@ -181,6 +180,10 @@ int run_server(uint16_t port)
                         } else {
                             printf("Entity bin is full! Leaking the entity...\n");
                         }
+                        
+                        // Remove the connection
+                        SERVER_STATE->conns[conn_i] = SERVER_STATE->conns[SERVER_STATE->conn_count - 1];
+                        SERVER_STATE->conn_count--;
                     } else {
                         printf("Unknown command: %s\n", cmd);
                     }
