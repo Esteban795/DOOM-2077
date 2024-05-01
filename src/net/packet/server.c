@@ -140,7 +140,7 @@ int server_kick_from(uint8_t* buf, char** reason) {
         clen_ = 1024;
     }
     memcpy(*reason, buf + 6, clen_);
-    *reason[clen_-1] = '\0';
+    (*reason)[clen_-1] = '\0';
     return 4 + 2 + clen + 1;
 }
 
