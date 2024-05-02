@@ -1,5 +1,4 @@
 #include "../include/geometry.h"
-#include <stdio.h>
 
 double rad_to_deg(double rad) { return rad * (180 / M_PI); }
 
@@ -40,7 +39,6 @@ double fmax(double x, double y) { return x > y ? x : y; }
 int max(int x, int y) { return x > y ? x : y; }
 int min(int x, int y) { return x < y ? x : y; }
 
-
 bool is_point_in_FOV(double origin_x, double origin_y, double origin_angle,
                      double fov, double px, double py) {
   // Direction vector from camera to point
@@ -53,8 +51,10 @@ bool is_point_in_FOV(double origin_x, double origin_y, double origin_angle,
   double theta_p = atan2(-dy, dx); // Angle from camera to point
 
   // Angular distance between camera angle and point
-  double delta_theta = fmin(fabs(theta_p - origin_angle),mod(fabs(2 * M_PI + theta_p - origin_angle),2 * M_PI));
-  
+  double delta_theta =
+      fmin(fabs(theta_p - origin_angle),
+           mod(fabs(2 * M_PI + theta_p - origin_angle), 2 * M_PI));
+
   // Ensure angles are within the FOV range (0 to 2*PI)
   delta_theta = mod(delta_theta, 2 * M_PI);
   return delta_theta <= fov / 2;
@@ -88,4 +88,8 @@ vec2 find_segments_intersection(vec2 p1, vec2 q1, vec2 p2, vec2 q2) {
   intersection.x = (B2 * C1 - B1 * C2) / determinant;
   intersection.y = (A1 * C2 - A2 * C1) / determinant;
   return intersection;
+}
+
+bool do_segs_intersect(int x1a, int x2a, int x1b, int x2b) {
+  return !(x1a > x2b || x2a < x1b);
 }

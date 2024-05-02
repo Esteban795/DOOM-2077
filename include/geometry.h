@@ -7,6 +7,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <stdio.h>
+
 #define MAX_SCALE 64.0
 #define MIN_SCALE 0.00390625
 
@@ -39,4 +40,6 @@ double scale_from_global_angle(double angle, int x, double normal_angle,
                                double dist);
 
 vec2 find_segments_intersection(vec2 p1, vec2 q1, vec2 p2, vec2 q2);
+
+bool do_segs_intersect(int x1a, int x2a, int x1b, int x2b);
 #endif
