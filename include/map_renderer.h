@@ -8,6 +8,8 @@
 #include "structs.h"
 #include "vertex.h"
 #include "settings.h"
+#include "drawseg.h"
+#include "vssprite.h"
 
 extern player* players_to_draw[NUM_PLAYERS];
 extern int next_index;
@@ -45,8 +47,5 @@ void draw_wall_column(map_renderer *mr, texture_map *texture,
 void draw_flat(map_renderer *mr, flat *texture, i16 light_level, int x,
                int y1, int y2, int world_z);
 
-
-void render_sprite(map_renderer *mr, patch* sprite,int x,int y);
-
-void render_players(map_renderer* mr);
+void render_vssprites(map_renderer* mr);
 #endif

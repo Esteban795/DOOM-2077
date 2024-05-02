@@ -1,14 +1,15 @@
 #include "../include/map_renderer.h"
 #include <SDL2/SDL_pixels.h>
 #include <SDL2/SDL_stdinc.h>
+#include <SDL2/SDL_video.h>
+#include <limits.h>
 #include <stdio.h>
 
 #define FOV 90.0
 #define H_FOV (FOV / 2.0)
 
 SDL_PixelFormat *fmt = NULL;
-player* players_to_draw[NUM_PLAYERS];
-int next_index = 0;
+
 static bool is_on_back_side(node n, vec2 pos) {
   i16 dx = pos.x - n.x_partition;
   i16 dy = pos.y - n.y_partition;
@@ -377,115 +378,86 @@ void draw_crosshair(map_renderer *mr, color c, int size) {
                      middle_y);
 }
 
-
-// void draw_sprite_range(map_renderer* mr,int x1, int x2,int y1,int y2,double scale){
-//   segment_handler* sh = mr->engine->seg_handler;
-//   double inverted_scale = 1 / scale;
-//   for (int i = x1; i < x2;i++){
-//     int sprite_y1 = max(y1,(int)sh->upper_clip[i]);
-//     int sprite_y2 = min(y2,(int)sh->lower_clip[i] - 1);
-//   }
-// }
-
-// void clip_sprite(map_renderer* mr,int x1,int x2,int y1, int y2,double scale){
-//     int index_first_0 = x1;
-//     int index_last_0 = x2;
-//     int i = x1;
-//     segment_handler* sh = mr->engine->seg_handler;
-//     while (i < x2) {
-//       if (sh->screen_range[i] == 0) {
-//         index_first_0 = i;
-//         while (i < x2 && sh->screen_range[i] == 0) {
-//           i++;
-//         }
-//         index_last_0 = i;
-//         if (index_last_0 - index_first_0 > 0) {
-//           draw_sprite_range(mr, index_first_0, index_last_0, y1, y2, scale);
-//           sh->screen_range_count += index_last_0 - index_first_0;
-//         }
-//       } else {
-//         i++;
-//       }
-//     }
-//     for (int i = x1; i < x2; i++) {
-//       sh->screen_range[i] = 1;
-//     }
-// }
-
-// void get_viewing_angle(map_renderer* mr,player* p, player* opp){
-
-// }
-
-int sort_by_distance_descending(const void *a, const void *b) {
-  player *p1 = *(player **)a;
-  player *p2 = *(player **)b;
-  double d1 = dist(p1->pos, p1->pos);
-  double d2 = dist(p2->pos, p2->pos);
-  return d2 - d1;
-}
-
-void render_players(map_renderer* mr){
-  int players_to_draw_len = next_index;
-  qsort(players_to_draw,players_to_draw_len,sizeof(player*),sort_by_distance_descending);
-  for (int i = 0; i < players_to_draw_len;i++) {
-    patch* p = get_patch_from_name(mr->wData->sprites, mr->wData->len_sprites, "PLAYA2A8");
-    render_sprite(mr,p,players_to_draw[i]->pos.x,players_to_draw[i]->pos.y);
-  }
-  next_index = 0;
-}
-
-void draw_sprite_column(map_renderer* mr,patch* sprite,int sprite_column,int screen_x,int y1, int y2,double inverted_scale) {
-  double sprite_y = (HALF_HEIGHT - sprite->header.height / 2) + (sprite_column - 0.5) * inverted_scale;
+void draw_sprite_column(map_renderer *mr, patch *sprite,
+                        int sprite_column, // does NOT WORK YET
+                        int screen_x, int y1, int y2, double inverted_scale,
+                        Uint32 c) {
+  double sprite_y = (HALF_HEIGHT - sprite->header.height / 2) +
+                    (sprite_column - 0.5) * inverted_scale;
   int sprite_y_int = (int)sprite_y;
   int sprite_height = sprite->header.height;
-  for (int screen_y = y1; screen_y < y2;screen_y++) {
-    int texture_y = (int)mod(sprite_y_int,sprite_height);
-    Uint32 pixel = sprite->pixels[texture_y * sprite->header.width + sprite_column];
-    mr->engine->pixels[screen_y * WIDTH + screen_x] = pixel;
-    sprite_y += inverted_scale;
+  for (int screen_y = y1; screen_y < y2; screen_y++) {
+    int texture_y = (int)mod(sprite_y_int, sprite_height);
+    // Uint32 pixel = sprite->pixels[texture_y * sprite->header.width +
+    // sprite_column];
+    mr->engine->pixels[screen_y * WIDTH + screen_x] = c;
   }
 }
 
-void render_sprite(map_renderer *mr, patch *sprite, int x, int y) {
-  player *player = mr->engine->p;
-  double player_x = player->pos.x;
-  double player_y = player->pos.y;
-  double player_angle = mr->engine->p->angle;
-  vec2 sprite_pos = {.x = x, .y = y};
-  double sprite_angle = point_to_angle(player->pos, sprite_pos);
-  double x1 = angle_to_x_pos(player_angle + sprite_angle);
-  double x_angle = norm(rad_to_deg(atan((HALF_WIDTH - x1) / SCREEN_DISTANCE)));
-  double D = SCREEN_DISTANCE / cos(deg_to_rad(x_angle));
-  double d = dist(player->pos, sprite_pos);
-  double scale1 = fmin(MAX_SCALE, fmax(MIN_SCALE, D / d));
-  double sprite_floor_height = get_xy_floor_height(mr->engine->bsp, sprite_pos);
-  double player_floor_height =
-      get_xy_floor_height(mr->engine->bsp, player->pos);
-  double sprite_z = sprite_floor_height -
-                    player_floor_height; // used to adjust sprite height from
-                                         // player higher or lower z index
+double get_height_difference(bsp *b, vec2 pos1, vec2 pos2) {
+  return get_xy_floor_height(b, pos1) - get_xy_floor_height(b, pos2);
+}
 
-  // rendering is starting here
-  int left = x1 - scale1 * sprite->header.width;
-  int top = HALF_HEIGHT - scale1 * sprite->header.height - sprite_z * scale1; // top left corner of the sprite
-  int width = 2 * scale1 * sprite->header.width;
-  int height = 2 * scale1 * sprite->header.height;
+void get_drawing_rect(vs_sprite vssprite,int* top,int* height,double z_diff) {
+  *top = HALF_HEIGHT - vssprite.scale * vssprite.sprite->header.height - z_diff * vssprite.scale;
+  *height = 2 * vssprite.scale * vssprite.sprite->header.height;
+}
 
-  double inverted_scale = 1 / (2 * scale1);
-  for (int screen_x = max(left,0); screen_x < min(left + width,WIDTH);screen_x++) {
-    double sprite_column = (screen_x - left) / ((double)width * scale1);
-    draw_sprite_column(mr, sprite, sprite_column, screen_x,max(top,0),min(HEIGHT,top + height),inverted_scale);
+void render_vssprite(map_renderer *mr, vs_sprite vssprite) {
+  patch *sprite = vssprite.sprite;
+  double z_diff = get_height_difference(mr->engine->bsp, mr->engine->p->pos, vssprite.pos); // height difference between the player and the sprite
+  int top,height; // top and height of the sprite
+  get_drawing_rect(vssprite,&top,&height,z_diff);
+  int left = vssprite.x1;
+  int width = vssprite.x2 - vssprite.x1;
+  double inverted_scale = 1 / (2 * vssprite.scale); // used later as a function to scale the sprite
+
+  int ds_ind = find_clip_seg(
+      vssprite.x1, vssprite.x2, vssprite.scale,
+      DRAWSEGS_INDEX); // this seg is partially obscuring the sprite
+  if (ds_ind == -1) {  // nothing is obscuring the sprite that is before in the FOV, draw the whole sprite
+    for (int screen_x = max(vssprite.x1, 0); screen_x < min(vssprite.x2, WIDTH); 
+         screen_x++) {
+      double sprite_column =
+          (screen_x - left) / ((double)width * vssprite.scale);
+      draw_sprite_column(mr, sprite, sprite_column, screen_x, max(top, 0),
+                         min(HEIGHT, top + height), inverted_scale,
+                         vssprite.color);
+    }
+  } else { // something is obscuring the sprite
+    int left_clip = INT_MAX;
+    int right_clip = INT_MIN;
+    do {
+      left_clip = min(left_clip, DRAWSEGS[ds_ind].x1);
+      right_clip = max(right_clip, DRAWSEGS[ds_ind].x2);
+      ds_ind =
+          find_clip_seg(vssprite.x1, vssprite.x2, vssprite.scale, ds_ind - 1);
+    } while (ds_ind != -1);
+
+    for (int screen_x = max(0, left); screen_x < min(WIDTH, left_clip);
+         screen_x++) {
+      double sprite_column =
+          (screen_x - left) / ((double)width * vssprite.scale);
+      draw_sprite_column(mr, sprite, sprite_column, screen_x, max(top, 0),
+                         min(HEIGHT, top + height), inverted_scale,
+                         vssprite.color);
+    }
+
+    for (int screen_x = max(right_clip, 0); screen_x < min(WIDTH, left + width);
+         screen_x++) {
+      double sprite_column =
+          (screen_x - left) / ((double)width * vssprite.scale);
+      draw_sprite_column(mr, sprite, sprite_column, screen_x, max(top, 0),
+                         min(HEIGHT, top + height), inverted_scale,
+                         vssprite.color);
+    }
   }
-  
-  // clip_sprite(mr, left, left + width, top, top + height,scale1);
-  // for (int texture_x = left; texture_x < left + width;texture_x++) {
-  //   double texture_column = (x - left) / ((double)width * scale1);
-  //   draw_sprite_column(mr, sprite, texture_column, texture_x, top, top + height, sprite_z, 1 / scale1);
-  // }
-  // SDL_Rect dst_rect = {.x = x1 - scale1 * sprite->header.width ,
-  //                      .y = HALF_HEIGHT - scale1 * sprite->header.height -
-  //                      sprite_z * scale1, .w = 2 * scale1 *
-  //                      sprite->header.width, .h = 2 * scale1 *
-  //                      sprite->header.height};
-  // copy sprite pixels to mr.engine.pixels
+}
+
+void render_vssprites(map_renderer *mr) {
+  for (int i = 0; i < VSSPRITES_INDEX; i++) {
+    render_vssprite(mr, VSSPRITES[i]);
+  }
+  VSSPRITES_INDEX = 0;
+  DRAWSEGS_INDEX = 0;
 }

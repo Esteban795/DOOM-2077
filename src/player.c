@@ -40,8 +40,8 @@ player **create_players(int num_players, engine *e) {
   Players[0]->pos.x = 0;
   Players[0]->pos.y = 320;
 
-  Players[1]->pos.x = -832;
-  Players[1]->pos.y = 384;
+  Players[1]->pos.x = 0;
+  Players[1]->pos.y = 544;
 
   Players[2]->pos.x = 512;
   Players[2]->pos.y = 640;
@@ -369,9 +369,9 @@ void update_player(player *p) {
     vec[0] *= DIAGONAL_CORRECTION;
     vec[1] *= DIAGONAL_CORRECTION;
   }
-  p->pos.x += vec[0];
-  p->pos.y += vec[1];
-  // move_and_slide(p, vec);
+  // p->pos.x += vec[0];
+  // p->pos.y += vec[1];
+  move_and_slide(p, vec);
 }
 
 void player_free(player *p) {

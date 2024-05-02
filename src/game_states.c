@@ -22,7 +22,8 @@ void update_ingame_state(engine *e) {
   update_players_subsectors(e->bsp);
   segment_handler_update(e->seg_handler);
   update_bsp(e->bsp);
-  render_players(e->map_renderer);
+  vssprite_sort(); // sorts the sprite by ascending scale
+  render_vssprites(e->map_renderer);
   // draw_crosshair(e->map_renderer,get_color(50,0),20);
   SDL_UpdateTexture(e->texture, NULL, e->pixels, WIDTH * 4);
   SDL_SetTextureBlendMode(e->texture, SDL_BLENDMODE_BLEND);

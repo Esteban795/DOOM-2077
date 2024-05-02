@@ -116,8 +116,8 @@ struct SegmentHandler {
   segment *seg;
   double raw_angle_1;
   int screen_range[WIDTH + 1];
-  double upper_clip[WIDTH + 1];
-  double lower_clip[WIDTH + 1];
+  int upper_clip[WIDTH + 1];
+  int lower_clip[WIDTH + 1];
   size_t screen_range_count;
 };
 

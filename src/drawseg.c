@@ -47,6 +47,8 @@ void drawseg_direct_add(drawseg d) {
     DRAWSEGS_INDEX++;
 }
 
+
+// Find the segment that both crosses our [x1,x2] and has a bigger scale than give scale
 int find_clip_seg(int x1, int x2,double scale,int start_index){
     drawseg ds;
     for (int i = start_index; i >= 0; i--) {

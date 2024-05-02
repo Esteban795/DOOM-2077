@@ -5,7 +5,7 @@
 #include "structs.h"
 #include "vec2.h"
 #include "segment_handler.h"
-
+#include "vssprite.h"
 
 extern bool BSP_TRAVERSE;
 
