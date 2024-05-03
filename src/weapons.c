@@ -1,12 +1,64 @@
 #include "../include/weapons.h"
 #include <assert.h>
 
+animations_array *init_animations_array(map_renderer *mr,char *abbreviation){
+    animations_array *ar = malloc(2*sizeof(animations_array));
+    int m = strlen(abbreviation);
+    int indexes[10];
+    for (int i = 0; i < 10; i++) {
+        indexes[i] = -1;
+    }
+    int animation_len = 0;
+    int i = 0;
+    patch *sprites = mr->wData->sprites;
+    char* to_cmp = malloc(10*sizeof(char));
+    strcpy(to_cmp,sprites[i].patchname);
+    to_cmp[m]='\0';
+    while(!(strcmp(abbreviation,to_cmp)==0) && i<mr->wData->len_sprites){
+        i++;
+        strcpy(to_cmp,sprites[i].patchname);
+        to_cmp[m]='\0';
+    };
+    
+    int k = 0;
+    while(strcmp(abbreviation,to_cmp)==0 && i<mr->wData->len_sprites){
+        indexes[k] = i;
+        k++;
+        i++;
+        strcpy(to_cmp,sprites[i].patchname);
+        to_cmp[m]='\0';
+        animation_len ++;
+    }
 
-weapon* init_one_weapon(int id, char* weapon_name, char* sprite, int magsize, int max_damage, int min_damage, double fire_rate, double spray, int ammo_bounce, int ammo_id, int type){
+    if(i==mr->wData->len_sprites){
+        printf("Erreur lors du chargement des sprites \n");
+        return NULL;
+    }
+    patch *idle_anim_sprite = malloc(sizeof(patch));
+    *idle_anim_sprite = sprites[indexes[0]];
+    animations_array idle_anim = {.animation_sprites = idle_anim_sprite,.animation_len = 1};
+    ar[IDLE] = idle_anim;
+
+    patch *fire_anim_sprites = malloc(sizeof(patch)*animation_len-1);
+    for(int j = 1; j<animation_len;j++){
+        fire_anim_sprites[j-1] = sprites[indexes[j]];
+    }
+    animations_array fire_anim = {.animation_sprites = fire_anim_sprites,.animation_len = animation_len-1};
+    ar[FIRE] = fire_anim;
+    
+
+    free(to_cmp);
+    return ar;
+}
+
+weapon* init_one_weapon(map_renderer *mr,int id, char* weapon_name, char* abbreviation, int magsize, int max_damage, int min_damage, double fire_rate, double spray, int ammo_bounce, int ammo_id, int type){
+    printf("Initialisation de %s\n", weapon_name);
     weapon* w = malloc(sizeof(weapon));
     w->id = id;
     w->weapon_name = weapon_name;
-    w->sprite = sprite;
+    printf("w->weapon_name %s\n", w->weapon_name);
+    w->abbreviation = abbreviation;
+    w->sprites = init_animations_array(mr,abbreviation);
     w->magsize = magsize;
     w->max_damage = max_damage;
     w->min_damage = min_damage;
@@ -18,7 +70,15 @@ weapon* init_one_weapon(int id, char* weapon_name, char* sprite, int magsize, in
     return w;
 }
 
-weapons_array* init_weapons_array(){
+void print_animations_patches(weapon *w){
+    animations_array *aa = w->sprites;
+    printf("Animation d'idle de base :%s \n",aa[0].animation_sprites->patchname);
+    for(int i = 0; i<aa[1].animation_len; i++){
+        printf("Animation %d de tir de %s : %s \n", i, w->weapon_name,aa[1].animation_sprites->patchname);
+    }
+}
+
+weapons_array* init_weapons_array(map_renderer *mr){
     weapons_array* wa = malloc(sizeof(weapons_array));
 
     FILE* f = fopen("weapons.csv","r");
@@ -33,7 +93,7 @@ weapons_array* init_weapons_array(){
     wa->weapons_number = weapons_number;
 
     // Skip the header line
-    char header[1024];
+    char header[2048];
     fgets(header, sizeof(header), f);
     printf("header: %s\n",header);
 
@@ -42,7 +102,7 @@ weapons_array* init_weapons_array(){
         char line[1024];
         int id;
         char weapon_name[1024];
-        char sprite[1024];
+        char abbreviation[5];
         int magsize; 
         int max_damage; 
         int min_damage; 
@@ -53,10 +113,13 @@ weapons_array* init_weapons_array(){
         int type; 
 
         fgets(line,sizeof(line),f);
-        sscanf(line, "%d,%1023[^,],%1023[^,],%d,%d,%d,%lf,%lf,%d,%d,%d", &id, weapon_name, sprite, &magsize, &max_damage, &min_damage, &fire_rate, &spray, &ammo_bounce, &ammo_id, &type);
-        printf("id: %d, weapon_name: %s, sprite: %s, magsize: %d, max_damage: %d, min_damage: %d, fire_rate: %lf, spray: %lf, ammo_bounce: %d, ammo_id: %d, type: %d\n",id,weapon_name,sprite,magsize,max_damage,min_damage,fire_rate,spray,ammo_bounce,ammo_id,type);
-        weapon* new_weapon = init_one_weapon(id, weapon_name, sprite, magsize, max_damage, min_damage, fire_rate, spray, ammo_bounce, ammo_id, type);
+        sscanf(line, "%d,%1023[^,],%4[^,],%d,%d,%d,%lf,%lf,%d,%d,%d", &id, weapon_name, abbreviation, &magsize, &max_damage, &min_damage, &fire_rate, &spray, &ammo_bounce, &ammo_id, &type);
+        printf("id: %d, weapon_name: %s, abbreviation: %s, magsize: %d, max_damage: %d, min_damage: %d, fire_rate: %lf, spray: %lf, ammo_bounce: %d, ammo_id: %d, type: %d\n",id,weapon_name,abbreviation,magsize,max_damage,min_damage,fire_rate,spray,ammo_bounce,ammo_id,type);
+        weapon* new_weapon = init_one_weapon(mr,id, weapon_name, abbreviation, magsize, max_damage, min_damage, fire_rate, spray, ammo_bounce, ammo_id, type);
         winv[i] = new_weapon;
+        if(i>0){
+            printf("Arme avant moi : %s\n",winv[i-1]->weapon_name);
+        }
     }
     wa->weapons = winv;
 
@@ -68,15 +131,25 @@ weapons_array* init_weapons_array(){
     return wa;
 }
 
+void free_animations_array(weapon *w){
+    animations_array *aa = w->sprites;
+    free(aa[0].animation_sprites);
+    free(aa[1].animation_sprites);
+    free(aa);
+}
+
 void free_weapons_array(weapons_array* wa){
     for(int i = 0; i<wa->weapons_number;i++){
         if (wa->weapons[i] != NULL){
+            free_animations_array(wa->weapons[i]);
             free(wa->weapons[i]);
         }
     }
     free(wa->weapons);
     free(wa);
 }
+
+
 
 void switch_weapon(player* p, int weapon_id){
     p->active_weapon = weapon_id;

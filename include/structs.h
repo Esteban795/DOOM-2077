@@ -24,11 +24,17 @@ struct SegmentHandler;
 struct Weapon;
 struct WeaponsArray;
 
+typedef struct AnimationsArray{
+  patch *animation_sprites;
+  int animation_len;
+} animations_array;
+
 struct Weapon {
   /*Identification de l'arme*/
   int id;            /*Identifie précisement l'arme*/
   char *weapon_name; /*Nom de l'arme du coup*/
-  char *sprite;      /*Fichier contenant le/les sprite de l'arme*/
+  char *abbreviation; /*Abbréviation utilisée dans les fichiers WAD*/
+  animations_array *sprites; /*Tableau avec en i tous les sprites pour l'animation x*/
 
   /*Spécification de l'arme*/
   int magsize;      /*Taille du chargeur*/
