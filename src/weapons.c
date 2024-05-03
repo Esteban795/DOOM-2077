@@ -2,9 +2,10 @@
 #include <assert.h>
 
 animations_array *init_animations_array(map_renderer *mr,char *abbreviation){
-    animations_array *ar = malloc(2*sizeof(animations_array));
+    animations_array *ar = malloc(2*sizeof(animations_array)); // A priori pas besoin de plus vu qu'on a que 2 animations 
+                                                            //pour les armes : IDLE et Firing
     int m = strlen(abbreviation);
-    int indexes[10];
+    int indexes[10]; // J'ai supposé qu'on aurait pas plus de 10 sprites pour l'animation
     for (int i = 0; i < 10; i++) {
         indexes[i] = -1;
     }
@@ -22,6 +23,7 @@ animations_array *init_animations_array(map_renderer *mr,char *abbreviation){
     
     int k = 0;
     while(strcmp(abbreviation,to_cmp)==0 && i<mr->wData->len_sprites){
+        printf("Animations pour l'arme : %s \n", sprites[i].patchname);
         indexes[k] = i;
         k++;
         i++;
@@ -51,13 +53,12 @@ animations_array *init_animations_array(map_renderer *mr,char *abbreviation){
     return ar;
 }
 
-weapon* init_one_weapon(map_renderer *mr,int id, char* weapon_name, char* abbreviation, int magsize, int max_damage, int min_damage, double fire_rate, double spray, int ammo_bounce, int ammo_id, int type){
-    printf("Initialisation de %s\n", weapon_name);
+weapon* init_one_weapon(map_renderer *mr,int id, char* weapon_name, char* abbreviation, int magsize, int max_damage, 
+                            int min_damage, double fire_rate, double spray, int ammo_bounce, int ammo_id, int type){
     weapon* w = malloc(sizeof(weapon));
     w->id = id;
-    w->weapon_name = weapon_name;
-    printf("w->weapon_name %s\n", w->weapon_name);
-    w->abbreviation = abbreviation;
+    w->weapon_name = strdup(weapon_name);
+    w->abbreviation = strdup(abbreviation);
     w->sprites = init_animations_array(mr,abbreviation);
     w->magsize = magsize;
     w->max_damage = max_damage;
@@ -74,7 +75,7 @@ void print_animations_patches(weapon *w){
     animations_array *aa = w->sprites;
     printf("Animation d'idle de base :%s \n",aa[0].animation_sprites->patchname);
     for(int i = 0; i<aa[1].animation_len; i++){
-        printf("Animation %d de tir de %s : %s \n", i, w->weapon_name,aa[1].animation_sprites->patchname);
+        printf("Animation %d de tir de %s : %s \n", i, w->weapon_name,aa[1].animation_sprites[i].patchname);
     }
 }
 
@@ -117,9 +118,6 @@ weapons_array* init_weapons_array(map_renderer *mr){
         printf("id: %d, weapon_name: %s, abbreviation: %s, magsize: %d, max_damage: %d, min_damage: %d, fire_rate: %lf, spray: %lf, ammo_bounce: %d, ammo_id: %d, type: %d\n",id,weapon_name,abbreviation,magsize,max_damage,min_damage,fire_rate,spray,ammo_bounce,ammo_id,type);
         weapon* new_weapon = init_one_weapon(mr,id, weapon_name, abbreviation, magsize, max_damage, min_damage, fire_rate, spray, ammo_bounce, ammo_id, type);
         winv[i] = new_weapon;
-        if(i>0){
-            printf("Arme avant moi : %s\n",winv[i-1]->weapon_name);
-        }
     }
     wa->weapons = winv;
 
@@ -140,9 +138,12 @@ void free_animations_array(weapon *w){
 
 void free_weapons_array(weapons_array* wa){
     for(int i = 0; i<wa->weapons_number;i++){
-        if (wa->weapons[i] != NULL){
-            free_animations_array(wa->weapons[i]);
-            free(wa->weapons[i]);
+        weapon *w = wa->weapons[i];
+        if (w != NULL){
+            free(w->weapon_name);
+            free(w->abbreviation);
+            free_animations_array(w);
+            free(w);
         }
     }
     free(wa->weapons);
