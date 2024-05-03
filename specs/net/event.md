@@ -15,12 +15,12 @@
 ## Player-specific events
 
 * [x] 0x0040 - PlayerMoveEvent {CS} - a player is moving to a position
-* [ ] 0x0041 - PlayerTriggerEvent {S} - a player triggers a button/door
-* [ ] 0x0042 - PlayerFireEvent {S} - a player fires a weapon
-* [ ] 0x0043 - PlayerDamageEvent {CS} - a player takes damages
-* [ ] 0x0044 - PlayerKilledEvent {CS} - a player has been killed
-* [ ] 0x0045 - PlayerHealEvent {CS} - a player has been healed
-* [ ] 0x0046 - PlayerHealthUpdateEvent {CS} - a player's health has been changed.
+* [x] 0x0041 - PlayerDamageEvent {CS} - a player takes damages
+* [x] 0x0042 - PlayerHealEvent {CS} - a player has been healed
+* [x] 0x0043 - PlayerHealthUpdateEvent {CS} - a player's health has been changed.
+* [x] 0x0044 - PlayerKilledEvent {CS} - a player has been killed
+* [ ] 0x0045 - PlayerTriggerEvent {S} - a player triggers a button/door
+* [ ] 0x0046 - PlayerFireEvent {S} - a player fires a weapon
 
 ## Door/Elevator events
 

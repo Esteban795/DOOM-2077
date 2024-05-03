@@ -4,18 +4,12 @@
 #include "../../../include/server/state.h"
 #include "../../../include/ecs/world.h"
 #include "../../../include/ecs/entity.h"
-#include "../../../include/event/event.h"
 #include "../../../include/system/server/broadcast_event.h"
 #include "../../../include/component/display_name.h"
 #include "../../../include/component/position.h"
 #include "../../../include/net/packet/server.h"
 #include "../../../include/net/tracked_connection.h"
-
-#include "../../../include/event/server_chat.h"
-#include "../../../include/event/server_join.h"
-#include "../../../include/event/server_quit.h"
-#include "../../../include/event/player_chat.h"
-#include "../../../include/event/player_move.h"
+#include "../../../include/event/all.h"
 
 const system_t BROADCAST_EVENT_SYSTEM = {
     .fn = broadcast_event,
@@ -90,6 +84,7 @@ int broadcast_event(world_t* world, event_t* event) {
         }
         case SERVER_PLAYER_MOVE_EVENT_TAG: {
             player_move_event_t* player_move_event = (player_move_event_t*)event;
+            // DEBUG:
             // pid = ENTITY_BY_ID(player_move_event->entity_id);
             // display_name_ct* display_name = (display_name_ct*) world_get_component(world, &pid, COMPONENT_TAG_DISPLAY_NAME);
             // if (display_name == NULL) break;

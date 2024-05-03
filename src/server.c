@@ -28,6 +28,7 @@
 #include "../include/event/player_chat.h"
 #include "../include/event/player_move.h"
 #include "../include/system/server/broadcast_event.h"
+#include "../include/system/server/apply_event.h"
 
 // Interrupt signal handler
 //
@@ -81,6 +82,7 @@ int run_server(uint16_t port)
     world_init(&SERVER_STATE->world);
 
     // Register the systems
+    world_register_system(&SERVER_STATE->world, APPLY_EVENT_SYSTEM.fn);
     world_register_system(&SERVER_STATE->world, BROADCAST_EVENT_SYSTEM.fn);
 
     // Listen for incoming packets

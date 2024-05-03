@@ -32,6 +32,12 @@ float health_set(health_ct* health, float value) {
     return health->health;
 }
 
+float health_set_max(health_ct* health, float value) {
+    assert(value >= 0);
+    health->max_health = value;
+    return health->max_health;
+}
+
 float health_add(health_ct* health, float value) {
     health->health += value;
     if (health->health > health->max_health) {
