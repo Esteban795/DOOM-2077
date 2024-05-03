@@ -1,8 +1,8 @@
-# Network Protocol of our DOOM-like
+# Network Protocol
 
 | Date of creation | Latest edit      | Version | Status (adopted?) |
 |------------------|------------------|---------|-------------------|
-| 07/03/2024       | 27/04/2024       | alpha   | Experimental      |
+| 07/03/2024       | 27/04/2024       | alpha   | Outdated          |
 
 
 ## Introduction

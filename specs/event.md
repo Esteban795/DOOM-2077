@@ -1,8 +1,8 @@
-# Events
+# Event System
 
 | Date of creation | Latest edit      | Version | Status (adopted?) |
 |------------------|------------------|---------|-------------------|
-| 27/04/2024       | 27/04/2024       | alpha   | Experimental      |
+| 27/04/2024       | 03/05/2024       | beta   | Experimental      |
 
 ## Global events
 
