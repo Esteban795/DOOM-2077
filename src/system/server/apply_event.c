@@ -5,7 +5,7 @@
 #include "../../../include/component/health.h"
 
 
-extern const system_t APPLY_EVENT_SYSTEM = {
+const system_t APPLY_EVENT_SYSTEM = {
     .fn = apply_event,
 };
 
@@ -16,6 +16,21 @@ extern const system_t APPLY_EVENT_SYSTEM = {
 */
 int apply_event(world_t* world, event_t* event) {
     switch (event->tag) {
+        case SERVER_PLAYER_JOIN_EVENT_TAG: {
+            // On join, we want to set their initial position and health.
+            server_player_join_event_t* server_player_join_event = (server_player_join_event_t*)event;
+            entity_t pid = ENTITY_BY_ID(server_player_join_event->entity_id);
+            position_ct* pos = (position_ct*) world_get_component(world, &pid, COMPONENT_TAG_POSITION);
+            health_ct* health = (health_ct*) world_get_component(world, &pid, COMPONENT_TAG_HEALTH);
+            if (pos == NULL || health == NULL) return -1; // If the player does not have a position, we cannot apply the event, cancel it.
+            pos->x = 0.0;
+            pos->y = 0.0;
+            pos->z = 65.0;
+            pos->angle = 180.0;
+            health_set(health, 100.0);
+            health_set_max(health, 100.0);
+            break;
+        }
         case SERVER_PLAYER_MOVE_EVENT_TAG: {
             player_move_event_t* player_move_event = (player_move_event_t*)event;
             entity_t pid = ENTITY_BY_ID(player_move_event->entity_id);
@@ -34,8 +49,8 @@ int apply_event(world_t* world, event_t* event) {
             if (health == NULL) return -1; // If the player does not have health, we cannot apply the event, cancel it.
             health_sub(health, player_damage_event->damage);
             if (health_get(health) <= 0) {
-                event_t* kill_event = (event_t*) player_kill_event_new(player_damage_event->entity_id);
-                world_push_event(world, kill_event);
+                event_t* kill_event = (event_t*) ServerPlayerKillEvent_new(player_damage_event->entity_id, player_damage_event->source_entity_id);
+                world_queue_event(world, kill_event);
                 return -1; // If the player is dead, it is a kill event that we need to send, so we cancel this event.
             }
             break;

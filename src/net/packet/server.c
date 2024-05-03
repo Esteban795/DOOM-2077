@@ -16,6 +16,10 @@ const char* SERVER_COMMAND_CHAT = "CHAT";
 const char* SERVER_COMMAND_TELL = "TELL";
 const char* SERVER_COMMAND_SCOR = "SCOR";
 const char* SERVER_COMMAND_MOVE = "MOVE";
+const char *SERVER_COMMAND_DAMG = "DAMG";
+const char *SERVER_COMMAND_HEAL = "HEAL";
+const char *SERVER_COMMAND_HLTH = "HLTH";
+const char *SERVER_COMMAND_KILL = "KILL";
 
 int server_acpt(uint8_t* buf, uint64_t player_id) {
     memcpy(buf, SERVER_COMMAND_ACPT, 4);
@@ -115,6 +119,44 @@ int server_scoreboard_update(uint8_t* buf, uint16_t entries_count, char** names,
     return 4 + 2 + plen + 1;
 }
 
+int server_player_damage(uint8_t *buf, uint64_t player_id, uint64_t src_player_id, float damage) {
+    memcpy(buf, SERVER_COMMAND_DAMG, 4);
+    write_uint16be(buf + 4, 8 + 8 + 4);
+    write_uint64be(buf + 6, player_id);
+    write_uint64be(buf + 14, src_player_id);
+    write_uint32be(buf + 22, damage*1000);
+    buf[26] = '\n';
+    return 4 + 2 + 8 + 8 + 4 + 1;
+}
+
+int server_player_heal(uint8_t *buf, uint64_t player_id, float gain) {
+    memcpy(buf, SERVER_COMMAND_HEAL, 4);
+    write_uint16be(buf + 4, 8 + 4);
+    write_uint64be(buf + 6, player_id);
+    write_uint32be(buf + 14, gain*1000);
+    buf[18] = '\n';
+    return 4 + 2 + 8 + 4 + 1;
+}
+
+int server_player_health(uint8_t *buf, uint64_t player_id, float health, float max_health) {
+    memcpy(buf, SERVER_COMMAND_HLTH, 4);
+    write_uint16be(buf + 4, 8 + 4 + 4);
+    write_uint64be(buf + 6, player_id);
+    write_uint32be(buf + 14, health*1000);
+    write_uint32be(buf + 18, max_health*1000);
+    buf[22] = '\n';
+    return 4 + 2 + 8 + 4 + 4 + 1;
+}
+
+int server_player_kill(uint8_t *buf, uint64_t player_id, uint64_t src_player_id) {
+    memcpy(buf, SERVER_COMMAND_KILL, 4);
+    write_uint16be(buf + 4, 8 + 8);
+    write_uint64be(buf + 6, player_id);
+    write_uint64be(buf + 14, src_player_id);
+    buf[22] = '\n';
+    return 4 + 2 + 8 + 8 + 1;
+}
+
 int server_acpt_from(uint8_t* buf, uint64_t* player_id) {
     *player_id = read_uint64be(buf + 6);
     return 4 + 2 + 8 + 1;
@@ -209,4 +251,30 @@ int server_scoreboard_update_from(uint8_t* buf, uint16_t* entries_count, char***
         plen += 2;
     }
     return 4 + 2 + plen + 1;
+}
+
+int server_player_damage_from(uint8_t *buf, uint64_t *player_id, uint64_t *src_player_id, float *damage) {
+    *player_id = read_uint64be(buf + 6);
+    *src_player_id = read_uint64be(buf + 14);
+    *damage = ((float) read_int32be(buf + 22)) / 1000.0;
+    return 4 + 2 + 8 + 8 + 4 + 1;
+}
+
+int server_player_heal_from(uint8_t *buf, uint64_t *player_id, float *gain) {
+    *player_id = read_uint64be(buf + 6);
+    *gain = ((float) read_int32be(buf + 14)) / 1000.0;
+    return 4 + 2 + 8 + 4 + 1;
+}
+
+int server_player_health_from(uint8_t *buf, uint64_t *player_id, float *health, float *max_health) {
+    *player_id = read_uint64be(buf + 6);
+    *health = ((float) read_int32be(buf + 14)) / 1000.0;
+    *max_health = ((float) read_int32be(buf + 18)) / 1000.0;
+    return 4 + 2 + 8 + 4 + 4 + 1;
+}
+
+int server_player_kill_from(uint8_t *buf, uint64_t *player_id, uint64_t *src_player_id) {
+    *player_id = read_uint64be(buf + 6);
+    *src_player_id = read_uint64be(buf + 14);
+    return 4 + 2 + 8 + 8 + 1;
 }

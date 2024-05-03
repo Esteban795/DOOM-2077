@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <assert.h>
 
 #include "../../include/ecs/component.h"
 #include "../../include/component/health.h"

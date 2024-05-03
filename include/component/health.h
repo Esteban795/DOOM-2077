@@ -28,6 +28,9 @@ float health_get_max(health_ct* health);
 float health_set(health_ct* health, float value);
 
 // health_set_max sets the maximum health of the entity to the given value.
+float health_set_max(health_ct* health, float value);
+
+// health_set_max sets the maximum health of the entity to the given value.
 // If the current health is greater than the new maximum health, the current health is set to the new maximum health.
 float health_add(health_ct* health, float value);
 
