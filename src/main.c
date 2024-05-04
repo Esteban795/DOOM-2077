@@ -37,8 +37,9 @@ int main() {
 
   uint64_t now;
   uint64_t old = SDL_GetTicks();
-  SDL_ShowCursor(SDL_DISABLE);
-  SDL_SetRelativeMouseMode(SDL_TRUE);
+  // DEV: How to disable pointer/mousecapture
+  SDL_ShowCursor(SDL_DISABLE); // Set to true for debug
+  SDL_SetRelativeMouseMode(SDL_TRUE); // Set to false for debug
   engine *e = init_engine("maps/DOOM1.WAD",renderer);
   read_map(e, renderer, "E1M2");
   int dt = 0;
