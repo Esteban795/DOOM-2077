@@ -35,6 +35,9 @@ UIImage *uiimage_create(SDL_Renderer *r, float x, float y, float w, float h,
 void uiimage_free(UIImage *uiimage) {
   SDL_DestroyTexture(uiimage->texture);
   SDL_FreeSurface(uiimage->surface);
+  if (uiimage->common.active_substates) {
+    free(uiimage->common.active_substates);
+  }
   free(uiimage);
 }
 

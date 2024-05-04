@@ -9,6 +9,18 @@ UIModule **get_ui_menu(SDL_Renderer *r, int *nuimodules) {
   *nuimodules = NMODULES_MENU;
   UIModule **modules = malloc(*nuimodules * sizeof(UIModule *));
 
+  modules[0] = uimodule_create(0, 1);
+
+  int *as = malloc(3 * sizeof(int));
+  as[0] = 0;
+  as[1] = 1;
+  as[2] = 2;
+  UIImage *image =
+      uiimage_create(r, 0, 0, 1, 1, UIAP_TOP_LEFT, as, 3, UIIF_STRETCH,
+                     "assets/giygas_tiled.png", NULL);
+
+  uimodule_set_element(modules[0], 0, UIET_Image, image);
+
   return modules;
 }
 

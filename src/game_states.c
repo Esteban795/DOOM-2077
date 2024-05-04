@@ -32,7 +32,7 @@ void update_ingame_state(engine *e) {
   return;
 }
 
-void free_menu_state(engine *e) {}
+void free_menu_state(engine *e) { free_ui(e->uimodules, e->nuimodules); }
 void free_ingame_state(engine *e) { free_ui(e->uimodules, e->nuimodules); }
 
 GameStateFunction game_states_init[] = {init_menu_state, init_ingame_state};

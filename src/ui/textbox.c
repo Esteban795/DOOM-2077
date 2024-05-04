@@ -44,6 +44,9 @@ UITextBox *uitextbox_create(float x, float y, float w, float h,
 }
 
 void uitextbox_free(UITextBox *tb) {
+  if (tb->common.active_substates) {
+    free(tb->common.active_substates);
+  }
   free(tb->text);
   free(tb);
 }

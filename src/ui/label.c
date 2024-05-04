@@ -28,7 +28,12 @@ UILabel *uilabel_create(float x, float y, float w, float h,
   return uilabel;
 }
 
-void uilabel_free(UILabel *uilabel) { free(uilabel); }
+void uilabel_free(UILabel *uilabel) {
+  if (uilabel->common.active_substates) {
+    free(uilabel->common.active_substates);
+  }
+  free(uilabel);
+}
 
 void uilabel_update(SDL_Renderer *r, int substate, UILabel *uilabel) {
   if (!uilabel->common.active) {

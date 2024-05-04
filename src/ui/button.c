@@ -32,7 +32,12 @@ UIButton *uibutton_create(float x, float y, float w, float h,
   return b;
 }
 
-void uibutton_free(UIButton *uibutton) { free(uibutton); }
+void uibutton_free(UIButton *uibutton) {
+  if (uibutton->common.active_substates) {
+    free(uibutton->common.active_substates);
+  }
+  free(uibutton);
+}
 
 void uibutton_detect_click(UIButton *uibutton, SDL_Rect *rect,
                            bool mouse_left_state) {
