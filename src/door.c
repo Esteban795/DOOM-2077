@@ -98,3 +98,22 @@ door* add_door(door* head, door* new_door) {
   new_door->next_door = head;
   return new_door;
 }
+
+bool is_a_door(u16 l) {
+  return l == CSC_SR_S || l == CSC_SR_F || l == CSC_S1_S || l == CSC_S1_F ||
+         l == CSC_WR_S || l == CSC_WR_F || l == CSC_W1_S || l == CSC_W1_F ||
+         l == CWO_SR_S || l == CWO_S1_S || l == CWO_WR_S || l == CWO_W1_S ||
+         l == OSO_P1_S || l == OSO_P1_F || l == OSO_WR_S || l == OSO_WR_F ||
+         l == OSO_W1_S || l == OSO_W1_F || l == OSO_SR_S || l == OSO_SR_F ||
+         l == OSO_S1_S || l == OSO_S1_F || l == OSO_GR_S || l == OWC_PR_S ||
+         l == OWC_PR_F || l == OWC_SR_F || l == OWC_S1_S || l == OWC_S1_F ||
+         l == OWC_WR_S || l == OWC_WR_F || l == OWC_W1_S || l == OWC_W1_F ||
+         l == DR_RED_KEY || l == DR_YELLOW_KEY || l == DR_BLUE_KEY;
+}
+
+bool is_a_direct_door(u16 l,u16 sector_tag) { // linedef where a door is RIGHT behind it
+  return !(sector_tag != 0 || l == CSC_SR_S || l == CSC_SR_F || l == CSC_S1_S || l == CSC_S1_F ||
+           l == CWO_SR_S || l == CWO_S1_S || l == OSO_SR_S || l == OSO_SR_F ||
+           l == OSO_S1_S || l == OSO_S1_F || l == OWC_SR_S || l == OWC_SR_F ||
+           l == OWC_S1_S || l == OWC_S1_F);
+}

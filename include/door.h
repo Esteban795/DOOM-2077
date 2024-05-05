@@ -112,4 +112,8 @@ door *door_create(entity_t *id, enum DoorTransitionSpeed speed,
                   enum DoorFunction function, int wait_time,sector *sector);
 
 door* add_door(door* head, door* new_door);
+
+bool is_a_door(u16 l);
+
+bool is_a_direct_door(u16 l,u16 sector_tag);
 #endif

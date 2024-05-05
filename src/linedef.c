@@ -59,28 +59,6 @@ void linedefs_free(linedef **linedefs, int len_linedefs) {
 
 // DOORS 
 
-bool is_a_door(linedef *line) {
-  i16 l = line->line_type;
-  return l == CSC_SR_S || l == CSC_SR_F || l == CSC_S1_S || l == CSC_S1_F ||
-         l == CSC_WR_S || l == CSC_WR_F || l == CSC_W1_S || l == CSC_W1_F ||
-         l == CWO_SR_S || l == CWO_S1_S || l == CWO_WR_S || l == CWO_W1_S ||
-         l == OSO_P1_S || l == OSO_P1_F || l == OSO_WR_S || l == OSO_WR_F ||
-         l == OSO_W1_S || l == OSO_W1_F || l == OSO_SR_S || l == OSO_SR_F ||
-         l == OSO_S1_S || l == OSO_S1_F || l == OSO_GR_S || l == OWC_PR_S ||
-         l == OWC_PR_F || l == OWC_SR_F || l == OWC_S1_S || l == OWC_S1_F ||
-         l == OWC_WR_S || l == OWC_WR_F || l == OWC_W1_S || l == OWC_W1_F ||
-         l == DR_RED_KEY || l == DR_YELLOW_KEY || l == DR_BLUE_KEY;
-}
-
-bool is_a_direct_door(
-    linedef *line) { // linedef where a door is RIGHT behind it
-  i16 l = line->line_type;
-  return !(line->sector_tag != 0 || l == CSC_SR_S || l == CSC_SR_F || l == CSC_S1_S || l == CSC_S1_F ||
-           l == CWO_SR_S || l == CWO_S1_S || l == OSO_SR_S || l == OSO_SR_F ||
-           l == OSO_S1_S || l == OSO_S1_F || l == OWC_SR_S || l == OWC_SR_F ||
-           l == OWC_S1_S || l == OWC_S1_F);
-}
-
 door *create_door_from_linedef(linedef *line, sidedef *sd,
                                enum DoorTypes line_type) {
   door *d;
@@ -279,9 +257,9 @@ door **get_doors(linedef **linedefs, int len_linedefs, int *doors_count,
   sidedef *neighbor_sidedef = NULL;
   for (int i = 0; i < len_linedefs; i++) {
     linedef *line = linedefs[i];
-    if (!is_a_door(line))
+    if (!is_a_door(line->line_type))
       continue;                   // not a door
-    if (is_a_direct_door(line)) { // door is RIGHT behind this linedef
+    if (is_a_direct_door(line->line_type,line->sector_tag)) { // door is RIGHT behind this linedef
       set_correct_sidedefs(line, &door_sidedef,
                            &neighbor_sidedef); // set up the correct sidedefs to make sure we're setting the right sector for the door
       i16 door_sector_id = door_sidedef->sector_id;
@@ -334,5 +312,6 @@ door **get_doors(linedef **linedefs, int len_linedefs, int *doors_count,
     }
   }
   *doors_count = door_index;
+  free(sectors_doors);
   return doors;
 }
