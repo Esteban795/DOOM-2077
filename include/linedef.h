@@ -12,26 +12,6 @@
 
 // https://doomwiki.org/wiki/Linedef_type#Door_linedef_types
 
-// OWC = open wait close
-// OSO = open stay open
-// CSC = close stay closed
-// CWO = close wait open
-// S = slow
-// F = fast
-// number = seconds it waits
-enum LinedefDoorTypes {
-  OWC_S_4 = 1,
-  OWC_F_4 = 117,
-  OSO_S = 31,
-  OSO_F = 118,
-  CSC_S = 42,
-  CSC_F = 116,
-  CWO_S = 196,
-  DRK = 28,
-  REMOTE_OPEN_STAY_OPEN = 103,
-  ACCEPTED = 46
-};
-
 enum LinedefFlags {
   BLOCKING = 1,
   BLOCK_MONSTERS = 2,
@@ -54,18 +34,18 @@ struct Linedef {
   sidedef *back_sidedef;
   bool has_back_sidedef;
   door *door;
+  bool is_colllidable;
+  bool used;
+  bool is_repeatable;
+  bool is_shootable;
+  bool is_pushable;
+  bool has_doors;
 };
 
 typedef struct Linedef linedef;
 
-struct TupleIndex {
-  int index1;
-  int index2;
-};
 
-typedef struct TupleIndex tuple_index;
-
-linedef* read_linedef(FILE *f, int offset, vertex *vertexes, sidedef *sidedefs);
+linedef *read_linedef(FILE *f, int offset, vertex *vertexes, sidedef *sidedefs);
 
 linedef **get_linedefs_from_lump(FILE *f, lump *directory, int lump_index,
                                  int num_bytes, int header_length,
@@ -73,7 +53,7 @@ linedef **get_linedefs_from_lump(FILE *f, lump *directory, int lump_index,
                                  sidedef *sidedefs);
 
 door **get_doors(linedef **linedefs, int len_linedefs, int *doors_count,
-                 sector* sectors,int len_sectors);
-                 
+                 sector *sectors, int len_sectors);
+
 void linedefs_free(linedef **linedefs, int len_linedefs);
 #endif

@@ -13,6 +13,7 @@
 
 #define M_PI 3.14159265358979323846
 bool SHOULD_COLLIDE = true;
+
 player *player_init(engine *e) {
   player *p = malloc(sizeof(player));
   int *ammo = malloc(WEAPONS_NUMBER * sizeof(int));
@@ -306,8 +307,13 @@ void move_and_slide(player *p, double *velocity) {
       // collision happened
       // if cp_after < 0: use the second sidedef
       // else: use the first linedef (first linedef faces "clockwise")
-      if (linedefs[i]->door != NULL) {
-        door_trigger_switch(linedefs[i]->door);
+      if (linedefs[i]->has_doors && linedefs[i]->is_colllidable) {
+        if (!linedefs[i]->used) {
+          door_trigger_switch(linedefs[i]->door);
+          if (!linedefs[i]->is_repeatable) {
+            linedefs[i]->used = true;
+          }
+        }
       }
       if (can_collide_with_wall(cp_hf, linedefs[i])) {
         slide_against_wall(&next_pos, p_a);
@@ -375,6 +381,9 @@ linedef *cast_ray(linedef **linedefs, int len_linedefs, vec2 player_pos,
     double y = 0;
     if (!linedefs[i]->has_back_sidedef || correct_height(linedefs[i], height) ||
         linedefs[i]->sector_tag != 0) {
+      if (linedefs[i]->used || !linedefs[i]->is_pushable) {
+        continue;
+      }
       double x1a = linedefs[i]->start_vertex->x;
       double y1a = -linedefs[i]->start_vertex->y;
       double x2a = linedefs[i]->end_vertex->x;

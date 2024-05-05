@@ -79,19 +79,17 @@ enum DoorFunction { //how the door behaves
 };
 
 struct Door {
-    entity_t* id;
+    entity_t* id; // used by ECS
     enum DoorTransitionSpeed speed;
     enum DoorFunction function;
-    int wait_time; //wait time until the door switches to the next state
-    int time_elapsed; //time elapsed since the door started moving
+    int wait_time; // wait time until the door switches to the next state
+    int time_elapsed; // time elapsed since the door switched to this state
     bool is_open;
     bool is_switching;
-    bool is_colllidable;
-    bool is_repeatable;
-    bool is_shootable;
     i16 delta_height;
     i16 max_height;
     sector* sector;
+    struct Door* next_door; // ONLY USED BY LINEDEFS TO STORE SEVERAL DOORS IF THEY CAN ACTIVATE MU
 };
 
 typedef struct Door door;
@@ -110,5 +108,8 @@ void door_trigger_switch(door *d);
 
 void doors_free(door** doors,int len_doors);
 
-door *create_door_from_linedef(sidedef *sd, enum DoorTypes line_type);
+door *door_create(entity_t *id, enum DoorTransitionSpeed speed,
+                  enum DoorFunction function, int wait_time,sector *sector);
+
+door* add_door(door* head, door* new_door);
 #endif
