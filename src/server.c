@@ -27,8 +27,7 @@
 #include "../include/event/server_quit.h"
 #include "../include/event/player_chat.h"
 #include "../include/event/player_move.h"
-#include "../include/system/server/broadcast_event.h"
-#include "../include/system/server/apply_event.h"
+#include "../include/system/server/active.h"
 
 // Interrupt signal handler
 //
@@ -82,8 +81,7 @@ int run_server(uint16_t port)
     world_init(&SERVER_STATE->world);
 
     // Register the systems
-    world_register_system(&SERVER_STATE->world, APPLY_EVENT_SYSTEM.fn);
-    world_register_system(&SERVER_STATE->world, BROADCAST_EVENT_SYSTEM.fn);
+    world_register_active_systems(&SERVER_STATE->world);
 
     // Listen for incoming packets
     SERVER_STATE->incoming = SDLNet_AllocPacket(4096);

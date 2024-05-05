@@ -4,6 +4,7 @@
 #include "../include/ecs/world.h"
 #include "../include/ecs/entity.h"
 #include "../include/settings.h"
+#include "../include/system/client/active.h"
 
 #ifndef SERVER_ADDR
 #define SERVER_ADDR ""
@@ -32,6 +33,7 @@ void read_map(engine *e, SDL_Renderer *renderer, char *map_name) {
   e->wData = init_wad_data(e->wadPath, map_name);
   e->world = malloc(sizeof(world_t));
   world_init(e->world);
+  world_register_active_systems(e->world);
   e->p = player_init(e);
   e->bsp = bsp_init(e, e->p);
   e->map_renderer = map_renderer_init(e, renderer);

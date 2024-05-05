@@ -17,12 +17,7 @@
 #include "../include/component/display_name.h"
 
 
-#include "../include/event/client_join.h"
-#include "../include/event/client_quit.h"
-#include "../include/event/player_chat.h"
-#include "../include/event/player_move.h"
-#include "../include/event/server_chat.h"
-#include "../include/event/scoreboard_update.h"
+#include "../include/event/all.h"
 
 #ifndef _LIB_SDL_NET_H
 #define _LIB_SDL_NET_H
@@ -270,6 +265,29 @@ int remote_update(engine* e, remote_server_t* r) {
                 free(names);
                 free(deaths);
                 free(kills);
+            } else if (strncmp(cmd, SERVER_COMMAND_HLTH, 4) == 0) {
+                uint64_t player_id;
+                float health, max_health;
+                server_player_health_from(sdata+offset, &player_id, &health, &max_health);
+                event_t* event = (event_t*) ClientPlayerHealthEvent_new(player_id, health, max_health);
+                world_queue_event(e->world, event);
+            } else if (strncmp(cmd, SERVER_COMMAND_HEAL, 4) == 0) {
+                uint64_t player_id;
+                float health;
+                server_player_heal_from(sdata+offset, &player_id, &health);
+                event_t* event = (event_t*) ClientPlayerHealEvent_new(player_id, health);
+                world_queue_event(e->world, event);
+            } else if (strncmp(cmd, SERVER_COMMAND_KILL, 4) == 0) {
+                uint64_t player_id, src_player_id;
+                server_player_kill_from(sdata+offset, &player_id, &src_player_id);
+                event_t* event = (event_t*) ClientPlayerKillEvent_new(player_id, src_player_id);
+                world_queue_event(e->world, event);
+            } else if (strncmp(cmd, SERVER_COMMAND_DAMG, 4) == 0) {
+                uint64_t player_id, src_player_id;
+                float damage;
+                server_player_damage_from(sdata+offset, &player_id, &src_player_id, &damage);
+                event_t* event = (event_t*) ClientPlayerDamageEvent_new(player_id, src_player_id, damage);
+                world_queue_event(e->world, event);
             } else {
                 printf("Unknown command: %s\n", cmd);
             }
