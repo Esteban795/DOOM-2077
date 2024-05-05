@@ -14,6 +14,4 @@ component_t* display_name_create(char* name) {
     return (component_t*) display_name_component;
 }
 
-char* display_name_get(display_name_ct* display_name) {
-    return display_name->name;
-}
+extern inline char* display_name_get(display_name_ct* display_name);

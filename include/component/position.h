@@ -21,28 +21,48 @@ typedef struct {
 // Create a new position component
 component_t* position_create(double coords[3], double angle);
 
-// Get the position vector (x, y) of the entity
-vec2 position_get_pos(position_ct* component);
+// Get the position of the entity
+inline vec2 position_get_pos(position_ct* component) {
+    vec2 pos = {component->x, component->y};
+    return pos;
+}
 
-// Get the x coordinate
-double position_get_x(position_ct* component);
+// Get the x coordinate of the entity
+inline double position_get_x(position_ct* component) {
+    return component->x;
+}
 
-// Get the y coordinate
-double position_get_y(position_ct* component);
+// Get the y coordinate of the entity
+inline double position_get_y(position_ct* component) {
+    return component->y;
+}
 
-// Get the z coordinate
-double position_get_z(position_ct* component);
+// Get the z coordinate of the entity
+inline double position_get_z(position_ct* component) {
+    return component->z;
+}
 
-// Get the angle
-double position_get_angle(position_ct* component);
+// Get the angle of the entity
+inline double position_get_angle(position_ct* component) {
+    return component->angle;
+}
 
-// Set the position of the entity
-vec2 position_set_pos(position_ct* component, vec2 pos);
+// Set the position (x,y) of the entity
+inline vec2 position_set_pos(position_ct* component, vec2 pos) {
+    component->x = pos.x;
+    component->y = pos.y;
+    return pos;
+}
 
-// Set the z coordinate of the entity (elevation)
-double position_set_z(position_ct* component, double z);
+// Set the z coordinate of the entity
+inline double position_set_z(position_ct* component, double z) {
+    component->z = z;
+    return z;
+}
 
 // Set the angle of the entity
-double position_set_angle(position_ct* component, double angle);
-
+inline double position_set_angle(position_ct* component, double angle) {
+    component->angle = angle;
+    return angle;
+}
 #endif

@@ -2,6 +2,7 @@
 #define _LIB_DOOM_COMPONENT_HEALTH_H
 
 #include "../ecs/component.h"
+#include <assert.h>
 
 extern const int COMPONENT_TAG_HEALTH;
 
@@ -19,27 +20,58 @@ typedef struct {
 component_t* health_create(float max_health, float health);
 
 // health_get returns the current health of the entity.
-float health_get(health_ct* health);
+inline float health_get(health_ct* health) {
+    return health->health;
+}
 
 // health_get_max returns the maximum health of the entity.
-float health_get_max(health_ct* health);
+inline float health_get_max(health_ct* health) {
+    return health->max_health;
+}
 
-// health_set sets the health of the entity to the given value.
-float health_set(health_ct* health, float value);
+// health_set sets the current health of the entity.
+inline float health_set(health_ct* health, float value) {
+    if (value > health->max_health) {
+        health->health = health->max_health;
+    } else if (value < 0) {
+        health->health = 0;
+    } else {
+        health->health = value;
+    }
+    return health->health;
+}
 
-// health_set_max sets the maximum health of the entity to the given value.
-float health_set_max(health_ct* health, float value);
+// health_set_max sets the maximum health of the entity.
+inline float health_set_max(health_ct* health, float value) {
+    assert(value >= 0);
+    health->max_health = value;
+    return health->max_health;
+}
 
-// health_set_max sets the maximum health of the entity to the given value.
-// If the current health is greater than the new maximum health, the current health is set to the new maximum health.
-float health_add(health_ct* health, float value);
+// health_add adds the given value to the current health of the entity.
+// If the health exceeds the maximum health, it is set to the maximum health.
+inline float health_add(health_ct* health, float value) {
+    health->health += value;
+    if (health->health > health->max_health) {
+        health->health = health->max_health;
+    }
+    return health->health;
+}
 
-// health_sub subtracts the given value from the health of the entity.
-// If the health of the entity is less than the given value, the health is set to 0.
-float health_sub(health_ct* health, float value);
+// health_sub subtracts the given value from the current health of the entity.
+// If the health goes below 0, it is set to 0.
+inline float health_sub(health_ct* health, float value) {
+    health->health -= value;
+    if (health->health < 0) {
+        health->health = 0;
+    }
+    return health->health;
+}
 
-// health_reset sets the health of the entity to the maximum health.
-// This function is useful when the entity respawns, or regenerates health.
-float health_reset(health_ct* health);
+// health_reset resets the current health of the entity to the maximum health.
+inline float health_reset(health_ct* health) {
+    health->health = health->max_health;
+    return health->health;
+}
 
 #endif

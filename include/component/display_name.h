@@ -19,6 +19,9 @@ typedef struct {
 // display_name_create creates a new display name component with the given name.
 component_t* display_name_create(char* name);
 
-char* display_name_get(display_name_ct* display_name);
+// display_name_get returns the name of the entity.
+inline char* display_name_get(display_name_ct* display_name) {
+    return display_name->name;
+}
 
 #endif
