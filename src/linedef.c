@@ -3,6 +3,7 @@
 #include <limits.h>
 #include <stdio.h>
 
+// LINEDEF PART
 vertex *get_vertex_from_linedef(i16 vertex_id, vertex *vertexes) {
   return &vertexes[vertex_id];
 }
@@ -10,6 +11,53 @@ vertex *get_vertex_from_linedef(i16 vertex_id, vertex *vertexes) {
 sidedef *get_sidedef_from_linedef(i16 sidedef_id, sidedef *sidedefs) {
   return &sidedefs[sidedef_id];
 }
+
+linedef *read_linedef(FILE *f, int offset, vertex *vertexes,
+                      sidedef *sidedefs) {
+  linedef *line = malloc(sizeof(linedef));
+  line->start_vertex = get_vertex_from_linedef(read_i16(f, offset), vertexes);
+  line->end_vertex = get_vertex_from_linedef(read_i16(f, offset + 2), vertexes);
+  line->flag = read_i16(f, offset + 4);
+  line->line_type = read_i16(f, offset + 6);
+  line->sector_tag = read_i16(f, offset + 8);
+  i16 front_sidedef_id = read_i16(f, offset + 10);
+  i16 back_sidedef_id = read_i16(f, offset + 12);
+  line->has_back_sidedef = back_sidedef_id != -1;
+  line->front_sidedef = get_sidedef_from_linedef(front_sidedef_id, sidedefs);
+  line->back_sidedef = line->has_back_sidedef
+                           ? get_sidedef_from_linedef(back_sidedef_id, sidedefs)
+                           : NULL;
+  line->is_colllidable = false;
+  line->is_repeatable = false;
+  line->is_shootable = false;
+  line->has_doors = false;
+  line->door = NULL;
+  line->used = false;
+  line->is_pushable = false;
+  return line;
+}
+
+linedef **get_linedefs_from_lump(FILE *f, lump *directory, int lump_index,
+                                 int num_bytes, int header_length,
+                                 int len_linedefs, vertex *vertexes,
+                                 sidedef *sidedefs) {
+  lump lump_info = directory[lump_index];
+  linedef **linedefs = malloc(sizeof(linedef *) * len_linedefs);
+  for (int i = 0; i < len_linedefs; i++) {
+    int offset = lump_info.lump_offset + i * num_bytes + header_length;
+    linedefs[i] = read_linedef(f, offset, vertexes, sidedefs);
+  }
+  return linedefs;
+}
+
+void linedefs_free(linedef **linedefs, int len_linedefs) {
+  for (int i = 0; i < len_linedefs; i++) {
+    free(linedefs[i]);
+  }
+  free(linedefs);
+}
+
+// DOORS 
 
 bool is_a_door(linedef *line) {
   i16 l = line->line_type;
@@ -184,54 +232,6 @@ void set_correct_sidedefs(linedef *line, sidedef **sector_sidedef,
   }
 }
 
-linedef *read_linedef(FILE *f, int offset, vertex *vertexes,
-                      sidedef *sidedefs) {
-  linedef *line = malloc(sizeof(linedef));
-  line->start_vertex = get_vertex_from_linedef(read_i16(f, offset), vertexes);
-  line->end_vertex = get_vertex_from_linedef(read_i16(f, offset + 2), vertexes);
-  line->flag = read_i16(f, offset + 4);
-  line->line_type = read_i16(f, offset + 6);
-  line->sector_tag = read_i16(f, offset + 8);
-  i16 front_sidedef_id = read_i16(f, offset + 10);
-  i16 back_sidedef_id = read_i16(f, offset + 12);
-  line->has_back_sidedef = back_sidedef_id != -1;
-  line->front_sidedef = get_sidedef_from_linedef(front_sidedef_id, sidedefs);
-  line->back_sidedef = line->has_back_sidedef
-                           ? get_sidedef_from_linedef(back_sidedef_id, sidedefs)
-                           : NULL;
-  line->is_colllidable = false;
-  line->is_repeatable = false;
-  line->is_shootable = false;
-  line->has_doors = false;
-  line->door = NULL;
-  line->used = false;
-  line->is_pushable = false;
-  return line;
-}
-
-linedef **get_linedefs_from_lump(FILE *f, lump *directory, int lump_index,
-                                 int num_bytes, int header_length,
-                                 int len_linedefs, vertex *vertexes,
-                                 sidedef *sidedefs) {
-  lump lump_info = directory[lump_index];
-  linedef **linedefs = malloc(sizeof(linedef *) * len_linedefs);
-  for (int i = 0; i < len_linedefs; i++) {
-    int offset = lump_info.lump_offset + i * num_bytes + header_length;
-    linedefs[i] = read_linedef(f, offset, vertexes, sidedefs);
-  }
-  return linedefs;
-}
-
-linedef *get_linedef_by_sector_tag(linedef **linedefs, int len_linedefs,
-                                   u16 sector_tag) {
-  for (int i = 0; i < len_linedefs; i++) {
-    if (linedefs[i]->sector_tag == sector_tag) {
-      return linedefs[i];
-    }
-  }
-  return NULL;
-}
-
 linedef* get_linedef_by_sector_id(linedef **linedefs, int len_linedefs,
                                    i16 sector_id) {
   for (int i = 0; i < len_linedefs; i++) {
@@ -261,15 +261,6 @@ int min_neighboring_heights(linedef **lines, int len_linedefs, i16 sector_id) {
   return mini;
 }
 
-int get_id_from_sector_tag(sector *sectors, int len_sectors, u16 sector_tag) {
-  for (int i = 0; i < len_sectors; i++) {
-    if (sectors[i].tag_number == sector_tag) {
-      return i;
-    }
-  }
-  return -1;
-}
-
 door **get_doors(linedef **linedefs, int len_linedefs, int *doors_count,
                  sector *sectors, int len_sectors) {
   door **sectors_doors =
@@ -279,7 +270,7 @@ door **get_doors(linedef **linedefs, int len_linedefs, int *doors_count,
   for (int i = 0; i < len_sectors; i++) {
     sectors_doors[i] = NULL;
   }
-  door **doors = malloc(sizeof(door *) * DOORS_COUNT);
+  door **doors = malloc(sizeof(door *) * DOORS_COUNT); // actual door* array
   int door_index = 0;
 
   *doors_count = DOORS_COUNT;
@@ -292,20 +283,17 @@ door **get_doors(linedef **linedefs, int len_linedefs, int *doors_count,
       continue;                   // not a door
     if (is_a_direct_door(line)) { // door is RIGHT behind this linedef
       set_correct_sidedefs(line, &door_sidedef,
-                           &neighbor_sidedef); // set up the correct sidedefs
+                           &neighbor_sidedef); // set up the correct sidedefs to make sure we're setting the right sector for the door
       i16 door_sector_id = door_sidedef->sector_id;
       door *d = create_door_from_linedef(line, door_sidedef, line->line_type);
 
-      if (sectors_doors[door_sector_id] == NULL) {
-        line->door = line->has_doors ? add_door(line->door, d) : d;
-        if (line->door == NULL) {
-          printf("Error adding door to linedef\n");
-        }
+      if (sectors_doors[door_sector_id] == NULL) { // no door registered yet
+        line->door = line->has_doors ? add_door(line->door, d) : d; // in case linedefs can activate multiple doors
         sectors_doors[door_sector_id] = d;
         doors[door_index] = d;
         door_index++;
       } else {
-        line->door = add_door(line->door, sectors_doors[door_sector_id]);
+        line->door = add_door(line->door, sectors_doors[door_sector_id]); // the door already exists, just link the linedef to it
         free(d);
         continue;
       }
@@ -321,8 +309,8 @@ door **get_doors(linedef **linedefs, int len_linedefs, int *doors_count,
              // specific linedef
       u16 sector_tag = line->sector_tag;
       for (int sector_id = 0; sector_id < len_sectors;sector_id++) {
-        if (sectors[sector_id].tag_number != sector_tag) continue;
-        linedef* sector_linedef = get_linedef_by_sector_id(linedefs, len_linedefs, sector_id);
+        if (sectors[sector_id].tag_number != sector_tag) continue; // not the right sector
+        linedef* sector_linedef = get_linedef_by_sector_id(linedefs, len_linedefs, sector_id); //  get a linedef that is part of the door sector
         set_correct_sidedefs(sector_linedef, &door_sidedef, &neighbor_sidedef);
         door* d = create_door_from_linedef(line, door_sidedef,
                                            line->line_type);
@@ -347,11 +335,4 @@ door **get_doors(linedef **linedefs, int len_linedefs, int *doors_count,
   }
   *doors_count = door_index;
   return doors;
-}
-
-void linedefs_free(linedef **linedefs, int len_linedefs) {
-  for (int i = 0; i < len_linedefs; i++) {
-    free(linedefs[i]);
-  }
-  free(linedefs);
 }
