@@ -34,3 +34,12 @@ linedef *get_linedefs_from_lump(FILE *f, lump *directory, int lump_index,
   }
   return linedefs;
 }
+
+
+// LIFTS
+
+lift* create_lift_from_linedef(linedef* line, sidedef* sd,enum LiftType type) {
+  lift* l;
+  enum LiftTransitionSpeed speed;
+  bool repeatable;
+}

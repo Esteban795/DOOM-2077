@@ -11,6 +11,8 @@ engine *init_engine(const char *wadPath, SDL_Renderer *renderer) {
   e->DT = 0;
   e->texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
                                  SDL_TEXTUREACCESS_STREAMING, WIDTH, HEIGHT);
+  e->lifts = NULL;
+  e->len_lifts = 0;
   return e;
 }
 

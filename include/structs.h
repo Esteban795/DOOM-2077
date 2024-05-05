@@ -75,6 +75,8 @@ struct Engine {
   int DT;
   struct Player **players;
   AudioMixer *mixer;
+  lift** lifts;
+  int len_lifts;
 };
 
 struct BSP {

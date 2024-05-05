@@ -5,6 +5,8 @@
 #include "lump.h"
 #include "vertex.h"
 #include "sidedef.h"
+#include "lift.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
