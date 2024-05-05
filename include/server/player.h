@@ -6,6 +6,7 @@
 #include "../component/health.h"
 #include "../component/position.h"
 #include "../component/weapon.h"
+#include "../component/statistic.h"
 #include "../ecs/world.h"
 #include "../ecs/entity.h"
 #include "../ecs/component.h"

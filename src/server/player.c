@@ -13,13 +13,14 @@ entity_t* server_create_player(world_t* world, char* name) {
         ammo[i] = -1;
     }
     double coords[3] = {0.0, 0.0, SERVER_PLAYER_HEIGHT};
-    component_t** comps = malloc(sizeof(component_t*) * 4);
+    component_t** comps = malloc(sizeof(component_t*) * 5);
     comps[0] = position_create(coords, 180.0);
     comps[1] = health_create(100.0, 100.0);
     comps[2] = weapon_create(ammo);
     comps[3] = display_name_create(name);
+    comps[4] = statistic_create(0, 0);
         
-    entity_t* player = world_create_entity(world, comps, 4);
+    entity_t* player = world_create_entity(world, comps, 5);
     free(comps);
     return player;
 }
