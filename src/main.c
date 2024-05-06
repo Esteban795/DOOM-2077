@@ -1,5 +1,7 @@
 #include "../include/engine.h"
+#include "../include/weapons.h"
 
+weapons_array *wa;
 
 // handles all kind of error at SDL startup
 int start_SDL(SDL_Window **window, SDL_Renderer **renderer, int width,
@@ -50,6 +52,7 @@ int main() {
     old = now;
     // break;
   }
+  free_weapons_array(wa);
   engine_free(e);
   Mix_Quit();
   return 0;

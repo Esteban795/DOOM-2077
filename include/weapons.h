@@ -7,6 +7,7 @@
 
 #include "structs.h"
 
+extern weapons_array *wa;
 
 weapons_array* init_weapons_array(map_renderer *mr);
 void switch_weapon(player* p, int weapon_id);

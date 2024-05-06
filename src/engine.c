@@ -1,5 +1,6 @@
 #include "../include/engine.h"
 #include <SDL2/SDL_render.h>
+
 engine *init_engine(const char *wadPath, SDL_Renderer *renderer) {
   engine *e = malloc(sizeof(engine));
   e->wadPath = wadPath;
@@ -17,6 +18,7 @@ void read_map(engine *e, SDL_Renderer *renderer, char *map_name) {
   e->p = player_init(e);
   e->bsp = bsp_init(e, e->p);
   e->map_renderer = map_renderer_init(e, renderer);
+  wa = init_weapons_array(e->map_renderer);
   e->seg_handler = segment_handler_init(e);
   e->players = create_players(NUM_PLAYERS, e);
   e->mixer = audiomixer_init();
