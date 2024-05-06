@@ -143,11 +143,12 @@ weapons_array* init_weapons_array(map_renderer *mr){
 }
 
 void draw_weapon(map_renderer *mr, patch sprite, int x, int y) {
+    float scale = (float)HEIGHT / 4.0f / sprite.header.height;
     SDL_Rect dest_rect;
     dest_rect.x = x;
     dest_rect.y = y;
-    dest_rect.w = sprite.header.height;
-    dest_rect.h = sprite.header.width;
+    dest_rect.w = sprite.header.width * scale;
+    dest_rect.h = sprite.header.height * scale;
 
     SDL_RenderCopy(mr->renderer, sprite.tex, NULL, &dest_rect);
 }
