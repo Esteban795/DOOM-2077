@@ -2,7 +2,8 @@
 #define WEAPONS_H
 
 #define IDLE 0
-#define FIRE 1
+#define ANIMATION 1
+#define FIRE 2
 
 #include "structs.h"
 
@@ -13,5 +14,5 @@ void free_weapons_array(weapons_array* wa);
 void add_weapon(player* p, int weapon_id    ,weapons_array* wa);
 void add_ammo(player* p, int weapon_id, int ammo);
 void print_animations_patches(weapon *w);
-
+void draw_weapon(map_renderer *mr, patch sprite, int x, int y);
 #endif
