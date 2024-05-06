@@ -2,14 +2,15 @@
 #include <assert.h>
 
 animations_array *init_animations_array(map_renderer *mr,char *abbreviation){
-    animations_array *ar = malloc(2*sizeof(animations_array)); // A priori pas besoin de plus vu qu'on a que 2 animations 
-                                                            //pour les armes : IDLE et Firing
+    animations_array *ar = malloc(3*sizeof(animations_array)); // A priori pas besoin de plus vu qu'on a que 2 animations 
+                                                            //pour les armes : IDLE et animation + la partie qui se rajoute sur l'animation
     int m = strlen(abbreviation);
     int indexes[10]; // J'ai supposé qu'on aurait pas plus de 10 sprites pour l'animation
     for (int i = 0; i < 10; i++) {
         indexes[i] = -1;
     }
     int animation_len = 0;
+    int all_sprites_len = 0;
     int i = 0;
     patch *sprites = mr->wData->sprites;
     char* to_cmp = malloc(10*sizeof(char));
@@ -23,15 +24,16 @@ animations_array *init_animations_array(map_renderer *mr,char *abbreviation){
     
     int k = 0;
     while(strcmp(abbreviation,to_cmp)==0 && i<mr->wData->len_sprites){
-        printf("Animations pour l'arme : %s \n", sprites[i].patchname);
         indexes[k] = i;
         k++;
         i++;
         strcpy(to_cmp,sprites[i].patchname);
+        if (!(to_cmp[m] == 'F')){
+            animation_len++;
+        }
+        all_sprites_len++;
         to_cmp[m]='\0';
-        animation_len ++;
     }
-
     if(i==mr->wData->len_sprites){
         printf("Erreur lors du chargement des sprites \n");
         return NULL;
@@ -46,8 +48,14 @@ animations_array *init_animations_array(map_renderer *mr,char *abbreviation){
         fire_anim_sprites[j-1] = sprites[indexes[j]];
     }
     animations_array fire_anim = {.animation_sprites = fire_anim_sprites,.animation_len = animation_len-1};
-    ar[FIRE] = fire_anim;
+    ar[ANIMATION] = fire_anim;
     
+    patch *layer_sprites = malloc(sizeof(patch)*(all_sprites_len - animation_len));
+    for(int j = animation_len; j<all_sprites_len;j++){
+        layer_sprites[all_sprites_len - j -1] = sprites[indexes[j]];
+    }
+    animations_array fire_layer = {.animation_sprites = layer_sprites,.animation_len = all_sprites_len - animation_len};
+    ar[FIRE] = fire_layer;
 
     free(to_cmp);
     return ar;
@@ -74,8 +82,13 @@ weapon* init_one_weapon(map_renderer *mr,int id, char* weapon_name, char* abbrev
 void print_animations_patches(weapon *w){
     animations_array *aa = w->sprites;
     printf("Animation d'idle de base :%s \n",aa[0].animation_sprites->patchname);
-    for(int i = 0; i<aa[1].animation_len; i++){
-        printf("Animation %d de tir de %s : %s \n", i, w->weapon_name,aa[1].animation_sprites[i].patchname);
+    for(int j = 1; j<3;j++){
+        for(int i = 0; i<aa[j].animation_len; i++){
+            if(j>1){
+                printf("Case %d \n", j);
+            }
+            printf("Animation/Layer %d de %s : %s \n", i, w->weapon_name,aa[j].animation_sprites[i].patchname);
+        }
     }
 }
 
@@ -129,10 +142,24 @@ weapons_array* init_weapons_array(map_renderer *mr){
     return wa;
 }
 
+void draw_weapon(map_renderer *mr, patch sprite, int x, int y) {
+    SDL_Rect dest_rect;
+    dest_rect.x = x;
+    dest_rect.y = y;
+    dest_rect.w = sprite.header.height;
+    dest_rect.h = sprite.header.width;
+
+    SDL_RenderCopy(mr->renderer, sprite.tex, NULL, &dest_rect);
+}
+
+
 void free_animations_array(weapon *w){
     animations_array *aa = w->sprites;
-    free(aa[0].animation_sprites);
-    free(aa[1].animation_sprites);
+    for(int i = 0; i<3;i++){
+        if (aa[i].animation_sprites != NULL){
+            free(aa[i].animation_sprites);
+        }
+    }
     free(aa);
 }
 
