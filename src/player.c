@@ -7,7 +7,7 @@
 #define SIGN(x) (int)(x > 0) ? 1 : ((x < 0) ? -1 : 0)
 #define DOT(a, b) (a.x * b.x) + (a.y * b.y)
 #define DISTANCE_VEC_VER(a, b) (sqrt(pow(b->x - a.x, 2) + pow(b->y - a.y, 2)))
-
+#define PLAYER_LIFE 100
 #define M_PI 3.14159265358979323846
 
 player *player_init(engine *e) {
@@ -26,8 +26,10 @@ player *player_init(engine *e) {
   p->keybinds = get_player_keybinds(KEYBINDS_FILE);
   p->settings = get_player_settings(SETTINGS_FILE);
   p->ammo = ammo;
+  p->life=PLAYER_LIFE;
   p->active_weapon = 0;
-  p->cooldown = 0;
+  p->cooldown = 0; //nombre d'unités de temps nécéssaires avant de tirer , 0 indique qu'on peut tirer
+  p->spray=0;
   return p;
 }
 
