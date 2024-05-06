@@ -62,6 +62,11 @@ int broadcast_event(world_t* world, event_t* event) {
             } else {
                 len += server_player_move(buf + len, server_player_join_event->entity_id, pos->x, pos->y, pos->z, pos->angle);
                 len += server_player_health(buf + len, server_player_join_event->entity_id, health->health, health->max_health);
+                char* entries[10] = {0};
+                uint16_t deaths[10] = {0};
+                uint16_t kills[10] = {0};
+                int entity_count = scoreboard_generate(world, entries, deaths, kills);
+                len += server_scoreboard_update(buf + len, entity_count, entries, deaths, kills);
             }
             broadcast(&sock, conns, SERVER_STATE->conn_count, buf, len);
 

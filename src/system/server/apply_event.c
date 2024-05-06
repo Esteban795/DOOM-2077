@@ -2,14 +2,15 @@
 #include "../../../include/event/all.h"
 #include "../../../include/component/position.h"
 #include "../../../include/ecs/world.h"
+#include "../../../include/component/display_name.h"
 #include "../../../include/component/health.h"
 #include "../../../include/component/statistic.h"
+#include "../../../include/collection/vec.h"
 
 
 const system_t APPLY_EVENT_SYSTEM = {
     .fn = apply_event,
 };
-
 
 /*
 * The first system in the chain, it applies the modifications to the world based on the event.
@@ -80,15 +81,26 @@ int apply_event(world_t* world, event_t* event) {
             health_ct* health = (health_ct*) world_get_component(world, &pid, COMPONENT_TAG_HEALTH);
             if (health == NULL) return -1; // If the player does not have health, we cannot apply the event, cancel it.
             health_set(health, 0);
+
+            // Increment the deaths of the player.
             statistic_ct* stats = (statistic_ct*) world_get_component(world, &pid, COMPONENT_TAG_STATISTIC);
             if (stats == NULL) return -1; // If the player does not have stats, we cannot apply the event, cancel it.
             statistic_increment_deaths(stats, 1);
 
+            // Increment the kills of the source player.
             if (player_kill_event->source_entity_id == 0) return 0; // If the source entity is 0 (NONE), then just return, no need to increment kills.
             pid = ENTITY_BY_ID(player_kill_event->source_entity_id);
             stats = (statistic_ct*) world_get_component(world, &pid, COMPONENT_TAG_STATISTIC);
             if (stats == NULL) return -1; // If the player does not have stats, we cannot apply the event, cancel it.
             statistic_increment_kills(stats, 1);
+
+            // Trigger a scoreboard update event.
+            char* entries[10] = {0};
+            uint16_t deaths[10] = {0};
+            uint16_t kills[10] = {0};
+            int count = scoreboard_generate(world, entries, deaths, kills);
+            event_t* scoreboard_event = (event_t*) ServerScoreboardUpdateEvent_new(count, entries, deaths, kills);
+            world_queue_event(world, scoreboard_event);
             break;
         }
         default:
