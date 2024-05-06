@@ -49,3 +49,7 @@ int max(int x, int y){
 int min(int x, int y){
   return x < y ? x : y;
 }
+
+double distance(double posx_a, double posy_a, double posx_b, double posy_b) {
+  return sqrt(pow((posx_b - posx_a), 2) + pow((posy_b - posy_a), 2));
+}
