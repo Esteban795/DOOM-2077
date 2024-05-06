@@ -3,6 +3,7 @@
 
 #define PLAYER_HITBOX_SIZE 50
 #define HITSCAN_PRECISION 10
+#define MELEE_RADIUS 20
 
 bullet *create_bullet(player *player_) {
   bullet *bullet_ = malloc(sizeof(bullet));
@@ -16,10 +17,18 @@ double distance(double posx_a, double posy_a, double posx_b, double posy_b) {
   return sqrt(pow((posx_b - posx_a), 2) + pow((posy_b - posy_a), 2));
 }
 
-void fire_bullet(player **players, int num_players, player *player_,
-                  int damage) { // toutes les valeurs de y sont négatives
+void fire_bullet(player **players, int num_players, player *player_,weapons_array weapons_list) { // toutes les valeurs de y sont négatives
   double distance_finale = 10000;
-  if (player_->cooldown < 80) {
+  weapon* weapon_used=weapons_list.weapons[player_->active_weapon];
+  int damage=weapon_used->max_damage;
+  int is_ranged; //0 correspond a une arme de melée sinon une arme a distance
+  if(weapon_used->type==-1){
+    is_ranged=0;
+  }
+  else{
+    is_ranged=1;
+  }
+  if ((player_->cooldown < 80)&&(!((is_ranged==1)&&(player_->ammo[player_->active_weapon]==0)))){ //On véfrifie d'un coté que le temps de cooldown est respecté et ensuite que si l'arme est a distance elle dispose d'assez de muntitions
     player_->cooldown = player_->cooldown + 100;
     linedef *linedefs = player_->engine->wData->linedefs;
     double x1 = player_->pos.x;
@@ -95,7 +104,10 @@ void fire_bullet(player **players, int num_players, player *player_,
             (max(x1, x_final) > players[j]->pos.x) &&
             (min(y1, y_final) < -players[j]->pos.y) &&
             (min(y1, y_final) < -players[j]->pos.y)) {
-          players[j]->life -= damage;
+          if((dist_to_hitscan< MELEE_RADIUS)){
+            players[j]->life -= damage;
+            player_->ammo[player_->active_weapon] -=1;
+          }
         }
       }
     }

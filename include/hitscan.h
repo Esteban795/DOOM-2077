@@ -15,6 +15,6 @@ bullet *create_bullet(player* player_);
 
 double distance(double posx_a,double posy_a,double posx_b,double posy_b);
 
-void fire_bullet(player** players,int num_players,player* player_,int damage);
+void fire_bullet(player** players,int num_players,player* player_,weapons_array weapons_list);
 
 int correct_height(linedef wall,int height);
