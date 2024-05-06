@@ -2,6 +2,7 @@
 #include <stdio.h>
 
 bool firstTimeLaunching = true;
+//weapons_array *wa;
 
 void switch_scene(engine *e, int scene) {
   game_states_free[e->state](e);
@@ -10,7 +11,10 @@ void switch_scene(engine *e, int scene) {
 }
 
 void init_menu_state(engine *e) {}
-void init_ingame_state(engine *e) {}
+
+void init_ingame_state(engine *e) {
+ // wa = init_weapons_array(e->map_renderer);
+}
 
 void update_menu_state(engine *e) {
   // faire les trucs du menu
@@ -26,8 +30,11 @@ void update_ingame_state(engine *e) {
   render_vssprites(e->map_renderer);
   // draw_crosshair(e->map_renderer,get_color(50,0),20);
   SDL_UpdateTexture(e->texture, NULL, e->pixels, WIDTH * 4);
+  
   SDL_SetTextureBlendMode(e->texture, SDL_BLENDMODE_BLEND);
+  
   SDL_RenderCopy(e->map_renderer->renderer, e->texture, NULL, NULL);
+  draw_weapon(e->map_renderer,wa->weapons[0]->sprites->animation_sprites[0],HALF_WIDTH,HALF_HEIGHT);
   return;
 }
 
