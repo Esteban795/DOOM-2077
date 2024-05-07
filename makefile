@@ -24,7 +24,7 @@ CLIENT_SRC = sound.c blockmap.c bsp.c button.c byte_reader.c color.c engine.c ge
 	keybindings.c linedef.c lump.c main.c map_renderer.c node.c player.c sector.c segment.c \
 	segment_handler.c sidedef.c subsector.c textarea.c thing.c timer.c util.c vertex.c wad_data.c weapons.c hitscan.c\
 	audio/mixer.c audio/emitter.c\
-	game_states.c events.c flat.c texture.c patch.c
+	game_states.c events.c flat.c texture.c patch.c lift.c
 CLIENT_OBJ = $(CLIENT_SRC:%.c=%.o)
 CLIENT_LIB = 
 CLIENT_LDFLAGS = -lSDL2 -lSDL2_ttf -lSDL2_mixer
