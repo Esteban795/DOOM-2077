@@ -17,6 +17,9 @@ void update_menu_state(engine *e) {
 
 void update_ingame_state(engine *e) {
   update_player(e->p);
+    for (int i = 0; i < e->num_doors; i++) {
+        door_update(e->doors[i], e->DT);
+    }
   get_ssector_height(e->bsp);
   segment_handler_update(e->seg_handler);
   update_bsp(e->bsp);

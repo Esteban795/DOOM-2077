@@ -73,7 +73,9 @@ struct Engine {
   struct SegmentHandler *seg_handler;
   GameState state;
   int DT;
-  struct Player **players;
+  struct Player** players;
+  door** doors;
+  int num_doors;
   AudioMixer *mixer;
 };
 

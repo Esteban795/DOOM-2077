@@ -12,7 +12,7 @@
 #define BLOCK_END ((int16_t)0xFFFF)
 
 struct Block {
-  linedef *linedefs;
+  linedef **linedefs;
   size_t nlinedefs;
 };
 
@@ -36,7 +36,7 @@ struct Blockmap {
 typedef struct Blockmap blockmap;
 
 blockmap *read_blockmap_from_lump(FILE *f, lump *directory, int lump_index,
-                                  linedef *linedefs);
+                                  linedef **linedefs);
 
 void blockmap_free(blockmap *bm);
 
