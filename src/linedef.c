@@ -2,9 +2,6 @@
 #include <SDL2/SDL_log.h>
 #include <limits.h>
 #include <stdio.h>
-#include <limits.h>
-#include <stdbool.h>
-#include <stdlib.h>
 
 // LINEDEF PART
 vertex *get_vertex_from_linedef(i16 vertex_id, vertex *vertexes) {
@@ -15,8 +12,9 @@ sidedef *get_sidedef_from_linedef(i16 sidedef_id, sidedef *sidedefs) {
   return &sidedefs[sidedef_id];
 }
 
-linedef* read_linedef(FILE *f, int offset, vertex *vertexes,sidedef *sidedefs){
-  linedef* line = malloc(sizeof(linedef));
+linedef *read_linedef(FILE *f, int offset, vertex *vertexes,
+                      sidedef *sidedefs) {
+  linedef *line = malloc(sizeof(linedef));
   line->start_vertex = get_vertex_from_linedef(read_i16(f, offset), vertexes);
   line->end_vertex = get_vertex_from_linedef(read_i16(f, offset + 2), vertexes);
   line->flag = read_i16(f, offset + 4);
@@ -26,9 +24,16 @@ linedef* read_linedef(FILE *f, int offset, vertex *vertexes,sidedef *sidedefs){
   i16 back_sidedef_id = read_i16(f, offset + 12);
   line->has_back_sidedef = back_sidedef_id != -1;
   line->front_sidedef = get_sidedef_from_linedef(front_sidedef_id, sidedefs);
-  if (line->has_back_sidedef) line->back_sidedef = get_sidedef_from_linedef(back_sidedef_id, sidedefs);
-  line->is_collidable = line->is_shootable = line->is_pushable = line->is_repeatable = line->has_lifts = false;
-  line->lifts = NULL;
+  line->back_sidedef = line->has_back_sidedef
+                           ? get_sidedef_from_linedef(back_sidedef_id, sidedefs)
+                           : NULL;
+  line->is_colllidable = false;
+  line->is_repeatable = false;
+  line->is_shootable = false;
+  line->has_doors = false;
+  line->door = NULL;
+  line->used = false;
+  line->is_pushable = false;
   return line;
 }
 
@@ -301,6 +306,7 @@ door **get_doors(linedef **linedefs, int len_linedefs, int *doors_count,
             min_neighboring_heights(linedefs, len_linedefs, sector_id);
         int delta_height = minimal_neighbor_height -
                            door_sidedef->sector->ceiling_height;
+        fflush(stdout);
         door_update_height(d, delta_height);
       }
     }
@@ -310,6 +316,7 @@ door **get_doors(linedef **linedefs, int len_linedefs, int *doors_count,
   return doors;
 }
 
+
 // LIFTS
 
 // Gets the lowest height of adjacent sectors, sector_id included
@@ -317,8 +324,7 @@ int get_lnf(linedef** lines,int len_linedefs,i16 sector_id) {
   int min_height = INT_MAX;
   for (int i = 0; i < len_linedefs;i++) {
     linedef* line = lines[i];
-    printf("i : %d\n",i);
-    fflush(stdout);
+    if (!line->has_back_sidedef) continue;
     if (line->front_sidedef->sector_id == sector_id) min_height = min(min_height,line->back_sidedef->sector->floor_height);
     if (line->back_sidedef->sector_id == sector_id) min_height = min(min_height,line->front_sidedef->sector->floor_height);
   }
