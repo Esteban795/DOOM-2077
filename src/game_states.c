@@ -34,7 +34,7 @@ void update_ingame_state(engine *e) {
   SDL_SetTextureBlendMode(e->texture, SDL_BLENDMODE_BLEND);
   
   SDL_RenderCopy(e->map_renderer->renderer, e->texture, NULL, NULL);
-  draw_weapon(e->map_renderer,wa->weapons[0]->sprites->animation_sprites[0],HALF_WIDTH,HALF_HEIGHT);
+  update_animation(e->map_renderer, wa->weapons[0]);
   return;
 }
 

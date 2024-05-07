@@ -6,6 +6,7 @@
 #define FIRE 2
 
 #include "structs.h"
+#include "events.h"
 
 extern weapons_array *wa;
 
@@ -15,5 +16,7 @@ void free_weapons_array(weapons_array* wa);
 void add_weapon(player* p, int weapon_id    ,weapons_array* wa);
 void add_ammo(player* p, int weapon_id, int ammo);
 void print_animations_patches(weapon *w);
-void draw_weapon(map_renderer *mr, patch sprite, int x, int y);
+//void draw_weapon(map_renderer *mr, patch sprite, int x, int y);
+//void idle_weapon_animation(map_renderer *mr,weapon *w);
+void update_animation(map_renderer *mr,weapon *w);
 #endif

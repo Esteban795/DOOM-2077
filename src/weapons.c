@@ -1,6 +1,9 @@
 #include "../include/weapons.h"
 #include <assert.h>
 
+#define ANIMATION_WIDTH 100
+#define ANIMATION_HEIGTH 50
+
 animations_array *init_animations_array(map_renderer *mr,char *abbreviation){
     animations_array *ar = malloc(3*sizeof(animations_array)); // A priori pas besoin de plus vu qu'on a que 2 animations 
                                                             //pour les armes : IDLE et animation + la partie qui se rajoute sur l'animation
@@ -151,6 +154,58 @@ void draw_weapon(map_renderer *mr, patch sprite, int x, int y) {
     dest_rect.h = sprite.header.height * scale;
 
     SDL_RenderCopy(mr->renderer, sprite.tex, NULL, &dest_rect);
+}
+
+void update_animation(map_renderer *mr, weapon *w){
+    player *p = mr->engine->p;
+    player_keybind *kb = p->keybinds;
+    bool forward = keys[get_key_from_action(kb, "MOVE_FORWARD")];
+    bool left = keys[get_key_from_action(kb, "MOVE_LEFT")];
+    bool backward = keys[get_key_from_action(kb, "MOVE_BACKWARD")];
+    bool right_d = keys[get_key_from_action(kb, "MOVE_RIGHT")];
+
+    bool move = forward || left || backward || right_d;
+    if(move){
+        if(p->wanim_speed.x == 0){
+            p->wanim_speed.x = -10;
+        }
+        if(p->wanim_speed.y == 0){
+            p->wanim_speed.y = -10;
+        }
+    } else {
+        p->wanim_speed.x = 0;
+        p->wanim_speed.y = 0;
+        p->wanim_pos.x = p->wanim_origin.x;
+        p->wanim_pos.y = p->wanim_origin.y;
+    }
+    idle_weapon_animation(mr,w);
+}
+
+void idle_weapon_animation(map_renderer *mr,weapon *w){
+    patch idle_sprite = w->sprites->animation_sprites[0];
+    player *p = mr->engine->p;
+    
+    int origin_x = p->wanim_origin.x;
+    int origin_y = p->wanim_origin.y;
+    int init_x = p->wanim_pos.x;
+    int init_y = p->wanim_pos.y;
+    int dx = p->wanim_speed.x;
+    int dy = p->wanim_speed.y;
+
+    if(init_x + dx > origin_x + ANIMATION_WIDTH/2 || init_x + dx < origin_x - ANIMATION_WIDTH/2){
+        dx = -dx;
+        p->wanim_speed.x = dx;
+    }
+
+    if(init_y + dy > origin_y + ANIMATION_HEIGTH/2 || init_y + dy < origin_y - ANIMATION_HEIGTH/2){
+        dy = -dy;
+        p->wanim_speed.y = dy;
+    }
+    p->wanim_pos.x += dx;
+    p->wanim_pos.y += dy;
+
+    draw_weapon(mr,idle_sprite,p->wanim_pos.x,p->wanim_pos.y);
+
 }
 
 

@@ -34,7 +34,10 @@ struct Weapon {
   int id;            /*Identifie précisement l'arme*/
   char *weapon_name; /*Nom de l'arme du coup*/
   char *abbreviation; /*Abbréviation utilisée dans les fichiers WAD*/
+  
+  /*Animation*/
   animations_array *sprites; /*Tableau avec en i tous les sprites pour l'animation x*/
+
 
   /*Spécification de l'arme*/
   int magsize;      /*Taille du chargeur*/
@@ -63,10 +66,15 @@ struct Player {
   int *ammo; /*Array of size weapon_number that indicates the number of ammo by
                 weapon (id)*/
   int active_weapon;
+  /*Animation de l'arme*/
+  vec2 wanim_origin;
+  vec2 wanim_pos;
+  vec2 wanim_speed;
   int life;
   int cooldown; //nombre d'unités de temps nécéssaires avant de tirer , 0 indique qu'on peut tirer
   int spray; //nombre d'unités de temps nécéssaires avant de ne plus avoir de spray, 0 indique que le tir sera parfaitement droit
   i16 subsector_id;
+
 };
 
 struct Engine {
