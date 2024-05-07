@@ -301,7 +301,6 @@ door **get_doors(linedef **linedefs, int len_linedefs, int *doors_count,
             min_neighboring_heights(linedefs, len_linedefs, sector_id);
         int delta_height = minimal_neighbor_height -
                            door_sidedef->sector->ceiling_height;
-        fflush(stdout);
         door_update_height(d, delta_height);
       }
     }
@@ -318,6 +317,8 @@ int get_lnf(linedef** lines,int len_linedefs,i16 sector_id) {
   int min_height = INT_MAX;
   for (int i = 0; i < len_linedefs;i++) {
     linedef* line = lines[i];
+    printf("i : %d\n",i);
+    fflush(stdout);
     if (line->front_sidedef->sector_id == sector_id) min_height = min(min_height,line->back_sidedef->sector->floor_height);
     if (line->back_sidedef->sector_id == sector_id) min_height = min(min_height,line->front_sidedef->sector->floor_height);
   }
@@ -461,9 +462,18 @@ lift* create_lift_from_linedef(linedef** linedefs,int len_linedefs,linedef* line
 
 int get_lifts_count(linedef** linedefs,int len_linedefs) {
   int count = 0;
+  int* sector_tag_records = malloc(sizeof(u16) * len_linedefs);
+  memset(sector_tag_records,0,sizeof(u16) * len_linedefs);
   for (int i = 0; i < len_linedefs;i++) {
-    if (is_a_lift(linedefs[i]->line_type)) count++;
+    if (is_a_lift(linedefs[i]->line_type)) {
+      u16 sector_tag = linedefs[i]->sector_tag;
+      if (sector_tag_records[sector_tag] == 0) {
+        count++;
+        sector_tag_records[sector_tag] = 1;
+      }
+    }
   }
+  free(sector_tag_records);
   return count;
 }
 
@@ -473,7 +483,6 @@ lift** get_lifts(linedef** linedefs,int len_linedefs, int* lifts_count,sector* s
   for (int i = 0; i < len_sectors;i++) {
     lifts_sectors[i] = NULL;
   }
-
   lift** lifts = malloc(sizeof(lift*) * *lifts_count);
   int lift_index = 0;
 
