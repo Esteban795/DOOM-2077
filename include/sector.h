@@ -7,6 +7,8 @@
 #include "util.h"
 #include <stdint.h>
 
+extern int DOORS_COUNT;
+
 struct Sector {
   i16 floor_height;
   i16 ceiling_height;

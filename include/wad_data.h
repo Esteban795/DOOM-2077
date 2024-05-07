@@ -26,7 +26,7 @@ struct WADData {
   lump *directory;
   int map_index;
   vertex *vertexes;
-  linedef *linedefs;
+  linedef **linedefs;
   node *nodes;
   subsector *subsectors;
   segment *segments;

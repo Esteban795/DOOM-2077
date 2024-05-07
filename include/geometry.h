@@ -26,4 +26,6 @@ double fmax(double x, double y);
 int max(int x, int y);
 
 int min(int x, int y);
+
+double distance(double posx_a, double posy_a, double posx_b, double posy_b);
 #endif

@@ -145,7 +145,6 @@ void render_bsp_node(bsp *b, size_t node_id) {
     if (node_id >= SUBSECTOR_IDENTIFIER) {
       i16 subsector_id = node_id - SUBSECTOR_IDENTIFIER;
       subsector ss = b->engine->wData->subsectors[subsector_id];
-      SDL_SetRenderDrawColor(b->engine->map_renderer->renderer, 0, 255, 0, 255);
       int x1, x2;
       double raw_angle_1;
       for (i16 i = 0; i < ss.num_segs; i++) {

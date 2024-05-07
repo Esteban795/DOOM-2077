@@ -20,10 +20,11 @@ struct Segment {
 
 typedef struct Segment segment;
 
-segment read_segment(FILE *f, int offset, vertex *vertexes, linedef *linedefs,sector* sectors);
+segment read_segment(FILE *f, int offset, vertex *vertexes, linedef **linedefs,
+                     sector *sectors);
 
 segment *get_segments_from_lump(FILE *f, lump *directory, int lump_index,
                                 int num_bytes, int header_length,
                                 int len_segments, vertex *vertexes,
-                                linedef *linedefs,sector* sectors);
+                                linedef **linedefs, sector *sectors);
 #endif

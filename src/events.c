@@ -27,10 +27,10 @@ void handle_events(engine *e) {
       keys[scancode] = 0;
       break;
     case SDL_MOUSEBUTTONDOWN:
-      mouse[event.button.button] = 1;
+      mouse[event.button.button - 1] = 1;
       break;
     case SDL_MOUSEBUTTONUP:
-      mouse[event.button.button] = 0;
+      mouse[event.button.button - 1] = 0;
       break;
     default:
       break;
