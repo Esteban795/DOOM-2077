@@ -43,9 +43,6 @@ struct Linedef {
   bool is_pushable;
   bool has_doors;
   bool is_collidable;
-  bool is_repeatable;
-  bool is_shootable;
-  bool is_pushable;
   lift* lifts;
   bool has_lifts;
 };
@@ -54,7 +51,7 @@ typedef struct Linedef linedef;
 
 linedef* read_linedef(FILE *f, int offset, vertex *vertexes,sidedef *sidedefs);
 
-linedef ***get_linedefs_from_lump(FILE *f, lump *directory, int lump_index,
+linedef **get_linedefs_from_lump(FILE *f, lump *directory, int lump_index,
                                  int num_bytes, int header_length,
                                  int len_linedefs, vertex *vertexes,
                                  sidedef *sidedefs);
