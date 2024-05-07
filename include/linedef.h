@@ -36,7 +36,6 @@ struct Linedef {
   sidedef *back_sidedef;
   bool has_back_sidedef;
   door *door;
-  bool is_colllidable;
   bool used;
   bool is_repeatable;
   bool is_shootable;

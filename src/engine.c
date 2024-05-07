@@ -34,7 +34,7 @@ void read_map(engine *e, SDL_Renderer *renderer, char *map_name) {
   e->seg_handler = segment_handler_init(e);
   e->players = create_players(num_players, e);
   e->mixer = audiomixer_init();
-  // e->lifts = get_lifts(e->wData->linedefs, e->wData->len_linedefs, &e->len_lifts, e->wData->sectors, e->wData->len_sectors);
+  e->lifts = get_lifts(e->wData->linedefs, e->wData->len_linedefs, &e->len_lifts, e->wData->sectors, e->wData->len_sectors);
   e->doors = get_doors(e->wData->linedefs, e->wData->len_linedefs, &e->num_doors, e->wData->sectors,e->wData->len_sectors);
 }
 
@@ -61,6 +61,6 @@ void engine_free(engine *e) {
   players_free(e->players, num_players);
   audiomixer_free(e->mixer);
   doors_free(e->doors, e->num_doors);
-  // lifts_free(e->lifts, e->len_lifts);
+  lifts_free(e->lifts, e->len_lifts);
   free(e);
 }

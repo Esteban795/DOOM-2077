@@ -27,13 +27,9 @@ linedef *read_linedef(FILE *f, int offset, vertex *vertexes,
   line->back_sidedef = line->has_back_sidedef
                            ? get_sidedef_from_linedef(back_sidedef_id, sidedefs)
                            : NULL;
-  line->is_colllidable = false;
-  line->is_repeatable = false;
-  line->is_shootable = false;
-  line->has_doors = false;
+  line->is_collidable = line->is_repeatable = line->is_shootable = line->is_pushable = line->used = false;
   line->door = NULL;
-  line->used = false;
-  line->is_pushable = false;
+  line->lifts = NULL;
   return line;
 }
 
@@ -68,7 +64,7 @@ door *create_door_from_linedef(linedef *line, sidedef *sd,
   case CSC_SR_S:
   case CSC_SR_F:
     speed = line_type == CSC_SR_S ? SLOW : FAST;
-    line->is_colllidable = false;
+    line->is_collidable = false;
     line->is_shootable = false;
     line->is_repeatable = true;
     line->is_pushable = true;
@@ -76,7 +72,7 @@ door *create_door_from_linedef(linedef *line, sidedef *sd,
     break;
   case CSC_S1_S:
   case CSC_S1_F:
-    line->is_colllidable = false;
+    line->is_collidable = false;
     line->is_shootable = false;
     line->is_repeatable = false;
     line->is_pushable = true;
@@ -85,7 +81,7 @@ door *create_door_from_linedef(linedef *line, sidedef *sd,
     break;
   case CSC_WR_S:
   case CSC_WR_F:
-    line->is_colllidable = true;
+    line->is_collidable = true;
     line->is_shootable = false;
     line->is_repeatable = true;
     speed = line_type == CSC_WR_S ? SLOW : FAST;
@@ -93,7 +89,7 @@ door *create_door_from_linedef(linedef *line, sidedef *sd,
     break;
   case CSC_W1_S:
   case CSC_W1_F:
-    line->is_colllidable = true;
+    line->is_collidable = true;
     line->is_shootable = false;
     line->is_repeatable = false;
     speed = line_type == CSC_W1_S ? SLOW : FAST;
@@ -102,7 +98,7 @@ door *create_door_from_linedef(linedef *line, sidedef *sd,
   case CWO_SR_S:
   case CWO_S1_S:
     repeatable = line_type == CWO_SR_S;
-    line->is_colllidable = false;
+    line->is_collidable = false;
     line->is_shootable = false;
     line->is_repeatable = repeatable;
     line->is_pushable = true;
@@ -111,7 +107,7 @@ door *create_door_from_linedef(linedef *line, sidedef *sd,
   case CWO_WR_S:
   case CWO_W1_S:
     repeatable = line_type == CWO_WR_S;
-    line->is_colllidable = true;
+    line->is_collidable = true;
     line->is_shootable = false;
     line->is_repeatable = repeatable;
     d = door_create(NULL, SLOW, CLOSE_WAIT_OPEN, 30000, sd->sector);
@@ -127,7 +123,7 @@ door *create_door_from_linedef(linedef *line, sidedef *sd,
              line_type == OSO_W1_S)
                 ? SLOW
                 : FAST;
-    line->is_colllidable = true;
+    line->is_collidable = true;
     line->is_shootable = false;
     line->is_repeatable = repeatable;
     d = door_create(NULL, speed, OPEN_STAY_OPEN, 0, sd->sector);
@@ -138,14 +134,14 @@ door *create_door_from_linedef(linedef *line, sidedef *sd,
   case OSO_S1_F:
     speed = (line_type == OSO_SR_S || line_type == OSO_S1_S) ? SLOW : FAST;
     repeatable = line_type == OSO_SR_S || line_type == OSO_SR_S;
-    line->is_colllidable = false;
+    line->is_collidable = false;
     line->is_shootable = false;
     line->is_repeatable = repeatable;
     line->is_pushable = true;
     d = door_create(NULL, speed, OPEN_STAY_OPEN, 0, sd->sector);
     break;
   case OSO_GR_S:
-    line->is_colllidable = false;
+    line->is_collidable = false;
     line->is_shootable = true;
     line->is_repeatable = false;
     d = door_create(NULL, SLOW, OPEN_STAY_OPEN, 0, sd->sector);
@@ -161,7 +157,7 @@ door *create_door_from_linedef(linedef *line, sidedef *sd,
              line_type == OWC_W1_S)
                 ? SLOW
                 : FAST;
-    line->is_colllidable = true;
+    line->is_collidable = true;
     line->is_shootable = false;
     line->is_repeatable = repeatable;
     d = door_create(NULL, speed, OPEN_WAIT_CLOSE, 4000, sd->sector);
@@ -172,7 +168,7 @@ door *create_door_from_linedef(linedef *line, sidedef *sd,
   case OWC_S1_F:
     speed = (line_type == OWC_SR_S || line_type == OWC_S1_S) ? SLOW : FAST;
     repeatable = line_type == OWC_SR_S || line_type == OWC_SR_S;
-    line->is_colllidable = true;
+    line->is_collidable = true;
     line->is_shootable = false;
     line->is_repeatable = repeatable;
     line->is_pushable = true;
@@ -181,7 +177,7 @@ door *create_door_from_linedef(linedef *line, sidedef *sd,
   case DR_RED_KEY:
   case DR_YELLOW_KEY:
   case DR_BLUE_KEY:
-    line->is_colllidable = true;
+    line->is_collidable = true;
     line->is_shootable = true;
     line->is_repeatable = true;
     line->is_pushable = false;
@@ -336,6 +332,7 @@ int get_rnf(linedef** lines,int len_linedefs,i16 sector_id,int sector_height) {
   int height = INT_MAX;
   for (int i = 0; i < len_linedefs;i++) {
     linedef* line = lines[i];
+    if (!line->has_back_sidedef) continue;
     sector* front_sector = line->front_sidedef->sector;
     sector* back_sector = line->back_sidedef->sector;
     if (line->front_sidedef->sector_id == sector_id && front_sector->floor_height > sector_height) height = min(height,back_sector->floor_height);
@@ -378,7 +375,7 @@ lift* create_lift_from_linedef(linedef** linedefs,int len_linedefs,linedef* line
       line->is_pushable = line->is_shootable = false;
       low_height = get_lnf(linedefs,len_linedefs,sector_id);
       speed = type == WR_3_S_LNF || type == W1_3_S_LNF ? L_SLOW : L_FAST;
-      l = lift_create(NULL, sector, speed, low_height, sector->floor_height, 3, sector->floor_height);
+      l = lift_create(NULL, sector, speed, low_height, sector->floor_height, 3000, sector->floor_height);
       break;
     case SR_0_S_24U:
     case S1_0_S_24U:
@@ -437,7 +434,7 @@ lift* create_lift_from_linedef(linedef** linedefs,int len_linedefs,linedef* line
       line->is_collidable = line->is_shootable = false;
       line->is_repeatable = false; // runs indefinitely anyway..
       get_lfhp(linedefs,len_linedefs,sector_id,&low_height,&high_height);
-      l = lift_create(NULL, sector, L_SLOW, low_height, high_height, 3, sector->floor_height);
+      l = lift_create(NULL, sector, L_SLOW, low_height, high_height, 3000, sector->floor_height);
       break;
     case WR_3_S_LFHP:
     case W1_3_S_LFHP:
@@ -445,7 +442,7 @@ lift* create_lift_from_linedef(linedef** linedefs,int len_linedefs,linedef* line
       line->is_shootable = line->is_pushable = false;
       line->is_repeatable = false; // runs indefinitely anyway..
       get_lfhp(linedefs,len_linedefs,sector_id,&low_height,&high_height);
-      l = lift_create(NULL, sector, L_SLOW, low_height, high_height, 3, sector->floor_height);
+      l = lift_create(NULL, sector, L_SLOW, low_height, high_height, 3000, sector->floor_height);
       break;
     case SR_3_S_LNF:
     case S1_3_S_LNF:
@@ -456,7 +453,7 @@ lift* create_lift_from_linedef(linedef** linedefs,int len_linedefs,linedef* line
       line->is_repeatable = (type == SR_3_S_LNF || type == SR_3_F_LNF);
       speed = type == SR_3_S_LNF || type == S1_3_S_LNF ? L_SLOW : L_FAST;
       low_height = get_lnf(linedefs,len_linedefs,sector_id);
-      l = lift_create(NULL, sector, speed, low_height, sector->floor_height, 3, sector->floor_height);
+      l = lift_create(NULL, sector, speed, low_height, sector->floor_height, 3000, sector->floor_height);
       break;
     default :
       printf("Unknown lift type\n");
@@ -485,10 +482,12 @@ int get_lifts_count(linedef** linedefs,int len_linedefs) {
 
 lift** get_lifts(linedef** linedefs,int len_linedefs, int* lifts_count,sector* sectors, int len_sectors){
   *lifts_count = get_lifts_count(linedefs,len_linedefs);
+  printf("Lifts count : %d\n",*lifts_count);
   lift** lifts_sectors = malloc(sizeof(lift*) * len_sectors);
   for (int i = 0; i < len_sectors;i++) {
     lifts_sectors[i] = NULL;
   }
+
   lift** lifts = malloc(sizeof(lift*) * *lifts_count);
   int lift_index = 0;
 
@@ -496,8 +495,13 @@ lift** get_lifts(linedef** linedefs,int len_linedefs, int* lifts_count,sector* s
     linedef* line = linedefs[i];
     if (is_a_lift(line->line_type)) {
       u16 sector_tag = line->sector_tag;
+      printf("Linedef %d has a lift with sector tag %d\n",i,sector_tag);
+      
       for (int sector_id = 0; sector_id < len_sectors; sector_id++){
-        if (sectors[sector_id].tag_number != sector_tag) continue;
+        if (lift_index == *lifts_count) break;
+        if (sectors[sector_id].tag_number != sector_tag) {continue;}
+        printf("Associated sector is %d\n\n",sector_id);
+        fflush(stdout);
         lift* l = create_lift_from_linedef(linedefs,len_linedefs,line,&sectors[sector_id],sector_id,line->line_type);
         if (lifts_sectors[sector_id] == NULL) {
           line->lifts = line->has_lifts ? lift_add(line->lifts,l) : l;

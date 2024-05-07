@@ -1,4 +1,5 @@
 #include "../include/lift.h"
+#include <stdio.h>
 
 lift *lift_create(entity_t *id, sector *sector, enum LiftTransitionSpeed speed,
                   i16 low_height, i16 high_height, int delay, bool init_state) {
@@ -14,12 +15,15 @@ lift *lift_create(entity_t *id, sector *sector, enum LiftTransitionSpeed speed,
   l->state = init_state;
   l->next_lift = NULL;
   l->time_elapsed = 0;
+  l->next_lift = NULL;
   return l;
 }
 
 void lift_trigger_switch(lift *l) {
-  if (l != NULL && !(l->state != l->init_state)) {
-    l->is_switching = true;
+  if (l != NULL) {
+    if (!l->is_switching && !(l->state != l->init_state)) {
+      l->is_switching = true;
+    }
     if (l->next_lift != NULL) {
       lift_trigger_switch(l->next_lift);
     }
@@ -29,13 +33,15 @@ void lift_trigger_switch(lift *l) {
 void lift_update(lift *l, int DT) {
   if (l->speed == L_NO_SPEED)
     return;
+
   if (l->state != l->init_state) {
     l->time_elapsed += DT;
     if (l->time_elapsed >= l->delay) {
       l->time_elapsed = 0;
-      l->is_switching = false;
+      l->is_switching = true;
     }
   }
+
   if (l->is_switching) {
     double multiplier;
     if (l->state ==
@@ -76,7 +82,7 @@ lift *lift_add(lift *l, lift *new_lift) {
   if (l == NULL) {
     return new_lift;
   }
-  l->next_lift = l;
+  new_lift->next_lift = l;
   return l;
 }
 
