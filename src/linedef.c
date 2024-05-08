@@ -463,26 +463,29 @@ lift* create_lift_from_linedef(linedef** linedefs,int len_linedefs,linedef* line
   return l;
 }
 
-int get_lifts_count(linedef** linedefs,int len_linedefs) {
+int get_lifts_count(linedef** linedefs,int len_linedefs,sector* sectors, int len_sectors) {
   int count = 0;
-  int* sector_tag_records = malloc(sizeof(u16) * len_linedefs);
-  memset(sector_tag_records,0,sizeof(u16) * len_linedefs);
+  int* sector_records = malloc(sizeof(u16) * len_linedefs);
+  memset(sector_records,0,sizeof(u16) * len_linedefs);
   for (int i = 0; i < len_linedefs;i++) {
     if (is_a_lift(linedefs[i]->line_type)) {
       u16 sector_tag = linedefs[i]->sector_tag;
-      if (sector_tag_records[sector_tag] == 0) {
-        count++;
-        sector_tag_records[sector_tag] = 1;
+      for (int sector_id = 0; sector_id < len_sectors;sector_id++) {
+        if (sectors[sector_id].tag_number == sector_tag) {
+          if (sector_records[sector_id] == 0) {
+            count++;
+            sector_records[sector_id] = 1;
+          }
+        }
       }
     }
   }
-  free(sector_tag_records);
+  free(sector_records);
   return count;
 }
 
 lift** get_lifts(linedef** linedefs,int len_linedefs, int* lifts_count,sector* sectors, int len_sectors){
-  *lifts_count = get_lifts_count(linedefs,len_linedefs);
-  printf("Lifts count : %d\n",*lifts_count);
+  *lifts_count = get_lifts_count(linedefs,len_linedefs,sectors,len_sectors);
   lift** lifts_sectors = malloc(sizeof(lift*) * len_sectors);
   for (int i = 0; i < len_sectors;i++) {
     lifts_sectors[i] = NULL;
@@ -495,14 +498,12 @@ lift** get_lifts(linedef** linedefs,int len_linedefs, int* lifts_count,sector* s
     linedef* line = linedefs[i];
     if (is_a_lift(line->line_type)) {
       u16 sector_tag = line->sector_tag;
-      printf("Linedef %d has a lift with sector tag %d\n",i,sector_tag);
       
       for (int sector_id = 0; sector_id < len_sectors; sector_id++){
-        if (lift_index == *lifts_count) break;
         if (sectors[sector_id].tag_number != sector_tag) {continue;}
-        printf("Associated sector is %d\n\n",sector_id);
-        fflush(stdout);
+        
         lift* l = create_lift_from_linedef(linedefs,len_linedefs,line,&sectors[sector_id],sector_id,line->line_type);
+        
         if (lifts_sectors[sector_id] == NULL) {
           line->lifts = line->has_lifts ? lift_add(line->lifts,l) : l;
           lifts_sectors[sector_id] = l;
