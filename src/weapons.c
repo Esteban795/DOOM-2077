@@ -146,12 +146,14 @@ weapons_array* init_weapons_array(map_renderer *mr){
 }
 
 void draw_weapon(map_renderer *mr, patch sprite, int x, int y) {
-    float scale = (float)HEIGHT / 4.0f / sprite.header.height;
+    
+    
     SDL_Rect dest_rect;
     dest_rect.x = x;
     dest_rect.y = y;
-    dest_rect.w = sprite.header.width * scale;
-    dest_rect.h = sprite.header.height * scale;
+    //printf("x: %d, y: %d\n", dest_rect.x, dest_rect.y);
+    dest_rect.w = sprite.header.width * X_SCALE;
+    dest_rect.h = sprite.header.height * Y_SCALE;
 
     SDL_RenderCopy(mr->renderer, sprite.tex, NULL, &dest_rect);
 }
@@ -209,6 +211,21 @@ void idle_weapon_animation(map_renderer *mr,weapon *w){
 
 }
 
+void fire_weapon_animation(map_renderer *mr,weapon *w){
+    animations_array *aa = w->sprites;
+    patch *fire_anim = aa[ANIMATION].animation_sprites;
+    patch *fire_layer = aa[FIRE].animation_sprites;
+    player *p = mr->engine->p;
+    int x = p->wanim_pos.x;
+    int y = p->wanim_pos.y;
+    for(int i = 0; i<aa[ANIMATION].animation_len;i++){
+        draw_weapon(mr,fire_anim[i],x,y);
+    }
+    for(int i = 0; i<aa[FIRE].animation_len;i++){
+        draw_weapon(mr,fire_layer[i],x,y);
+    }
+}
+
 void update_weapons(map_renderer *mr){
     player *p = mr->engine->p;
     weapon *w = wa->weapons[p->active_weapon];
@@ -258,6 +275,10 @@ void free_weapons_array(weapons_array* wa){
 
 void switch_weapon(player* p, int weapon_id){
     p->active_weapon = weapon_id;
+    p->wanim_origin.x = -wa->weapons[p->active_weapon]->sprites[0].animation_sprites[0].header.x_offset * X_SCALE;
+    p->wanim_origin.y = -wa->weapons[p->active_weapon]->sprites[0].animation_sprites[0].header.y_offset * Y_SCALE;
+    p->wanim_pos.x = p->wanim_origin.x;
+    p->wanim_pos.y = p->wanim_origin.y;
 }
 
 void add_weapon(player* p, int weapon_id,weapons_array* wa){

@@ -1,4 +1,5 @@
 #include "../include/player.h"
+#include "../include/weapons.h"
 #include <SDL2/SDL_render.h>
 #include <math.h>
 #include <stdio.h>
@@ -30,10 +31,6 @@ player *player_init(engine *e) {
   p->active_weapon = 0;
   p->cooldown = 0; //nombre d'unités de temps nécéssaires avant de tirer , 0 indique qu'on peut tirer
   p->spray=0;
-  p->wanim_origin.x = WIDTH/2;
-  p->wanim_origin.y = HEIGHT/2;
-  p->wanim_pos.x = p->wanim_origin.x;
-  p->wanim_pos.y = p->wanim_origin.y;
   p->wanim_speed.x = 0;
   p->wanim_speed.y = 0;
   return p;

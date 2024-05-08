@@ -8,8 +8,8 @@
 #define FOV 90.0
 #define HALF_FOV (FOV / 2.0)
 
-// #define RES_W 320
-// #define RES_H 200
+#define RES_W 320
+#define RES_H 200
 // #define SCALE 5
 
 // #define WIDTH RES_W *SCALE
@@ -22,6 +22,9 @@
 #define OUT_MIN 30
 #define OUT_MAX_W (WIDTH - 30)
 #define OUT_MAX_H (HEIGHT - 30)
+
+#define X_SCALE WIDTH/RES_W
+#define Y_SCALE HEIGHT/RES_H
 
 #define G 9.81
 #define SCREEN_DISTANCE (HALF_WIDTH / tan(HALF_FOV * (M_PI / 180.0)))
