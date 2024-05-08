@@ -40,6 +40,7 @@ int main() {
   SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
   engine *e = init_engine("maps/DOOM1.WAD",renderer);
   read_map(e, renderer, "E1M2");
+  add_weapon(e->p, 1, wa);
   int dt = 0;
   while (e->running) {
     now = SDL_GetTicks();
@@ -48,7 +49,7 @@ int main() {
     if (res == 1)
       break;
     
-    printf("FPS: %f\n", 1000.0 / dt);
+    //printf("FPS: %f\n", 1000.0 / dt);
     old = now;
     // break;
   }

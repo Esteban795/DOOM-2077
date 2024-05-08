@@ -156,8 +156,9 @@ void draw_weapon(map_renderer *mr, patch sprite, int x, int y) {
     SDL_RenderCopy(mr->renderer, sprite.tex, NULL, &dest_rect);
 }
 
-void update_animation(map_renderer *mr, weapon *w){
+void update_animation(map_renderer *mr){
     player *p = mr->engine->p;
+    weapon *w = wa->weapons[p->active_weapon];
     player_keybind *kb = p->keybinds;
     bool forward = keys[get_key_from_action(kb, "MOVE_FORWARD")];
     bool left = keys[get_key_from_action(kb, "MOVE_LEFT")];
@@ -208,6 +209,26 @@ void idle_weapon_animation(map_renderer *mr,weapon *w){
 
 }
 
+void update_weapons(map_renderer *mr){
+    player *p = mr->engine->p;
+    weapon *w = wa->weapons[p->active_weapon];
+    player_keybind *kb = p->keybinds;
+    bool fists = keys[get_key_from_action(kb, "FISTS")], pistol = keys[get_key_from_action(kb, "PISTOL")];
+    //, shotgun = keys[get_key_from_action(kb, "SHOTGUN")], chaingun = keys[get_key_from_action(kb, "CHAINGUN")], rocket = keys[get_key_from_action(kb, "ROCKET")], plasma = keys[get_key_from_action(kb, "PLASMA")], bfg = keys[get_key_from_action(kb, "BFG")];
+    if(fists){
+        if(p->active_weapon != 0){
+            switch_weapon(p,0);
+        }
+    }
+    if(pistol){
+        if(p->active_weapon != 1 && p->ammo[1] >= 0){
+            switch_weapon(p,1);
+        }
+    }
+    update_animation(mr);
+
+}
+
 
 void free_animations_array(weapon *w){
     animations_array *aa = w->sprites;
@@ -246,10 +267,10 @@ void add_weapon(player* p, int weapon_id,weapons_array* wa){
         assert(weapon_id < wa->weapons_number);
         assert(wa->weapons[weapon_id] != NULL);
         if (wa->weapons[weapon_id]->magsize > 0){
-            printf("Prends ton chargeur gamin");
+            printf("Prends ton chargeur gamin\n");
             p->ammo[weapon_id] = wa->weapons[weapon_id]->magsize;
         } else {
-            printf("Munitions infinies G_G");
+            printf("Munitions infinies G_G\n");
             p->ammo[weapon_id] = -2;
         }
         switch_weapon(p,weapon_id);
