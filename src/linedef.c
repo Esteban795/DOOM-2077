@@ -1,6 +1,7 @@
 #include "../include/linedef.h"
 #include <SDL2/SDL_log.h>
 #include <limits.h>
+#include <stdbool.h>
 #include <stdio.h>
 
 // LINEDEF PART
@@ -217,7 +218,7 @@ linedef* get_linedef_by_sector_id(linedef **linedefs, int len_linedefs,
 }
 
 int min_neighboring_heights(linedef **lines, int len_linedefs, i16 sector_id) {
-  int mini = INT_MAX;
+  int mini = 100000;
   sidedef *door_sidedef = NULL;
   sidedef *neighbor_sidedef = NULL;
   for (int i = 0; i < len_linedefs; i++) {
@@ -335,8 +336,12 @@ int get_rnf(linedef** lines,int len_linedefs,i16 sector_id,int sector_height) {
     if (!line->has_back_sidedef) continue;
     sector* front_sector = line->front_sidedef->sector;
     sector* back_sector = line->back_sidedef->sector;
-    if (line->front_sidedef->sector_id == sector_id && front_sector->floor_height > sector_height) height = min(height,back_sector->floor_height);
-    if (line->back_sidedef->sector_id == sector_id && back_sector->floor_height > sector_height) height = min(height,front_sector->floor_height);
+    if (line->front_sidedef->sector_id == sector_id && back_sector->floor_height > sector_height) {
+      height = min(height,back_sector->floor_height);
+    }
+    if (line->back_sidedef->sector_id == sector_id && front_sector->floor_height > sector_height) {
+      height = min(height,front_sector->floor_height);
+    }
   }
   return height;
 }
@@ -375,43 +380,43 @@ lift* create_lift_from_linedef(linedef** linedefs,int len_linedefs,linedef* line
       line->is_pushable = line->is_shootable = false;
       low_height = get_lnf(linedefs,len_linedefs,sector_id);
       speed = type == WR_3_S_LNF || type == W1_3_S_LNF ? L_SLOW : L_FAST;
-      l = lift_create(NULL, sector, speed, low_height, sector->floor_height, 3000, sector->floor_height);
+      l = lift_create(NULL, sector, speed, low_height, sector->floor_height, 3000, true,!line->is_repeatable);
       break;
     case SR_0_S_24U:
     case S1_0_S_24U:
       line->is_pushable = true;
       line->is_collidable = line->is_shootable = false;
       line->is_repeatable =  type == SR_0_S_24U;
-      l = lift_create(NULL, sector, L_SLOW, sector->floor_height, sector->floor_height + 24, 0, sector->floor_height);
+      l = lift_create(NULL, sector, L_SLOW, sector->floor_height, sector->floor_height + 24, 0, false,!line->is_repeatable);
       break;
     case WR_0_S_24U:
     case W1_0_S_24U:
       line->is_collidable = true;
       line->is_shootable = line->is_pushable = false;
       line->is_repeatable = type == WR_0_S_24U;
-      l = lift_create(NULL, sector, L_SLOW, sector->floor_height, sector->floor_height + 24, 0, sector->floor_height);
+      l = lift_create(NULL, sector, L_SLOW, sector->floor_height, sector->floor_height + 24, 0, false,!line->is_repeatable);
       break;
     case SR_0_S_32U:
     case S1_0_S_32U:
       line->is_pushable = true;
       line->is_collidable = line->is_shootable = false;
       line->is_repeatable =  type == SR_0_S_24U;
-      l = lift_create(NULL, sector, L_SLOW, sector->floor_height, sector->floor_height + 32, 0, sector->floor_height);
+      l = lift_create(NULL, sector, L_SLOW, sector->floor_height, sector->floor_height + 32, 0, false,!line->is_repeatable);
       break;
     case WR_0_S_32U:
     case W1_0_S_32U:
       line->is_collidable = true;
       line->is_shootable = line->is_pushable = false;
       line->is_repeatable = type == WR_0_S_24U;
-      l = lift_create(NULL, sector, L_SLOW, sector->floor_height, sector->floor_height + 32, 0, sector->floor_height);
+      l = lift_create(NULL, sector, L_SLOW, sector->floor_height, sector->floor_height + 32, 0, false,!line->is_repeatable);
       break;
     case SR_0_S_RNF:
     case S1_0_S_RNF:
       line->is_pushable = true;
       line->is_collidable = line->is_shootable = false;
-      line->is_repeatable =  type == SR_0_S_RNF;
+      line->is_repeatable = type == SR_0_S_RNF;
       high_height = get_rnf(linedefs,len_linedefs,sector_id,sector->floor_height);
-      l = lift_create(NULL, sector, L_SLOW, sector->floor_height, high_height, 0, sector->floor_height);
+      l = lift_create(NULL, sector, L_SLOW, sector->floor_height, high_height, 0, false,!line->is_repeatable);
       break;
     case WR_0_S_RNF:
     case W1_0_S_RNF:
@@ -419,14 +424,14 @@ lift* create_lift_from_linedef(linedef** linedefs,int len_linedefs,linedef* line
       line->is_shootable = line->is_pushable = false;
       line->is_repeatable = type == WR_0_S_RNF;
       high_height = get_rnf(linedefs,len_linedefs,sector_id,sector->floor_height);
-      l = lift_create(NULL, sector, L_SLOW, sector->floor_height, high_height, 0, sector->floor_height);
+      l = lift_create(NULL, sector, L_SLOW, sector->floor_height, high_height, 0, false,!line->is_repeatable);
       break;
     case G1_0_S_RNF:
       line->is_shootable = true;
       line->is_collidable = line->is_pushable = false;
       line->is_repeatable = false;
       high_height = get_rnf(linedefs,len_linedefs,sector_id,sector->floor_height);
-      l = lift_create(NULL, sector, L_SLOW, sector->floor_height, high_height, 0, sector->floor_height);
+      l = lift_create(NULL, sector, L_SLOW, sector->floor_height, high_height, 0, false,!line->is_repeatable);
       break;
     case SR_3_S_LFHP:
     case S1_3_S_LFHP:
@@ -434,7 +439,7 @@ lift* create_lift_from_linedef(linedef** linedefs,int len_linedefs,linedef* line
       line->is_collidable = line->is_shootable = false;
       line->is_repeatable = false; // runs indefinitely anyway..
       get_lfhp(linedefs,len_linedefs,sector_id,&low_height,&high_height);
-      l = lift_create(NULL, sector, L_SLOW, low_height, high_height, 3000, sector->floor_height);
+      l = lift_create(NULL, sector, L_SLOW, low_height, high_height, 3000, false,!line->is_repeatable);
       break;
     case WR_3_S_LFHP:
     case W1_3_S_LFHP:
@@ -442,7 +447,7 @@ lift* create_lift_from_linedef(linedef** linedefs,int len_linedefs,linedef* line
       line->is_shootable = line->is_pushable = false;
       line->is_repeatable = false; // runs indefinitely anyway..
       get_lfhp(linedefs,len_linedefs,sector_id,&low_height,&high_height);
-      l = lift_create(NULL, sector, L_SLOW, low_height, high_height, 3000, sector->floor_height);
+      l = lift_create(NULL, sector, L_SLOW, low_height, high_height, 3000, false,!line->is_repeatable);
       break;
     case SR_3_S_LNF:
     case S1_3_S_LNF:
@@ -451,9 +456,9 @@ lift* create_lift_from_linedef(linedef** linedefs,int len_linedefs,linedef* line
       line->is_collidable = line->is_shootable = false;
       line->is_pushable = true;
       line->is_repeatable = (type == SR_3_S_LNF || type == SR_3_F_LNF);
-      speed = type == SR_3_S_LNF || type == S1_3_S_LNF ? L_SLOW : L_FAST;
+      speed = (type == SR_3_S_LNF || type == S1_3_S_LNF) ? L_SLOW : L_FAST;
       low_height = get_lnf(linedefs,len_linedefs,sector_id);
-      l = lift_create(NULL, sector, speed, low_height, sector->floor_height, 3000, sector->floor_height);
+      l = lift_create(NULL, sector, speed, low_height, sector->floor_height, 3000, true,!line->is_repeatable);
       break;
     default :
       printf("Unknown lift type\n");
@@ -498,10 +503,8 @@ lift** get_lifts(linedef** linedefs,int len_linedefs, int* lifts_count,sector* s
     linedef* line = linedefs[i];
     if (is_a_lift(line->line_type)) {
       u16 sector_tag = line->sector_tag;
-      
       for (int sector_id = 0; sector_id < len_sectors; sector_id++){
         if (sectors[sector_id].tag_number != sector_tag) {continue;}
-        
         lift* l = create_lift_from_linedef(linedefs,len_linedefs,line,&sectors[sector_id],sector_id,line->line_type);
         
         if (lifts_sectors[sector_id] == NULL) {

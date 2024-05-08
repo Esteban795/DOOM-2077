@@ -60,6 +60,7 @@ struct Lift {
     enum LiftTransitionSpeed speed;
     i16 low_height;
     i16 high_height;
+    bool once;
     int delay;
     bool is_switching;
     bool init_state; // 0 = low, 1 = high
@@ -69,7 +70,8 @@ struct Lift {
 
 typedef struct Lift lift;
 
-lift* lift_create(entity_t* id, sector* sector, enum LiftTransitionSpeed speed, i16 low_height, i16 high_height, int delay, bool init_state);
+lift *lift_create(entity_t *id, sector *sector, enum LiftTransitionSpeed speed,
+                  i16 low_height, i16 high_height, int delay, bool init_state,bool once);
 
 void lift_trigger_switch(lift* l);
 

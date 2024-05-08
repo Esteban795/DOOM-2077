@@ -2,7 +2,7 @@
 #include <stdio.h>
 
 lift *lift_create(entity_t *id, sector *sector, enum LiftTransitionSpeed speed,
-                  i16 low_height, i16 high_height, int delay, bool init_state) {
+                  i16 low_height, i16 high_height, int delay, bool init_state,bool once) {
   lift *l = malloc(sizeof(lift));
   l->id = id;
   l->sector = sector;
@@ -16,6 +16,7 @@ lift *lift_create(entity_t *id, sector *sector, enum LiftTransitionSpeed speed,
   l->next_lift = NULL;
   l->time_elapsed = 0;
   l->next_lift = NULL;
+  l->once = once;
   return l;
 }
 
@@ -31,9 +32,10 @@ void lift_trigger_switch(lift *l) {
 }
 
 void lift_update(lift *l, int DT) {
-  if (l->speed == L_NO_SPEED)
+  if (l->speed == L_NO_SPEED) {
     return;
-
+  }
+  
   if (l->state != l->init_state) {
     l->time_elapsed += DT;
     if (l->time_elapsed >= l->delay) {
@@ -63,10 +65,13 @@ void lift_update(lift *l, int DT) {
     int new_height = (int)(l->sector->floor_height + height_gained);
     l->sector->floor_height =
         max(l->low_height, min(l->high_height, new_height));
-    if (new_height <= l->low_height || new_height >= l->high_height) {
+    if (new_height < l->low_height || new_height > l->high_height) {
       l->is_switching = false;
       l->state = !l->state;
       l->sector->floor_height = l->state ? l->high_height : l->low_height;
+      if (l->once) {
+        l->speed = L_NO_SPEED;
+      }
     }
   }
 }
@@ -83,7 +88,7 @@ lift *lift_add(lift *l, lift *new_lift) {
     return new_lift;
   }
   new_lift->next_lift = l;
-  return l;
+  return new_lift;
 }
 
 bool is_a_lift(i16 line_type) {
