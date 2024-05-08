@@ -1,6 +1,9 @@
 #include "../include/game_states.h"
 #include <stdio.h>
 
+uint64_t t0;
+uint64_t time_elapsed_in_game;
+
 bool firstTimeLaunching = true;
 //weapons_array *wa;
 
@@ -14,6 +17,7 @@ void init_menu_state(engine *e) {}
 
 void init_ingame_state(engine *e) {
  // wa = init_weapons_array(e->map_renderer);
+ t0 = SDL_GetTicks();
 }
 
 void update_menu_state(engine *e) {
@@ -21,6 +25,7 @@ void update_menu_state(engine *e) {
 }
 
 void update_ingame_state(engine *e) {
+  time_elapsed_in_game = SDL_GetTicks() - t0;
   update_player(e->p);
   get_ssector_height(e->bsp);
   update_players_subsectors(e->bsp);

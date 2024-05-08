@@ -65,6 +65,7 @@ struct Player {
   double height;
   int *ammo; /*Array of size weapon_number that indicates the number of ammo by
                 weapon (id)*/
+  int t_last_shot; 
   int active_weapon;
   /*Animation de l'arme*/
   vec2 wanim_origin;

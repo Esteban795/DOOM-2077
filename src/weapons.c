@@ -1,4 +1,6 @@
 #include "../include/weapons.h"
+#include "../include/game_states.h"
+
 #include <assert.h>
 
 #define ANIMATION_WIDTH 100
@@ -145,6 +147,7 @@ weapons_array* init_weapons_array(map_renderer *mr){
     return wa;
 }
 
+//Affiche le sprite a la bonne taille a l'endroit donné
 void draw_weapon(map_renderer *mr, patch sprite, int x, int y) {
     
     
@@ -166,14 +169,31 @@ void update_animation(map_renderer *mr){
     bool left = keys[get_key_from_action(kb, "MOVE_LEFT")];
     bool backward = keys[get_key_from_action(kb, "MOVE_BACKWARD")];
     bool right_d = keys[get_key_from_action(kb, "MOVE_RIGHT")];
+    bool attack = keys[get_key_from_action(kb, "ATTACK")];
 
     bool move = forward || left || backward || right_d;
-    if(move){
+    if(attack || (time_elapsed_in_game - p->t_last_shot <= p->cooldown && time_elapsed_in_game > p->cooldown)){
+        if(time_elapsed_in_game - p->t_last_shot > p->cooldown){
+            p->t_last_shot = time_elapsed_in_game;
+        }
+        fire_weapon_animation(mr,w);
+    } else {
+        idle_weapon_animation(mr,w,move);
+    }  
+}
+
+void idle_weapon_animation(map_renderer *mr,weapon *w, bool is_moving){
+    patch idle_sprite = w->sprites->animation_sprites[0];
+    player *p = mr->engine->p;
+    
+    set_origin(p,idle_sprite);
+    
+    if(is_moving){
         if(p->wanim_speed.x == 0){
-            p->wanim_speed.x = -10;
+            p->wanim_speed.x = -2;
         }
         if(p->wanim_speed.y == 0){
-            p->wanim_speed.y = -10;
+            p->wanim_speed.y = -2;
         }
     } else {
         p->wanim_speed.x = 0;
@@ -181,13 +201,7 @@ void update_animation(map_renderer *mr){
         p->wanim_pos.x = p->wanim_origin.x;
         p->wanim_pos.y = p->wanim_origin.y;
     }
-    idle_weapon_animation(mr,w);
-}
 
-void idle_weapon_animation(map_renderer *mr,weapon *w){
-    patch idle_sprite = w->sprites->animation_sprites[0];
-    player *p = mr->engine->p;
-    
     int origin_x = p->wanim_origin.x;
     int origin_y = p->wanim_origin.y;
     int init_x = p->wanim_pos.x;
@@ -212,17 +226,29 @@ void idle_weapon_animation(map_renderer *mr,weapon *w){
 }
 
 void fire_weapon_animation(map_renderer *mr,weapon *w){
+    player *p = mr->engine->p;
     animations_array *aa = w->sprites;
     patch *fire_anim = aa[ANIMATION].animation_sprites;
-    patch *fire_layer = aa[FIRE].animation_sprites;
-    player *p = mr->engine->p;
-    int x = p->wanim_pos.x;
-    int y = p->wanim_pos.y;
-    for(int i = 0; i<aa[ANIMATION].animation_len;i++){
-        draw_weapon(mr,fire_anim[i],x,y);
+    int animation_len = aa[ANIMATION].animation_len;
+    int time_elapsed = time_elapsed_in_game - p->t_last_shot;
+    float one_frame_time = p->cooldown/(2*animation_len-2);
+    int x = p->wanim_origin.x;
+    int y = p->wanim_origin.y;
+    printf("time_elapsed: %d, one_frame_time: %f\n", time_elapsed, one_frame_time);
+    if(time_elapsed < one_frame_time){
+        set_origin(p,fire_anim[0]);
+        draw_weapon(mr,fire_anim[0],x,y);
+    } else {
+        int i = 1;
+        while(time_elapsed > i*one_frame_time && i<aa[ANIMATION].animation_len){
+            i++;
+        }
+        set_origin(p,fire_anim[i-1]);
+        draw_weapon(mr,fire_anim[i-1],x,y);
     }
-    for(int i = 0; i<aa[FIRE].animation_len;i++){
-        draw_weapon(mr,fire_layer[i],x,y);
+    
+    if (w->id!=0){
+        patch *fire_layer = aa[FIRE].animation_sprites;
     }
 }
 
@@ -271,12 +297,14 @@ void free_weapons_array(weapons_array* wa){
     free(wa);
 }
 
-
+void set_origin(player *p, patch sprite){
+    p->wanim_origin.x = -sprite.header.x_offset * X_SCALE;
+    p->wanim_origin.y = -sprite.header.y_offset * Y_SCALE;
+}
 
 void switch_weapon(player* p, int weapon_id){
     p->active_weapon = weapon_id;
-    p->wanim_origin.x = -wa->weapons[p->active_weapon]->sprites[0].animation_sprites[0].header.x_offset * X_SCALE;
-    p->wanim_origin.y = -wa->weapons[p->active_weapon]->sprites[0].animation_sprites[0].header.y_offset * Y_SCALE;
+    set_origin(p,wa->weapons[p->active_weapon]->sprites[0].animation_sprites[0]);
     p->wanim_pos.x = p->wanim_origin.x;
     p->wanim_pos.y = p->wanim_origin.y;
 }
