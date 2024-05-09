@@ -16,8 +16,8 @@ LDFLAGS = -lm
 CDEBUG = -g -O3
 # END OF CONFIGURABLE PARAMETERS  #
 
-ALL_CFLAGS = $(CFLAGS) $(shell pkg-config --cflags sdl2) $(CDEBUG)
-ALL_LDFLAGS = $(LDFLAGS) $(shell pkg-config --libs sdl2)
+ALL_CFLAGS = $(CFLAGS) $(shell pkg-config --cflags sdl2 jansson) $(CDEBUG)
+ALL_LDFLAGS = $(LDFLAGS) $(shell pkg-config --libs sdl2 jansson)
 
 # -  TARGETS  -  #
 CLIENT_SRC = sound.c blockmap.c bsp.c button.c byte_reader.c color.c engine.c geometry.c header.c \

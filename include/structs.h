@@ -16,6 +16,7 @@ typedef enum {
   STATE_INGAME,
 } GameState;
 
+struct AnimationsArray;
 struct Player;
 struct BSP;
 struct Engine;
@@ -24,8 +25,14 @@ struct SegmentHandler;
 struct Weapon;
 struct WeaponsArray;
 
+typedef struct AnimationSprite{
+  patch animation_sprite;
+  struct AnimationsArray *layers;
+  bool (*linked_function)(struct Engine *e);
+  int duration;
+} animation_sprite;
 typedef struct AnimationsArray{
-  patch *animation_sprites;
+  animation_sprite *animation_sprites_array;
   int animation_len;
 } animations_array;
 

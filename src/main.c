@@ -41,6 +41,7 @@ int main() {
   engine *e = init_engine("maps/DOOM1.WAD",renderer);
   read_map(e, renderer, "E1M2");
   add_weapon(e->p, 1, wa);
+  add_weapon(e->p, 2, wa);
   int dt = 0;
   while (e->running) {
     now = SDL_GetTicks();

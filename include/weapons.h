@@ -20,4 +20,5 @@ void print_animations_patches(weapon *w);
 //void idle_weapon_animation(map_renderer *mr,weapon *w);
 void update_animation(map_renderer *mr);
 void update_weapons(map_renderer *mr);
+
 #endif

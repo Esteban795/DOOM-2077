@@ -1,0 +1,44 @@
+{
+    "weaponCount": 3,
+    "weapons": [
+      {
+        "id": 0,
+        "weapon_name": "Fists",
+        "abbreviation": "PUN",
+        "magsize": -2,
+        "max_damage": 10,
+        "min_damage": 10,
+        "fire_rate": 1,
+        "spray": 0,
+        "ammo_bounce": 0,
+        "ammo_id": -1,
+        "type": -1
+      },
+      {
+        "id": 1,
+        "weapon_name": "Pistol",
+        "abbreviation": "PIS",
+        "magsize": 30,
+        "max_damage": 20,
+        "min_damage": 15,
+        "fire_rate": 1.5,
+        "spray": 0.5,
+        "ammo_bounce": 0,
+        "ammo_id": 1,
+        "type": 0
+      },
+      {
+        "id": 2,
+        "weapon_name": "ChainGun",
+        "abbreviation": "CHG",
+        "magsize": 30,
+        "max_damage": 20,
+        "min_damage": 15,
+        "fire_rate": 1.5,
+        "spray": 0.5,
+        "ammo_bounce": 0,
+        "ammo_id": 1,
+        "type": 0
+      }
+    ]
+  }
