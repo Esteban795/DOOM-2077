@@ -239,6 +239,44 @@ int min_neighboring_heights(linedef **lines, int len_linedefs, i16 sector_id) {
   return mini;
 }
 
+
+int get_doors_count(linedef** linedefs,int len_linedefs,sector* sectors, int len_sectors) {
+  int count = 0;
+  int* sector_records = malloc(sizeof(int) * len_sectors);
+  memset(sector_records,0,sizeof(int) * len_sectors);
+  sidedef *door_sidedef = NULL;
+  sidedef *neighbor_sidedef = NULL;
+  for (int i = 0; i < len_linedefs;i++) {
+    if (is_a_door(linedefs[i]->line_type)) {
+      if (is_a_direct_door(linedefs[i]->line_type,linedefs[i]->sector_tag)) {
+        set_correct_sidedefs(linedefs[i], &door_sidedef, &neighbor_sidedef);
+        if (door_sidedef == NULL || neighbor_sidedef == NULL) {
+          printf("Door sidedef is NULL\n");
+          exit(1);
+        }
+        i16 door_sector_id = door_sidedef->sector_id;
+        if (sector_records[door_sector_id] == 0) {
+          count++;
+          sector_records[door_sector_id] = 1;
+        }
+      } else {
+        u16 sector_tag = linedefs[i]->sector_tag;
+        for (int sector_id = 0; sector_id < len_sectors;sector_id++) {
+          if (sectors[sector_id].tag_number == sector_tag) {
+            if (sector_records[sector_id] == 0) {
+              count++;
+              sector_records[sector_id] = 1;
+            }
+          }
+        }
+      }
+      fflush(stdout);
+    }
+  }
+  free(sector_records);
+  return count;
+}
+
 door **get_doors(linedef **linedefs, int len_linedefs, int *doors_count,
                  sector *sectors, int len_sectors) {
   door **sectors_doors =
@@ -248,10 +286,9 @@ door **get_doors(linedef **linedefs, int len_linedefs, int *doors_count,
   for (int i = 0; i < len_sectors; i++) {
     sectors_doors[i] = NULL;
   }
-  door **doors = malloc(sizeof(door *) * DOORS_COUNT); // actual door* array
+  *doors_count = get_doors_count(linedefs,len_linedefs,sectors,len_sectors);
+  door **doors = malloc(sizeof(door *) * *doors_count); // actual door* array
   int door_index = 0;
-
-  *doors_count = DOORS_COUNT;
 
   sidedef *door_sidedef = NULL;
   sidedef *neighbor_sidedef = NULL;
@@ -311,7 +348,7 @@ door **get_doors(linedef **linedefs, int len_linedefs, int *doors_count,
       }
     }
   }
-  *doors_count = door_index;
+  // *doors_count = door_index;
   free(sectors_doors);
   return doors;
 }
