@@ -84,10 +84,11 @@ struct Door {
     enum DoorFunction function;
     int wait_time; // wait time until the door switches to the next state
     int time_elapsed; // time elapsed since the door switched to this state
-    bool is_open;
+    bool state; // 0 = closed, 1 = open
+    bool init_state; // 0 = closed, 1 = open
     bool is_switching;
-    i16 delta_height;
-    i16 max_height;
+    int high_height;
+    int low_height;
     sector* sector;
     struct Door* next_door; // ONLY USED BY LINEDEFS TO STORE SEVERAL DOORS IF THEY CAN ACTIVATE MU
 };
@@ -100,16 +101,14 @@ void door_timeout(door *d, int DT);
 
 void door_update(door *d, int DT);
 
-void door_print(door* d);
-
-void door_update_height(door *d, int delta_height);
+void door_update_height(door *d, int high_height);
 
 void door_trigger_switch(door *d);
 
 void doors_free(door** doors,int len_doors);
 
 door *door_create(entity_t *id, enum DoorTransitionSpeed speed,
-                  enum DoorFunction function, int wait_time,sector *sector);
+                  enum DoorFunction function, int wait_time,sector *sector,bool init_state);
 
 door* add_door(door* head, door* new_door);
 
