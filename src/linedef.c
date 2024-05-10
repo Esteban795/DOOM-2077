@@ -29,6 +29,7 @@ linedef *read_linedef(FILE *f, int offset, vertex *vertexes,
                            ? get_sidedef_from_linedef(back_sidedef_id, sidedefs)
                            : NULL;
   line->is_collidable = line->is_repeatable = line->is_shootable = line->is_pushable = line->used = false;
+  line->has_doors = line->has_lifts = false;
   line->door = NULL;
   line->lifts = NULL;
   return line;
