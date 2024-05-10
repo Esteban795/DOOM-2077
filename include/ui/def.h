@@ -1,6 +1,7 @@
 #ifndef UI_DEF_H
 #define UI_DEF_H
 
+#include "event_handler.h"
 #include "module.h"
 
 #define SUBSTATE_MENU_MAIN 0

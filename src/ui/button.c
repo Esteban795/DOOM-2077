@@ -6,8 +6,7 @@ UIButton *uibutton_create(float x, float y, float w, float h,
                           UIAnchorPoint uianchor, int *as, int nas,
                           SDL_Color bg_color, SDL_Color border_color,
                           SDL_Color bg_color_pressed,
-                          SDL_Color border_color_pressed,
-                          void (*on_click)(void)) {
+                          SDL_Color border_color_pressed, int assigned_event) {
   UIButton *b = malloc(sizeof(UIButton));
 
   b->common.x = x;
@@ -27,7 +26,7 @@ UIButton *uibutton_create(float x, float y, float w, float h,
   b->border_color = border_color;
   b->border_color_pressed = border_color_pressed;
 
-  b->on_click = on_click;
+  b->assigned_event = assigned_event;
 
   return b;
 }
@@ -40,7 +39,7 @@ void uibutton_free(UIButton *uibutton) {
 }
 
 void uibutton_detect_click(UIButton *uibutton, SDL_Rect *rect,
-                           bool mouse_left_state) {
+                           bool mouse_left_state, int *uinextevent) {
   int mouse_x, mouse_y;
   SDL_GetMouseState(&mouse_x, &mouse_y);
 
@@ -50,13 +49,14 @@ void uibutton_detect_click(UIButton *uibutton, SDL_Rect *rect,
     return;
   } else if (mouse_left_state) {
     if (!uibutton->pressed) {
-      uibutton->on_click();
+      *uinextevent = uibutton->assigned_event;
     }
     uibutton->pressed = true;
   }
 }
 
-void uibutton_update(SDL_Renderer *r, int substate, UIButton *uibutton) {
+void uibutton_update(SDL_Renderer *r, int substate, UIButton *uibutton,
+                     int *uinextevent) {
   if (!uibutton->common.active) {
     return;
   }
@@ -72,7 +72,8 @@ void uibutton_update(SDL_Renderer *r, int substate, UIButton *uibutton) {
   SDL_Rect destrect;
   get_absolute_position(&(uibutton->common), &destrect);
 
-  uibutton_detect_click(uibutton, &destrect, mouse[MOUSE_LEFT] > 0);
+  uibutton_detect_click(uibutton, &destrect, mouse[MOUSE_LEFT] > 0,
+                        uinextevent);
 
   SDL_Color bg = uibutton->bg_color;
   SDL_Color border = uibutton->border_color;

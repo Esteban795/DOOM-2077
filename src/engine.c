@@ -5,6 +5,8 @@ engine *init_engine(const char *wadPath, SDL_Renderer *renderer) {
   engine *e = malloc(sizeof(engine));
   e->wadPath = wadPath;
   e->state = STATE_MENU;
+  e->substate = SUBSTATE_MENU_MAIN;
+  e->uinextevent = 0;
   e->DT = 0;
   e->texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
                                  SDL_TEXTUREACCESS_STREAMING, WIDTH, HEIGHT);
@@ -31,8 +33,10 @@ int update_engine(engine *e, int dt) {
   handle_events(e);
   game_states_update[e->state](e);
   for (int i = 0; i < e->nuimodules; i++) {
-    update_uimodule(e->map_renderer->renderer, e->substate, e->uimodules[i]);
+    update_uimodule(e->map_renderer->renderer, e->substate, e->uimodules[i],
+                    &(e->uinextevent));
   }
+  ui_handle_events(e);
   audiomixer_update(e->mixer, dt);
   // draw_crosshair(e->map_renderer,get_color(50,0),20);
   SDL_RenderPresent(e->map_renderer->renderer);

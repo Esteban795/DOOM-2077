@@ -11,6 +11,7 @@
 #include "structs.h"
 #include "timer.h"
 #include "ui/def.h"
+#include "ui/event_handler.h"
 engine *init_engine(const char *wadPath, SDL_Renderer *renderer);
 
 int update_engine(engine *e, int dt);

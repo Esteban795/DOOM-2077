@@ -79,6 +79,7 @@ struct Engine {
   int DT;
   UIModule **uimodules;
   int nuimodules;
+  int uinextevent;
   struct Player **players;
   AudioMixer *mixer;
 };

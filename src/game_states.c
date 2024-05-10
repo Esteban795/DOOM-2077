@@ -1,4 +1,6 @@
 #include "../include/game_states.h"
+#include <SDL2/SDL_events.h>
+#include <SDL2/SDL_mouse.h>
 
 bool firstTimeLaunching = true;
 
@@ -9,10 +11,14 @@ void switch_scene(engine *e, int scene) {
 }
 
 void init_menu_state(engine *e) {
+  SDL_ShowCursor(SDL_ENABLE);
+  SDL_SetRelativeMouseMode(SDL_FALSE);
   e->substate = 0;
   e->uimodules = get_ui_menu(e->map_renderer->renderer, &e->nuimodules);
 }
 void init_ingame_state(engine *e) {
+  SDL_ShowCursor(SDL_DISABLE);
+  SDL_SetRelativeMouseMode(SDL_TRUE);
   e->substate = 0;
   e->uimodules = get_ui_ingame(e->map_renderer->renderer, &e->nuimodules);
 }
