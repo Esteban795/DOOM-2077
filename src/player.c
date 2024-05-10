@@ -451,7 +451,6 @@ void update_player(player *p) {
         door_trigger_switch(trigger_linedef->door);
       }
       if (trigger_linedef->lifts != NULL) {
-        printf("Trigger lift\n");
         lift_trigger_switch(trigger_linedef->lifts);
       }
     }

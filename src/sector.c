@@ -7,9 +7,9 @@ sector read_sector(FILE *f, int offset, flat *flats, int len_flats) {
   sector s;
   s.floor_height = read_i16(f, offset);
   s.ceiling_height = read_i16(f, offset + 2);
-  if (s.floor_height == s.ceiling_height) {
-    DOORS_COUNT++;
-  }
+  // if (s.floor_height == s.ceiling_height) {
+  //   DOORS_COUNT++;
+  // }
   char *floor_texture = read_string(f, offset + 4, 8);
   char *ceiling_texture = read_string(f, offset + 12, 8);
   char *uppercased_floor_texture = malloc(9 * sizeof(char));

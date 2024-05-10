@@ -60,9 +60,8 @@ void lift_update(lift *l, int DT) {
         multiplier = -1;
       }
     }
-    double height_gained =
-        multiplier * l->speed * (l->high_height - l->low_height) * DT / 500;
-    int new_height = (int)(l->sector->floor_height + height_gained);
+    double height_gained = multiplier * ceil((double)l->speed * (l->high_height - l->low_height) * DT / 500);
+    int new_height = l->sector->floor_height + height_gained;
     l->sector->floor_height =
         max(l->low_height, min(l->high_height, new_height));
     if (new_height < l->low_height || new_height > l->high_height) {
