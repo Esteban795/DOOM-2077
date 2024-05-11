@@ -77,6 +77,8 @@ struct Engine {
   door** doors;
   int num_doors;
   AudioMixer *mixer;
+  lift** lifts;
+  int len_lifts;
 };
 
 struct BSP {
