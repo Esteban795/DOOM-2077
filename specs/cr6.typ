@@ -63,6 +63,8 @@ Prochaine réunion avant dernière semaine (le mercredi inshallah)
 - fix le bug des linedefs 
 - voir pour afficher le chat 
 - mettre des commentaires dans le code
+- rajouter le son des portes, des ascenseurs et des tirs
+
 
 === Axelle
 
@@ -74,3 +76,4 @@ Prochaine réunion avant dernière semaine (le mercredi inshallah)
 - HUD
 - Crosshair
 - texturer la map
+- volume en fonction de la distance
