@@ -570,3 +570,32 @@ lift** get_lifts(linedef** linedefs,int len_linedefs, int* lifts_count,sector* s
   free(lifts_sectors);
   return lifts;
 }
+
+// NECESSARY FOR DIRECTIONAL SOUND
+
+void set_sectors_centers(linedef** linedefs,int len_linedefs,sector* sectors,int len_sectors) {
+  int* x_avg = malloc(sizeof(int) * len_sectors);
+  int* y_avg = malloc(sizeof(int) * len_sectors);
+  int* count = malloc(sizeof(int) * len_sectors);
+  memset(x_avg,0,sizeof(int) * len_sectors);
+  memset(y_avg,0,sizeof(int) * len_sectors);
+  memset(count,0,sizeof(int) * len_sectors);
+  for (int i = 0; i < len_linedefs; i++) {
+    linedef* line = linedefs[i];
+    x_avg[line->front_sidedef->sector_id] += line->start_vertex->x + line->end_vertex->x;
+    y_avg[line->front_sidedef->sector_id] += line->start_vertex->y + line->end_vertex->y;
+    count[line->front_sidedef->sector_id] += 2;
+    if (line->has_back_sidedef) {
+      x_avg[line->back_sidedef->sector_id] += line->start_vertex->x + line->end_vertex->x;
+      y_avg[line->back_sidedef->sector_id] += line->start_vertex->y + line->end_vertex->y;
+      count[line->back_sidedef->sector_id] += 2;
+    }
+  }
+  for (int i = 0; i < len_sectors; i++) {
+    sectors[i].center_pos.x = (double)x_avg[i] / count[i];
+    sectors[i].center_pos.y = (double)y_avg[i] / count[i];
+  }
+  free(x_avg);
+  free(y_avg);
+  free(count);
+}

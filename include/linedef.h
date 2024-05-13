@@ -61,4 +61,6 @@ door **get_doors(linedef **linedefs, int len_linedefs, int *doors_count,
                  sector *sectors, int len_sectors);
 
 void linedefs_free(linedef **linedefs, int len_linedefs);
+
+void set_sectors_centers(linedef** linedefs,int len_linedefs,sector* sectors,int len_sectors);
 #endif

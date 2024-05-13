@@ -6,6 +6,8 @@
 #include "sector.h"
 #include "geometry.h"
 #include "sidedef.h"
+#include "sound.h"
+#include "audio/mixer.h"
 
 #define MINIMUM_FLOOR_HEIGHT -512
 
@@ -99,11 +101,11 @@ extern door* COLLISIONNED_DOOR;
 
 void door_timeout(door *d, int DT);
 
-void door_update(door *d, int DT);
+void door_update(door *d,vec2 player_pos, int DT);
 
 void door_update_height(door *d, int high_height);
 
-void door_trigger_switch(door *d);
+void door_trigger_switch(vec2 cam_pos,door *d);
 
 void doors_free(door** doors,int len_doors);
 

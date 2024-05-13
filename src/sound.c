@@ -1,5 +1,8 @@
 #include "../include/sound.h"
 
+sound_entry SOUNDS_TO_PLAY[16];
+int SOUNDS_INDEX = 0;
+
 sound read_sound(FILE *f, char *name, int offset) {
   sound s;
   s.name = name;
@@ -51,4 +54,14 @@ sound *get_sounds(FILE *f, lump *directory, int directory_size,
     }
   }
   return sounds;
+}
+
+
+sound* get_sound_by_name(sound* sounds, int sounds_count, char* name) {
+  for (int i = 0; i < sounds_count; i++) {
+    if (strcmp(sounds[i].name, name) == 0) {
+      return &sounds[i];
+    }
+  }
+  return NULL;
 }

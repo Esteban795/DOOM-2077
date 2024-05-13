@@ -66,6 +66,7 @@ wad_data *init_wad_data(const char *path,char* map_name) {
       file, wd->directory, wd->map_index + BLOCKMAP, wd->linedefs);
   wd->sounds = get_sounds(file, wd->directory, wd->header.lump_count, &wd->len_sounds);
   fclose(file);
+  set_sectors_centers(wd->linedefs, wd->len_linedefs, wd->sectors, wd->len_sectors);
   return wd;
 }
 

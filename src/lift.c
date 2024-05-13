@@ -16,22 +16,29 @@ lift *lift_create(entity_t *id, sector *sector, enum LiftTransitionSpeed speed,
   l->next_lift = NULL;
   l->time_elapsed = 0;
   l->next_lift = NULL;
+  l->center_pos =  (vec2){.x = 0, .y = 0};
   l->once = once;
   return l;
 }
 
-void lift_trigger_switch(lift *l) {
+void lift_trigger_switch(vec2 cam_pos,lift *l) {
   if (l != NULL) {
     if (!l->is_switching && !(l->state != l->init_state)) {
       l->is_switching = true;
+      struct SoundEntry se;
+      se.sound = DOOR_OPEN_SOUND;
+      se.angle = point_to_angle(cam_pos, l->sector->center_pos);
+      se.volume = get_audio_gain(dist(cam_pos, l->sector->center_pos));
+      SOUNDS_TO_PLAY[SOUNDS_INDEX] = se;
+      SOUNDS_INDEX++;
     }
     if (l->next_lift != NULL) {
-      lift_trigger_switch(l->next_lift);
+      lift_trigger_switch(cam_pos,l->next_lift);
     }
   }
 }
 
-void lift_update(lift *l, int DT) {
+void lift_update(lift *l, vec2 player_pos,int DT) {
   if (l->speed == L_NO_SPEED) {
     return;
   }
@@ -68,6 +75,12 @@ void lift_update(lift *l, int DT) {
       l->is_switching = false;
       l->state = !l->state;
       l->sector->floor_height = l->state ? l->high_height : l->low_height;
+      struct SoundEntry se;
+      se.sound = DOOR_OPEN_SOUND;
+      se.angle = point_to_angle(player_pos, l->sector->center_pos);
+      se.volume = get_audio_gain(dist(player_pos, l->sector->center_pos));
+      SOUNDS_TO_PLAY[SOUNDS_INDEX] = se;
+      SOUNDS_INDEX++;
       if (l->once) {
         l->speed = L_NO_SPEED;
       }
