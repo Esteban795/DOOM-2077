@@ -29,7 +29,8 @@ AudioEmitter *audioemitter_create(sound *sound, float angle, float volume,
   ae->channel = channel;
 
   Mix_VolumeChunk(ae->chunk, ae->volume * MIX_MAX_VOLUME);
-  Mix_SetPanning(ae->channel, left_ear_amp(angle), right_ear_amp(angle));
+  Mix_SetPanning(ae->channel, left_ear_amp(ae->angle),
+                 right_ear_amp(ae->angle));
 
   Mix_PlayChannel(channel, ae->chunk, 0);
 

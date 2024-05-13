@@ -3,7 +3,7 @@
 #include <SDL2/SDL_mixer.h>
 
 AudioMixer *audiomixer_init() {
-  Mix_OpenAudio(AUDIO_SAMPLE_RATE, AUDIO_U8, 1, 256);
+  Mix_OpenAudio(AUDIO_SAMPLE_RATE, AUDIO_U8, 2, 256);
   Mix_AllocateChannels(AUDIO_MIXER_CHANNELS);
 
   AudioMixer *am = malloc(sizeof(AudioMixer));
@@ -71,7 +71,8 @@ void audiomixer_kill(AudioMixer *am, int uid) {
 }
 
 double get_audio_gain(double distance) {
-  distance = min(AL_MAX_DISTANCE,max(AL_REFERENCE_DISTANCE,distance));
-  double gain = (1 - AL_ROLLOFF_FACTOR * (distance - AL_REFERENCE_DISTANCE) / (AL_MAX_DISTANCE - AL_REFERENCE_DISTANCE));
+  distance = min(AL_MAX_DISTANCE, max(AL_REFERENCE_DISTANCE, distance));
+  double gain = (1 - AL_ROLLOFF_FACTOR * (distance - AL_REFERENCE_DISTANCE) /
+                         (AL_MAX_DISTANCE - AL_REFERENCE_DISTANCE));
   return gain;
 }
