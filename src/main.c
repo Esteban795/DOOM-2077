@@ -37,7 +37,7 @@ int main() {
   SDL_ShowCursor(SDL_DISABLE); // Set to true for debug
   SDL_SetRelativeMouseMode(SDL_TRUE); // Set to false for debug
   engine *e = init_engine("maps/DOOM1.WAD",renderer);
-  read_map(e, renderer, "E1M3");
+  read_map(e, renderer, "E1M2");
   int dt = 0;
   while (e->running) {
     now = SDL_GetTicks();

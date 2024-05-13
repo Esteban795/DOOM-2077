@@ -29,7 +29,7 @@ void door_trigger_switch(vec2 cam_pos,door *d) {
       d->is_switching = true;
       struct SoundEntry se;
       se.sound = DOOR_OPEN_SOUND;
-      se.angle = point_to_angle(cam_pos, d->sector->center_pos);
+      se.angle = deg_to_rad(norm(point_to_angle(cam_pos, d->sector->center_pos)));
       se.volume = get_audio_gain(dist(cam_pos, d->sector->center_pos));
       SOUNDS_TO_PLAY[SOUNDS_INDEX] = se;
       SOUNDS_INDEX++;
@@ -49,6 +49,12 @@ void door_update(door *d,vec2 player_pos, int DT) {
     if (d->time_elapsed >= d->wait_time) {
       d->time_elapsed = 0;
       d->is_switching = true;
+      struct SoundEntry se;
+      se.sound = DOOR_CLOSE_SOUND;
+      se.angle = deg_to_rad(norm(point_to_angle(player_pos, d->sector->center_pos)));
+      se.volume = get_audio_gain(dist(player_pos, d->sector->center_pos));
+      SOUNDS_TO_PLAY[SOUNDS_INDEX] = se;
+      SOUNDS_INDEX++;
     }
   }
   if (d->is_switching) {
@@ -79,12 +85,6 @@ void door_update(door *d,vec2 player_pos, int DT) {
       d->is_switching = false;
       d->state = !d->state; // transition is done , switch state
       d->sector->ceiling_height = d->state ? d->high_height : d->low_height;
-      struct SoundEntry se;
-      se.sound = DOOR_OPEN_SOUND;
-      se.angle = point_to_angle(player_pos, d->sector->center_pos);
-      se.volume = get_audio_gain(dist(player_pos, d->sector->center_pos));
-      SOUNDS_TO_PLAY[SOUNDS_INDEX] = se;
-      SOUNDS_INDEX++;
       if (d->function == OPEN_STAY_OPEN ||
           d->function == CLOSE_STAY_CLOSED) { // one time transition
         d->speed = NO_SPEED;
