@@ -101,11 +101,11 @@ extern door* COLLISIONNED_DOOR;
 
 void door_timeout(door *d, int DT);
 
-void door_update(door *d,vec2 player_pos, int DT);
+void door_update(door *d,vec2 player_pos,double player_angle, int DT);
 
 void door_update_height(door *d, int high_height);
 
-void door_trigger_switch(vec2 cam_pos,door *d);
+void door_trigger_switch(vec2 cam_pos, double cam_angle,door *d);
 
 void doors_free(door** doors,int len_doors);
 

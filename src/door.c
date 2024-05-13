@@ -23,24 +23,24 @@ door *door_create(entity_t *id, enum DoorTransitionSpeed speed,
   return d;
 }
 
-void door_trigger_switch(vec2 cam_pos,door *d) {
+void door_trigger_switch(vec2 cam_pos, double cam_angle,door *d) {
   if (d != NULL) {
     if (!d->is_switching && d->state == d->init_state) {
       d->is_switching = true;
       struct SoundEntry se;
       se.sound = DOOR_OPEN_SOUND;
-      se.angle = deg_to_rad(norm(point_to_angle(cam_pos, d->sector->center_pos)));
+      se.angle = get_angular_distance(cam_pos.x, cam_pos.y, cam_angle, d->sector->center_pos.x, d->sector->center_pos.y);
       se.volume = get_audio_gain(dist(cam_pos, d->sector->center_pos));
       SOUNDS_TO_PLAY[SOUNDS_INDEX] = se;
       SOUNDS_INDEX++;
     }
     if (d->next_door != NULL) {
-      door_trigger_switch(cam_pos,d->next_door);
+      door_trigger_switch(cam_pos,cam_angle,d->next_door);
     }
   }
 }
 
-void door_update(door *d,vec2 player_pos, int DT) {
+void door_update(door *d,vec2 player_pos,double player_angle, int DT) {
   if (d->speed == NO_SPEED) {
     return;
   }
@@ -51,7 +51,7 @@ void door_update(door *d,vec2 player_pos, int DT) {
       d->is_switching = true;
       struct SoundEntry se;
       se.sound = DOOR_CLOSE_SOUND;
-      se.angle = deg_to_rad(norm(point_to_angle(player_pos, d->sector->center_pos)));
+      se.angle = get_angular_distance(player_pos.x, player_pos.y, player_angle, d->sector->center_pos.x, d->sector->center_pos.y);
       se.volume = get_audio_gain(dist(player_pos, d->sector->center_pos));
       SOUNDS_TO_PLAY[SOUNDS_INDEX] = se;
       SOUNDS_INDEX++;

@@ -19,10 +19,10 @@ void update_menu_state(engine *e) {
 void update_ingame_state(engine *e) {
   update_player(e->p);
   for (int i = 0; i < e->num_doors; i++) {
-    door_update(e->doors[i], e->p->pos,e->DT);
+    door_update(e->doors[i], e->p->pos,e->p->angle,e->DT);
   }
   for (int i = 0; i < e->len_lifts; i++) {
-    lift_update(e->lifts[i], e->p->pos,e->DT);
+    lift_update(e->lifts[i], e->p->pos,e->p->angle,e->DT);
   }
   get_ssector_height(e->bsp);
   segment_handler_update(e->seg_handler);

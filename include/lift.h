@@ -75,11 +75,11 @@ typedef struct Lift lift;
 lift *lift_create(entity_t *id, sector *sector, enum LiftTransitionSpeed speed,
                   i16 low_height, i16 high_height, int delay, bool init_state,bool once);
 
-void lift_trigger_switch(vec2 cam_pos,lift *l);
+void lift_trigger_switch(vec2 cam_pos,double cam_angle,lift *l);
 
 void lifts_free(lift** lifts,int len_lifts);
 
-void lift_update(lift *l, vec2 player_pos,int DT);
+void lift_update(lift *l, vec2 player_pos, double player_angle,int DT);
 
 lift* lift_add(lift* l, lift* new_lift);
 
