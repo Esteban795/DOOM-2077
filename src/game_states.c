@@ -32,10 +32,7 @@ void update_ingame_state(engine *e) {
   SDL_RenderCopy(e->map_renderer->renderer, e->texture, NULL, NULL);
   for (int i = 0; i < SOUNDS_INDEX;i++){
     sound* s = get_sound_by_name(e->wData->sounds, e->wData->len_sounds, SOUNDS_TO_PLAY[i].sound);
-    printf("sound %s\n",s->name);
-    printf("angle %f\n",SOUNDS_TO_PLAY[i].angle);
-    printf("volume %f\n",SOUNDS_TO_PLAY[i].volume);
-    audiomixer_play(e->mixer, s, deg_to_rad(SOUNDS_TO_PLAY[i].angle) , SOUNDS_TO_PLAY[i].volume);
+    audiomixer_play(e->mixer, s, SOUNDS_TO_PLAY[i].angle , SOUNDS_TO_PLAY[i].volume);
   }
   SOUNDS_INDEX = 0;
   return;
