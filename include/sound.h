@@ -5,6 +5,9 @@
 #include "lump.h"
 #include "geometry.h"
 
+
+#define MAX_SOUNDS_PLAYING 32
+
 #define DOOR_OPEN_SOUND "DSDOROPN"
 #define DOOR_CLOSE_SOUND "DSDORCLS"
 #define LIFT_START_SOUND "DSPSTART "
@@ -31,7 +34,7 @@ struct SoundEntry {
 
 typedef struct SoundEntry sound_entry;
 
-extern sound_entry SOUNDS_TO_PLAY[16];
+extern sound_entry SOUNDS_TO_PLAY[MAX_SOUNDS_PLAYING];
 extern int SOUNDS_INDEX;
 
 void sounds_free(sound* sounds, int sounds_count);

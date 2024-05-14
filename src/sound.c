@@ -1,6 +1,6 @@
 #include "../include/sound.h"
 
-sound_entry SOUNDS_TO_PLAY[16];
+sound_entry SOUNDS_TO_PLAY[MAX_SOUNDS_PLAYING];
 int SOUNDS_INDEX = 0;
 
 sound read_sound(FILE *f, char *name, int offset) {
@@ -74,6 +74,9 @@ double get_audio_gain(double distance) {
 };
 
 sound_entry add_sound_to_play(char* sound,double origin_x,double origin_y,double origin_angle,double px,double py) {
+  if (SOUNDS_INDEX >= MAX_SOUNDS_PLAYING) {
+    return (sound_entry){0};
+  }
   sound_entry se;
   se.sound = sound;
   se.angle = get_angular_distance(origin_x,origin_y,origin_angle,px,py);
