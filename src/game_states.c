@@ -18,21 +18,23 @@ void update_menu_state(engine *e) {
 
 void update_ingame_state(engine *e) {
   update_player(e->p);
+  update_height(e->p);
+  process_keys(e->p);
   for (int i = 0; i < e->num_doors; i++) {
     door_update(e->doors[i], e->p->pos,e->p->angle,e->DT);
   }
   for (int i = 0; i < e->len_lifts; i++) {
     lift_update(e->lifts[i], e->p->pos,e->p->angle,e->DT);
   }
-  get_ssector_height(e->bsp);
   segment_handler_update(e->seg_handler);
   update_bsp(e->bsp);
   // draw_crosshair(e->map_renderer,get_color(50,0),20);
   SDL_UpdateTexture(e->texture, NULL, e->pixels, WIDTH * 4);
   SDL_RenderCopy(e->map_renderer->renderer, e->texture, NULL, NULL);
   for (int i = 0; i < SOUNDS_INDEX;i++){
-    sound* s = get_sound_by_name(e->wData->sounds, e->wData->len_sounds, SOUNDS_TO_PLAY[i].sound);
-    audiomixer_play(e->mixer, s, SOUNDS_TO_PLAY[i].angle , SOUNDS_TO_PLAY[i].volume);
+    sound* s = get_sound_by_name(e->wData->sounds, e->wData->len_sounds, SOUNDS_TO_PLAY[i]->sound);
+    audiomixer_play(e->mixer, s, SOUNDS_TO_PLAY[i]->angle , SOUNDS_TO_PLAY[i]->volume);
+    free(SOUNDS_TO_PLAY[i]);
   }
   SOUNDS_INDEX = 0;
   return;

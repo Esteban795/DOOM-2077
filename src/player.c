@@ -12,7 +12,9 @@
 #define TRIGGER_ACTIVATION_RANGE 100
 
 #define M_PI 3.14159265358979323846
+#define MAX_INTERACT_COOLDOWN 100
 bool SHOULD_COLLIDE = true;
+int INTERACT_CD = 0;
 
 player *player_init(engine *e) {
   player *p = malloc(sizeof(player));
@@ -43,87 +45,7 @@ player **create_players(int num_players, engine *e) {
   return (Players);
 }
 
-// size_t count_two_sided_linedefs(linedef* linedefs, size_t nlinedefs){
-//   size_t count = 0;
-//   for (size_t i = 0; i < nlinedefs; i++){
-//     if (!(linedefs[i].flag & TWO_SIDED)){
-//       count++;
-//     }
-//   }
-//   return count;
-// }
-
-// linedef* get_linedefs_in_active_blocks(player* p, double* velocity, int*
-// nlinedefs){
-//   //param nlinedefs is a pointer to return the amount of linedefs in the
-//   concerned blocks blockmap* bmap = p->engine->wData->blockmap;
-//   //we assume velocity is a 2d vector
-
-//   //getting the amount of linedefs to process in the active blocks
-//   int block_index_current = blockmap_get_block_index(bmap, p->pos.x,
-//   p->pos.y); size_t two_sided_linedefs_count =
-//   count_two_sided_linedefs(bmap->blocks[block_index_current].linedefs,
-//   bmap->blocks[block_index_current].nlinedefs); int block_index_aftermove =
-//   blockmap_get_block_index(bmap, p->pos.x + velocity[0], p->pos.y +
-//   velocity[1]); if (block_index_aftermove != block_index_current){
-//     two_sided_linedefs_count +=
-//     count_two_sided_linedefs(bmap->blocks[block_index_aftermove].linedefs,
-//     bmap->blocks[block_index_aftermove].nlinedefs);
-//   }
-//   *nlinedefs = two_sided_linedefs_count;
-//   //gather up all the linedefs
-//   linedef* linedefs = malloc(sizeof(linedef) * (two_sided_linedefs_count));
-//   size_t ind = 0;
-//   for (size_t i = 0; i < bmap->blocks[block_index_current].nlinedefs; i++){
-//     if (!(bmap->blocks[block_index_current].linedefs[i].flag & TWO_SIDED)){
-//     //its a solid wall, because it has no two sided flag
-//       linedefs[ind] = bmap->blocks[block_index_current].linedefs[i];
-//       ind++;
-//     }
-//   }
-//   if (block_index_aftermove != block_index_current){
-//     for (size_t i = 0; i < bmap->blocks[block_index_aftermove].nlinedefs;
-//     i++){
-//       if (!(bmap->blocks[block_index_aftermove].linedefs[i].flag &
-//       TWO_SIDED)){
-//         linedefs[ind] = bmap->blocks[block_index_aftermove].linedefs[i];
-//         ind++;
-//       }
-//     }
-//   }
-//   return linedefs;
-// }
-
-// linedef* get_linedefs_in_active_blocks(player* p, double* velocity, int*
-// nlinedefs){
-//   //param nlinedefs is a pointer to return the amount of linedefs in the
-//   concerned blocks blockmap* bmap = p->engine->wData->blockmap;
-//   //we assume velocity is a 2d vector
-
-//   //getting the amount of linedefs to process in the active blocks
-//   int block_index_current = blockmap_get_block_index(bmap, p->pos.x,
-//   p->pos.y);
-//   (*nlinedefs) += bmap->blocks[block_index_current].nlinedefs;
-//   int block_index_aftermove = blockmap_get_block_index(bmap, p->pos.x +
-//   velocity[0], p->pos.y + velocity[1]); if (block_index_aftermove !=
-//   block_index_current){
-//     (*nlinedefs) += bmap->blocks[block_index_aftermove].nlinedefs;
-//   }
-
-//   //gather up all the linedefs
-//   linedef* linedefs = malloc(sizeof(linedef) * (*nlinedefs));
-//   for (int i = 0; i < (int)bmap->blocks[block_index_current].nlinedefs; i++){
-//     linedefs[i] = bmap->blocks[block_index_current].linedefs[i];
-//   }
-//   if (block_index_aftermove != block_index_current){
-//     int offset = bmap->blocks[block_index_current].nlinedefs;
-//     for (int i = 0; i < (int)bmap->blocks[block_index_aftermove].nlinedefs;
-//     i++){
-//       linedefs[offset + i] = bmap->blocks[block_index_aftermove].linedefs[i];
-//     }
-//   }
-//   return linedefs;
-//}
+// COLLISION HANDLING
 
 linedef **get_linedefs_in_active_blocks(player *p, int *nlinedefs) {
   blockmap *bmap = p->engine->wData->blockmap;
@@ -197,9 +119,6 @@ void get_projections(linedef *line, vec2 pos, vec2 *projected,
   double norm_projection =
       sqrt(pow((projected->x - pos.x), 2) + pow((projected->y - pos.y), 2));
 
-  // printf("%f\n", pos.x + ((projected->x - pos.x)/norm_projection) *
-  // PLAYER_RADIUS);
-
   projected_hitbox->x =
       pos.x + ((projected->x - pos.x) / norm_projection) * PLAYER_RADIUS * 2;
   projected_hitbox->y =
@@ -209,14 +128,6 @@ void get_projections(linedef *line, vec2 pos, vec2 *projected,
       pos.x - ((projected->x - pos.x) / norm_projection) * PLAYER_RADIUS * 2;
   projected_hitbox_back->y =
       pos.y - ((projected->y - pos.y) / norm_projection) * PLAYER_RADIUS * 2;
-
-  // printf("projecting...\n");
-  // printf("po: x=%f,y=%f\n", pos.x, pos.y);
-  // printf("v1: x=%f,y=%f\n", (double)v1.x, (double)v1.y);
-  // printf("v2: x=%f,y=%f\n", (double)v2.x, (double)v2.y);
-  // printf("pr: x=%f,y=%f\n", projected->x, projected->y);
-  // printf("no: %f\n", norm_projection);
-  // printf("ph: x=%f,y=%f\n", projected_hitbox->x, projected_hitbox->y);
 }
 
 void slide_against_wall(vec2 *pos_inside_wall, vec2 projected) {
@@ -249,10 +160,6 @@ bool can_collide_with_wall(double cp_after, linedef *linedef) {
     if (cp_after > 0) {
       from = linedef->back_sidedef->sector;
       to = linedef->front_sidedef->sector;
-      // from =
-      // p->engine->wData->sectors[p->engine->wData->sidedefs[linedefs[i].back_sidedef_id].sector];
-      // to =
-      // p->engine->wData->sectors[p->engine->wData->sidedefs[linedefs[i].front_sidedef_id].sector];
     } else {
       from = linedef->front_sidedef->sector;
       to = linedef->back_sidedef->sector;
@@ -309,7 +216,7 @@ void move_and_slide(player *p, double *velocity) {
       // else: use the first linedef (first linedef faces "clockwise")
       if (linedefs[i]->has_doors && linedefs[i]->is_collidable) {
         if (!linedefs[i]->used) {
-          door_trigger_switch(p->pos,p->angle,linedefs[i]->door);
+          door_trigger_switch(p->pos, p->angle, linedefs[i]->door);
           if (!linedefs[i]->is_repeatable) {
             linedefs[i]->used = true;
           }
@@ -317,7 +224,7 @@ void move_and_slide(player *p, double *velocity) {
       }
       if (linedefs[i]->has_lifts && linedefs[i]->is_collidable) {
         if (!linedefs[i]->used) {
-          lift_trigger_switch(p->pos,p->angle,linedefs[i]->lifts);
+          lift_trigger_switch(p->pos, p->angle, linedefs[i]->lifts);
           if (!linedefs[i]->is_repeatable) {
             linedefs[i]->used = true;
           }
@@ -336,12 +243,9 @@ void move_and_slide(player *p, double *velocity) {
   free(linedefs);
 }
 
-void update_height(player *p, double z) {
-  double target_height = z + PLAYER_HEIGHT;
-  double grav_height =
-      p->height - G * 10e-2 / 2.0 * p->engine->DT * p->engine->DT / 2;
-  p->height = fmax(grav_height, target_height);
-}
+// END COLLISION HANDLING /////////////////////////////////////////////////
+
+////////// SHOOTING AND INTERACTING LOGIC /////////////////////////////////
 
 int correct_height(linedef *wall, int height) {
   if (!(wall->has_back_sidedef)) {
@@ -360,6 +264,93 @@ int correct_height(linedef *wall, int height) {
         return 1;
       } else {
         return 0;
+      }
+    }
+  }
+}
+
+void fire_bullet(player **players, int num_players, player *player_,
+                 int damage) { // toutes les valeurs de y sont négatives
+  double distance_finale = 100000;
+  if (player_->cooldown < 80) {
+    player_->cooldown = player_->cooldown + 100;
+    linedef **linedefs = player_->engine->wData->linedefs;
+    double x1 = player_->pos.x;
+    double y1 = -player_->pos.y;
+    double x2 = x1 + 100 * cos(deg_to_rad((player_->angle)));
+    double y2 = y1 + 100 * sin(deg_to_rad((player_->angle)));
+    double a = 0;
+    double x_final = 0;
+    double y_final = 0;
+    int direction =
+        1; // 0 correspond a ni droite ni auche 1 a gauche 2 a droite
+    double height = player_->height;
+    if (x1 != x2) {
+      a = (y2 - y1) / (x2 - x1);
+      if (x1 > x2) {
+        direction = 1; // vers la gauche
+      } else {
+        direction = 2; // vers la droite
+      }
+    }
+    double b = y1 - a * x1;
+    for (int i = 0; i < player_->engine->wData->len_linedefs; i++) {
+      double x = 0;
+      double y = 0;
+      if ((!(linedefs[i]->has_back_sidedef)) ||
+          (correct_height(linedefs[i], height))) {
+        double x1a = linedefs[i]->start_vertex->x;
+        double y1a = -linedefs[i]->start_vertex->y;
+        double x2a = linedefs[i]->end_vertex->x;
+        double y2a = -linedefs[i]->end_vertex->y;
+        double c = 0;
+        double d = 0;
+        if (x1a != x2a) {
+          c = (y2a - y1a) / (x2a - x1a);
+          d = y1a - c * x1a;
+          x = (d - b) / (a - c);
+          y = a * x + b;
+          if (distance(x1, y1, x, y) < 100) {
+          }
+          if (((x1a <= x) && (x <= x2a)) || ((x2a <= x) && (x <= x1a))) {
+            if (((direction == 1) && (x1 > x)) ||
+                ((direction == 2) && (x1 < x))) {
+              if (distance(x1, y1, x, y) < distance_finale) {
+                distance_finale = distance(x1, y1, x, y);
+                x_final = x;
+                y_final = y;
+              }
+            }
+          }
+
+        } else {
+          x = x1a;
+          y = a * x + b;
+          if (((y1a <= y) && (y <= y2a)) || ((y2a <= y) && (y <= y1a))) {
+            if (((direction == 1) && (x1 >= x)) ||
+                ((direction == 2) && (x1 <= x))) {
+              if (distance(x1, y1, x, y) < distance_finale) {
+                distance_finale = distance(x1, y1, x, y);
+                x_final = x;
+                y_final = y;
+              }
+            }
+          }
+        }
+      }
+    }
+    for (int j = 0; j < num_players; j++) {
+      double dist_to_hitscan =
+          (fabs(a * (players[j]->pos.x) + (players[j]->pos.y) + b)) /
+          (sqrt(pow(a, 2) + pow(-1, 2)));
+      if (dist_to_hitscan < PLAYER_HITBOX_SIZE) {
+        if ((min(x1, x_final) < players[j]->pos.x) &&
+            (max(x1, x_final) > players[j]->pos.x) &&
+            (min(y1, y_final) < -players[j]->pos.y) &&
+            (min(y1, y_final) < -players[j]->pos.y)) {
+          players[j]->life -= damage;
+          break;
+        }
       }
     }
   }
@@ -436,25 +427,47 @@ linedef *cast_ray(linedef **linedefs, int len_linedefs, vec2 player_pos,
   return target_linedef;
 }
 
-void update_player(player *p) {
-  int DT = p->engine->DT;
-  if (keys[SDL_GetScancodeFromKey(SDL_GetKeyFromName("M"))]) {
-    SHOULD_COLLIDE = !SHOULD_COLLIDE;
-  }
-  bool interact = keys[get_key_from_action(p->keybinds, "INTERACT")];
-  if (interact) {
+////////// END SHOOTING AND INTERACTING LOGIC /////////////////////////////////
+
+void process_keys(player *p) {
+  bool is_interacting = keys[get_key_from_action(p->keybinds, "INTERACT")];
+  // to avoid spamming the interact key and crashing the audio lmao
+  INTERACT_CD -= p->engine->DT;
+  // printf("interact cd: %d\n", INTERACT_CD);
+  if (is_interacting && INTERACT_CD <= 0) {
+    // printf("interacting\n");
     linedef *trigger_linedef =
         cast_ray(p->engine->wData->linedefs, p->engine->wData->len_linedefs,
                  p->pos, p->angle, p->height);
     if (trigger_linedef != NULL) {
+      // printf("triggering linedef\n");
       if (trigger_linedef->door != NULL) {
-        door_trigger_switch(p->pos,p->angle,trigger_linedef->door);
+        door_trigger_switch(p->pos, p->angle, trigger_linedef->door);
       }
       if (trigger_linedef->lifts != NULL) {
-        lift_trigger_switch(p->pos,p->angle,trigger_linedef->lifts);
+        lift_trigger_switch(p->pos, p->angle, trigger_linedef->lifts);
       }
+      // add_sound_to_play(SWITCH_USE_SOUND, p->pos.x, p->pos.y, p->angle,
+      //                   p->pos.x, p->pos.y);
+      INTERACT_CD = MAX_INTERACT_COOLDOWN;
     }
   }
+  bool is_attacking =
+      keys[get_key_from_action(p->keybinds, "ATTACK")];
+  if (is_attacking) {
+    printf("attacking\n");
+    add_sound_to_play(PISTOL_SOUND, p->pos.x, p->pos.y, p->angle, p->pos.x + 10 * cos(deg_to_rad(p->angle)),
+                      p->pos.y - 10 * sin(deg_to_rad(p->angle)));
+    fire_bullet(p->engine->players, 1, p, 10);
+  }
+
+  if (keys[SDL_GetScancodeFromKey(SDL_GetKeyFromName("M"))]) {
+    SHOULD_COLLIDE = !SHOULD_COLLIDE;
+  }
+}
+
+void update_player(player *p) {
+  int DT = p->engine->DT;
   bool forward = keys[get_key_from_action(p->keybinds, "MOVE_FORWARD")];
   bool left = keys[get_key_from_action(p->keybinds, "MOVE_LEFT")];
   bool backward = keys[get_key_from_action(p->keybinds, "MOVE_BACKWARD")];
@@ -490,7 +503,8 @@ void update_player(player *p) {
     vec[0] *= DIAGONAL_CORRECTION;
     vec[1] *= DIAGONAL_CORRECTION;
   }
-  if (SHOULD_COLLIDE) {
+  if (SHOULD_COLLIDE) { // debug options to go through walls (prevent from
+                        // triggering doors, lifts etc)
     move_and_slide(p, vec);
   } else {
     p->pos.x += vec[0];
@@ -510,4 +524,29 @@ void players_free(player **players, int num_players) {
     player_free(players[i]);
   }
   free(players);
+}
+
+i16 get_ssector_floor_height(bsp *b) {
+  size_t node_id = b->root_node_id;
+  while (node_id < SUBSECTOR_IDENTIFIER) {
+    node n = b->nodes[node_id];
+    bool is_back_side = is_on_back_side(n, b->player->pos);
+    if (is_back_side) {
+      node_id = n.back_child_id;
+    } else {
+      node_id = n.front_child_id;
+    }
+  }
+  i16 subsector_id = node_id - SUBSECTOR_IDENTIFIER;
+  subsector subsector = b->subsectors[subsector_id];
+  segment seg = subsector.segs[0];
+  return seg.front_sector->floor_height;
+}
+
+void update_height(player *p) {
+  double floor_height = (double)get_ssector_floor_height(p->engine->bsp);
+  double target_height = floor_height + PLAYER_HEIGHT;
+  double grav_height =
+      p->height - G * 10e-2 / 2.0 * p->engine->DT * p->engine->DT / 2;
+  p->height = fmax(grav_height, target_height);
 }
