@@ -12,8 +12,11 @@
 #define DOOR_CLOSE_SOUND "DSDORCLS"
 #define LIFT_START_SOUND "DSPSTART "
 #define LIFT_STOP_SOUND "DSPSTOP"
-#define SWITCH_USE "DSSWTCHN"
+#define SWITCH_USE_SOUND "DSSWTCHN"
 
+#define PISTOL_SOUND "DSPISTOL"
+#define SHOTGUN_SOUND "DSSHOTGN"
+#define PUNCH_SOUND "DSPUNCH"
 // https://doomwiki.org/wiki/Sound
 
 struct Sound {
@@ -34,7 +37,7 @@ struct SoundEntry {
 
 typedef struct SoundEntry sound_entry;
 
-extern sound_entry SOUNDS_TO_PLAY[MAX_SOUNDS_PLAYING];
+extern sound_entry* SOUNDS_TO_PLAY[MAX_SOUNDS_PLAYING];
 extern int SOUNDS_INDEX;
 
 void sounds_free(sound* sounds, int sounds_count);
@@ -43,5 +46,5 @@ sound* get_sounds(FILE* f,lump* directory,int directory_size, int* sounds_count)
 
 sound* get_sound_by_name(sound* sounds, int sounds_count, char* name);
 
-sound_entry add_sound_to_play(char* sound,double origin_x,double origin_y,double origin_angle,double px,double py);
+sound_entry* add_sound_to_play(char* sound,double origin_x,double origin_y,double origin_angle,double px,double py);
 #endif

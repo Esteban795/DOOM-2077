@@ -1,6 +1,7 @@
 #include "../include/sound.h"
+#include <stdio.h>
 
-sound_entry SOUNDS_TO_PLAY[MAX_SOUNDS_PLAYING];
+sound_entry* SOUNDS_TO_PLAY[MAX_SOUNDS_PLAYING];
 int SOUNDS_INDEX = 0;
 
 sound read_sound(FILE *f, char *name, int offset) {
@@ -48,6 +49,7 @@ sound *get_sounds(FILE *f, lump *directory, int directory_size,
   for (int i = 0; i < directory_size; i++) {
     i16 type = read_i16(f, directory[i].lump_offset);
     if (type == 3 && directory[i].lump_name[0] == 'D') {
+      printf("Reading sound %s\n", directory[i].lump_name);
       sounds[index] =
           read_sound(f, directory[i].lump_name, directory[i].lump_offset);
       index++;
@@ -58,6 +60,7 @@ sound *get_sounds(FILE *f, lump *directory, int directory_size,
 
 
 sound* get_sound_by_name(sound* sounds, int sounds_count, char* name) {
+  printf("Looking for sound %s\n", name);
   for (int i = 0; i < sounds_count; i++) {
     if (strcmp(sounds[i].name, name) == 0) {
       return &sounds[i];
@@ -71,16 +74,16 @@ double get_audio_gain(double distance) {
   double gain = (1 - AL_ROLLOFF_FACTOR * (distance - AL_REFERENCE_DISTANCE) /
                          (AL_MAX_DISTANCE - AL_REFERENCE_DISTANCE));
   return gain;
-};
+}
 
-sound_entry add_sound_to_play(char* sound,double origin_x,double origin_y,double origin_angle,double px,double py) {
+sound_entry* add_sound_to_play(char* sound,double origin_x,double origin_y,double origin_angle,double px,double py) {
   if (SOUNDS_INDEX >= MAX_SOUNDS_PLAYING) {
-    return (sound_entry){0};
+    return NULL;
   }
-  sound_entry se;
-  se.sound = sound;
-  se.angle = get_angular_distance(origin_x,origin_y,origin_angle,px,py);
-  se.volume = get_audio_gain(dist((vec2){px,py}, (vec2){origin_x,origin_y}));
+  sound_entry* se = malloc(sizeof(sound_entry));
+  se->sound = sound;
+  se->angle = get_angular_distance(origin_x,origin_y,origin_angle,px,py);
+  se->volume = get_audio_gain(dist((vec2){px,py}, (vec2){origin_x,origin_y}));
   SOUNDS_TO_PLAY[SOUNDS_INDEX] = se;
   SOUNDS_INDEX++;
   return se;
