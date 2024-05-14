@@ -134,12 +134,6 @@ bool is_segment_in_fov(player *p, segment seg, int *x1, int *x2,
   return true;
 }
 
-static bool is_on_back_side(bsp *b, node n) {
-  i16 dx = b->player->pos.x - n.x_partition;
-  i16 dy = b->player->pos.y - n.y_partition;
-  return dx * n.dy_partition - dy * n.dx_partition <= 0;
-}
-
 void render_bsp_node(bsp *b, size_t node_id) {
   if (BSP_TRAVERSE) {
     if (node_id >= SUBSECTOR_IDENTIFIER) {
@@ -155,7 +149,7 @@ void render_bsp_node(bsp *b, size_t node_id) {
       }
     } else {
       node n = b->nodes[node_id];
-      bool is_back_side = is_on_back_side(b, n);
+      bool is_back_side = is_on_back_side(n, b->player->pos);
       if (is_back_side) {
         render_bsp_node(b, n.back_child_id);
         if (check_if_bbox_visible(n.front_bbox, b->player)) {
@@ -169,25 +163,6 @@ void render_bsp_node(bsp *b, size_t node_id) {
       }
     }
   }
-}
-
-
-void get_ssector_height(bsp* b){
-  size_t node_id = b->root_node_id;
-  while (node_id < SUBSECTOR_IDENTIFIER) {
-    node n = b->nodes[node_id];
-    bool is_back_side = is_on_back_side(b, n);
-    if (is_back_side) {
-      node_id = n.back_child_id;
-    } else {
-      node_id = n.front_child_id;
-    }
-  }
-  i16 subsector_id = node_id - SUBSECTOR_IDENTIFIER;
-  subsector player_ssector = b->subsectors[subsector_id];
-  segment seg = player_ssector.segs[0];
-  double floor_height = seg.front_sector->floor_height;
-  update_height(b->engine->p, floor_height);
 }
 
 void update_bsp(bsp *b) {
