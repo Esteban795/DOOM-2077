@@ -1,5 +1,6 @@
 #include "../include/engine.h"
 #include <SDL2/SDL_render.h>
+
 #include "../include/remote.h"
 #include "../include/ecs/world.h"
 #include "../include/ecs/entity.h"
@@ -26,6 +27,17 @@ engine *init_engine(const char *wadPath, SDL_Renderer *renderer) {
                                  SDL_TEXTUREACCESS_STREAMING, WIDTH, HEIGHT);
   e->remote = malloc(sizeof(remote_server_t));
   remote_init(e->remote, SERVER_ADDR, SERVER_PORT);
+  e->doors = NULL;
+  e->num_doors = 0;
+  e->wData = NULL;
+  e->p = NULL;
+  e->bsp = NULL;
+  e->map_renderer = NULL;
+  e->seg_handler = NULL;
+  e->players = NULL;
+  e->mixer = NULL;
+  e->lifts = NULL;
+  e->len_lifts = 0;
   return e;
 }
 
@@ -40,6 +52,8 @@ void read_map(engine *e, SDL_Renderer *renderer, char *map_name) {
   e->seg_handler = segment_handler_init(e);
   e->players = calloc(PLAYER_MAXIMUM, sizeof(entity_t*));
   e->mixer = audiomixer_init();
+  e->lifts = get_lifts(e->wData->linedefs, e->wData->len_linedefs, &e->len_lifts, e->wData->sectors, e->wData->len_sectors);
+  e->doors = get_doors(e->wData->linedefs, e->wData->len_linedefs, &e->num_doors, e->wData->sectors,e->wData->len_sectors);
 }
 
 int update_engine(engine *e, int dt) {
@@ -70,6 +84,8 @@ void engine_free(engine *e) {
   remote_destroy(e->remote);
   free(e->players);
   audiomixer_free(e->mixer);
+  doors_free(e->doors, e->num_doors);
+  lifts_free(e->lifts, e->len_lifts);
   world_destroy(e->world);
   free(e->world);
   free(e);

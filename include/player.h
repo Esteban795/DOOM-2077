@@ -13,6 +13,7 @@
 #ifndef PLAYER_USERNAME
 #define PLAYER_USERNAME "player"
 #endif
+#include "door.h"
 
 double deg_to_rad(double deg);
 

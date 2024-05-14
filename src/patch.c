@@ -203,14 +203,16 @@ patch *get_texture_patches(lump *directory, header *header, FILE *f,
   patch *texture_patches = malloc(sizeof(patch) * num_patches);
   for (int i = 0; i < *len_textures_patches; i++) {
     char *patch_name = read_texture_name(f, offset + i * 8, 8);
-    patch_name[0] = toupper(patch_name[0]); //because one letter randomly set to lowercase
-    i16 patch_index = get_lump_index(directory, patch_name, header->lump_count);
+    char* upper_patch_name = malloc(sizeof(char) * 9);
+    strtoupper(upper_patch_name, patch_name);
+    free(patch_name);
+    i16 patch_index = get_lump_index(directory, upper_patch_name, header->lump_count);
     if (patch_index == -1) {
-      free(patch_name);
+      free(upper_patch_name);
       continue;
     }
     texture_patches[i] = create_patch(f, directory[patch_index].lump_offset,
-                                      patch_name, palette);
+                                      upper_patch_name, palette);
   }
   return texture_patches;
 }

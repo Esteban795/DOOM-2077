@@ -17,4 +17,6 @@ double distance(double posx_a,double posy_a,double posx_b,double posy_b);
 
 void fire_bullet(entity_t** players,int num_players,player* player_,int damage);
 
-int correct_height(linedef wall,int height);
+int correct_height(linedef* wall, int height);
+
+linedef *cast_ray(linedef** linedefs, int len_linedefs,vec2 player_pos, double player_angle,double height);

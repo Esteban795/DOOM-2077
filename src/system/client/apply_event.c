@@ -36,6 +36,7 @@ int apply_event(world_t* world, event_t* event) {
             health_ct* health = (health_ct*) world_get_component(world, &pid, COMPONENT_TAG_HEALTH);
             if (health == NULL) return -1; // If the player does not have health, we cannot apply the event, cancel it.
             health_sub(health, client_player_damage_event->damage);
+            break;
         }
         case CLIENT_PLAYER_HEAL_EVENT_TAG: {
             player_heal_event_t* client_player_heal_event = (player_heal_event_t*)event;

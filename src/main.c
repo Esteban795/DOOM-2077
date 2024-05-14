@@ -66,7 +66,7 @@ int main() {
     e->remote->connected = -1;
     e->remote->player_id = 0;
   }
-  read_map(e, renderer, "E1M2");
+  read_map(e, renderer, "E1M3");
   int dt = 0;
   while (e->running) {
     now = SDL_GetTicks();
@@ -75,7 +75,7 @@ int main() {
     if (res == 1)
       break;
     
-    //printf("FPS: %f\n", 1000.0 / dt);
+    // printf("FPS: %f\n", 1000.0 / dt);
     old = now;
   }
   // Wait 100ms to be sure no other packet is sent during the same server tick.

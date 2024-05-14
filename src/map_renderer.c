@@ -305,15 +305,18 @@ void draw_wall_column(map_renderer *mr, texture_map *texture,
     int texture_column_int = (int)mod(texture_column, (double)texture_width);
     double texture_y =
         texture_alt + ((double)y1 - HALF_HEIGHT) * inverted_scale;
+    u8 r,g,b,a;
+    Uint32 pixel, light_adjusted_pixel;
+    double db_texture_height = texture_height;
+    int texture_y_int;
     for (int y = y1; y < y2; y++) {
-      int texture_y_int = (int)mod(texture_y, (double)texture_height);
-      Uint32 pixel = texture->pixels[texture_y_int * texture_width + texture_column_int];
-      u8 r, g, b, a;
+      texture_y_int = (int)mod(texture_y, db_texture_height);
+      pixel = texture->pixels[texture_y_int * texture_width + texture_column_int];
       SDL_GetRGBA(pixel, texture->format, &r, &g, &b, &a);
       r = r * light_level / 255;
       g = g * light_level / 255;
       b = b * light_level / 255;
-      Uint32 light_adjusted_pixel = SDL_MapRGBA(fmt, r, g, b, a);
+      light_adjusted_pixel = SDL_MapRGBA(fmt, r, g, b, a);
       mr->engine->pixels[y * WIDTH + x] = light_adjusted_pixel;
       texture_y += inverted_scale;
     }
@@ -328,25 +331,28 @@ void draw_flat(map_renderer *mr, flat *texture, i16 light_level, int x, int y1,
     double player_dir_x = cos(deg_to_rad(pos->angle));
     double player_dir_y = -sin(deg_to_rad(
         pos->angle)); // - because the fucking y axis is reversed
+    double z,px,py,left_x,left_y,right_x,right_y,dx,dy;
+    int texture_x,texture_y;
+    Uint32 pixel,light_adjusted_pixel;
+    u8 r,g,b,a;
     for (int iy = y1; iy < y2; iy++) {
-      double z = HALF_WIDTH * world_z / (HALF_HEIGHT - iy);
-      double px = player_dir_x * z + pos->x;
-      double py = player_dir_y * z + pos->y;
-      double left_x = -player_dir_y * z + px;
-      double left_y = player_dir_x * z + py;
-      double right_x = player_dir_y * z + px;
-      double right_y = -player_dir_x * z + py;
-      double dx = (right_x - left_x) / WIDTH;
-      double dy = (right_y - left_y) / WIDTH;
-      int texture_x = (int)(left_x + dx * x) & 63;
-      int texture_y = (int)(left_y + dy * x) & 63;
-      Uint32 pixel = texture->pixels[texture_y * 64 + texture_x];
-      u8 r, g, b, a;
+      z = HALF_WIDTH * world_z / (HALF_HEIGHT - iy);
+      px = player_dir_x * z + pos->x;
+      py = player_dir_y * z + pos->y;
+      left_x = -player_dir_y * z + px;
+      left_y = player_dir_x * z + py;
+      right_x = player_dir_y * z + px;
+      right_y = -player_dir_x * z + py;
+      dx = (right_x - left_x) / WIDTH;
+      dy = (right_y - left_y) / WIDTH;
+      texture_x = (int)(left_x + dx * x) & 63;
+      texture_y = (int)(left_y + dy * x) & 63;
+      pixel = texture->pixels[texture_y * 64 + texture_x];
       SDL_GetRGBA(pixel, texture->format, &r, &g, &b, &a);
       r = r * light_level / 255;
       g = g * light_level / 255;
       b = b * light_level / 255;
-      Uint32 light_adjusted_pixel = SDL_MapRGBA(fmt, r, g, b, a);
+      light_adjusted_pixel = SDL_MapRGBA(fmt, r, g, b, a);
       mr->engine->pixels[iy * WIDTH + x] = light_adjusted_pixel;
     }
   }

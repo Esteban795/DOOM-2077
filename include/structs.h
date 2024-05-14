@@ -84,8 +84,12 @@ struct Engine {
   struct RemoteServer *remote;
   GameState state;
   int DT;
-  entity_t **players;
+  entity_t** players;
+  door** doors;
+  int num_doors;
   AudioMixer *mixer;
+  lift** lifts;
+  int len_lifts;
   world_t *world;
 };
 

@@ -1,6 +1,7 @@
 #include "../include/events.h"
+#include <stdio.h>
 
-uint8_t keys[SDL_NUM_SCANCODES] = {0};
+uint16_t keys[SDL_NUM_SCANCODES] = {0};
 int mouse[NUM_MOUSE_BUTTONS + 2] = {0}; // left, middle, right, mouse_motion_x, mouse_motion_y
 
 void handle_events(engine *e) {
@@ -20,20 +21,25 @@ void handle_events(engine *e) {
         e->running = 0;
       }
       scancode = event.key.keysym.scancode;
-      keys[scancode] = 1;
+      keys[scancode] += e->DT;
       break;
     case SDL_KEYUP:
       scancode = event.key.keysym.scancode;
       keys[scancode] = 0;
       break;
     case SDL_MOUSEBUTTONDOWN:
-      mouse[event.button.button] = 1;
+      mouse[event.button.button - 1] = 1;
       break;
     case SDL_MOUSEBUTTONUP:
-      mouse[event.button.button] = 0;
+      mouse[event.button.button - 1] = 0;
       break;
     default:
       break;
     }
   }
+}
+
+bool is_key_held(SDL_Scancode scancode) {
+  printf("Key %d is held for %d\n", scancode, keys[scancode]);
+  return keys[scancode] > HOLD_DETECTION_DURATION;
 }
