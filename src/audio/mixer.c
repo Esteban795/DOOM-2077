@@ -69,10 +69,3 @@ void audiomixer_kill(AudioMixer *am, int uid) {
     }
   }
 }
-
-double get_audio_gain(double distance) {
-  distance = min(AL_MAX_DISTANCE, max(AL_REFERENCE_DISTANCE, distance));
-  double gain = (1 - AL_ROLLOFF_FACTOR * (distance - AL_REFERENCE_DISTANCE) /
-                         (AL_MAX_DISTANCE - AL_REFERENCE_DISTANCE));
-  return gain;
-}

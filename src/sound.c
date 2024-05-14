@@ -65,3 +65,20 @@ sound* get_sound_by_name(sound* sounds, int sounds_count, char* name) {
   }
   return NULL;
 }
+
+double get_audio_gain(double distance) {
+  distance = min(AL_MAX_DISTANCE, max(AL_REFERENCE_DISTANCE, distance));
+  double gain = (1 - AL_ROLLOFF_FACTOR * (distance - AL_REFERENCE_DISTANCE) /
+                         (AL_MAX_DISTANCE - AL_REFERENCE_DISTANCE));
+  return gain;
+};
+
+sound_entry add_sound_to_play(char* sound,double origin_x,double origin_y,double origin_angle,double px,double py) {
+  sound_entry se;
+  se.sound = sound;
+  se.angle = get_angular_distance(origin_x,origin_y,origin_angle,px,py);
+  se.volume = get_audio_gain(dist((vec2){px,py}, (vec2){origin_x,origin_y}));
+  SOUNDS_TO_PLAY[SOUNDS_INDEX] = se;
+  SOUNDS_INDEX++;
+  return se;
+}

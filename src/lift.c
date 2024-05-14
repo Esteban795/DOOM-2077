@@ -25,12 +25,7 @@ void lift_trigger_switch(vec2 cam_pos,double cam_angle,lift *l) {
   if (l != NULL) {
     if (!l->is_switching && !(l->state != l->init_state)) {
       l->is_switching = true;
-      struct SoundEntry se;
-      se.sound = DOOR_OPEN_SOUND;
-      se.angle = deg_to_rad(get_angular_distance(cam_pos.x, cam_pos.y, cam_angle, l->sector->center_pos.x, l->sector->center_pos.y));;
-      se.volume = get_audio_gain(dist(cam_pos, l->sector->center_pos));
-      SOUNDS_TO_PLAY[SOUNDS_INDEX] = se;
-      SOUNDS_INDEX++;
+      add_sound_to_play(LIFT_START_SOUND, cam_pos.x, cam_pos.y, cam_angle, l->sector->center_pos.x, l->sector->center_pos.y);
     }
     if (l->next_lift != NULL) {
       lift_trigger_switch(cam_pos,cam_angle,l->next_lift);
@@ -48,12 +43,7 @@ void lift_update(lift *l, vec2 player_pos, double player_angle,int DT) {
     if (l->time_elapsed >= l->delay) {
       l->time_elapsed = 0;
       l->is_switching = true;
-      struct SoundEntry se;
-      se.sound = DOOR_OPEN_SOUND;
-      se.angle = deg_to_rad(get_angular_distance(player_pos.x, player_pos.y, player_angle, l->sector->center_pos.x, l->sector->center_pos.y));
-      se.volume = get_audio_gain(dist(player_pos, l->sector->center_pos));
-      SOUNDS_TO_PLAY[SOUNDS_INDEX] = se;
-      SOUNDS_INDEX++;
+      add_sound_to_play(LIFT_STOP_SOUND, player_pos.x, player_pos.y, player_angle,l->sector->center_pos.x, l->sector->center_pos.y);
     }
   }
 

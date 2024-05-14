@@ -3,6 +3,7 @@
 
 #include "byte_reader.h"
 #include "lump.h"
+#include "geometry.h"
 
 #define DOOR_OPEN_SOUND "DSDOROPN"
 #define DOOR_CLOSE_SOUND "DSDORCLS"
@@ -38,4 +39,6 @@ void sounds_free(sound* sounds, int sounds_count);
 sound* get_sounds(FILE* f,lump* directory,int directory_size, int* sounds_count);
 
 sound* get_sound_by_name(sound* sounds, int sounds_count, char* name);
+
+sound_entry add_sound_to_play(char* sound,double origin_x,double origin_y,double origin_angle,double px,double py);
 #endif
