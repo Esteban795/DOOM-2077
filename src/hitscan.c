@@ -24,8 +24,8 @@ void fire_bullet(entity_t** players, int num_players, player *player_,
   weapon_ct *weapon = player_get_weapon(player_);
   
   double distance_finale = 10000;
-  if (weapon->cooldown < 80) {
-    weapon->cooldown += 100;
+  if (weapon_get_active_cooldown(weapon) < 80) {
+    *weapon_get_mut_active_cooldown(weapon) += 100;
     linedef **linedefs = player_->engine->wData->linedefs;
     double x1 = position_get_x(pos);
     double y1 = -position_get_y(pos);
