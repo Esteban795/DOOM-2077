@@ -83,7 +83,7 @@ void draw_solid_walls_range(segment_handler *sh, int x1, int x2) {
     if (draw_ceiling) {
       int cy1 = (int)(sh->upper_clip[i] + 1);
       int cy2 = (int)fmin(draw_wall_y1 - 1, sh->lower_clip[i] - 1);
-      draw_flat(sh->engine->map_renderer, ceiling_texture, light_level, i, cy1,
+      draw_flat(sh->engine, ceiling_texture, light_level, i, cy1,
                 cy2, world_front_z1);
     }
 
@@ -97,7 +97,7 @@ void draw_solid_walls_range(segment_handler *sh, int x1, int x2) {
             center_angle - rad_to_deg(atan((HALF_WIDTH - i) / SCREEN_DISTANCE));
         double texture_column = raw_dist * tan(deg_to_rad(angle)) - rw_offset;
         double inverted_scale = 1.0 / scale1;
-        draw_wall_column(sh->engine->map_renderer, wall_texture, texture_column,
+        draw_wall_column(sh->engine, wall_texture, texture_column,
                          i, wy1, wy2, middle_texture_alt, inverted_scale,
                          light_level);
       }
@@ -106,7 +106,7 @@ void draw_solid_walls_range(segment_handler *sh, int x1, int x2) {
     if (draw_floor) {
       int fy1 = (int)fmax(draw_wall_y2 + 1, sh->upper_clip[i] + 1);
       int fy2 = (int)(sh->lower_clip[i] - 1);
-      draw_flat(sh->engine->map_renderer, floor_texture, light_level, i, fy1,
+      draw_flat(sh->engine, floor_texture, light_level, i, fy1,
                 fy2, world_front_z2);
     }
     wall_y1 += wall_y1_step;
@@ -268,13 +268,13 @@ void draw_portal_walls_range(segment_handler *sh, int x1, int x2) {
       if (draw_ceiling) {
         int cy1 = (int)(sh->upper_clip[i] + 1);
         int cy2 = (int)fmin(draw_wall_y1 - 1, sh->lower_clip[i] - 1);
-        draw_flat(sh->engine->map_renderer, ceiling_texture, light_level, i,
+        draw_flat(sh->engine, ceiling_texture, light_level, i,
                   cy1, cy2, world_front_z1);
       }
 
       int wy1 = (int)fmax(draw_upper_wall_y1, sh->upper_clip[i] + 1);
       int wy2 = (int)fmin(draw_upper_wall_y2, sh->lower_clip[i] - 1);
-      draw_wall_column(sh->engine->map_renderer, upper_wall_texture,
+      draw_wall_column(sh->engine, upper_wall_texture,
                        texture_column, i, wy1, wy2, upper_texture_alt,
                        inverted_scale, light_level);
       if (sh->upper_clip[i] < wy2) {
@@ -286,7 +286,7 @@ void draw_portal_walls_range(segment_handler *sh, int x1, int x2) {
     if (draw_ceiling) {
       int cy1 = (int)(sh->upper_clip[i] + 1);
       int cy2 = (int)fmin(draw_wall_y1 - 1, sh->lower_clip[i] - 1);
-      draw_flat(sh->engine->map_renderer, ceiling_texture, light_level, i, cy1,
+      draw_flat(sh->engine, ceiling_texture, light_level, i, cy1,
                 cy2, world_front_z1);
       if (sh->upper_clip[i] < cy2) {
         sh->upper_clip[i] = cy2;
@@ -297,14 +297,14 @@ void draw_portal_walls_range(segment_handler *sh, int x1, int x2) {
       if (draw_floor) {
         int fy1 = (int)fmax(draw_wall_y2 + 1, sh->upper_clip[i] + 1);
         int fy2 = (int)(sh->lower_clip[i] - 1);
-        draw_flat(sh->engine->map_renderer, floor_texture, light_level, i, fy1,
+        draw_flat(sh->engine, floor_texture, light_level, i, fy1,
                   fy2, world_front_z2);
       }
       int draw_lower_wall_y1 = portal_y2 - 1;
       int draw_lower_wall_y2 = wall_y2;
       int wy1 = (int)fmax(draw_lower_wall_y1, sh->upper_clip[i] + 1);
       int wy2 = (int)fmin(draw_lower_wall_y2, sh->lower_clip[i] - 1);
-      draw_wall_column(sh->engine->map_renderer, lower_wall_texture,
+      draw_wall_column(sh->engine, lower_wall_texture,
                        texture_column, i, wy1, wy2, lower_texture_alt,
                        inverted_scale, light_level);
       if (sh->lower_clip[i] > wy1) {
@@ -316,7 +316,7 @@ void draw_portal_walls_range(segment_handler *sh, int x1, int x2) {
     if (draw_floor) {
       int fy1 = (int)fmax(draw_wall_y2 + 1, sh->upper_clip[i] + 1);
       int fy2 = (int)(sh->lower_clip[i] - 1);
-      draw_flat(sh->engine->map_renderer, floor_texture, light_level, i, fy1,
+      draw_flat(sh->engine, floor_texture, light_level, i, fy1,
                 fy2, world_front_z2);
 
       if (sh->lower_clip[i] > draw_wall_y2)

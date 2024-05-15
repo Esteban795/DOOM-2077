@@ -19,7 +19,6 @@ typedef enum {
 struct Player;
 struct BSP;
 struct Engine;
-struct MapRenderer;
 struct SegmentHandler;
 struct Weapon;
 struct WeaponsArray;
@@ -62,6 +61,7 @@ struct Player {
 };
 
 struct Engine {
+  SDL_Renderer *renderer;
   const char *wadPath;
   bool running;
   wad_data *wData;
@@ -69,7 +69,6 @@ struct Engine {
   SDL_Texture *texture;
   struct Player *p;
   struct BSP *bsp;
-  struct MapRenderer *map_renderer;
   struct SegmentHandler *seg_handler;
   GameState state;
   int DT;
@@ -88,15 +87,6 @@ struct BSP {
   subsector *subsectors;
   segment *segments;
   size_t root_node_id;
-};
-
-struct MapRenderer {
-  struct Engine *engine;
-  SDL_Renderer *renderer;
-  wad_data *wData;
-  vertex *vertexes;
-  linedef *linedefs;
-  bbox map_bounds;
 };
 
 typedef struct Player player;
