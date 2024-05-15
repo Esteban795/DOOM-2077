@@ -40,8 +40,10 @@ int main() {
   SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
   engine *e = init_engine("maps/DOOM1.WAD",renderer);
   read_map(e, renderer, "E1M2");
-  add_weapon(e->p, 1, wa);
-  add_weapon(e->p, 2, wa);
+  for(int i=1; i<WEAPONS_NUMBER; i++){
+      add_weapon(e->p, i, wa);
+  }
+  print_animations_patches(wa->weapons[1]);
   int dt = 0;
   while (e->running) {
     now = SDL_GetTicks();

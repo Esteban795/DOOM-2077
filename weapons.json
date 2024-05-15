@@ -1,5 +1,6 @@
 {
     "weaponCount": 3,
+    "_comment": "Dans fire_frames/fire_layers, si on après l'abbreviation on a un A, alors c'est l'élément 0, un B l'élément 1 etc.",
     "weapons": [
       {
         "id": 0,
@@ -12,7 +13,9 @@
         "spray": 0,
         "ammo_bounce": 0,
         "ammo_id": -1,
-        "type": -1
+        "type": -1,
+        "fire_frames": [],
+        "fire_layers": []
       },
       {
         "id": 1,
@@ -25,7 +28,9 @@
         "spray": 0.5,
         "ammo_bounce": 0,
         "ammo_id": 1,
-        "type": 0
+        "type": 0,
+        "fire_frames": [1],
+        "fire_layers": [0]
       },
       {
         "id": 2,
@@ -38,7 +43,24 @@
         "spray": 0.5,
         "ammo_bounce": 0,
         "ammo_id": 1,
-        "type": 0
+        "type": 0,
+        "fire_frames": [0,1],
+        "fire_layers": [0,1]
+      },
+      {
+        "id": 3,
+        "weapon_name": "Shotgun",
+        "abbreviation": "SHT",
+        "magsize": 8,
+        "max_damage": 30,
+        "min_damage": 20,
+        "fire_rate": 1.5,
+        "spray": 0.5,
+        "ammo_bounce": 0,
+        "ammo_id": 1,
+        "type": 0,
+        "fire_frames": [0,0],
+        "fire_layers": [0,1]
       }
     ]
   }

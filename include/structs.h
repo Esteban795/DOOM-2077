@@ -26,14 +26,17 @@ struct Weapon;
 struct WeaponsArray;
 
 typedef struct AnimationSprite{
-  patch animation_sprite;
-  struct AnimationsArray *layers;
-  bool (*linked_function)(struct Engine *e);
-  int duration;
+  patch animation_sprite; //sprite de l'animation
+  int *layers_index; //tableau des index des layers de l'animation
+  int layer_index_len; //longueur du tableau des layers
+  bool (*linked_function)(struct Engine *e); /*fonction liée à l'animation,
+       par exemple si il faut vérifier que le joueur a encore des munitions avant de charger le super shotgun */
+  int duration; //durée de l'animation
 } animation_sprite;
+
 typedef struct AnimationsArray{
-  animation_sprite *animation_sprites_array;
-  int animation_len;
+  animation_sprite *animation_sprites_array; //tableau de sprites
+  int animation_len; //longueur de l'animation
 } animations_array;
 
 struct Weapon {
