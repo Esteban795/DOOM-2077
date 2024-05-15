@@ -151,6 +151,9 @@ void world_remove_entity_by_id(world_t* world, uint64_t entity_id) {
     vec_remove(&world->entities, ind, false);
     int arch_index = *(int*) vec_get(&world->entity_archetype, ind);
     archetype_t* archetype = (archetype_t*) vec_get(&world->archetypes, arch_index);
+    //printf("DEBUG: world->archetypes len: %d, looking for %d\n", vec_length(&world->archetypes), arch_index);
+    //printf("DEBUG: archetype->tags len: %d\n", vec_length(&archetype->tags));
+    //printf("DEBUG: archetype->entities len: %d\n", vec_length(&archetype->entities));
     archetype_remove_entity(archetype, entity, true);
     vec_remove(&world->entity_archetype, ind, true);
 

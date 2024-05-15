@@ -176,7 +176,8 @@ int run_server(uint16_t port)
 
                         // Add the player to the entity bin
                         if (entity_bin_count < 32) {
-                            entity_bin[entity_bin_count++] = SERVER_STATE->conns[conn_i].player_id;           
+                            entity_bin[entity_bin_count] = SERVER_STATE->conns[conn_i].player_id;           
+                            entity_bin_count++;
                         } else {
                             printf("Entity bin is full! Leaking the entity...\n");
                         }

@@ -3,7 +3,7 @@
 #include "../../include/ecs/component.h"
 #include "../../include/component/weapon.h"
 
-const int COMPONENT_TAG_WEAPON = 5;
+const int COMPONENT_TAG_WEAPON = 3;
 
 component_t* weapon_create(int ammunitions[WEAPONS_NUMBER]) {
     weapon_ct* weapon_component = malloc(sizeof(weapon_ct));
