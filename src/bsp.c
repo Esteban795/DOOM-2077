@@ -84,12 +84,12 @@ static bool check_if_bbox_visible(bbox bb, player *p) {
   }
   vec2 player_pos = p->pos;
   for (size_t i = 0; i < 2 * counter; i += 2) {
-    double angle1 = point_to_angle(player_pos, possibly_visible_bb_sides[i]);
+    double angle1 = point_to_angle(player_pos, possibly_visible_bb_sides[i]); // angle between player and point 1 of face i
     double angle2 =
-        point_to_angle(player_pos, possibly_visible_bb_sides[i + 1]);
+        point_to_angle(player_pos, possibly_visible_bb_sides[i + 1]); // angle between player and point 2 of face i
     double span = norm(angle1 - angle2);
     angle1 += p->angle;
-    double span1 = norm(angle1 + HALF_FOV);
+    double span1 = norm(angle1 + HALF_FOV); // determines if point 1 is in FOV
     if (span1 > FOV) {
       if (span1 + 0.1 >= span + FOV)
         continue;
@@ -110,17 +110,17 @@ bool is_segment_in_fov(player *p, segment seg, int *x1, int *x2,
   double angle1 = point_to_angle(p->pos, v1v); // angle from player to v1
   double angle2 = point_to_angle(p->pos, v2v); // angle from player to v2
   double span = norm(angle1 - angle2);
-  if (span >= 180.0)
+  if (span >= 180.0) // segment is not facing us
     return false;
-  *raw_angle_1 = angle1;
-  angle1 += p->angle;
-  angle2 += p->angle;
+  *raw_angle_1 = angle1; // save the angle for later use when drawing
+  angle1 += p->angle; // total angle from origin to v1, don't forget y-axis is reversed
+  angle2 += p->angle; // total angle from origin to v2,don't forget y-axis is reversed
   double span1 = norm(HALF_FOV + angle1);
   if (span1 > FOV) {
     if (span1 + 0.1 >= span + FOV)
       return false;
     else
-      angle1 = HALF_FOV;
+      angle1 = HALF_FOV; // clipping if part of the segment is outside the FOV
   }
   double span2 = norm(HALF_FOV - angle2);
   if (span2 > FOV) {
@@ -129,22 +129,24 @@ bool is_segment_in_fov(player *p, segment seg, int *x1, int *x2,
     else
       angle2 = -HALF_FOV;
   }
-  *x1 = angle_to_x_pos(angle1);
+  *x1 = angle_to_x_pos(angle1); // get the screen x coordinates for v_start and v_end after projection
   *x2 = angle_to_x_pos(angle2);
   return true;
 }
 
-static bool is_on_back_side(bsp *b, node n) {
+// determines if a player is on the backside of a node
+static bool is_on_back_side(bsp *b, node n) { 
   i16 dx = b->player->pos.x - n.x_partition;
   i16 dy = b->player->pos.y - n.y_partition;
   return dx * n.dy_partition - dy * n.dx_partition <= 0;
 }
 
+// BSP traveral algorithm
 void render_bsp_node(bsp *b, size_t node_id) {
   if (BSP_TRAVERSE) {
     if (node_id >= SUBSECTOR_IDENTIFIER) {
       i16 subsector_id = node_id - SUBSECTOR_IDENTIFIER;
-      subsector ss = b->engine->wData->subsectors[subsector_id];
+      subsector ss = b->subsectors[subsector_id];
       int x1, x2;
       double raw_angle_1;
       for (i16 i = 0; i < ss.num_segs; i++) {
@@ -158,7 +160,7 @@ void render_bsp_node(bsp *b, size_t node_id) {
       bool is_back_side = is_on_back_side(b, n);
       if (is_back_side) {
         render_bsp_node(b, n.back_child_id);
-        if (check_if_bbox_visible(n.front_bbox, b->player)) {
+        if (check_if_bbox_visible(n.front_bbox, b->player)) { // avoid exploring branches where BB is not visible
           render_bsp_node(b, n.front_child_id);
         }
       } else {

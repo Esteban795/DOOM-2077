@@ -7,8 +7,6 @@
 #include "geometry.h"
 #include "sidedef.h"
 
-#define MINIMUM_FLOOR_HEIGHT -512
-
 // By default, P1 / PR and W1 / WR will still be activated in deathmatch 
 // OWC = open wait close
 // OSO = open stay open
@@ -94,8 +92,6 @@ struct Door {
 };
 
 typedef struct Door door;
-
-extern door* COLLISIONNED_DOOR;
 
 void door_timeout(door *d, int DT);
 

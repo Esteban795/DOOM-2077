@@ -1,5 +1,6 @@
 #include "../include//button.h"
 
+// Create a button at x,y, width w, height h, with a callback on_click, tet, font, background color and font color
 button *button_create(int x, int y, int w, int h, void (*on_click)(void *data),
                       bool text_centered, char *text, TTF_Font *font,
                       color bg_c, color font_c) {
@@ -19,6 +20,7 @@ button *button_create(int x, int y, int w, int h, void (*on_click)(void *data),
   b->font_color = font_c;
   return b;
 }
+
 
 button *button_copy(button *b) {
   button *new = malloc(sizeof(button));
