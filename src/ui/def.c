@@ -4,7 +4,8 @@
 #define NMODULES_MENU 4
 #define NMODULES_INGAME 2
 
-UIModule **get_ui_menu(SDL_Renderer *r, int *nuimodules) {
+UIModule **get_ui_menu(SDL_Renderer *r, int *nuimodules)
+{
   *nuimodules = NMODULES_MENU;
   UIModule **modules = malloc(*nuimodules * sizeof(UIModule *));
 
@@ -25,8 +26,7 @@ UIModule **get_ui_menu(SDL_Renderer *r, int *nuimodules) {
   as[1] = 1;
   as[2] = 2;
   UIImage *image =
-      uiimage_create(r, 0, 0, 1, 1, UIAP_TOP_LEFT, as, 3, UIIF_STRETCH,
-                     "assets/giygas_tiled.png", NULL);
+      uiimage_create(r, 0, 0, 1, 1, UIAP_TOP_LEFT, as, 3, UIIF_STRETCH, "assets/giygas_tiled.png", NULL);
 
   uimodule_set_element(modules[0], 0, UIET_Image, image);
 
@@ -47,8 +47,7 @@ UIModule **get_ui_menu(SDL_Renderer *r, int *nuimodules) {
 
   UIAnchorPoint anchor = UIAP_CENTER;
 
-  UIImage *logo = uiimage_create(r, 0.2, 0.15, 0.6, 0.4, UIAP_TOP_LEFT, as, 1,
-                                 UIIF_FIT, "assets/logo.png", &anchor);
+  UIImage *logo = uiimage_create(r, 0.2, 0.15, 0.6, 0.4, UIAP_TOP_LEFT, as, 1, UIIF_FIT, "assets/logo.png", &anchor);
   uimodule_set_element(modules[1], 0, UIET_Image, logo);
 
   // Settings button
@@ -119,7 +118,7 @@ UIModule **get_ui_menu(SDL_Renderer *r, int *nuimodules) {
 
   UILabel *se_title =
       uilabel_create(0, 0, 1, 0.2, UIAP_TOP_LEFT, as, 1, UIAP_CENTER,
-                     "settings", 0xFF, 0xFF, 0xFF, 0xFF, font);
+                      "settings", 0xFF, 0xFF, 0xFF, 0xFF, font);
 
   uimodule_set_element(modules[2], 0, UIET_Label, se_title);
 
@@ -148,7 +147,7 @@ UIModule **get_ui_menu(SDL_Renderer *r, int *nuimodules) {
 
   UILabel *co_back_label =
       uilabel_create(gl_back_x, gl_back_y, gl_back_w, gl_back_h, UIAP_TOP_LEFT,
-                     as, 1, UIAP_CENTER, "back", 0xFF, 0xFF, 0xFF, 0xFF, font);
+                      as, 1, UIAP_CENTER, "back", 0xFF, 0xFF, 0xFF, 0xFF, font);
 
   uimodule_set_element(modules[2], 2, UIET_Label, co_back_label);
 
@@ -166,7 +165,7 @@ UIModule **get_ui_menu(SDL_Renderer *r, int *nuimodules) {
 
   UILabel *co_title =
       uilabel_create(0, 0, 1, 0.2, UIAP_TOP_LEFT, as, 1, UIAP_CENTER,
-                     "connect...", 0xFF, 0xFF, 0xFF, 0xFF, font);
+                      "connect...", 0xFF, 0xFF, 0xFF, 0xFF, font);
 
   uimodule_set_element(modules[3], 0, UIET_Label, co_title);
 
@@ -190,14 +189,15 @@ UIModule **get_ui_menu(SDL_Renderer *r, int *nuimodules) {
 
   UILabel *se_back_label =
       uilabel_create(gl_back_x, gl_back_y, gl_back_w, gl_back_h, UIAP_TOP_LEFT,
-                     as, 1, UIAP_CENTER, "back", 0xFF, 0xFF, 0xFF, 0xFF, font);
+                      as, 1, UIAP_CENTER, "back", 0xFF, 0xFF, 0xFF, 0xFF, font);
 
   uimodule_set_element(modules[3], 2, UIET_Label, se_back_label);
 
   return modules;
 }
 
-UIModule **get_ui_ingame(SDL_Renderer *r, int *nuimodules) {
+UIModule **get_ui_ingame(SDL_Renderer *r, int *nuimodules)
+{
   *nuimodules = NMODULES_INGAME;
   UIModule **modules = malloc(*nuimodules * sizeof(UIModule *));
 
@@ -214,7 +214,7 @@ UIModule **get_ui_ingame(SDL_Renderer *r, int *nuimodules) {
 
   UIImage *crosshair =
       uiimage_create(r, 0.5, 0.5, 0.035, 0.035, UIAP_CENTER, as, 1, UIIF_FIT,
-                     "assets/xhair.png", &anchor);
+                      "assets/xhair.png", &anchor);
 
   uimodule_set_element(modules[0], 0, UIET_Image, crosshair);
 
@@ -231,7 +231,7 @@ UIModule **get_ui_ingame(SDL_Renderer *r, int *nuimodules) {
 
   UILabel *hud_health =
       uilabel_create(0.05, 0.95, 1, 0.1, UIAP_BOTTOM_LEFT, as, 1,
-                     UIAP_BOTTOM_LEFT, "100", 0xFF, 0xFF, 0xFF, 0xFF, font);
+                      UIAP_BOTTOM_LEFT, "100", 0xFF, 0xFF, 0xFF, 0xFF, font);
 
   uimodule_set_element(modules[1], 0, UIET_Label, hud_health);
 
@@ -244,7 +244,7 @@ UIModule **get_ui_ingame(SDL_Renderer *r, int *nuimodules) {
 
   UILabel *hud_ammo_max =
       uilabel_create(0.95, 0.95, 0.1, 0.1, UIAP_BOTTOM_RIGHT, as, 1,
-                     UIAP_BOTTOM_LEFT, "/16", 0xAA, 0xAA, 0xAA, 0xFF, font);
+                      UIAP_BOTTOM_LEFT, "/16", 0xAA, 0xAA, 0xAA, 0xFF, font);
 
   uimodule_set_element(modules[1], 1, UIET_Label, hud_ammo_max);
 
@@ -257,7 +257,7 @@ UIModule **get_ui_ingame(SDL_Renderer *r, int *nuimodules) {
 
   UILabel *hud_ammo_total =
       uilabel_create(0.95, 0.95, 0.1, 0.1, UIAP_BOTTOM_RIGHT, as, 1,
-                     UIAP_TOP_RIGHT, "69", 0xCC, 0xCC, 0xCC, 0xFF, font);
+                      UIAP_TOP_RIGHT, "69", 0xCC, 0xCC, 0xCC, 0xFF, font);
 
   uimodule_set_element(modules[1], 2, UIET_Label, hud_ammo_total);
 
@@ -270,15 +270,17 @@ UIModule **get_ui_ingame(SDL_Renderer *r, int *nuimodules) {
 
   UILabel *hud_ammo =
       uilabel_create(0.85, 0.95, 0.1, 0.1, UIAP_BOTTOM_RIGHT, as, 1,
-                     UIAP_BOTTOM_RIGHT, "14", 0xFF, 0xFF, 0xFF, 0xFF, font);
+                      UIAP_BOTTOM_RIGHT, "14", 0xFF, 0xFF, 0xFF, 0xFF, font);
 
   uimodule_set_element(modules[1], 3, UIET_Label, hud_ammo);
 
   return modules;
 }
 
-void free_ui(UIModule **yay, int nuimodules) {
-  for (int i = 0; i < nuimodules; i++) {
+void free_ui(UIModule **yay, int nuimodules)
+{
+  for (int i = 0; i < nuimodules; i++)
+  {
     uimodule_free(yay[i]);
   }
   free(yay);

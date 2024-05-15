@@ -1,5 +1,4 @@
 #include "../../include/ui/textbox.h"
-#include <SDL2/SDL_keycode.h>
 
 #define MOUSE_X_INDEX (NUM_MOUSE_BUTTONS + 2)
 #define MOUSE_Y_INDEX (NUM_MOUSE_BUTTONS + 3)
@@ -9,7 +8,7 @@ UITextBox *uitextbox_create(float x, float y, float w, float h,
                             UIAnchorPoint anchor, int *as, int nas,
                             TTF_Font *font, UIAnchorPoint text_anchor,
                             int buffer_size, SDL_Color bg, SDL_Color border,
-                            SDL_Color text_color) {
+                            SDL_Color text_color, SDL_Scancode scancode) {
   UITextBox *tb = malloc(sizeof(UITextBox));
 
   tb->common.x = x;
@@ -77,11 +76,14 @@ void uitextbox_update(SDL_Renderer *r, int substate, UITextBox *tb) {
   SDL_RenderDrawRect(r, &destrect);
 
   if (mouse[MOUSE_LEFT]) {
-    printf("%i,%i\n", mouse[MOUSE_X_INDEX], mouse[MOUSE_Y_INDEX]);
     tb->focused = (mouse[MOUSE_X_INDEX] >= destrect.x &&
                    mouse[MOUSE_X_INDEX] <= destrect.x + destrect.y &&
                    mouse[MOUSE_Y_INDEX] >= destrect.y &&
                    mouse[MOUSE_Y_INDEX] <= destrect.y + destrect.h);
+  }
+
+  if (keys[tb->scancode]) {
+    tb->focused = !tb->focused;
   }
 
   if (tb->focused && textinput[0] != '\0') {
