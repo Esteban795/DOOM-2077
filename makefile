@@ -11,7 +11,7 @@ testdepsdir = $(builddir)/test_deps
 AR = ar
 CC = gcc
 CFLAGS = -Wall -Wextra -std=gnu17 -pedantic
-CFLAGS += -fsanitize=address,undefined -fno-omit-frame-pointer
+# CFLAGS += -fsanitize=address,undefined -fno-omit-frame-pointer
 LDFLAGS = -lm 
 CDEBUG = -g -O3 -D 'SERVER_ADDR="127.0.0.1"' -D SERVER_PORT=9999
 # END OF CONFIGURABLE PARAMETERS  #

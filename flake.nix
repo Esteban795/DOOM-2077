@@ -27,6 +27,7 @@
               SDL2
               SDL2_net
               SDL2_ttf
+              SDL2_mixer
               pkg-config
             ];
           };

@@ -41,7 +41,13 @@ int scoreboard_generate(world_t* world, char* entries[10], uint16_t deaths[10], 
 
     // Sort the players by kills.
     for (int i = 0; i < 10; i++) {
+        if (players[i] == NULL) {
+            continue;
+        }
         for (int j = i + 1; j < 10; j++) {
+            if (players[j] == NULL) {
+                continue;
+            }
             statistic_ct* stats_i = (statistic_ct*) world_get_component(world, players[i], COMPONENT_TAG_STATISTIC);
             statistic_ct* stats_j = (statistic_ct*) world_get_component(world, players[j], COMPONENT_TAG_STATISTIC);
             if (stats_i == NULL) {
