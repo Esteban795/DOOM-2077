@@ -9,7 +9,7 @@ UITextBox *uitextbox_create(float x, float y, float w, float h,
                             UIAnchorPoint anchor, int *as, int nas,
                             TTF_Font *font, UIAnchorPoint text_anchor,
                             int buffer_size, SDL_Color bg, SDL_Color border,
-                            SDL_Color text_color, char *placeholder) {
+                            SDL_Color text_color) {
   UITextBox *tb = malloc(sizeof(UITextBox));
 
   tb->common.x = x;
@@ -21,16 +21,12 @@ UITextBox *uitextbox_create(float x, float y, float w, float h,
   tb->common.active_substates = as;
   tb->common.n_active_substates = nas;
 
-  // INFO: why +1 ? to account for null byte.
-  // if you want to limit the textbox to n characters, set the buffer size to
-  // exactly that. the code will take care of it all ^ ^
   tb->buffer_size = buffer_size;
 
   tb->bg_color = bg;
   tb->border_color = border;
   tb->text_color = text_color;
 
-  tb->placeholder = placeholder;
   tb->text_index = 0;
   tb->text = malloc((tb->buffer_size + 1) * sizeof(char));
   tb->text[0] = '\0';

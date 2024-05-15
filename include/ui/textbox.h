@@ -22,7 +22,7 @@ UITextBox *uitextbox_create(float x, float y, float w, float h,
                             UIAnchorPoint anchor, int *as, int nas,
                             TTF_Font *font, UIAnchorPoint text_anchor,
                             int buffer_size, SDL_Color bg, SDL_Color border,
-                            SDL_Color text_color, char *placeholder);
+                            SDL_Color text_color);
 
 void uitextbox_free(UITextBox *tb);
 
