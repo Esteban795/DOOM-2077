@@ -1,9 +1,7 @@
 #include "../../include/ui/def.h"
-#include <SDL2/SDL_error.h>
-#include <SDL2/SDL_pixels.h>
 #include <SDL2/SDL_ttf.h>
 
-#define NMODULES_MENU 2
+#define NMODULES_MENU 4
 #define NMODULES_INGAME 0
 
 UIModule **get_ui_menu(SDL_Renderer *r, int *nuimodules) {
@@ -17,6 +15,8 @@ UIModule **get_ui_menu(SDL_Renderer *r, int *nuimodules) {
 
   // INFO: Module 0: Background
   // available for all substates
+
+  // Background
 
   modules[0] = uimodule_create(0, 1);
 
@@ -33,25 +33,166 @@ UIModule **get_ui_menu(SDL_Renderer *r, int *nuimodules) {
   // INFO: Module 1: Main menu
   // available for substate 0: menu
 
-  modules[1] = uimodule_create(1, 3);
+  modules[1] = uimodule_create(1, 5);
+
+  float mm_settings_x = 0.3;
+  float mm_settings_y = 0.8;
+  float mm_settings_w = 0.4;
+  float mm_settings_h = 0.09;
+
+  // Logo
 
   as = malloc(1 * sizeof(int));
   as[0] = 0;
+
+  UIAnchorPoint anchor = UIAP_CENTER;
 
   UIImage *logo = uiimage_create(r, 0.2, 0.15, 0.6, 0.4, UIAP_TOP_LEFT, as, 1,
-                                 UIIF_FIT, "assets/testimage.jpg", NULL);
+                                 UIIF_FIT, "assets/logo.png", &anchor);
   uimodule_set_element(modules[1], 0, UIET_Image, logo);
+
+  // Settings button
 
   as = malloc(1 * sizeof(int));
   as[0] = 0;
 
-  SDL_Color settings_button_bg = {.r = 0x10, .g = 0x10, .b = 0x10, .a = 0xFF};
-  SDL_Color settings_button_bo = {.r = 0x30, .g = 0x30, .b = 0x30, .a = 0xFF};
-  UIButton *settings_button = uibutton_create(
-      0.3, 0.7, 0.4, 0.1, UIAP_TOP_LEFT, as, 1, settings_button_bg,
-      settings_button_bo, settings_button_bg, settings_button_bo,
-      UIEC_SetSubstate1);
-  uimodule_set_element(modules[1], 1, UIET_Button, settings_button);
+  SDL_Color mm_settings_button_bg = {
+      .r = 0x10, .g = 0x10, .b = 0x10, .a = 0xFF};
+  SDL_Color mm_settings_button_bo = {
+      .r = 0x30, .g = 0x30, .b = 0x30, .a = 0xFF};
+  UIButton *mm_settings_button = uibutton_create(
+      mm_settings_x, mm_settings_y, mm_settings_w, mm_settings_h, UIAP_TOP_LEFT,
+      as, 1, mm_settings_button_bg, mm_settings_button_bo,
+      mm_settings_button_bg, mm_settings_button_bo, UIEC_SetSubstate1);
+  uimodule_set_element(modules[1], 1, UIET_Button, mm_settings_button);
+
+  // Settings label
+
+  as = malloc(1 * sizeof(int));
+  as[0] = 0;
+
+  TTF_Font *font = TTF_OpenFont("fonts/jersey25.ttf", 25);
+
+  UILabel *mm_settings_label = uilabel_create(
+      mm_settings_x, mm_settings_y, mm_settings_w, mm_settings_h, UIAP_TOP_LEFT,
+      as, 1, UIAP_CENTER, "settings", 0xFF, 0xFF, 0xFF, 0xFF, font);
+
+  uimodule_set_element(modules[1], 2, UIET_Label, mm_settings_label);
+
+  // Connect button
+
+  as = malloc(1 * sizeof(int));
+  as[0] = 0;
+
+  float mm_connect_y = 0.7;
+
+  UIButton *mm_connect_button = uibutton_create(
+      mm_settings_x, mm_connect_y, mm_settings_w, mm_settings_h, UIAP_TOP_LEFT,
+      as, 1, mm_settings_button_bg, mm_settings_button_bo,
+      mm_settings_button_bg, mm_settings_button_bo, UIEC_SetSubstate2);
+  uimodule_set_element(modules[1], 3, UIET_Button, mm_connect_button);
+
+  // Connect label
+
+  as = malloc(1 * sizeof(int));
+  as[0] = 0;
+
+  font = TTF_OpenFont("fonts/jersey25.ttf", 25);
+
+  UILabel *mm_connect_label = uilabel_create(
+      mm_settings_x, mm_connect_y, mm_settings_w, mm_settings_h, UIAP_TOP_LEFT,
+      as, 1, UIAP_CENTER, "connect", 0xFF, 0xFF, 0xFF, 0xFF, font);
+
+  uimodule_set_element(modules[1], 4, UIET_Label, mm_connect_label);
+
+  // INFO: Module 2: Settings
+  // substate 1
+
+  modules[2] = uimodule_create(2, 3);
+
+  // title
+
+  as = malloc(1 * sizeof(int));
+  as[0] = 1;
+
+  font = TTF_OpenFont("fonts/jersey25.ttf", 100);
+
+  UILabel *se_title =
+      uilabel_create(0, 0, 1, 0.2, UIAP_TOP_LEFT, as, 1, UIAP_CENTER,
+                     "settings", 0xFF, 0xFF, 0xFF, 0xFF, font);
+
+  uimodule_set_element(modules[2], 0, UIET_Label, se_title);
+
+  // back button
+
+  as = malloc(1 * sizeof(int));
+  as[0] = 1;
+
+  float gl_back_x = 0.4;
+  float gl_back_y = 0.9;
+  float gl_back_w = 0.2;
+  float gl_back_h = 0.08;
+
+  UIButton *co_back_button = uibutton_create(
+      gl_back_x, gl_back_y, gl_back_w, gl_back_h, UIAP_TOP_LEFT, as, 1,
+      mm_settings_button_bg, mm_settings_button_bo, mm_settings_button_bg,
+      mm_settings_button_bo, UIEC_SetSubstate0);
+  uimodule_set_element(modules[2], 1, UIET_Button, co_back_button);
+
+  // back label
+
+  as = malloc(1 * sizeof(int));
+  as[0] = 1;
+
+  font = TTF_OpenFont("fonts/jersey25.ttf", 25);
+
+  UILabel *co_back_label =
+      uilabel_create(gl_back_x, gl_back_y, gl_back_w, gl_back_h, UIAP_TOP_LEFT,
+                     as, 1, UIAP_CENTER, "back", 0xFF, 0xFF, 0xFF, 0xFF, font);
+
+  uimodule_set_element(modules[2], 2, UIET_Label, co_back_label);
+
+  // INFO: Module 3: Connecting
+  // substate 2
+
+  modules[3] = uimodule_create(3, 3);
+
+  // title
+
+  as = malloc(1 * sizeof(int));
+  as[0] = 2;
+
+  font = TTF_OpenFont("fonts/jersey25.ttf", 100);
+
+  UILabel *co_title =
+      uilabel_create(0, 0, 1, 0.2, UIAP_TOP_LEFT, as, 1, UIAP_CENTER,
+                     "connect...", 0xFF, 0xFF, 0xFF, 0xFF, font);
+
+  uimodule_set_element(modules[3], 0, UIET_Label, co_title);
+
+  // back button
+
+  as = malloc(1 * sizeof(int));
+  as[0] = 2;
+
+  UIButton *se_back_button = uibutton_create(
+      gl_back_x, gl_back_y, gl_back_w, gl_back_h, UIAP_TOP_LEFT, as, 1,
+      mm_settings_button_bg, mm_settings_button_bo, mm_settings_button_bg,
+      mm_settings_button_bo, UIEC_SetSubstate0);
+  uimodule_set_element(modules[3], 1, UIET_Button, se_back_button);
+
+  // back label
+
+  as = malloc(1 * sizeof(int));
+  as[0] = 2;
+
+  font = TTF_OpenFont("fonts/jersey25.ttf", 25);
+
+  UILabel *se_back_label =
+      uilabel_create(gl_back_x, gl_back_y, gl_back_w, gl_back_h, UIAP_TOP_LEFT,
+                     as, 1, UIAP_CENTER, "back", 0xFF, 0xFF, 0xFF, 0xFF, font);
+
+  uimodule_set_element(modules[3], 2, UIET_Label, se_back_label);
 
   return modules;
 }

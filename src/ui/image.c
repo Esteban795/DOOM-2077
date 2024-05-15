@@ -38,6 +38,7 @@ void uiimage_free(UIImage *uiimage) {
   if (uiimage->common.active_substates) {
     free(uiimage->common.active_substates);
   }
+
   free(uiimage);
 }
 
