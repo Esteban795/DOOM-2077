@@ -196,6 +196,7 @@ void draw_fov(map_renderer *mr) {
   SDL_RenderDrawLine(mr->renderer, x, y, x3, y3);
 }
 
+/*
 void draw_block(map_renderer *mr, int block_index) {
   // routine that just draws the box of the block
   SDL_SetRenderDrawColor(mr->renderer, 255, 255, 255, 255);
@@ -242,7 +243,7 @@ void draw(map_renderer *mr) {
   draw_active_blocks(mr);
   draw_player(mr);
   draw_fov(mr);
-}
+}*/
 
 map_renderer *map_renderer_init(engine *e, SDL_Renderer *renderer) {
   fmt = SDL_AllocFormat(SDL_PIXELFORMAT_RGBA8888);
@@ -252,7 +253,7 @@ map_renderer *map_renderer_init(engine *e, SDL_Renderer *renderer) {
   int *bounds = get_map_bounds(mr->wData->vertexes, mr->wData->len_vertexes);
   mr->vertexes =
       remap_vertexes(mr->wData->vertexes, mr->wData->len_vertexes, bounds);
-  mr->linedefs = mr->wData->linedefs;
+  //mr->linedefs = mr->wData->linedefs;
   mr->map_bounds = (bbox){.top = bounds[2],
                           .bottom = bounds[3],
                           .left = bounds[0],
