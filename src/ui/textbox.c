@@ -35,6 +35,8 @@ UITextBox *uitextbox_create(float x, float y, float w, float h,
 
   tb->focused = false;
 
+  tb->scancode = scancode;
+
   return tb;
 }
 
