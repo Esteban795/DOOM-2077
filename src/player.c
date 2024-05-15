@@ -27,13 +27,11 @@ player *player_init(engine *e) {
   p->keybinds = get_player_keybinds(KEYBINDS_FILE);
   p->settings = get_player_settings(SETTINGS_FILE);
   p->ammo = ammo;
-  p->t_last_shot = 0;
+  p->t_last_shot = 10;
   p->life=PLAYER_LIFE;
   p->active_weapon = 0;
   p->cooldown = 750; //nombre d'unités de temps nécéssaires avant de tirer , 0 indique qu'on peut tirer
   p->spray=0;
-  p->wanim_speed.x = 0;
-  p->wanim_speed.y = 0;
   return p;
 }
 

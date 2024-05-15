@@ -7,30 +7,33 @@
 #define ANIMATION_WIDTH 100
 #define ANIMATION_HEIGTH 50
 
-void init_animation_sprite(animation_sprite *as, patch sprite, bool (*linked_function)(engine e)){
+void set_origin(animation_sprite *as){
+    patch sprite = as->animation_sprite;
+    as->wanim_origin.x = -sprite.header.x_offset * X_SCALE;
+    as->wanim_origin.y = -sprite.header.y_offset * Y_SCALE;
+    as->wanim_pos.x = as->wanim_origin.x;
+    as->wanim_pos.y = as->wanim_origin.y;
+    as->wanim_speed.x = 0;
+    as->wanim_speed.y = 0;
+}
+
+void init_animation_sprite(animation_sprite *as, patch sprite, bool (*linked_function)(engine *e)){
     as->animation_sprite = sprite;
     as->linked_function = linked_function;
+    set_origin(as);
     as->layer_index_len = 0;
     as -> layers_index = NULL;
-    char* to_cmp = malloc(10*sizeof(char));
-    strcpy(to_cmp,sprite.patchname);
-    to_cmp[3]='\0';
-    if(strcmp(to_cmp,"PUN") == 0){
-            as->layers_index = NULL;
-            as->layer_index_len = 0;
-    }
     if (strcmp(sprite.patchname, "PUNGB0") == 0){
-        as->duration = 50;
+        as->duration = 500;
     }
     if(strcmp(sprite.patchname, "PUNGC0") == 0){
-        as->duration = 50;
+        as->duration = 50000;
     }
     if(strcmp(sprite.patchname, "PUNGD0") == 0){
         as->duration = 15000;
     } else {
-        as->duration = 50;
+        as->duration = 500;
     }
-    free(to_cmp);
 }
 
 animations_array *init_animations_array(map_renderer *mr,char *abbreviation, json_t *fire_frames, json_t *fire_layers){
@@ -214,7 +217,7 @@ weapons_array* init_weapons_array(map_renderer *mr){
         json_t *fire_layers = json_object_get(weapon_data, "fire_layers");
 
         //printf("id: %d, weapon_name: %s, abbreviation: %s, magsize: %d, max_damage: %d, min_damage: %d, fire_rate: %lf, spray: %lf, ammo_bounce: %d, ammo_id: %d, type: %d\n",id,weapon_name,abbreviation,magsize,max_damage,min_damage,fire_rate,spray,ammo_bounce,ammo_id,type);
-        weapon *new_weapon = init_one_weapon(mr, id, weapon_name, abbreviation, fire_frames, fire_layers, 
+        weapon *new_weapon = init_one_weapon(mr, id, (char *)weapon_name, (char *) abbreviation, fire_frames, fire_layers, 
                     magsize, max_damage, min_damage, fire_rate, spray, ammo_bounce, ammo_id, type);
         winv[i] = new_weapon;
     }
@@ -227,8 +230,6 @@ weapons_array* init_weapons_array(map_renderer *mr){
 
 //Affiche le sprite a la bonne taille a l'endroit donné
 void draw_weapon(map_renderer *mr, patch sprite, int x, int y) {
-    
-    set_origin(mr->engine->p,sprite);
     SDL_Rect dest_rect;
     dest_rect.x = x;
     dest_rect.y = y;
@@ -237,6 +238,106 @@ void draw_weapon(map_renderer *mr, patch sprite, int x, int y) {
     dest_rect.h = sprite.header.height * Y_SCALE;
 
     SDL_RenderCopy(mr->renderer, sprite.tex, NULL, &dest_rect);
+}
+
+void idle_weapon_animation(map_renderer *mr,weapon *w, bool is_moving){
+    animation_sprite idle_anim_sprite = w->sprites->animation_sprites_array[0];
+    
+    if(is_moving){
+        if(idle_anim_sprite.wanim_speed.x == 0){
+            idle_anim_sprite.wanim_speed.x = -2;
+        }
+        if(idle_anim_sprite.wanim_speed.y == 0){
+            idle_anim_sprite.wanim_speed.y = -2;
+        }
+    } else {
+        idle_anim_sprite.wanim_speed.x = 0;
+        idle_anim_sprite.wanim_speed.y = 0;
+        idle_anim_sprite.wanim_pos.x = idle_anim_sprite.wanim_origin.x;
+        idle_anim_sprite.wanim_pos.y = idle_anim_sprite.wanim_origin.y;
+    }
+
+    int origin_x = idle_anim_sprite.wanim_origin.x;
+    int origin_y = idle_anim_sprite.wanim_origin.y;
+    int init_x = idle_anim_sprite.wanim_pos.x;
+    int init_y = idle_anim_sprite.wanim_pos.y;
+    int dx = idle_anim_sprite.wanim_speed.x;
+    int dy = idle_anim_sprite.wanim_speed.y;
+
+    if(init_x + dx > origin_x + ANIMATION_WIDTH/2 || init_x + dx < origin_x - ANIMATION_WIDTH/2){
+        dx = -dx;
+        idle_anim_sprite.wanim_speed.x = dx;
+    }
+
+    if(init_y + dy > origin_y + ANIMATION_HEIGTH/2 || init_y + dy < origin_y - ANIMATION_HEIGTH/2){
+        dy = -dy;
+        idle_anim_sprite.wanim_speed.y = dy;
+    }
+    idle_anim_sprite.wanim_pos.x += dx;
+    idle_anim_sprite.wanim_pos.y += dy;
+
+    draw_weapon(mr,idle_anim_sprite.animation_sprite,idle_anim_sprite.wanim_pos.x,idle_anim_sprite.wanim_pos.y);
+
+}
+
+void fire_weapon_animation(map_renderer *mr,weapon *w){
+    player *p = mr->engine->p;
+    animations_array *aa = w->sprites;
+    animation_sprite *fire_anim = aa[ANIMATION].animation_sprites_array; //Tableau de toutes les animations de l'arme
+    animations_array *fire_layer = NULL; //Layer a ajouter
+    if (w->id!=0){ // Si c'est pas les poings
+        fire_layer = &aa[FIRE]; // On récupère la couche qui se rajoute sur l'animation
+        printf("fire_layer len: %d\n", fire_layer->animation_len);
+    }
+    int x;
+    int y;
+
+
+    int animation_len = aa[ANIMATION].animation_len; //Nombre d'animations de l'arme
+    int time_elapsed = time_elapsed_in_game - p->t_last_shot; //Temps écoulé depuis le début de l'animation
+    int total_duration = 0; //Durée totale de l'animation
+    //Calcul de la durée totale de l'animation
+    for (int i = 0; i < animation_len; i++) {
+        total_duration += fire_anim[i].duration;
+    }
+
+    printf("time_elapsed: %d\n", time_elapsed);
+    printf("total_duration: %d\n", total_duration);
+    
+    if(time_elapsed < fire_anim[0].duration){
+        x = fire_anim[0].wanim_origin.x;
+        y = fire_anim[0].wanim_origin.y;
+        draw_weapon(mr,fire_anim[0].animation_sprite,x,y);
+    } else {
+        int i = 1;
+        int accumulated_duration = fire_anim[0].duration;
+        while (time_elapsed > accumulated_duration && i < animation_len && time_elapsed <= total_duration) {
+            accumulated_duration += fire_anim[i].duration;
+            i++;
+        }
+        // if (i>= animation_len){
+        //     printf("i avant : %d\n", i);
+        //     i = 2 * animation_len -i - 1;
+        //     printf("i après : %d\n", i);
+        // }
+        printf("Sprite affiché : %s\n",fire_anim[i-1].animation_sprite.patchname);
+        x = fire_anim[i - 1].wanim_origin.x;
+        y = fire_anim[i - 1].wanim_origin.y;
+        draw_weapon(mr,fire_anim[i-1].animation_sprite,x,y);
+        if(fire_layer != NULL){
+            int *layers_index = fire_anim[i - 1].layers_index;
+            int layer_index_len = fire_anim[i - 1].layer_index_len;
+            int layer_accumulated_duration = 0;
+            for (int j = 0; j < layer_index_len; j++) {
+                if (time_elapsed > layer_accumulated_duration) {
+                    x = fire_anim[i - 1].wanim_origin.x;
+                    y = fire_anim[i - 1].wanim_origin.y;
+                    draw_weapon(mr, fire_layer->animation_sprites_array[layers_index[j]].animation_sprite, x, y);
+                }
+                layer_accumulated_duration += fire_layer->animation_sprites_array[layers_index[j]].duration;
+            }
+        }
+    }
 }
 
 void update_animation(map_renderer *mr){
@@ -250,8 +351,9 @@ void update_animation(map_renderer *mr){
     bool attack = keys[get_key_from_action(kb, "ATTACK")];
 
     bool move = forward || left || backward || right_d;
-    if(attack || (time_elapsed_in_game - p->t_last_shot <= p->cooldown && time_elapsed_in_game > p->cooldown)){
-        if(time_elapsed_in_game - p->t_last_shot > p->cooldown){
+    uint64_t casted_cooldown = (uint64_t) p->cooldown;
+    if(attack || (time_elapsed_in_game - p->t_last_shot <= casted_cooldown && time_elapsed_in_game > casted_cooldown)){
+        if(time_elapsed_in_game - p->t_last_shot > casted_cooldown){
             p->t_last_shot = time_elapsed_in_game;
         }
         fire_weapon_animation(mr,w);
@@ -260,101 +362,9 @@ void update_animation(map_renderer *mr){
     }  
 }
 
-void idle_weapon_animation(map_renderer *mr,weapon *w, bool is_moving){
-    patch idle_sprite = w->sprites->animation_sprites_array[0].animation_sprite;
-    player *p = mr->engine->p;
-    
-    set_origin(p,idle_sprite);
-    
-    if(is_moving){
-        if(p->wanim_speed.x == 0){
-            p->wanim_speed.x = -2;
-        }
-        if(p->wanim_speed.y == 0){
-            p->wanim_speed.y = -2;
-        }
-    } else {
-        p->wanim_speed.x = 0;
-        p->wanim_speed.y = 0;
-        p->wanim_pos.x = p->wanim_origin.x;
-        p->wanim_pos.y = p->wanim_origin.y;
-    }
-
-    int origin_x = p->wanim_origin.x;
-    int origin_y = p->wanim_origin.y;
-    int init_x = p->wanim_pos.x;
-    int init_y = p->wanim_pos.y;
-    int dx = p->wanim_speed.x;
-    int dy = p->wanim_speed.y;
-
-    if(init_x + dx > origin_x + ANIMATION_WIDTH/2 || init_x + dx < origin_x - ANIMATION_WIDTH/2){
-        dx = -dx;
-        p->wanim_speed.x = dx;
-    }
-
-    if(init_y + dy > origin_y + ANIMATION_HEIGTH/2 || init_y + dy < origin_y - ANIMATION_HEIGTH/2){
-        dy = -dy;
-        p->wanim_speed.y = dy;
-    }
-    p->wanim_pos.x += dx;
-    p->wanim_pos.y += dy;
-
-    draw_weapon(mr,idle_sprite,p->wanim_pos.x,p->wanim_pos.y);
-
-}
-
-void fire_weapon_animation(map_renderer *mr,weapon *w){
-    player *p = mr->engine->p;
-    animations_array *aa = w->sprites;
-    animation_sprite *fire_anim = aa[ANIMATION].animation_sprites_array; //Tableau de toutes les animations de l'arme
-    animations_array *fire_layer = NULL; //Layer a ajouter
-    if (w->id!=0){ // Si c'est pas les poings
-        fire_layer = &aa[FIRE]; // On récupère la couche qui se rajoute sur l'animation
-        printf("fire_layer len: %d\n", fire_layer->animation_len);
-    }
-    
-    int animation_len = aa[ANIMATION].animation_len; //Nombre d'animations de l'arme
-    int time_elapsed = time_elapsed_in_game - p->t_last_shot; //Temps écoulé depuis le début de l'animation
-    int total_duration = 0; //Durée totale de l'animation
-    //Calcul de la durée totale de l'animation
-    for (int i = 0; i < animation_len; i++) {
-        total_duration += fire_anim[i].duration;
-    }
-    int x = p->wanim_origin.x;
-    int y = p->wanim_origin.y;
-    if(time_elapsed < fire_anim[0].duration){
-        draw_weapon(mr,fire_anim[0].animation_sprite,x,y);
-    } else {
-        int i = 1;
-        int accumulated_duration = fire_anim[0].duration;
-        while (time_elapsed > accumulated_duration && i < animation_len && time_elapsed <= total_duration) {
-            accumulated_duration += fire_anim[i].duration;
-            i++;
-        }
-        if (i>= animation_len){
-            printf("i avant : %d\n", i);
-            i = 2 * animation_len -i - 1;
-            printf("i après : %d\n", i);
-        }
-        printf("Sprite affiché : %s\n",fire_anim[i-1].animation_sprite.patchname);
-        draw_weapon(mr,fire_anim[i-1].animation_sprite,x,y);
-        if(fire_layer != NULL){
-            int *layers_index = fire_anim[i - 1].layers_index;
-            int layer_index_len = fire_anim[i - 1].layer_index_len;
-            int layer_accumulated_duration = 0;
-            for (int j = 0; j < layer_index_len; j++) {
-                if (time_elapsed > layer_accumulated_duration) {
-                    draw_weapon(mr, fire_layer->animation_sprites_array[layers_index[j]].animation_sprite, x, y);
-                }
-                layer_accumulated_duration += fire_layer->animation_sprites_array[layers_index[j]].duration;
-            }
-        }
-    }
-}
-
 void update_weapons(map_renderer *mr){
     player *p = mr->engine->p;
-    weapon *w = wa->weapons[p->active_weapon];
+    //weapon *w = wa->weapons[p->active_weapon];
     player_keybind *kb = p->keybinds;
     bool fists = keys[get_key_from_action(kb, "FISTS")], pistol = keys[get_key_from_action(kb, "PISTOL")], chaingun = keys[get_key_from_action(kb, "CHAINGUN")], shotgun = keys[get_key_from_action(kb, "SHOTGUN")];
     //, rocket = keys[get_key_from_action(kb, "ROCKET")], plasma = keys[get_key_from_action(kb, "PLASMA")], bfg = keys[get_key_from_action(kb, "BFG")];
@@ -412,16 +422,10 @@ void free_weapons_array(weapons_array* wa){
     free(wa);
 }
 
-void set_origin(player *p, patch sprite){
-    p->wanim_origin.x = -sprite.header.x_offset * X_SCALE;
-    p->wanim_origin.y = -sprite.header.y_offset * Y_SCALE;
-}
+
 
 void switch_weapon(player* p, int weapon_id){
     p->active_weapon = weapon_id;
-    set_origin(p,wa->weapons[p->active_weapon]->sprites[0].animation_sprites_array[0].animation_sprite);
-    p->wanim_pos.x = p->wanim_origin.x;
-    p->wanim_pos.y = p->wanim_origin.y;
 }
 
 void add_weapon(player* p, int weapon_id,weapons_array* wa){

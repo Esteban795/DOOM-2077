@@ -27,6 +27,9 @@ struct WeaponsArray;
 
 typedef struct AnimationSprite{
   patch animation_sprite; //sprite de l'animation
+  vec2 wanim_origin; //origine de l'animation
+  vec2 wanim_pos;
+  vec2 wanim_speed;
   int *layers_index; //tableau des index des layers de l'animation
   int layer_index_len; //longueur du tableau des layers
   bool (*linked_function)(struct Engine *e); /*fonction liée à l'animation,
@@ -78,9 +81,6 @@ struct Player {
   int t_last_shot; 
   int active_weapon;
   /*Animation de l'arme*/
-  vec2 wanim_origin;
-  vec2 wanim_pos;
-  vec2 wanim_speed;
   int life;
   int cooldown; //nombre d'unités de temps nécéssaires avant de tirer , 0 indique qu'on peut tirer
   int spray; //nombre d'unités de temps nécéssaires avant de ne plus avoir de spray, 0 indique que le tir sera parfaitement droit
