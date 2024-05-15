@@ -13,7 +13,7 @@ void flats_free(flat *flats, int len_flats) {
 
 flat read_flat(FILE *f, color *palette, char *name, int offset) {
   flat fl;
-  fl.width = 64;
+  fl.width = 64; // hardcoded
   fl.height = 64;
   fl.name = name;
   fl.format = SDL_AllocFormat(SDL_PIXELFORMAT_RGBA8888);

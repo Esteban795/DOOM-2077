@@ -1,5 +1,4 @@
 #include "../include/events.h"
-#include <stdio.h>
 
 uint16_t keys[SDL_NUM_SCANCODES] = {0};
 int mouse[NUM_MOUSE_BUTTONS + 2] = {0}; // left, middle, right, mouse_motion_x, mouse_motion_y
@@ -21,7 +20,7 @@ void handle_events(engine *e) {
         e->running = 0;
       }
       scancode = event.key.keysym.scancode;
-      keys[scancode] += e->DT;
+      keys[scancode] += e->DT; // allows for keyholding detection
       break;
     case SDL_KEYUP:
       scancode = event.key.keysym.scancode;
@@ -40,6 +39,5 @@ void handle_events(engine *e) {
 }
 
 bool is_key_held(SDL_Scancode scancode) {
-  printf("Key %d is held for %d\n", scancode, keys[scancode]);
   return keys[scancode] > HOLD_DETECTION_DURATION;
 }

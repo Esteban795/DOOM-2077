@@ -4,6 +4,8 @@
 #include "byte_reader.h"
 #include <stdio.h>
 
+// https://doom.fandom.com/wiki/WAD
+
 struct Header {
   char *wad_type;
   i32 lump_count;

@@ -12,7 +12,7 @@ engine *init_engine(const char *wadPath, SDL_Renderer *renderer) {
   game_states_init[e->state](e);
   e->DT = 0;
   e->texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
-                                 SDL_TEXTUREACCESS_STREAMING, WIDTH, HEIGHT);
+                                 SDL_TEXTUREACCESS_STREAMING, WIDTH, HEIGHT); // texture we will be rendering to
   e->wData = init_wad_data(wadPath);
   e->mixer = NULL;
   e->mixer = audiomixer_init();
@@ -45,8 +45,8 @@ int update_engine(engine *e, int dt) {
   e->DT = dt;
   SDL_SetRenderDrawColor(e->map_renderer->renderer, 0, 0, 0, 255);
   SDL_RenderClear(e->map_renderer->renderer);
-  memset(e->pixels, 0, WIDTH * HEIGHT * sizeof(Uint32));
-  handle_events(e);
+  memset(e->pixels, 0, WIDTH * HEIGHT * sizeof(Uint32)); // resets the screen
+  handle_events(e); // process key presses and mouse movements
   game_states_update[e->state](e);
   audiomixer_update(e->mixer, dt);
   // draw_crosshair(e->map_renderer,get_color(50,0),20);

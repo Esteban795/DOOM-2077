@@ -419,8 +419,8 @@ void update_player(player *p) {
 }
 
 void player_free(player *p) {
-  free_keybinds(p->keybinds);
-  free_settings(p->settings);
+  keybinds_free(p->keybinds);
+  settings_free(p->settings);
   free(p->ammo);
   free(p);
 }
