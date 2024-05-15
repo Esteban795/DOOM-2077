@@ -2,7 +2,7 @@
 #include <SDL2/SDL_ttf.h>
 
 #define NMODULES_MENU 4
-#define NMODULES_INGAME 0
+#define NMODULES_INGAME 2
 
 UIModule **get_ui_menu(SDL_Renderer *r, int *nuimodules) {
   *nuimodules = NMODULES_MENU;
@@ -200,6 +200,79 @@ UIModule **get_ui_menu(SDL_Renderer *r, int *nuimodules) {
 UIModule **get_ui_ingame(SDL_Renderer *r, int *nuimodules) {
   *nuimodules = NMODULES_INGAME;
   UIModule **modules = malloc(*nuimodules * sizeof(UIModule *));
+
+  // INFO: Module 0: crosshair
+
+  modules[0] = uimodule_create(0, 1);
+
+  // crosshair
+
+  int *as = malloc(1 * sizeof(int));
+  as[0] = 0;
+
+  UIAnchorPoint anchor = UIAP_CENTER;
+
+  UIImage *crosshair =
+      uiimage_create(r, 0.5, 0.5, 0.035, 0.035, UIAP_CENTER, as, 1, UIIF_FIT,
+                     "assets/xhair.png", &anchor);
+
+  uimodule_set_element(modules[0], 0, UIET_Image, crosshair);
+
+  // INFO: Module 1 : HUD
+
+  modules[1] = uimodule_create(1, 4);
+
+  // health
+
+  as = malloc(1 * sizeof(int));
+  as[0] = 0;
+
+  TTF_Font *font = TTF_OpenFont("fonts/jersey25.ttf", 60);
+
+  UILabel *hud_health =
+      uilabel_create(0.05, 0.95, 1, 0.1, UIAP_BOTTOM_LEFT, as, 1,
+                     UIAP_BOTTOM_LEFT, "100", 0xFF, 0xFF, 0xFF, 0xFF, font);
+
+  uimodule_set_element(modules[1], 0, UIET_Label, hud_health);
+
+  // ammo (max)
+
+  as = malloc(1 * sizeof(int));
+  as[0] = 0;
+
+  font = TTF_OpenFont("fonts/jersey25.ttf", 30);
+
+  UILabel *hud_ammo_max =
+      uilabel_create(0.95, 0.95, 0.1, 0.1, UIAP_BOTTOM_RIGHT, as, 1,
+                     UIAP_BOTTOM_LEFT, "/16", 0xAA, 0xAA, 0xAA, 0xFF, font);
+
+  uimodule_set_element(modules[1], 1, UIET_Label, hud_ammo_max);
+
+  // ammo (total)
+
+  as = malloc(1 * sizeof(int));
+  as[0] = 0;
+
+  font = TTF_OpenFont("fonts/jersey25.ttf", 40);
+
+  UILabel *hud_ammo_total =
+      uilabel_create(0.95, 0.95, 0.1, 0.1, UIAP_BOTTOM_RIGHT, as, 1,
+                     UIAP_TOP_RIGHT, "69", 0xCC, 0xCC, 0xCC, 0xFF, font);
+
+  uimodule_set_element(modules[1], 2, UIET_Label, hud_ammo_total);
+
+  // ammo
+
+  as = malloc(1 * sizeof(int));
+  as[0] = 0;
+
+  font = TTF_OpenFont("fonts/jersey25.ttf", 60);
+
+  UILabel *hud_ammo =
+      uilabel_create(0.85, 0.95, 0.1, 0.1, UIAP_BOTTOM_RIGHT, as, 1,
+                     UIAP_BOTTOM_RIGHT, "14", 0xFF, 0xFF, 0xFF, 0xFF, font);
+
+  uimodule_set_element(modules[1], 3, UIET_Label, hud_ammo);
 
   return modules;
 }
