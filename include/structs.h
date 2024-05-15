@@ -45,9 +45,10 @@ struct WeaponsArray {
   int weapons_number;
   struct Weapon **weapons;
 };
+
 struct Player {
   struct Engine *engine;
-  thing thing;
+  thing thing; // thing associated with the player. It is wadData->things[0] by default
   vec2 pos;
   double angle;
   struct PlayerSetting *settings;
@@ -64,18 +65,22 @@ struct Engine {
   SDL_Renderer *renderer;
   const char *wadPath;
   bool running;
-  wad_data *wData;
-  Uint32 pixels[WIDTH * HEIGHT];
-  SDL_Texture *texture;
+  int DT; // time used to render last frame
+
+  struct WADData *wData;
   struct Player *p;
   struct BSP *bsp;
   struct SegmentHandler *seg_handler;
-  GameState state;
-  int DT;
   struct Player** players;
+  AudioMixer* mixer;
+  Uint32 pixels[WIDTH * HEIGHT];
+  SDL_Texture *texture;
+  GameState state;
+  
+  
   door** doors;
   int num_doors;
-  AudioMixer *mixer;
+  
   lift** lifts;
   int len_lifts;
 };
@@ -89,31 +94,24 @@ struct BSP {
   size_t root_node_id;
 };
 
-typedef struct Player player;
-typedef struct Engine engine;
-typedef struct BSP bsp;
-typedef struct MapRenderer map_renderer;
-typedef struct Weapon weapon;
-typedef struct WeaponsArray weapons_array;
-typedef weapon **WeaponInventory;
-
 struct SegmentHandler {
   struct Engine *engine;
-  player *player;
+  struct Player *player;
   segment *seg;
   double raw_angle_1;
   int screen_range[WIDTH + 1];
   double upper_clip[WIDTH + 1];
   double lower_clip[WIDTH + 1];
   size_t screen_range_count;
-};
+}; 
 
+
+typedef struct Player player;
+typedef struct Engine engine;
+typedef struct BSP bsp;
 typedef struct SegmentHandler segment_handler;
-
-typedef struct {
-  struct Engine *engine;
-  bool *isFirstTime;
-  bool isRunning;
-} GameStateArgs;
+typedef struct Weapon weapon;
+typedef struct WeaponsArray weapons_array;
+typedef weapon **WeaponInventory;
 
 #endif

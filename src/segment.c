@@ -1,5 +1,8 @@
 #include "../include/segment.h"
 
+
+// because floats weren't really good back in the days, they used integers to represent angles with a specific formula called
+// Binary Angle Measurement (BAM) which is a fixed-point representation of angles 
 double bams_to_degrees(i16 bams) {
   int bitshift = 1 << 16;
   double res = (bams * bitshift) * 8.38190317e-8;

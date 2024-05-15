@@ -1,7 +1,6 @@
 #include "../include/sidedef.h"
 #include <stdio.h>
 
-bool test = false;
 sidedef read_sidedef(FILE *f, int offset, sector *sectors,
                      texture_map *textures, int len_textures) {
   sidedef s;

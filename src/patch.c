@@ -1,5 +1,4 @@
 #include "../include/patch.h"
-#include <ctype.h>
 
 patch_header read_patch_header(FILE *f, int offset) {
   patch_header ph;
@@ -31,7 +30,7 @@ patch_map read_patch_map(FILE *f, int offset) {
 patch_column read_patch_column(FILE *f, int column_offset, int *new_offset) {
   patch_column pc;
   pc.top_delta = read_u8(f, column_offset);
-  if (pc.top_delta == NO_PIXELS) {
+  if (pc.top_delta == NO_PIXELS) { // No pixels in this column so we can skip it
     *new_offset = column_offset + 1;
     return pc;
   }
@@ -50,6 +49,7 @@ patch_column read_patch_column(FILE *f, int column_offset, int *new_offset) {
   return pc;
 }
 
+// Transform a column based patch to a row based patch
 Uint32 *transform_to_row_based(Uint32 *pixels, int width, int height) {
   Uint32 *row_based = malloc(sizeof(Uint32) * width * height);
   for (int i = 0; i < height; i++) {
@@ -61,7 +61,7 @@ Uint32 *transform_to_row_based(Uint32 *pixels, int width, int height) {
   return row_based;
 }
 
-int find_nb_of_columns(FILE *f, patch_header ph, int offset) {
+int find_nb_of_columns(FILE *f, patch_header ph, int offset) { // see the comment in patch.h about nb_columns
   int actual_number_of_columns = 0;
   int cln_offset = 0;
   for (int i = 0; i < ph.width; i++) {
@@ -109,11 +109,11 @@ Uint32 *get_pixels_from_patch(patch p) {
   Uint32 code_c;
   for (int j = 0; j < p.nb_columns; j++) {
     patch_column column = p.columns[j];
-    if (column.top_delta == NO_PIXELS) {
+    if (column.top_delta == NO_PIXELS) { // column is actually filled, even if there were holes between part of the sprite
       ix++;
       continue;
     }
-    for (int iy = 0; iy < column.length; iy++) {
+    for (int iy = 0; iy < column.length; iy++) { // we read at least a segment of what will actually be in the columns[ix] !
       color_idx = column.data[iy];
       c = p.palette[color_idx];
       code_c = SDL_MapRGBA(fmt, c.r, c.g, c.b, 255);
@@ -204,7 +204,7 @@ patch *get_texture_patches(lump *directory, header *header, FILE *f,
   for (int i = 0; i < *len_textures_patches; i++) {
     char *patch_name = read_texture_name(f, offset + i * 8, 8);
     char* upper_patch_name = malloc(sizeof(char) * 9);
-    strtoupper(upper_patch_name, patch_name);
+    strtoupper(upper_patch_name, patch_name);  // for some reasons, some names were read in lowercase :D
     free(patch_name);
     i16 patch_index = get_lump_index(directory, upper_patch_name, header->lump_count);
     if (patch_index == -1) {

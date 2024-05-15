@@ -8,8 +8,6 @@
 #include "events.h"
 #include "door.h"
 
-double deg_to_rad(double deg);
-
 player *player_init(engine *e);
 
 void update_player(player *p);

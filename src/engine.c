@@ -28,7 +28,7 @@ engine *init_engine(const char *wadPath, SDL_Renderer *renderer) {
   return e;
 }
 
-void read_map(engine *e, SDL_Renderer *renderer, char *map_name) {
+void read_map(engine *e, char *map_name) {
   load_map(e->wData, e->wadPath, map_name);
   e->p = player_init(e);
   e->bsp = bsp_init(e, e->p);
