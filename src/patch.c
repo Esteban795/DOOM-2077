@@ -1,7 +1,4 @@
 #include "../include/patch.h"
-#include <SDL2/SDL_render.h>
-#include <stdio.h>
-#include <strings.h>
 
 patch_header read_patch_header(FILE *f, int offset) {
   patch_header ph;
@@ -146,8 +143,11 @@ patch create_patch(FILE *f, SDL_Renderer *renderer, int patch_offset,
   p.nb_columns = actual_number_of_columns;
   p.columns =
       read_patch_columns(f, p.header, patch_offset, actual_number_of_columns);
-  p.pixels = get_pixels_from_patch(renderer, p);
+  Uint32* pixels = get_pixels_from_patch(renderer, p);
+  p.pixels = malloc(sizeof(Uint32) * p.header.width * p.header.height);
+  memcpy(p.pixels, pixels, sizeof(Uint32) * p.header.width * p.header.height);
   p.tex = get_texture_from_pixels(renderer, p.pixels, p.header.width, p.header.height);
+  free(pixels);
   return p;
 }
 
