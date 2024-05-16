@@ -29,12 +29,12 @@ void init_animation_sprite(animation_sprite *as, patch sprite, bool (*linked_fun
         return;
     }
     if(strcmp(sprite.patchname, "PUNGC0") == 0){
-        as->duration = 50000;
+        as->duration = 1000;
         //printf("PUNGC0 init with duration %d\n",as->duration);
         return;
     }
     if(strcmp(sprite.patchname, "PUNGD0") == 0){
-        as->duration = 15000;
+        as->duration = 750;
         //printf("PUNGD0 init with duration %d\n",as->duration);
         return;
     }
@@ -141,6 +141,9 @@ animations_array *init_animations_array(map_renderer *mr,char *abbreviation, jso
                 ar[ANIMATION].animation_sprites_array[index-1].duration = duration;
             }
         }
+    }
+    for(int i = 0; i<ar[ANIMATION].animation_len;i++){
+        ar->animation_duration += ar[ANIMATION].animation_sprites_array[i].duration;
     }
     free(to_cmp);
     return ar;
@@ -294,7 +297,7 @@ void fire_weapon_animation(map_renderer *mr,weapon *w){
     animations_array *fire_layer = NULL; //Layer a ajouter
     if (w->id!=0){ // Si c'est pas les poings
         fire_layer = &aa[FIRE]; // On récupère la couche qui se rajoute sur l'animation
-        printf("fire_layer len: %d\n", fire_layer->animation_len);
+        //printf("fire_layer len: %d\n", fire_layer->animation_len);
     }
     int x;
     int y;
@@ -304,9 +307,7 @@ void fire_weapon_animation(map_renderer *mr,weapon *w){
     int time_elapsed = time_elapsed_in_game - p->t_last_shot; //Temps écoulé depuis le début de l'animation
     int total_duration = 0; //Durée totale de l'animation
     //Calcul de la durée totale de l'animation
-    for (int i = 0; i < animation_len; i++) {
-        total_duration += fire_anim[i].duration;
-    }
+    total_duration = aa->animation_duration;
 
     printf("time_elapsed: %d\n", time_elapsed);
     printf("total_duration: %d\n", total_duration);
@@ -358,12 +359,25 @@ void update_animation(map_renderer *mr){
     bool attack = keys[get_key_from_action(kb, "ATTACK")];
 
     bool move = forward || left || backward || right_d;
-    uint64_t casted_cooldown = (uint64_t) p->cooldown;
-    if(attack || (time_elapsed_in_game - p->t_last_shot <= casted_cooldown && time_elapsed_in_game > casted_cooldown)){
-        if(time_elapsed_in_game - p->t_last_shot > casted_cooldown){
+
+    if(attack){
+        if(p->has_attacked == false){
             p->t_last_shot = time_elapsed_in_game;
+            printf("\n");
+            printf("Reset t_last_shot\n");
+            printf("\n");
         }
-        fire_weapon_animation(mr,w);
+        p->has_attacked = true;
+    }
+    uint64_t casted_cooldown = (uint64_t) w->sprites->animation_duration;
+    
+    if(p->has_attacked){
+        if(time_elapsed_in_game - p->t_last_shot <= casted_cooldown){
+            fire_weapon_animation(mr,w);
+        }
+        if(time_elapsed_in_game - p->t_last_shot > casted_cooldown){
+            p->has_attacked = false;
+        }
     } else {
         idle_weapon_animation(mr,w,move);
     }  

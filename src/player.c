@@ -27,7 +27,8 @@ player *player_init(engine *e) {
   p->keybinds = get_player_keybinds(KEYBINDS_FILE);
   p->settings = get_player_settings(SETTINGS_FILE);
   p->ammo = ammo;
-  p->t_last_shot = 10;
+  p->t_last_shot = 0;
+  p->has_attacked = false;
   p->life=PLAYER_LIFE;
   p->active_weapon = 0;
   p->cooldown = 750; //nombre d'unités de temps nécéssaires avant de tirer , 0 indique qu'on peut tirer

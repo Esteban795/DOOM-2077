@@ -40,6 +40,7 @@ typedef struct AnimationSprite{
 typedef struct AnimationsArray{
   animation_sprite *animation_sprites_array; //tableau de sprites
   int animation_len; //longueur de l'animation
+  int animation_duration; //durée de l'animation
 } animations_array;
 
 struct Weapon {
@@ -79,6 +80,7 @@ struct Player {
   int *ammo; /*Array of size weapon_number that indicates the number of ammo by
                 weapon (id)*/
   int t_last_shot; 
+  bool has_attacked;
   int active_weapon;
   /*Animation de l'arme*/
   int life;
