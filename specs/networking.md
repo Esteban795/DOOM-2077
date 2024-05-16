@@ -2,7 +2,7 @@
 
 | Date of creation | Latest edit      | Version | Status (adopted?) |
 |------------------|------------------|---------|-------------------|
-| 07/03/2024       | 27/04/2024       | alpha   | Outdated          |
+| 07/03/2024       | 16/05/2024       | RC1     | Release Candidate |
 
 
 ## Introduction
@@ -30,6 +30,9 @@ A message is of the following form:
 ### Technicalities
 
 * All integers, signed or not, are represented in network byte order (big-endianness).
+
+* Floats are not used in the network protocol. If a float is needed, it is represented as a integer value
+premultiplied by a constant. For instance, player coordinate are represented as mm (multiplied by 1000).
 
 * Unless explicitly mentioned, strings are not NUL-terminated.
 
@@ -75,13 +78,27 @@ No argument is provided.
 
 No argument is provided.
 
-### CPL_ - Player List
+### Move - Player Move
 
-**Description**: Get the list of players currently online.
+**Description**: A `MOVE` message announces the player change in absolute coordinates (and angle).
 
 **Args:**
+* X coordinate - double as a int64, expressed in mm (premultiplied by 1000)
+* Y coordinate - double as a int64, expressed in mm (premultiplied by 1000)
+* Z coordinate - double as a int64, expressed in mm (premultiplied by 1000)
+* Angle - double as a int64, expressed in mm (premultiplied by 1000)
 
-No argument is provided.
+Example: Player is in (x: 4.567, y: -128.140, z: 47.000, a: 97.000), the arguments of the move message are the following: (x: 4567, y: -128140, z: 47000, a: 97000).
+
+**Len:** 32 bytes
+
+### Chat - Player Chat
+
+**Description**: Send a message in the chat
+
+**Args:**
+* `msg` (cstring), the chat message as a NUL-terminated string.
+
 
 ## Server->Client Messages
 
@@ -132,16 +149,76 @@ The `reason` argument is a NUL-terminated string, whose length cannot exceed 255
 
 * `player-id`, the 8 byte-long unique identifier of the player.
 
-### SPL_ - Player List
+### MOVE - Player Move
 
-**Description**: Response to a `CPL_` request, it includes the complete list of all the players currently connected to the server.
+**Description**: Indicate the move of a player
 
 **Args :**
 
-* `player_list`, a list of players :
-* * `player_list.length`: number of players
-* * `player_list[i]`, a player representation :
-* * * `player_list[i].id`, 8 byte-long unique identifier of the player
-* * * `player_list[i].name_length`, uint8, the length of the player's name
-* * * `player_list[i].name`, string, the name of the player (**warn: this string is not NUL-terminated!**)
+* `player_id` (uint64), the unique entity_id of the player moving
+* X coordinate - double as a int64, expressed in mm (premultiplied by 1000)
+* Y coordinate - double as a int64, expressed in mm (premultiplied by 1000)
+* Z coordinate - double as a int64, expressed in mm (premultiplied by 1000)
+* Angle - double as a int64, expressed in mm (premultiplied by 1000)
 
+### Chat - Player Chat
+
+**Description**: A player sent a message in the chat
+
+**Args:**
+* `player-id`, the 8 byte-long unique identifier of the player.
+* `msg` (cstring), the chat message as a NUL-terminated string.
+
+### Tell - Server Chat
+
+**Description**: The server sent a message in the chat
+
+**Args:**
+* Flags (uint8-bitflag)
+* * 0x01: is_broadcast -> is this a broadcast message?
+* * 0x02: is_title -> is this chat a title message?
+* `msg` (cstring), the chat message as a NUL-terminated string.
+
+## Scor - Scoreboard Update
+
+**Description**: The scoreboard has been updated
+
+**Args:**
+* Entry count (uint16): number of entries.
+* Names (array of C-String): Names of the player in the order of the scoreboard (asc), separated by NUL.
+* Deaths (array of uint16): Number of deaths of the player in the order of the scoreboard (asc).
+* Kills (array of uint16): Number of kills of the player in the order of the scoreboard (asc).*
+
+## DAMG - Player Damage
+
+**Description**: A player has been affected by something and has lost health.
+
+**Args:**
+* `player_id`, the 8 byte-long unique identifier of the player affected.
+* `src_player_id`, the 8-byte-long UID of the player that caused the damages (or 0 if none).
+* `damage`: the health points lost by the player.
+
+## KILL - Player Kill
+
+**Description**: A player has been killed by something.
+
+**Args:**
+* `player_id`, the 8 byte-long unique identifier of the player affected.
+* `src_player_id`, the 8-byte-long UID of the player that caused the damages (or 0 if none).
+
+## HEAL - Player Heal
+
+**Description**: A player is healing.
+
+**Args:**
+* `player_id`, the 8 byte-long unique identifier of the player affected.
+* `gain`: the health points earned by the player.
+
+## HLTH - Player Health Update
+
+**Description**: The health of a player has changed
+
+**Args:**
+* `player_id`, the 8 byte-long unique identifier of the player affected.
+* `health`: the health points of the player.
+* `max_health`: the maximum health, the player can have.
