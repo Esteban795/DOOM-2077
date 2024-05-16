@@ -1,5 +1,6 @@
 #include "../include/engine.h"
 #include <SDL2/SDL_render.h>
+#include <SDL2/SDL_stdinc.h>
 
 #include "../include/remote.h"
 #include "../include/ecs/world.h"
@@ -27,22 +28,23 @@ engine *init_engine(const char *wadPath, SDL_Renderer *renderer) {
                                  SDL_TEXTUREACCESS_STREAMING, WIDTH, HEIGHT);
   e->remote = malloc(sizeof(remote_server_t));
   remote_init(e->remote, SERVER_ADDR, SERVER_PORT);
-  e->doors = NULL;
-  e->num_doors = 0;
-  e->wData = NULL;
+  e->wData = init_wad_data(wadPath);
+  e->mixer = NULL;
+  e->mixer = audiomixer_init();
   e->p = NULL;
   e->bsp = NULL;
   e->map_renderer = NULL;
   e->seg_handler = NULL;
   e->players = NULL;
-  e->mixer = NULL;
   e->lifts = NULL;
   e->len_lifts = 0;
+  e->doors = NULL;
+  e->num_doors = 0;
   return e;
 }
 
 void read_map(engine *e, SDL_Renderer *renderer, char *map_name) {
-  e->wData = init_wad_data(e->wadPath, map_name);
+  load_map(e->wData, e->wadPath, map_name);
   e->world = malloc(sizeof(world_t));
   world_init(e->world);
   world_register_active_systems(e->world);
@@ -51,9 +53,9 @@ void read_map(engine *e, SDL_Renderer *renderer, char *map_name) {
   e->map_renderer = map_renderer_init(e, renderer);
   e->seg_handler = segment_handler_init(e);
   e->players = calloc(PLAYER_MAXIMUM, sizeof(entity_t*));
-  e->mixer = audiomixer_init();
   e->lifts = get_lifts(e->wData->linedefs, e->wData->len_linedefs, &e->len_lifts, e->wData->sectors, e->wData->len_sectors);
   e->doors = get_doors(e->wData->linedefs, e->wData->len_linedefs, &e->num_doors, e->wData->sectors,e->wData->len_sectors);
+  
 }
 
 int update_engine(engine *e, int dt) {
@@ -65,7 +67,7 @@ int update_engine(engine *e, int dt) {
     //printf("Processing %d events...\n", world_queue_length(e->world));
     world_update(e->world);
   }
-  memset(e->pixels, 0, WIDTH * HEIGHT * 4);
+  memset(e->pixels, 0, WIDTH * HEIGHT * sizeof(Uint32));
   handle_events(e);
   game_states_update[e->state](e);
   audiomixer_update(e->mixer, dt);
