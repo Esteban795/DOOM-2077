@@ -43,7 +43,7 @@ int main() {
   for(int i=1; i<WEAPONS_NUMBER; i++){
       add_weapon(e->p, i, wa);
   }
-  print_animations_patches(wa->weapons[1]);
+  //print_animations_patches(wa->weapons[1]);
   int dt = 0;
   while (e->running) {
     now = SDL_GetTicks();

@@ -25,15 +25,22 @@ void init_animation_sprite(animation_sprite *as, patch sprite, bool (*linked_fun
     as -> layers_index = NULL;
     if (strcmp(sprite.patchname, "PUNGB0") == 0){
         as->duration = 500;
+        //printf("PUNGB0 init with duration %d\n",as->duration);
+        return;
     }
     if(strcmp(sprite.patchname, "PUNGC0") == 0){
         as->duration = 50000;
+        //printf("PUNGC0 init with duration %d\n",as->duration);
+        return;
     }
     if(strcmp(sprite.patchname, "PUNGD0") == 0){
         as->duration = 15000;
-    } else {
-        as->duration = 500;
+        //printf("PUNGD0 init with duration %d\n",as->duration);
+        return;
     }
+    as->duration = 500;
+    //printf("Default init of %s with duration %d\n",sprite.patchname,as->duration);
+    return;
 }
 
 animations_array *init_animations_array(map_renderer *mr,char *abbreviation, json_t *fire_frames, json_t *fire_layers){
