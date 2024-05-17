@@ -471,3 +471,35 @@ void render_vssprites(map_renderer *mr) {
   VSSPRITES_INDEX = 0;
   DRAWSEGS_INDEX = 0;
 }
+
+
+//Pour l'instant un int est renvoyé en fonction de l'angle relatif des deux joueurs, a changer plus tard (?)
+int sprite_orientation(player* player_1,player* player_2){ //le joueur controlé est le joueur
+  int angle_diff=abs(rad_to_deg(player_1->angle)-rad_to_deg(player_2->angle));
+  if((angle_diff<22.5)||(angle_diff>=337.5)){
+    return 0; //Affichage du dos du sprite
+  }
+  else if(angle_diff<45+22.5){
+    return 1; //
+  }
+  else if(angle_diff<90+22.5){
+    return 2;
+  }
+  else if(angle_diff<135+22.5){
+    return 3;
+  }
+  else if(angle_diff<180+22.5){
+    return 4;
+  }
+  else if(angle_diff<225+22.5){
+    return 5;
+  }
+  else if(angle_diff<270+22.5){
+    return 6;
+  }
+  else{
+    return 7;
+  }
+}
+
+
