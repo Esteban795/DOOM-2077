@@ -66,7 +66,7 @@ int main() {
     e->remote->connected = -1;
     e->remote->player_id = 0;
   }
-  read_map(e, renderer, "E1M3");
+  read_map(e, "E1M3");
   int dt = 0;
   while (e->running) {
     now = SDL_GetTicks();

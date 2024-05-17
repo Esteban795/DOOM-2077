@@ -17,6 +17,7 @@ typedef uint32_t u32;
 typedef uint8_t u8;
 typedef unsigned char byte;
 
+// LUMP OFFSETS IN DOOM WAD
 #define THINGS 1
 #define LINEDEFS 2
 #define SIDEDEFS 3

@@ -1,8 +1,6 @@
 #include "../include/sector.h"
 #include <stdio.h>
 
-int DOORS_COUNT = 0;
-
 sector read_sector(FILE *f, int offset, flat *flats, int len_flats) {
   sector s;
   s.floor_height = read_i16(f, offset);

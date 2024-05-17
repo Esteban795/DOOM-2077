@@ -429,8 +429,8 @@ void update_player(player *p) {
 }
 
 void player_free(player *p) {
-  free_keybinds(p->keybinds);
-  free_settings(p->settings);
+  keybinds_free(p->keybinds);
+  settings_free(p->settings);
   world_remove_entity(p->engine->world, p->entity);
   free(p);
 }
