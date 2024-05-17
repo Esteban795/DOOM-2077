@@ -4,6 +4,7 @@
 #include "../ecs/world.h"
 #include "../net/tracked_connection.h"
 #include "../settings.h"
+#include "../wad_data.h"
 
 #ifndef _LIB_SDL_NET_H
 #define _LIB_SDL_NET_H
@@ -35,6 +36,8 @@ typedef struct {
     Instant last_tick;
     UDPpacket* incoming;
     UDPpacket* outgoing;
+    wad_data* wad_data;
+    char* map_name;
 } server_state_t;
 
 #define SERVER_STATE (&server_state)

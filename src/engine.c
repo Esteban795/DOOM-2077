@@ -54,7 +54,6 @@ void read_map(engine *e, char *map_name) {
   e->players = calloc(PLAYER_MAXIMUM, sizeof(entity_t*));
   e->lifts = get_lifts(e->wData->linedefs, e->wData->len_linedefs, &e->len_lifts, e->wData->sectors, e->wData->len_sectors);
   e->doors = get_doors(e->wData->linedefs, e->wData->len_linedefs, &e->num_doors, e->wData->sectors,e->wData->len_sectors);
-  
 }
 
 int update_engine(engine *e, int dt) {
