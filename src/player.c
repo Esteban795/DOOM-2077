@@ -5,6 +5,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+
+#define SPRAY_DECREATE_RATE 0.25
 #define SIGN(x) (int)(x > 0) ? 1 : ((x < 0) ? -1 : 0)
 #define DOT(a, b) (a.x * b.x) + (a.y * b.y)
 #define DISTANCE_VEC_VER(a, b) (sqrt(pow(b->x - a.x, 2) + pow(b->y - a.y, 2)))
@@ -31,8 +33,8 @@ player *player_init(engine *e) {
   p->has_attacked = false;
   p->life=PLAYER_LIFE;
   p->active_weapon = 0;
-  p->cooldown = 750; //nombre d'unités de temps nécéssaires avant de tirer , 0 indique qu'on peut tirer
-  p->spray=0;
+  p->cooldown = 0; //nombre d'unités de temps nécéssaires avant de tirer , 0 indique qu'on peut tirer
+  p->spray=0.0;
   return p;
 }
 
@@ -352,6 +354,12 @@ void update_player(player *p) {
   }
   else{
     p->cooldown =0;
+  }
+  if((p->spray-1)>0){
+    p->spray -= SPRAY_DECREATE_RATE;
+  }
+  else{
+    p->spray =0;
   }
   double vec[2] = {0.0, 0.0};
   int count_dir = 0;

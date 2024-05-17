@@ -4,7 +4,8 @@
 #define PLAYER_HITBOX_SIZE 50
 #define HITSCAN_PRECISION 10
 #define MELEE_RADIUS 20
-#define MAX_SPRAY  10
+#define MAX_SPRAY  50
+#define SPRAY_COEFF 5 //Vitesse a laquelle le spray augmente
 
 bullet *create_bullet(player *player_) {
   bullet *bullet_ = malloc(sizeof(bullet));
@@ -33,14 +34,15 @@ void fire_bullet(player **players, int num_players, player *player_,weapons_arra
   }
   //gestion du spray
   if(is_ranged==1){
-    if(player_->spray%2==0){
+    int s=player_->spray;
+    if(s%2==0){
       player_->angle+=player_->spray;
     }
     else{
       player_->angle-=player_->spray; //le spray fait bouger la caméra
     }
   }
-  //gestion du tir
+  //gestion du tir jusqu'au mur
   if ((player_->cooldown ==0)&&(!((is_ranged==1)&&(player_->ammo[player_->active_weapon]==0)))){ //On véfrifie d'un coté que le temps de cooldown est respecté et ensuite que si l'arme est a distance elle dispose d'assez de muntitions
     linedef *linedefs = player_->engine->wData->linedefs;
     double x1 = player_->pos.x;
@@ -107,7 +109,7 @@ void fire_bullet(player **players, int num_players, player *player_,weapons_arra
         }
       }
     }
-    printf("%f %f \n",x_final,y_final);
+    //Gestion de la collison du tir avec les joueurs
     for (int j = 0; j < num_players; j++) {
       double dist_to_hitscan =
           (fabs(a * (players[j]->pos.x) + (players[j]->pos.y) + b)) /
@@ -124,10 +126,10 @@ void fire_bullet(player **players, int num_players, player *player_,weapons_arra
         }
       }
     }
+    //Update des etats du joueur
     player_->cooldown+=1000/(weapon_used->fire_rate);
-    printf("%f\n",1000/(weapon_used->fire_rate)); //a update plus tard quand une unité de temps sera fixée
     if(player_->spray<MAX_SPRAY*weapon_used->spray){ 
-    player_->spray+=weapon_used->spray;
+      player_->spray+=(weapon_used->spray)*SPRAY_COEFF;
     }
   }
 }

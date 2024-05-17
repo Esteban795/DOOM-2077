@@ -55,7 +55,7 @@ int main() {
 
 
     aux_fire_bullet(e->map_renderer,wa);
-    //printf("%i\n",e->p->cooldown);
+    //printf("%f\n",e->p->spray);
     //printf("FPS: %f\n",1000/dt);
     old = now;
     // break;
