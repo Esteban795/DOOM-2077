@@ -49,12 +49,13 @@ int main() {
     now = SDL_GetTicks();
     dt = now - old;
     int res = update_engine(e, dt);
-    
+
     if (res == 1)
       break;
 
 
-
+    aux_fire_bullet(e->map_renderer,wa);
+    //printf("%i\n",e->p->cooldown);
     //printf("FPS: %f\n",1000/dt);
     old = now;
     // break;

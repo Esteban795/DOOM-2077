@@ -21,7 +21,7 @@ double distance(double posx_a, double posy_a, double posx_b, double posy_b) {
 void fire_bullet(player **players, int num_players, player *player_,weapons_array* weapons_list) { // toutes les valeurs de y sont négatives
   //initialisation
   double distance_finale = 10000;
-  printf("%i\n",player_->cooldown);
+  //printf("%i\n",player_->cooldown);
   weapon* weapon_used=weapons_list->weapons[player_->active_weapon];
   int damage=weapon_used->max_damage;
   int is_ranged; //0 correspond a une arme de melée sinon une arme a distance
@@ -107,6 +107,7 @@ void fire_bullet(player **players, int num_players, player *player_,weapons_arra
         }
       }
     }
+    printf("%f %f \n",x_final,y_final);
     for (int j = 0; j < num_players; j++) {
       double dist_to_hitscan =
           (fabs(a * (players[j]->pos.x) + (players[j]->pos.y) + b)) /
@@ -152,3 +153,16 @@ int correct_height(linedef wall, int height) {
     }
   }
 }
+
+
+
+void aux_fire_bullet(map_renderer* mr,weapons_array* wa){
+    player *p = mr->engine->p;
+    player_keybind *kb = p->keybinds;
+    bool attack = keys[get_key_from_action(kb, "ATTACK")];
+    if(attack){
+      fire_bullet(mr->engine->players,NUM_PLAYERS,mr->engine->p,wa);
+    }
+}
+
+

@@ -18,3 +18,6 @@ double distance(double posx_a,double posy_a,double posx_b,double posy_b);
 void fire_bullet(player** players,int num_players,player* player_,weapons_array* weapons_list);
 
 int correct_height(linedef wall,int height);
+
+void aux_fire_bullet(map_renderer* mr,weapons_array* wa);
+
