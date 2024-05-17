@@ -251,42 +251,42 @@ void draw_weapon(map_renderer *mr, patch sprite, int x, int y) {
 }
 
 void idle_weapon_animation(map_renderer *mr,weapon *w, bool is_moving){
-    animation_sprite idle_anim_sprite = w->sprites->animation_sprites_array[0];
+    animation_sprite *idle_anim_sprite = &w->sprites->animation_sprites_array[0];
     
     if(is_moving){
-        if(idle_anim_sprite.wanim_speed.x == 0){
-            idle_anim_sprite.wanim_speed.x = -2;
+        if(idle_anim_sprite->wanim_speed.x == 0){
+            idle_anim_sprite->wanim_speed.x = -2;
         }
-        if(idle_anim_sprite.wanim_speed.y == 0){
-            idle_anim_sprite.wanim_speed.y = -2;
+        if(idle_anim_sprite->wanim_speed.y == 0){
+            idle_anim_sprite->wanim_speed.y = -2;
         }
     } else {
-        idle_anim_sprite.wanim_speed.x = 0;
-        idle_anim_sprite.wanim_speed.y = 0;
-        idle_anim_sprite.wanim_pos.x = idle_anim_sprite.wanim_origin.x;
-        idle_anim_sprite.wanim_pos.y = idle_anim_sprite.wanim_origin.y;
+        idle_anim_sprite->wanim_speed.x = 0;
+        idle_anim_sprite->wanim_speed.y = 0;
+        idle_anim_sprite->wanim_pos.x = idle_anim_sprite->wanim_origin.x;
+        idle_anim_sprite->wanim_pos.y = idle_anim_sprite->wanim_origin.y;
     }
 
-    int origin_x = idle_anim_sprite.wanim_origin.x;
-    int origin_y = idle_anim_sprite.wanim_origin.y;
-    int init_x = idle_anim_sprite.wanim_pos.x;
-    int init_y = idle_anim_sprite.wanim_pos.y;
-    int dx = idle_anim_sprite.wanim_speed.x;
-    int dy = idle_anim_sprite.wanim_speed.y;
+    int origin_x = idle_anim_sprite->wanim_origin.x;
+    int origin_y = idle_anim_sprite->wanim_origin.y;
+    int init_x = idle_anim_sprite->wanim_pos.x;
+    int init_y = idle_anim_sprite->wanim_pos.y;
+    int dx = idle_anim_sprite->wanim_speed.x;
+    int dy = idle_anim_sprite->wanim_speed.y;
 
     if(init_x + dx > origin_x + ANIMATION_WIDTH/2 || init_x + dx < origin_x - ANIMATION_WIDTH/2){
         dx = -dx;
-        idle_anim_sprite.wanim_speed.x = dx;
+        idle_anim_sprite->wanim_speed.x = dx;
     }
 
     if(init_y + dy > origin_y + ANIMATION_HEIGTH/2 || init_y + dy < origin_y - ANIMATION_HEIGTH/2){
         dy = -dy;
-        idle_anim_sprite.wanim_speed.y = dy;
+        idle_anim_sprite->wanim_speed.y = dy;
     }
-    idle_anim_sprite.wanim_pos.x += dx;
-    idle_anim_sprite.wanim_pos.y += dy;
+    idle_anim_sprite->wanim_pos.x += dx;
+    idle_anim_sprite->wanim_pos.y += dy;
 
-    draw_weapon(mr,idle_anim_sprite.animation_sprite,idle_anim_sprite.wanim_pos.x,idle_anim_sprite.wanim_pos.y);
+    draw_weapon(mr,idle_anim_sprite->animation_sprite,idle_anim_sprite->wanim_pos.x,idle_anim_sprite->wanim_pos.y);
 
 }
 
