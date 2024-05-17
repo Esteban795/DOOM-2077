@@ -33,8 +33,7 @@ player *player_init(engine *e) {
   p->has_attacked = false;
   p->life=PLAYER_LIFE;
   p->active_weapon = 0;
-  p->cooldown = 0; //nombre d'unités de temps nécéssaires avant de tirer , 0 indique qu'on peut tirer
-  p->spray=0.0;
+  p->cooldowns_sprays = create_cooldowns_sprays(e->p);
   return p;
 }
 
@@ -349,18 +348,7 @@ void update_player(player *p) {
   double rot_speed = DT * PLAYER_ROTATION_SPEED;
   p->angle += rot_speed * ((double)mouse[NUM_MOUSE_BUTTONS]);
   p->angle = norm(p->angle);
-  if((p->cooldown-DT)>0){
-    p->cooldown -= DT;
-  }
-  else{
-    p->cooldown =0;
-  }
-  if((p->spray-1)>0){
-    p->spray -= SPRAY_DECREATE_RATE;
-  }
-  else{
-    p->spray =0;
-  }
+  p->cooldowns_sprays=update_cooldowns_sprays(p->cooldowns_sprays);
   double vec[2] = {0.0, 0.0};
   int count_dir = 0;
   int count_strafe = 0;
@@ -397,7 +385,9 @@ void player_free(player *p) {
   free_keybinds(p->keybinds);
   free_settings(p->settings);
   free(p->ammo);
+  free_cooldowns_sprays(p);
   free(p);
+
 }
 
 void players_free(player **players, int num_players) {
@@ -405,6 +395,32 @@ void players_free(player **players, int num_players) {
     player_free(players[i]);
   }
   free(players);
+}
+
+WACS * create_cooldowns_sprays(player* p){
+  WACS * w=malloc(sizeof(WACS));
+  w->p=p;
+  double a[WEAPONS_NUMBER];
+  w->cooldowns=a;
+  double b[WEAPONS_NUMBER];
+  w->sprays=b;
+  for(int i=0;i<WEAPONS_NUMBER;i++){
+    w->cooldowns[i]=0;
+    w->sprays[i]=0;
+  }
+  return w;
+}
+
+void free_cooldowns_sprays(player* p){
+  free(p->cooldowns_sprays);
+}
+
+WACS* update_cooldowns_sprays(WACS* w){
+  for(int i=0;i<WEAPONS_NUMBER;i++){
+    printf("%f\n",w->sprays[i]);
+    w->sprays[i]=0;//SPRAY_DECREATE_RATE;
+  }
+  return w;
 }
 
 

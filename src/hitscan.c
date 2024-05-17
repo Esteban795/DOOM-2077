@@ -25,6 +25,10 @@ void fire_bullet(player **players, int num_players, player *player_,weapons_arra
   //printf("%i\n",player_->cooldown);
   weapon* weapon_used=weapons_list->weapons[player_->active_weapon];
   int damage=weapon_used->max_damage;
+  int weapon_number=weapon_used->id;
+  double spray=player_->cooldowns_sprays->sprays[weapon_number];
+  double cooldown=player_->cooldowns_sprays->cooldowns[weapon_number];
+  double time=SDL_GetTicks();
   int is_ranged; //0 correspond a une arme de melée sinon une arme a distance
   if(weapon_used->type==-1){
     is_ranged=0;
@@ -34,16 +38,16 @@ void fire_bullet(player **players, int num_players, player *player_,weapons_arra
   }
   //gestion du spray
   if(is_ranged==1){
-    int s=player_->spray;
+    int s=spray;
     if(s%2==0){
-      player_->angle+=player_->spray;
+      player_->angle+=spray;
     }
     else{
-      player_->angle-=player_->spray; //le spray fait bouger la caméra
+      player_->angle-=spray; //le spray fait bouger la caméra
     }
   }
   //gestion du tir jusqu'au mur
-  if ((player_->cooldown ==0)&&(!((is_ranged==1)&&(player_->ammo[player_->active_weapon]==0)))){ //On véfrifie d'un coté que le temps de cooldown est respecté et ensuite que si l'arme est a distance elle dispose d'assez de muntitions
+  if ((cooldown<time)&&(!((is_ranged==1)&&(player_->ammo[player_->active_weapon]==0)))){ //On véfrifie d'un coté que le temps de cooldown est respecté et ensuite que si l'arme est a distance elle dispose d'assez de muntitions
     linedef *linedefs = player_->engine->wData->linedefs;
     double x1 = player_->pos.x;
     double y1 = -player_->pos.y;
@@ -127,9 +131,9 @@ void fire_bullet(player **players, int num_players, player *player_,weapons_arra
       }
     }
     //Update des etats du joueur
-    player_->cooldown+=1000/(weapon_used->fire_rate);
-    if(player_->spray<MAX_SPRAY*weapon_used->spray){ 
-      player_->spray+=(weapon_used->spray)*SPRAY_COEFF;
+    player_->cooldowns_sprays->cooldowns[weapon_number]=time;
+    if(player_->cooldowns_sprays->sprays[weapon_number]<MAX_SPRAY*weapon_used->spray){ 
+      player_->cooldowns_sprays->sprays[weapon_number]+=(weapon_used->spray)*SPRAY_COEFF;
     }
   }
 }

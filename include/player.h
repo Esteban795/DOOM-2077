@@ -20,4 +20,10 @@ void players_free(player** players, int num_players);
 player** create_players(int num_players,engine* e);
 
 void update_height(player* p,double z);
+
+void free_cooldowns_sprays(player* p);
+
+WACS * create_cooldowns_sprays(player* p);
+
+WACS* update_cooldowns_sprays(WACS* w);
 #endif
