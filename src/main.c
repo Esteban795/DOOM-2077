@@ -52,8 +52,10 @@ int main() {
     
     if (res == 1)
       break;
-      
-    //printf("FPS: %f\n", 1000.0 / dt);
+
+
+
+    //printf("FPS: %f\n",1000/dt);
     old = now;
     // break;
   }

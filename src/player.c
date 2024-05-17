@@ -347,6 +347,12 @@ void update_player(player *p) {
   double rot_speed = DT * PLAYER_ROTATION_SPEED;
   p->angle += rot_speed * ((double)mouse[NUM_MOUSE_BUTTONS]);
   p->angle = norm(p->angle);
+  if((p->cooldown-DT)>0){
+    p->cooldown -= DT;
+  }
+  else{
+    p->cooldown =0;
+  }
   double vec[2] = {0.0, 0.0};
   int count_dir = 0;
   int count_strafe = 0;
@@ -392,3 +398,5 @@ void players_free(player **players, int num_players) {
   }
   free(players);
 }
+
+

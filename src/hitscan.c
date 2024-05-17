@@ -18,10 +18,11 @@ double distance(double posx_a, double posy_a, double posx_b, double posy_b) {
   return sqrt(pow((posx_b - posx_a), 2) + pow((posy_b - posy_a), 2));
 }
 
-void fire_bullet(player **players, int num_players, player *player_,weapons_array weapons_list) { // toutes les valeurs de y sont négatives
+void fire_bullet(player **players, int num_players, player *player_,weapons_array* weapons_list) { // toutes les valeurs de y sont négatives
   //initialisation
   double distance_finale = 10000;
-  weapon* weapon_used=weapons_list.weapons[player_->active_weapon];
+  printf("%i\n",player_->cooldown);
+  weapon* weapon_used=weapons_list->weapons[player_->active_weapon];
   int damage=weapon_used->max_damage;
   int is_ranged; //0 correspond a une arme de melée sinon une arme a distance
   if(weapon_used->type==-1){
@@ -41,7 +42,6 @@ void fire_bullet(player **players, int num_players, player *player_,weapons_arra
   }
   //gestion du tir
   if ((player_->cooldown ==0)&&(!((is_ranged==1)&&(player_->ammo[player_->active_weapon]==0)))){ //On véfrifie d'un coté que le temps de cooldown est respecté et ensuite que si l'arme est a distance elle dispose d'assez de muntitions
-    player_->cooldown = player_->cooldown + 100;
     linedef *linedefs = player_->engine->wData->linedefs;
     double x1 = player_->pos.x;
     double y1 = -player_->pos.y;
@@ -123,7 +123,8 @@ void fire_bullet(player **players, int num_players, player *player_,weapons_arra
         }
       }
     }
-    player_->cooldown+=weapon_used->fire_rate; //a update plus tard quand une unité de temps sera fixée
+    player_->cooldown+=1000/(weapon_used->fire_rate);
+    printf("%f\n",1000/(weapon_used->fire_rate)); //a update plus tard quand une unité de temps sera fixée
     if(player_->spray<MAX_SPRAY*weapon_used->spray){ 
     player_->spray+=weapon_used->spray;
     }
