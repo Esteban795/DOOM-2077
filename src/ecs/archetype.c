@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <assert.h>
 
 #include "../../include/collection/vec.h"
 #include "../../include/ecs/archetype.h"
@@ -40,6 +41,7 @@ void archetype_init(archetype_t* archetype, int component_count, int component_t
     }
 
     vec_sort(&archetype->tags, compare_int);
+    assert(vec_length(&archetype->components) == vec_length(&archetype->tags));
 }
 
 void archetype_destroy(archetype_t* archetype) {
@@ -143,9 +145,12 @@ bool archetype_remove_entity(archetype_t* archetype, entity_t* entity, bool shou
     if (ind < 0) {
         return false;
     }
+
+    //printf("DEBUG: archetype->remove entity %d/%d\n", ind, vec_length(&archetype->entities));
     vec_remove(&archetype->entities, ind, false);
     for (int i = 0; (size_t) i < vec_length(&archetype->tags); i++) {
         vec_t* component = (vec_t*) vec_get(&archetype->components, i);
+        //printf("DEBUG: archetype->remove component(%d) %d/%d\n", i, ind, vec_length(component));
         vec_remove(component, ind, should_free);
     }
     return true;

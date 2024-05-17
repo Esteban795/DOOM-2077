@@ -11,27 +11,34 @@ testdepsdir = $(builddir)/test_deps
 AR = ar
 CC = gcc
 CFLAGS = -Wall -Wextra -std=gnu17 -pedantic
-CFLAGS += -fsanitize=address,undefined -fno-omit-frame-pointer
+# CFLAGS += -fsanitize=address,undefined -fno-omit-frame-pointer
 LDFLAGS = -lm 
-CDEBUG = -g -O3
+CDEBUG = -g -O3 -D 'SERVER_ADDR="127.0.0.1"' -D SERVER_PORT=9999
 # END OF CONFIGURABLE PARAMETERS  #
 
 ALL_CFLAGS = $(CFLAGS) $(shell pkg-config --cflags sdl2) $(CDEBUG)
 ALL_LDFLAGS = $(LDFLAGS) $(shell pkg-config --libs sdl2)
 
 # -  TARGETS  -  #
-CLIENT_SRC = sound.c blockmap.c bsp.c button.c byte_reader.c color.c engine.c geometry.c header.c \
-	keybindings.c linedef.c lump.c main.c map_renderer.c node.c player.c sector.c segment.c \
-	segment_handler.c sidedef.c subsector.c textarea.c thing.c timer.c util.c vertex.c wad_data.c weapons.c hitscan.c\
-	audio/mixer.c audio/emitter.c\
-	game_states.c events.c flat.c texture.c patch.c lift.c door.c
+CLIENT_SRC = audio/mixer.c audio/emitter.c blockmap.c bsp.c button.c byte_reader.c color.c \
+    engine.c events.c flat.c game_states.c \
+	geometry.c header.c hitscan.c keybindings.c linedef.c lump.c main.c map_renderer.c node.c \
+	patch.c player.c remote.c sector.c segment.c segment_handler.c sidedef.c sound.c subsector.c \
+	textarea.c texture.c thing.c timer.c util.c vertex.c wad_data.c weapons.c lift.c door.c \
+	$(patsubst $(srcdir)/%, %, $(wildcard $(srcdir)/component/*.c)) \
+	$(patsubst $(srcdir)/%, %, $(wildcard $(srcdir)/event/*.c)) \
+	$(patsubst $(srcdir)/%, %, $(wildcard $(srcdir)/system/client/*.c))
 CLIENT_OBJ = $(CLIENT_SRC:%.c=%.o)
-CLIENT_LIB = 
-CLIENT_LDFLAGS = -lSDL2 -lSDL2_ttf -lSDL2_mixer
+CLIENT_LIB = libnet.a libevent.a libecs.a libcollection.a
+CLIENT_LDFLAGS = -lSDL2 -lSDL2_ttf -lSDL2_mixer -lSDL2_net
 
-SERVER_SRC = server.c
+SERVER_SRC = server.c \
+	$(patsubst $(srcdir)/%, %, $(wildcard $(srcdir)/server/*.c)) \
+ 	$(patsubst $(srcdir)/%, %, $(wildcard $(srcdir)/event/*.c)) \
+	$(patsubst $(srcdir)/%, %, $(wildcard $(srcdir)/system/server/*.c)) \
+	$(patsubst $(srcdir)/%, %, $(wildcard $(srcdir)/component/*.c)) 
 SERVER_OBJ = $(SERVER_SRC:%.c=%.o)
-SERVER_LIB = libnet.a libevent.a
+SERVER_LIB = libnet.a libevent.a libecs.a libcollection.a
 SERVER_LDFLAGS = -lSDL2 -lSDL2_net
 
 LIBNET_SRC = net/util.c net/tracked_connection.c net/packet/client.c net/packet/server.c
@@ -134,3 +141,4 @@ before_build:
 
 clean:
 	-rm -rf $(builddir)
+
