@@ -381,16 +381,22 @@ void draw_crosshair(map_renderer *mr, color c, int size) {
 void draw_sprite_column(map_renderer *mr, patch *sprite,
                         int sprite_column, // does NOT WORK YET
                         int screen_x, int y1, int y2, double inverted_scale,
-                        Uint32 c) {
-  double sprite_y = (HALF_HEIGHT - sprite->header.height / 2) +
-                    (sprite_column - 0.5) * inverted_scale;
-  int sprite_y_int = (int)sprite_y;
-  int sprite_height = sprite->header.height;
-  for (int screen_y = y1; screen_y < y2; screen_y++) {
-    int texture_y = (int)mod(sprite_y_int, sprite_height);
-    // Uint32 pixel = sprite->pixels[texture_y * sprite->header.width +
-    // sprite_column];
-    mr->engine->pixels[screen_y * WIDTH + screen_x] = c;
+                        Uint32 c) { 
+    if (y1 < y2) {
+    double sprite_y = y1 < 0 ? -y1 * inverted_scale : 0;
+    y1 = max(y1, 0); // clipping
+    y2 = min(y2, HEIGHT - 1);
+    int sprite_y_int;
+    for (int top = y1; top < y2 - 1; top++) {
+      sprite_y_int = (int)sprite_y;
+      Uint32 pixel = sprite->pixels[sprite_y_int * sprite->header.width + sprite_column];
+      if (pixel == 0) {
+        sprite_y += inverted_scale;
+        continue;
+      }
+      mr->engine->pixels[top * WIDTH + screen_x] = pixel;
+      sprite_y += inverted_scale;
+    }
   }
 }
 
@@ -411,46 +417,50 @@ void render_vssprite(map_renderer *mr, vs_sprite vssprite) {
   int left = vssprite.x1;
   int width = vssprite.x2 - vssprite.x1;
   double inverted_scale = 1 / (2 * vssprite.scale); // used later as a function to scale the sprite
-
   int ds_ind = find_clip_seg(
       vssprite.x1, vssprite.x2, vssprite.scale,
       DRAWSEGS_INDEX); // this seg is partially obscuring the sprite
   if (ds_ind == -1) {  // nothing is obscuring the sprite that is before in the FOV, draw the whole sprite
+    double sprite_column = vssprite.x1 < 0 ? -vssprite.x1 * inverted_scale : 0;
+    int sprite_column_int = 0;
     for (int screen_x = max(vssprite.x1, 0); screen_x < min(vssprite.x2, WIDTH); 
          screen_x++) {
-      double sprite_column =
-          (screen_x - left) / ((double)width * vssprite.scale);
-      draw_sprite_column(mr, sprite, sprite_column, screen_x, max(top, 0),
-                         min(HEIGHT, top + height), inverted_scale,
+      sprite_column_int = (int)sprite_column;
+      draw_sprite_column(mr, sprite, sprite_column_int, screen_x, top,
+                         top + height, inverted_scale,
                          vssprite.color);
+      sprite_column += inverted_scale;
     }
   } else { // something is obscuring the sprite
-    int left_clip = INT_MAX;
-    int right_clip = INT_MIN;
-    do {
-      left_clip = min(left_clip, DRAWSEGS[ds_ind].x1);
-      right_clip = max(right_clip, DRAWSEGS[ds_ind].x2);
-      ds_ind =
-          find_clip_seg(vssprite.x1, vssprite.x2, vssprite.scale, ds_ind - 1);
-    } while (ds_ind != -1);
+    printf("SOMETHING IS OBSCURING\n");
+    // int left_clip = INT_MAX;
+    // int right_clip = INT_MIN;
+    // do {
+    //   left_clip = min(left_clip, DRAWSEGS[ds_ind].x1);
+    //   right_clip = max(right_clip, DRAWSEGS[ds_ind].x2);
+    //   ds_ind =
+    //       find_clip_seg(vssprite.x1, vssprite.x2, vssprite.scale, ds_ind - 1);
+    // } while (ds_ind != -1);
+    // double sprite_column = 0;
+    // int sprite_column_int = 0;
+    // for (int screen_x = max(0, left); screen_x < min(WIDTH, left_clip);
+    //      screen_x++) {
+    //   sprite_column_int = (int)(sprite_column) ;
+    //   draw_sprite_column(mr, sprite, sprite_column_int, screen_x, max(top, 0),
+    //                      min(HEIGHT, top + height), inverted_scale,
+    //                      vssprite.color);
+    //   sprite_column += 1 / vssprite.scale;
+    // }
 
-    for (int screen_x = max(0, left); screen_x < min(WIDTH, left_clip);
-         screen_x++) {
-      double sprite_column =
-          (screen_x - left) / ((double)width * vssprite.scale);
-      draw_sprite_column(mr, sprite, sprite_column, screen_x, max(top, 0),
-                         min(HEIGHT, top + height), inverted_scale,
-                         vssprite.color);
-    }
-
-    for (int screen_x = max(right_clip, 0); screen_x < min(WIDTH, left + width);
-         screen_x++) {
-      double sprite_column =
-          (screen_x - left) / ((double)width * vssprite.scale);
-      draw_sprite_column(mr, sprite, sprite_column, screen_x, max(top, 0),
-                         min(HEIGHT, top + height), inverted_scale,
-                         vssprite.color);
-    }
+    // sprite_column = ((double)right_clip) / vssprite.scale;
+    // for (int screen_x = max(right_clip, 0); screen_x < min(WIDTH, left + width);
+    //      screen_x++) {
+    //    sprite_column_int = (int)(sprite_column);
+    //   draw_sprite_column(mr, sprite, sprite_column, screen_x, max(top, 0),
+    //                      min(HEIGHT, top + height), inverted_scale,
+    //                      vssprite.color);
+    //   sprite_column += 1 / vssprite.scale;
+    // }
   }
 }
 

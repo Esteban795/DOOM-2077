@@ -115,7 +115,7 @@ Uint32 *get_pixels_from_patch(SDL_Renderer *renderer, patch p) {
     for (int iy = 0; iy < column.length; iy++) {
       color_idx = column.data[iy];
       c = p.palette[color_idx];
-      code_c = SDL_MapRGBA(fmt, c.r, c.g, c.b, 255);
+      code_c = SDL_MapRGBA(fmt, c.r, c.g, c.b, c.a);
       pixels[ix * p.header.height + iy + column.top_delta] = code_c;
     }
   }
