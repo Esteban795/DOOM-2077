@@ -125,5 +125,6 @@ typedef struct SegmentHandler segment_handler;
 typedef struct Weapon weapon;
 typedef struct WeaponsArray weapons_array;
 typedef weapon **WeaponInventory;
+typedef struct RemoteServer remote_server_t;
 
 #endif

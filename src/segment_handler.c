@@ -450,8 +450,8 @@ void segment_handler_free(segment_handler *sh) { free(sh); }
 void segment_handler_update(segment_handler *sh) {
   sh->screen_range_count = 0;
   for (int i = 0; i < WIDTH; i++) {
-    sh->screen_range[i] = 0;
-    sh->upper_clip[i] = -1;
+    sh->screen_range[i] = 0; // reset the screen range
+    sh->upper_clip[i] = -1; 
     sh->lower_clip[i] = HEIGHT;
   }
 }

@@ -31,7 +31,7 @@ void draw_wall_column(engine* e, texture_map *texture,
 void draw_flat(engine* e, flat *texture, i16 light_level, int x, int y1,
                int y2, int world_z) {
   if (y1 < y2) {
-    position_ct* pos = player_get_position(mr->engine->p);
+    position_ct* pos = player_get_position(e->p);
 
     double player_dir_x = cos(deg_to_rad(pos->angle));
     double player_dir_y = -sin(deg_to_rad(
