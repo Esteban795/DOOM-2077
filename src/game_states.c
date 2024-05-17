@@ -28,7 +28,7 @@ void update_ingame_state(engine *e) {
   update_bsp(e->bsp);
   // draw_crosshair(e->map_renderer,get_color(50,0),20);
   SDL_UpdateTexture(e->texture, NULL, e->pixels, WIDTH * 4);
-  SDL_RenderCopy(e->map_renderer->renderer, e->texture, NULL, NULL);
+  SDL_RenderCopy(e->renderer, e->texture, NULL, NULL);
   return;
 }
 

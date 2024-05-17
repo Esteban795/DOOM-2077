@@ -24,25 +24,23 @@ struct PlayerSetting {
 
 typedef struct PlayerSetting player_setting;
 
-enum param_type { PlayerKeybind, PlayerSetting };
+void keybinds_write(const char *fp, player_keybind *settings);
 
-void write_keybinds(const char *fp, player_keybind *settings);
+void keybind_modify(player_keybind *keybinds, char *name, char *key);
 
-void modify_keybind(player_keybind *keybinds, char *name, char *key);
+void keybinds_free(player_keybind *keybinds);
 
 player_keybind *get_player_keybinds(const char *fp);
 
-void free_keybinds(player_keybind *keybinds);
-
 SDL_Keycode get_key_from_action(player_keybind *keybinds, char *action);
 
-void write_settings(const char *fp, player_setting *settings);
+void settings_write(const char *fp, player_setting *settings);
 
-void modify_setting(player_setting *settings, char *name, char *key);
+void setting_modify(player_setting *settings, char *name, char *key);
 
 player_setting *get_player_settings(const char *fp);
 
-void free_settings(player_setting *settings);
+void settings_free(player_setting *settings);
 
 double get_setting_from_name(player_setting *settings, char *name);
 #endif

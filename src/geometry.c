@@ -3,6 +3,7 @@
 double rad_to_deg(double rad) { return rad * (180 / M_PI); }
 
 double deg_to_rad(double deg) { return deg * (M_PI / 180); }
+
 /*
 Project point coordinate in SCREEN_DISTANCE, according to the angle
 they form with player's POV
@@ -28,6 +29,7 @@ float norm(double angle) {
   return fmod((fmod(angle, 360.0) + 360.0),360.0);
 }
 
+// Modulo function that assure that the result is the same signe as mod
 double mod(double f,double mod) {
   return fmod((fmod(f, mod) + mod),mod);
 }

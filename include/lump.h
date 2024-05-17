@@ -8,9 +8,10 @@
 #include "byte_reader.h"
 #include "header.h"
 
+// A lump is an entry in the wadfile directory
 struct Lump {
-  i32 lump_offset;
-  i32 lump_size;
+  i32 lump_offset; // offset from the beginning of the file
+  i32 lump_size; 
   char *lump_name;
 };
 

@@ -27,7 +27,6 @@ typedef enum {
 struct Player;
 struct BSP;
 struct Engine;
-struct MapRenderer;
 struct SegmentHandler;
 struct Weapon;
 struct WeaponsArray;
@@ -54,6 +53,7 @@ struct WeaponsArray {
   int weapons_number;
   struct Weapon **weapons;
 };
+
 struct Player {
   struct Engine *engine;
   thing thing;
@@ -72,22 +72,26 @@ struct RemoteServer {
 };
 
 struct Engine {
+  SDL_Renderer *renderer;
   const char *wadPath;
   bool running;
-  wad_data *wData;
-  Uint32 pixels[WIDTH * HEIGHT];
-  SDL_Texture *texture;
+  int DT; // time used to render last frame
+
+  struct WADData *wData;
   struct Player *p;
   struct BSP *bsp;
-  struct MapRenderer *map_renderer;
   struct SegmentHandler *seg_handler;
   struct RemoteServer *remote;
-  GameState state;
-  int DT;
   entity_t** players;
+  AudioMixer* mixer;
+  Uint32 pixels[WIDTH * HEIGHT];
+  SDL_Texture *texture;
+  GameState state;
+  
+  
   door** doors;
   int num_doors;
-  AudioMixer *mixer;
+  
   lift** lifts;
   int len_lifts;
   world_t *world;
@@ -102,41 +106,25 @@ struct BSP {
   size_t root_node_id;
 };
 
-struct MapRenderer {
-  struct Engine *engine;
-  SDL_Renderer *renderer;
-  wad_data *wData;
-  vertex *vertexes;
-  linedef *linedefs;
-  bbox map_bounds;
-};
-
-typedef struct Player player;
-typedef struct Engine engine;
-typedef struct BSP bsp;
-typedef struct MapRenderer map_renderer;
-typedef struct RemoteServer remote_server_t;
-typedef struct Weapon weapon;
-typedef struct WeaponsArray weapons_array;
-typedef weapon **WeaponInventory;
-
 struct SegmentHandler {
   struct Engine *engine;
-  player *player;
+  struct Player *player;
   segment *seg;
   double raw_angle_1;
   int screen_range[WIDTH + 1];
   double upper_clip[WIDTH + 1];
   double lower_clip[WIDTH + 1];
   size_t screen_range_count;
-};
+}; 
 
+
+typedef struct Player player;
+typedef struct Engine engine;
+typedef struct BSP bsp;
 typedef struct SegmentHandler segment_handler;
-
-typedef struct {
-  struct Engine *engine;
-  bool *isFirstTime;
-  bool isRunning;
-} GameStateArgs;
+typedef struct Weapon weapon;
+typedef struct WeaponsArray weapons_array;
+typedef weapon **WeaponInventory;
+typedef struct RemoteServer remote_server_t;
 
 #endif

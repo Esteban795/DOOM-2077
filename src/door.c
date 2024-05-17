@@ -2,8 +2,6 @@
 #include <stdbool.h>
 #include <stdio.h>
 
-door *COLLISIONNED_DOOR = NULL;
-
 door *door_create(entity_t *id, enum DoorTransitionSpeed speed,
                   enum DoorFunction function, int wait_time, sector *sector,
                   bool init_state) {
@@ -23,6 +21,7 @@ door *door_create(entity_t *id, enum DoorTransitionSpeed speed,
   return d;
 }
 
+// trigger switch for all doors in the list, but they need to not be switching and be in their initial state (closed or open)
 void door_trigger_switch(door *d) {
   if (d != NULL) {
     if (!d->is_switching && d->state == d->init_state) {
@@ -34,20 +33,22 @@ void door_trigger_switch(door *d) {
   }
 }
 
+// Update door state
 void door_update(door *d, int DT) {
-
-  if (d->speed == NO_SPEED) {
+  if (d->speed == NO_SPEED) { // door is not moving
     return;
   }
-  if (d->state != d->init_state) {
+
+  if (d->state != d->init_state) { // update door's internal timer to know if it needs to switch
     d->time_elapsed += DT;
-    if (d->time_elapsed >= d->wait_time) {
+    if (d->time_elapsed >= d->wait_time) { // time's up, switch door
       d->time_elapsed = 0;
       d->is_switching = true;
     }
   }
   if (d->is_switching) {
     double multiplier;
+    // if the door is going up, we need to add to the height, if it's going down, we need to subtract
     if (d->state == d->init_state) {
       if (d->init_state) {
         multiplier = -1;
