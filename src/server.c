@@ -6,6 +6,7 @@
 #include <assert.h>
 #include <signal.h>
 #include <time.h>
+#include <unistd.h>
 
 #ifndef _LIB_SDL_NET_H
 #define _LIB_SDL_NET_H
@@ -13,61 +14,57 @@
 #include <SDL2/SDL_net.h>
 #endif
 
+
+#include "../include/server/state.h"
+#include "../include/server/player.h"
 #include "../include/net/util.h"
 #include "../include/net/tracked_connection.h"
 #include "../include/net/packet/server.h"
 #include "../include/net/packet/client.h"
-
-#define MAX_CLIENTS 4
-// 20 tick per second
-#define SERVER_TICK_MS 50 
-
-#define INSTANT_NOW(t) clock_gettime(CLOCK_MONOTONIC, t)
-#define INSTANT_DIFF_MS(a, b) ((a.tv_sec - b.tv_sec) * 1000 + (a.tv_nsec - b.tv_nsec) / 1000000)
-
-typedef struct timespec Instant;
-
-static int SERVER_RUNNING = 1;
-
-int compare_instant(const Instant* a, const Instant* b) {
-    if (a->tv_sec < b->tv_sec) return -1;
-    if (a->tv_sec > b->tv_sec) return 1;
-    if (a->tv_nsec < b->tv_nsec) return -1;
-    if (a->tv_nsec > b->tv_nsec) return 1;
-    return 0;
-}
+#include "../include/ecs/world.h"
+#include "../include/event/server_chat.h"
+#include "../include/event/server_join.h"
+#include "../include/event/server_quit.h"
+#include "../include/event/player_chat.h"
+#include "../include/event/player_move.h"
+#include "../include/system/server/active.h"
 
 // Interrupt signal handler
 //
 // Handle in particular SIGINT (Ctrl+C), SIGQUIT, and SIGTERM, for a graceful shutdown.
-void signal_handler(int sig) {
-    switch (sig) {
-        case SIGINT:
-            SERVER_RUNNING = -1;
-            break;
-        case SIGQUIT:
-        case SIGTERM:
-            SERVER_RUNNING = -2;
-            break;
-        default:
-            printf("Caught signal %d.\n", sig);
-            break;
+void signal_handler(int sig)
+{
+    switch (sig)
+    {
+    case SIGINT:
+        SERVER_RUNNING = -1;
+        break;
+    case SIGQUIT:
+    case SIGTERM:
+        SERVER_RUNNING = -2;
+        break;
+    default:
+        printf("Caught signal %d.\n", sig);
+        break;
     }
 }
 
-int run_server(uint16_t port) {
+int run_server(uint16_t port)
+{
     printf("Initializing SDL_net...\n");
     SDLNet_Init();
     char addrstr[24];
 
     // Create socket
     IPaddress ip;
-    if (SDLNet_ResolveHost(&ip, NULL, port) == -1) {
+    if (SDLNet_ResolveHost(&ip, NULL, port) == -1)
+    {
         printf("SDLNet_ResolveHost: %s\n", SDLNet_GetError());
         return -1;
     }
     UDPsocket server = SDLNet_UDP_Open(port);
-    if (server == NULL) {
+    if (server == NULL)
+    {
         printf("SDLNet_UDP_Open: %s\n", SDLNet_GetError());
         return -1;
     }
@@ -75,113 +72,174 @@ int run_server(uint16_t port) {
     addrtocstr(&ip, addrstr);
     printf("Listening on %s...\n", addrstr);
 
-    // Listen for incoming packets
-    UDPpacket* incoming = SDLNet_AllocPacket(1024);
-    UDPpacket* outgoing = SDLNet_AllocPacket(1024);
-    assert(incoming != NULL);
-    assert(outgoing != NULL);
+    // Initialize server state
+    assert(SERVER_STATE != NULL);
+    SERVER_STATE->sock = server;
+    SERVER_STATE->conn_count = 0;
+    SERVER_RUNNING = 1;
+    INSTANT_NOW(&SERVER_STATE->last_tick);
+    world_init(&SERVER_STATE->world);
 
-    Instant tick_time, cur_time;
-    tracked_connection_t clients[MAX_CLIENTS];
-    int client_count = 0;
-    while(SERVER_RUNNING > 0) {
-        // New tick!
-        INSTANT_NOW(&tick_time);
+    // Register the systems
+    world_register_active_systems(&SERVER_STATE->world);
+
+    // Listen for incoming packets
+    SERVER_STATE->incoming = SDLNet_AllocPacket(4096);
+    SERVER_STATE->outgoing = SDLNet_AllocPacket(4096);
+    assert(SERVER_STATE->incoming != NULL);
+    assert(SERVER_STATE->outgoing != NULL);
+
+    Instant cur_time;
+    while (SERVER_RUNNING > 0)
+    {
         INSTANT_NOW(&cur_time);
-        int elapsed = INSTANT_DIFF_MS(cur_time, tick_time);
+        int elapsed = INSTANT_DIFF_MS(cur_time, SERVER_STATE->last_tick);
+
+        uint64_t entity_bin[32] = {0};
+        int entity_bin_count = 0;
         // While there's time left in this tick, process incoming packets.
-        while(elapsed < SERVER_TICK_MS) {
+        while (elapsed < SERVER_TICK_MS)
+        {
             // Process an incoming packet
-            int ready = SDLNet_UDP_Recv(server, incoming);
-            if (ready == 1) {
-                addrtocstr(&incoming->address, addrstr);
-                char sdata[2048] = {0};
-                memcpy(sdata, (char*) incoming->data, incoming->len);
-                printf("incoming packet from %s > %s\n", addrstr, sdata);
+            int ready = SDLNet_UDP_Recv(server, SERVER_STATE->incoming);
+            if (ready == 1)
+            {
+                addrtocstr(&SERVER_STATE->incoming->address, addrstr);
+                uint8_t sdata[2048] = {0};
+                memcpy(sdata, SERVER_STATE->incoming->data, SERVER_STATE->incoming->len);
+                //printf("incoming packet from %s > %s\n", addrstr, sdata);
 
                 int cursor = 0;
                 char cmd[5] = {0};
                 int16_t payload_len = 0;
-                uint8_t* payload = NULL;
                 // For each message in the packet
-                while (cursor + 6 <= incoming->len) {
-                    memcpy(cmd, sdata + cursor, 4);
-                    payload_len = read_uint16be((uint8_t*) (sdata + cursor + 4));
-                    payload = (uint8_t*) (sdata + cursor + 6);
-                    if (cursor + 6 + payload_len + 1 > incoming->len) {
+                while (cursor + 6 <= SERVER_STATE->incoming->len)
+                {
+                    memcpy(cmd, (char*) (sdata + cursor), 4);
+                    payload_len = read_uint16be(sdata + cursor + 4);
+                    if (cursor + 6 + payload_len + 1 > SERVER_STATE->incoming->len)
+                    {
                         printf("Invalid packet: message length exceeds packet length.\n");
                         break;
                     }
 
-                    if (strncmp(cmd, CLIENT_COMMAND_JOIN, 4) == 0) {
-                        char* player_name = read_cstring(payload);
-                        printf("Player %s is joining the game.\n", player_name);
-                        outgoing->address = incoming->address;
-                        outgoing->channel = -1;
-                        if (client_count >= MAX_CLIENTS) {
-                            printf("Server is full. Rejecting player %s.\n", player_name);
-                            outgoing->len = server_kick(outgoing->data, "server_full");
-                            if (SDLNet_UDP_Send(server, -1, outgoing) > 0) {
-                                printf("Player %s rejected.\n", player_name);
+                    int conn_i = find_conn_by_ip(SERVER_STATE->conns, SERVER_STATE->conn_count, &SERVER_STATE->incoming->address);
+
+                    if (strncmp(cmd, CLIENT_COMMAND_PING, 4) == 0)
+                    {
+                        uint64_t data;
+                        client_ping_from(sdata + cursor, &data);
+                        int len = server_pong(SERVER_STATE->outgoing->data, data);
+                        SERVER_STATE->outgoing->address = SERVER_STATE->incoming->address;
+                        SERVER_STATE->outgoing->len = len;
+                        SDLNet_UDP_Send(server, -1, SERVER_STATE->outgoing);
+                    }
+                    else if (strncmp(cmd, CLIENT_COMMAND_MOVE, 4) == 0)
+                    {
+                        double x, y, z, angle;
+                        client_move_from(sdata + cursor, &x, &y, &z, &angle);
+                        player_move_event_t* ev = ServerPlayerMoveEvent_new(SERVER_STATE->conns[conn_i].player_id, x, y, z, angle);
+                        world_queue_event(&SERVER_STATE->world, (event_t*) ev);
+                    } else if (strncmp(cmd, CLIENT_COMMAND_CHAT, 4) == 0) {
+                        char message_[128] = {0};
+                        char* message = (char*) message_;
+                        client_chat_from(sdata + cursor, &message);
+                        player_chat_event_t* ev = ServerPlayerChatEvent_new(SERVER_STATE->conns[conn_i].player_id, message);
+                        world_queue_event(&SERVER_STATE->world, (event_t*) ev);
+                    } else if (strncmp(cmd, CLIENT_COMMAND_JOIN, 4) == 0)  {
+                        char name_[128] = {0};
+                        char* name = (char*) name_;
+                        client_join_from(sdata + cursor, &name);
+                        if (SERVER_STATE->conn_count < MAX_CLIENTS) {
+                            SERVER_STATE->conns[SERVER_STATE->conn_count].ip = SERVER_STATE->incoming->address;
+                            SERVER_STATE->conns[SERVER_STATE->conn_count].player_id = server_create_player(&SERVER_STATE->world, name)->id;
+                            server_player_join_event_t* ev = ServerPlayerJoinEvent_new(SERVER_STATE->conns[SERVER_STATE->conn_count].player_id, name);
+                            world_queue_event(&SERVER_STATE->world, (event_t*) ev);
+                            SERVER_STATE->conn_count++;
+
+                            // Send the ACPT message
+                            int len = server_acpt(SERVER_STATE->outgoing->data, SERVER_STATE->conns[SERVER_STATE->conn_count - 1].player_id);
+                            SERVER_STATE->outgoing->address = SERVER_STATE->incoming->address;
+                            SERVER_STATE->outgoing->len = len;
+                            if (SDLNet_UDP_Send(server, -1, SERVER_STATE->outgoing) > 0)
+                            {
+                                printf("Accepted %s as %lu.\n", name, SERVER_STATE->conns[SERVER_STATE->conn_count - 1].player_id);
                             }
-                            continue;
-                        }
-                        outgoing->len = server_acpt(outgoing->data, client_count);
-                        if (SDLNet_UDP_Send(server, -1, outgoing) > 0) {
-                            printf("Player %s joined the game.\n", player_name);
-                        }
-                        clients[client_count].ip = incoming->address;
-                        clients[client_count].player_id = client_count;
-                        client_count++;
-                    } else if (strncmp(cmd, CLIENT_COMMAND_KATC, 4) == 0) {
-                        printf("Keep-alive from %s.\n", addrstr);
-                    } else if (strncmp(cmd, CLIENT_COMMAND_PONG, 4) == 0) {
-                        uint64_t data = read_uint64be(payload);
-                        printf("Pong from %s: %lu.\n", addrstr, data);
-                    } else if (strncmp(cmd, CLIENT_COMMAND_QUIT, 4) == 0) {
-                        int cid = find_conn_by_ip(clients, client_count, &incoming->address);
-                        if (cid >= 0) {
-                            printf("Player %s is quitting the game.\n", addrstr);
-                            outgoing->channel = -1;
-                            outgoing->len = server_quit(outgoing->data, cid);
-                            broadcast(&server, clients, client_count, outgoing->data, outgoing->len);
-                            clients[cid] = clients[client_count - 1];
-                            client_count--;
                         } else {
-                            printf("Unknown client %s intended to quit the game.\n", addrstr);
+                            printf("%s tried to join but the server is full!\n", name);
                         }
+                    } else if (strncmp(cmd, CLIENT_COMMAND_QUIT, 4) == 0) {
+                        entity_t pid = ENTITY_BY_ID(SERVER_STATE->conns[conn_i].player_id);
+                        display_name_ct* display_name = (display_name_ct*) world_get_component(&SERVER_STATE->world, &pid, COMPONENT_TAG_DISPLAY_NAME);
+                        server_player_quit_event_t* ev = ServerPlayerQuitEvent_new(SERVER_STATE->conns[conn_i].player_id, display_name_get(display_name));
+                        world_queue_event(&SERVER_STATE->world, (event_t*) ev);         
+
+                        // Add the player to the entity bin
+                        if (entity_bin_count < 32) {
+                            entity_bin[entity_bin_count] = SERVER_STATE->conns[conn_i].player_id;           
+                            entity_bin_count++;
+                        } else {
+                            printf("Entity bin is full! Leaking the entity...\n");
+                        }
+                        
+                        // Remove the connection
+                        SERVER_STATE->conns[conn_i] = SERVER_STATE->conns[SERVER_STATE->conn_count - 1];
+                        SERVER_STATE->conn_count--;
                     } else {
-                        printf("Unknown command: %s.\n", cmd);
+                        printf("Unknown command: %s\n", cmd);
                     }
 
                     cursor += 6 + payload_len + 1;
                 }
-            } else if (ready < 0) {
+            }
+            else if (ready < 0)
+            {
                 printf("SDLNet_UDP_Recv: %s\n", SDLNet_GetError());
             }
 
+            usleep(1000);
             // Update the elapsed time since the last tick
             INSTANT_NOW(&cur_time);
-            elapsed = INSTANT_DIFF_MS(cur_time, tick_time);
+            elapsed = INSTANT_DIFF_MS(cur_time, SERVER_STATE->last_tick);
         }
-    }
-    for (int i = 0; i < client_count; i++) {
-        tracked_connection_t* client = &clients[i];
-        addrtocstr(&client->ip, addrstr);
-        printf("Closing connection with %s...", addrstr);
-        outgoing->address = client->ip;
-        outgoing->len = server_kick(outgoing->data, "server_shutting_down");
-        if (SDLNet_UDP_Send(server, -1, outgoing) > 0) {
-            printf(" Kicked.");
+
+        // Update the world state
+        if (world_queue_length(&SERVER_STATE->world) > 0)
+        {
+            // printf("Processing %d events...\n", world_queue_length(&SERVER_STATE->world));
+            world_update(&SERVER_STATE->world);
         }
-        printf("\n");
+
+        // Time to clean-up the entity bin
+        for (int i = 0; i < entity_bin_count; i++) {
+            world_remove_entity_by_id(&SERVER_STATE->world, entity_bin[i]);
+        }
+
+        // Update the elapsed time since the last tick
+        INSTANT_NOW(&SERVER_STATE->last_tick);
     }
-    SDLNet_FreePacket(incoming);
-    SDLNet_FreePacket(outgoing);
+    printf("Shutting down...\n");
+
+    // Kill remaining players
+    for (int i = 0; i < SERVER_STATE->conn_count; i++) {
+        SERVER_STATE->outgoing->len = server_kick(SERVER_STATE->outgoing->data, "Server shutting down.");
+        SERVER_STATE->outgoing->address = SERVER_STATE->conns[i].ip;
+        if (SDLNet_UDP_Send(server, -1, SERVER_STATE->outgoing) > 0)
+        {
+            printf("Kicked %s.\n", addrstr);
+        }
+        world_remove_entity_by_id(&SERVER_STATE->world, SERVER_STATE->conns[i].player_id);
+    }
+    SERVER_STATE->conn_count = 0;
+
+    usleep(100000);
 
     // Clean-up
-    printf("Shutting down...\n");
+    printf("Cleaning-up...\n");
+    world_destroy(&SERVER_STATE->world);
     SDLNet_UDP_Close(server);
+    SDLNet_FreePacket(SERVER_STATE->incoming);
+    SDLNet_FreePacket(SERVER_STATE->outgoing);
     SDLNet_Quit();
     return 0;
 }
@@ -189,11 +247,12 @@ int run_server(uint16_t port) {
 int main(int argc, char const *argv[])
 {
     printf("DOOM-like server v0.0.1 - HELO!\n");
-    if (argc <= 1) {
+    if (argc <= 1)
+    {
         printf("Insufficient argument: missing port number.\nUsage: server <port>");
         return -1;
     }
-    uint16_t port = (uint16_t) atoi(argv[1]);
+    uint16_t port = (uint16_t)atoi(argv[1]);
 
     // Register signal handlers
     signal(SIGINT, signal_handler);

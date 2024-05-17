@@ -1,6 +1,8 @@
 #ifndef _LIB_DOOM_ECS_WORLD_H
 #define _LIB_DOOM_ECS_WORLD_H
 
+#include <time.h>
+
 #include "../event/event.h"
 #include "../collection/vec.h"
 
@@ -23,6 +25,10 @@ typedef struct {
     vec_t systems;
     // vec_t<event_t>
     vec_t event_queue;
+    // last_tick
+    struct timespec last_tick;
+    // delta_time (in us)
+    uint64_t delta_time;
 } world_t;
 
 typedef struct {
@@ -40,6 +46,15 @@ void world_init(world_t* world);
 void world_destroy(world_t* world);
 
 /*
+* Insert an entity into the world
+*
+* If an entity with the same id already exists, the function will return NULL, and the entity will not be inserted.
+* This function is intented to be used on the client side, where all the entities are created by the server, and therefore
+* the client already knows the id of the entity.
+*/
+entity_t* world_insert_entity(world_t* world, uint64_t entity_id, component_t** components, int component_count);
+
+/*
 * Create a new entity
 */
 entity_t* world_create_entity(world_t* world, component_t** components, int component_count);
@@ -55,6 +70,11 @@ entity_t** world_create_bulk_entity(world_t* world, component_t*** components, i
 * Remove an entity from the world
 */
 void world_remove_entity(world_t* world, entity_t* entity);
+
+/*
+* Remove an entity from the world using only its ID.
+*/
+void world_remove_entity_by_id(world_t* world, uint64_t entity_id);
 
 /*
 * Register a new system
@@ -80,6 +100,11 @@ archetype_t* world_get_archetype_by_tags(world_t* world, int component_tags[], i
 * Queue an event
 */
 void world_queue_event(world_t* world, event_t* event);
+
+/*
+* Get the length of the event queue
+*/
+unsigned int world_queue_length(world_t* world);
 
 /*
 * Add components to an entity
