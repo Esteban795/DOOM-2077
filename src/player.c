@@ -1,5 +1,6 @@
 #include "../include/player.h"
 #include "../include/weapons.h"
+#include <SDL2/SDL_keyboard.h>
 #include <SDL2/SDL_render.h>
 #include <math.h>
 #include <stdio.h>
@@ -12,6 +13,8 @@
 #define DISTANCE_VEC_VER(a, b) (sqrt(pow(b->x - a.x, 2) + pow(b->y - a.y, 2)))
 #define PLAYER_LIFE 100
 #define M_PI 3.14159265358979323846
+
+bool SHOULD_COLLIDE = true;
 
 player *player_init(engine *e) {
   player *p = malloc(sizeof(player));
@@ -49,8 +52,8 @@ player **create_players(int num_players, engine *e) {
   Players[1]->pos.x = 0;
   Players[1]->pos.y = 544;
 
-  Players[2]->pos.x = 512;
-  Players[2]->pos.y = 640;
+  Players[2]->pos.x = 480;
+  Players[2]->pos.y = 576;
   return (Players);
 }
 
@@ -340,6 +343,10 @@ void update_height(player *p, double z) {
 
 void update_player(player *p) {
   int DT = p->engine->DT;
+  if (keys[SDL_GetScancodeFromKey(SDL_GetKeyFromName("M"))]) {
+    SHOULD_COLLIDE = !SHOULD_COLLIDE;
+  }
+
   bool forward = keys[get_key_from_action(p->keybinds, "MOVE_FORWARD")];
   bool left = keys[get_key_from_action(p->keybinds, "MOVE_LEFT")];
   bool backward = keys[get_key_from_action(p->keybinds, "MOVE_BACKWARD")];
@@ -376,9 +383,13 @@ void update_player(player *p) {
     vec[0] *= DIAGONAL_CORRECTION;
     vec[1] *= DIAGONAL_CORRECTION;
   }
-  // p->pos.x += vec[0];
-  // p->pos.y += vec[1];
-  move_and_slide(p, vec);
+  if (SHOULD_COLLIDE) {
+    move_and_slide(p, vec);
+  } else {
+    p->pos.x += vec[0];
+    p->pos.y += vec[1];
+  }
+
 }
 
 void player_free(player *p) {
