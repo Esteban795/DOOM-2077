@@ -15,6 +15,7 @@
 #include "../include/component/health.h"
 #include "../include/component/weapon.h"
 #include "../include/component/display_name.h"
+#include "../include/engine.h"
 
 
 #include "../include/event/all.h"
@@ -156,6 +157,12 @@ int remote_update(engine* e, remote_server_t* r) {
                 } else {
                     printf("Ignoring server ACPT for %lu.\n", player_id);
                 }
+            } else if (strncmp(cmd, SERVER_COMMAND_LMAP, 4) == 0) {
+                char map_name_[128] = {0};
+                char* map_name = (char*) map_name_;
+                server_load_map_from(sdata+offset, (char**) &map_name);
+                read_map(e, map_name);
+                printf("Server loaded map: %s\n", map_name);
             } else if (strncmp(cmd, SERVER_COMMAND_PONG, 4) == 0) {
                 uint64_t data;
                 server_pong_from(sdata+offset, &data);

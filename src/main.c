@@ -65,8 +65,10 @@ int main() {
     printf("Connection to server failed! Pursuing in solo...\n");
     e->remote->connected = -1;
     e->remote->player_id = 0;
+    read_map(e, "E1M3");
+  } else {
+    printf("Connection to server successful!\n");
   }
-  read_map(e, "E1M3");
   int dt = 0;
   while (e->running) {
     now = SDL_GetTicks();

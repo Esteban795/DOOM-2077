@@ -25,11 +25,7 @@ int apply_event(world_t* world, event_t* event) {
             entity_t pid = ENTITY_BY_ID(server_player_join_event->entity_id);
             position_ct* pos = (position_ct*) world_get_component(world, &pid, COMPONENT_TAG_POSITION);
             health_ct* health = (health_ct*) world_get_component(world, &pid, COMPONENT_TAG_HEALTH);
-            if (pos == NULL || health == NULL) return -1; // If the player does not have a position, we cannot apply the event, cancel it.
-            pos->x = 0.0;
-            pos->y = 0.0;
-            pos->z = 65.0;
-            pos->angle = 180.0;
+            if (pos == NULL || health == NULL) return -1; // If the player does not have a position or health, we cannot apply the event, cancel it.
             health_set(health, 100.0);
             health_set_max(health, 100.0);
             break;

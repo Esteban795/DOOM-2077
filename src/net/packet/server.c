@@ -20,6 +20,7 @@ const char *SERVER_COMMAND_DAMG = "DAMG";
 const char *SERVER_COMMAND_HEAL = "HEAL";
 const char *SERVER_COMMAND_HLTH = "HLTH";
 const char *SERVER_COMMAND_KILL = "KILL";
+const char *SERVER_COMMAND_LMAP = "LMAP";
 
 int server_acpt(uint8_t* buf, uint64_t player_id) {
     memcpy(buf, SERVER_COMMAND_ACPT, 4);
@@ -157,6 +158,18 @@ int server_player_kill(uint8_t *buf, uint64_t player_id, uint64_t src_player_id)
     return 4 + 2 + 8 + 8 + 1;
 }
 
+int server_load_map(uint8_t* buf, char* map_name) {
+    if (strnlen(map_name, 128) >= 128) {
+        printf("ERROR: server_load_map > Map name is too long.\n");
+        return 0;
+    }
+    memcpy(buf, SERVER_COMMAND_LMAP, 4);
+    int clen = write_cstring(buf + 6, map_name);
+    write_uint16be(buf + 4, clen);
+    buf[6 + clen] = '\n';
+    return 4 + 2 + clen + 1;
+}
+
 int server_acpt_from(uint8_t* buf, uint64_t* player_id) {
     *player_id = read_uint64be(buf + 6);
     return 4 + 2 + 8 + 1;
@@ -277,4 +290,15 @@ int server_player_kill_from(uint8_t *buf, uint64_t *player_id, uint64_t *src_pla
     *player_id = read_uint64be(buf + 6);
     *src_player_id = read_uint64be(buf + 14);
     return 4 + 2 + 8 + 8 + 1;
+}
+
+int server_load_map_from(uint8_t* buf, char** map_name) {
+    int clen = read_uint16be(buf + 4);
+    int clen_ = clen;
+    if (clen >= 128) {
+        clen_ = 128;
+    }
+    memcpy(*map_name, buf + 6, clen_-1);
+    (*map_name)[clen_-1] = '\0';
+    return 4 + 2 + clen + 1;
 }
