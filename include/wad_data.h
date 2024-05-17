@@ -61,6 +61,7 @@ wad_data *init_wad_data(const char *path);
 
 void load_map(wad_data *wd, const char *path, char *map_name);
 
+void free_map(wad_data* wd);
 void wad_data_free(wad_data *wd);
 
 // Server function to load a WAD file and a particular map.
@@ -73,7 +74,7 @@ void wad_data_free(wad_data *wd);
 //
 // SAFETY: Use only 'server_free_wad' to free the wad_data struct. Using 'init_wad_data' will
 // lead to Undefined Behavior.
-wad_data *server_load_wad(const char *path, const char *map_name);
+wad_data *server_load_wad(const char *path, char *map_name);
 
 // Server function to free a wad_data struct.
 //

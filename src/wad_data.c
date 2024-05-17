@@ -100,17 +100,20 @@ wad_data *init_wad_data(const char *path) {
   return wd;
 }
 
-void wad_data_free(wad_data *wd) {
+void free_map(wad_data* wd) {
   free(wd->vertexes);
   linedefs_free(wd->linedefs, wd->len_linedefs);
   free(wd->nodes);
   free(wd->segments);
   free(wd->things);
-  free(wd->header.wad_type);
-  sectors_free(wd->sectors);
+  free(wd->sectors);
+  free(wd->sidedefs);
   blockmap_free(wd->blockmap);
   subsectors_free(wd->subsectors, wd->len_subsectors);
-  sidedefs_free(wd->sidedefs);
+}
+
+void wad_data_free(wad_data *wd) {
+  free_map(wd);
   free(wd->color_palette);
   sprites_free(wd->sprites, wd->len_sprites);
   textures_patches_free(wd->texture_patches, wd->len_texture_patches);
@@ -139,16 +142,7 @@ wad_data *server_load_wad(const char *path, char *map_name) {
 }
 
 void server_free_wad(wad_data *wd) {
-  free(wd->vertexes);
-  linedefs_free(wd->linedefs, wd->len_linedefs);
-  free(wd->nodes);
-  free(wd->segments);
-  free(wd->things);
-  free(wd->header.wad_type);
-  sectors_free(wd->sectors);
-  blockmap_free(wd->blockmap);
-  subsectors_free(wd->subsectors, wd->len_subsectors);
-  sidedefs_free(wd->sidedefs);
+  free_map(wd);
   for (int i = 0; i < wd->header.lump_count; i++) {
     free(wd->directory[i].lump_name);
   }
