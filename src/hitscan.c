@@ -1,5 +1,8 @@
 
 #include "../include/hitscan.h"
+#include "../include/player.h"
+#include "../include/component/position.h"
+#include "../include/component/weapon.h"
 
 #define PLAYER_HITBOX_SIZE 50
 #define HITSCAN_PRECISION 10
@@ -7,28 +10,33 @@
 
 bullet *create_bullet(player *player_) {
   bullet *bullet_ = malloc(sizeof(bullet));
-  bullet_->posx = player_->pos.x;
-  bullet_->posy = player_->pos.y;
-  bullet_->angle = player_->angle;
+  position_ct *pos = player_get_position(player_);
+  bullet_->posx = position_get_x(pos);
+  bullet_->posy = position_get_y(pos);
+  bullet_->angle = position_get_angle(pos);
   return bullet_;
 }
 
-void fire_bullet(player **players, int num_players, player *player_,
+void fire_bullet(entity_t** players, int num_players, player *player_,
                  int damage) { // toutes les valeurs de y sont négatives
+
+  position_ct *pos = player_get_position(player_);
+  weapon_ct *weapon = player_get_weapon(player_);
+  
   double distance_finale = 10000;
-  if (player_->cooldown < 80) {
-    player_->cooldown = player_->cooldown + 100;
+  if (weapon_get_active_cooldown(weapon) < 80) {
+    *weapon_get_mut_active_cooldown(weapon) += 100;
     linedef **linedefs = player_->engine->wData->linedefs;
-    double x1 = player_->pos.x;
-    double y1 = -player_->pos.y;
-    double x2 = x1 + 100 * cos(deg_to_rad((player_->angle)));
-    double y2 = y1 + 100 * sin(deg_to_rad((player_->angle)));
+    double x1 = position_get_x(pos);
+    double y1 = -position_get_y(pos);
+    double x2 = x1 + 100 * cos(deg_to_rad(position_get_angle(pos)));
+    double y2 = y1 + 100 * sin(deg_to_rad(position_get_angle(pos)));
     double a = 0;
     double x_final = 0;
     double y_final = 0;
     int direction =
         1; // 0 correspond a ni droite ni auche 1 a gauche 2 a droite
-    double height = player_->height;
+    double height = position_get_z(pos);
     if (x1 != x2) {
       a = (y2 - y1) / (x2 - x1);
       if (x1 > x2) {
@@ -83,16 +91,21 @@ void fire_bullet(player **players, int num_players, player *player_,
         }
       }
     }
+
+    // TODO: Déplacer coté serveur le calcul des dégats sur un joueur.
     for (int j = 0; j < num_players; j++) {
+      position_ct *pos_pj = (position_ct*)world_get_component(player_->engine->world, players[j], COMPONENT_TAG_POSITION);
+      health_ct *health_pj = (health_ct*)world_get_component(player_->engine->world, players[j], COMPONENT_TAG_HEALTH);
+
       double dist_to_hitscan =
-          (fabs(a * (players[j]->pos.x) + (players[j]->pos.y) + b)) /
+          (fabs(a * (position_get_x(pos_pj)) + (position_get_y(pos_pj)) + b)) /
           (sqrt(pow(a, 2) + pow(-1, 2)));
       if (dist_to_hitscan < PLAYER_HITBOX_SIZE) {
-        if ((min(x1, x_final) < players[j]->pos.x) &&
-            (max(x1, x_final) > players[j]->pos.x) &&
-            (min(y1, y_final) < -players[j]->pos.y) &&
-            (min(y1, y_final) < -players[j]->pos.y)) {
-          players[j]->life -= damage;
+        if ((min(x1, x_final) < position_get_x(pos_pj)) &&
+            (max(x1, x_final) > position_get_x(pos_pj)) &&
+            (min(y1, y_final) < -position_get_y(pos_pj)) &&
+            (min(y1, y_final) < -position_get_y(pos_pj))) {
+          health_sub(health_pj, damage);
         }
       }
     }

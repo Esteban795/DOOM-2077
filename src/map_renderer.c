@@ -31,17 +31,19 @@ void draw_wall_column(engine* e, texture_map *texture,
 void draw_flat(engine* e, flat *texture, i16 light_level, int x, int y1,
                int y2, int world_z) {
   if (y1 < y2) {
-    double player_dir_x = cos(deg_to_rad(e->p->angle));
+    position_ct* pos = player_get_position(mr->engine->p);
+
+    double player_dir_x = cos(deg_to_rad(pos->angle));
     double player_dir_y = -sin(deg_to_rad(
-        e->p->angle)); // - because the fucking y axis is reversed
+        pos->angle)); // - because the fucking y axis is reversed
     double z,px,py,left_x,left_y,right_x,right_y,dx,dy;
     int texture_x,texture_y;
     Uint32 pixel,light_adjusted_pixel;
     u8 r,g,b,a;
     for (int iy = y1; iy < y2; iy++) {
       z = HALF_WIDTH * world_z / (HALF_HEIGHT - iy);
-      px = player_dir_x * z + e->p->pos.x;
-      py = player_dir_y * z + e->p->pos.y;
+      px = player_dir_x * z + pos->x;
+      py = player_dir_y * z + pos->y;
       left_x = -player_dir_y * z + px;
       left_y = player_dir_x * z + py;
       right_x = player_dir_y * z + px;

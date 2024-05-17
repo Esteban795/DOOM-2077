@@ -201,6 +201,7 @@ patch *get_texture_patches(lump *directory, header *header, FILE *f,
   offset += 4;
   *len_textures_patches = (int)num_patches;
   patch *texture_patches = malloc(sizeof(patch) * num_patches);
+  int patch_count = 0; // for some weird reasons, a texture can be listed as part of the PNAMES lump but not actually exist in the file..
   for (int i = 0; i < *len_textures_patches; i++) {
     char *patch_name = read_texture_name(f, offset + i * 8, 8);
     char* upper_patch_name = malloc(sizeof(char) * 9);
@@ -211,8 +212,10 @@ patch *get_texture_patches(lump *directory, header *header, FILE *f,
       free(upper_patch_name);
       continue;
     }
-    texture_patches[i] = create_patch(f, directory[patch_index].lump_offset,
+    texture_patches[patch_count] = create_patch(f, directory[patch_index].lump_offset,
                                       upper_patch_name, palette);
+    patch_count++;
   }
+  *len_textures_patches = patch_count; // update the actual number of textures lol
   return texture_patches;
 }

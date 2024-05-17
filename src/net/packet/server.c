@@ -12,6 +12,14 @@ const char* SERVER_COMMAND_JOIN = "JOIN";
 const char* SERVER_COMMAND_KICK = "KICK";
 const char* SERVER_COMMAND_PONG = "PONG";
 const char* SERVER_COMMAND_QUIT = "QUIT";
+const char* SERVER_COMMAND_CHAT = "CHAT";
+const char* SERVER_COMMAND_TELL = "TELL";
+const char* SERVER_COMMAND_SCOR = "SCOR";
+const char* SERVER_COMMAND_MOVE = "MOVE";
+const char *SERVER_COMMAND_DAMG = "DAMG";
+const char *SERVER_COMMAND_HEAL = "HEAL";
+const char *SERVER_COMMAND_HLTH = "HLTH";
+const char *SERVER_COMMAND_KILL = "KILL";
 
 int server_acpt(uint8_t* buf, uint64_t player_id) {
     memcpy(buf, SERVER_COMMAND_ACPT, 4);
@@ -52,4 +60,221 @@ int server_quit(uint8_t* buf, uint64_t player_id) {
     write_uint64be(buf + 6, player_id);
     buf[14] = '\n';
     return 4 + 2 + 8 + 1;
+}
+
+int server_player_move(uint8_t* buf, uint64_t player_id, double x, double y, double z, double angle) {
+    memcpy(buf, SERVER_COMMAND_MOVE, 4);
+    write_uint16be(buf + 4, 8*5);
+    write_uint64be(buf + 6, player_id);
+    write_uint64be(buf + 14, (uint64_t) (x*1000));
+    write_uint64be(buf + 22, (uint64_t) (y*1000));
+    write_uint64be(buf + 30, (uint64_t) (z*1000));
+    write_uint64be(buf + 38, (uint64_t) (angle*1000));
+    buf[46] = '\n';
+    return 4 + 2 + 8*5 + 1;
+}
+
+int server_player_chat(uint8_t* buf, uint64_t player_id, char* message) {
+    memcpy(buf, SERVER_COMMAND_CHAT, 4);
+    int clen = write_cstring(buf + 6 + 8, message);
+    write_uint16be(buf + 4, 8 + clen);
+    write_uint64be(buf + 6, player_id);
+    buf[14 + clen] = '\n';
+    return 4 + 2 + 8 + clen + 1;
+}
+
+int server_server_chat(uint8_t* buf, char* message, bool is_broadcast, bool is_title) {
+    memcpy(buf, SERVER_COMMAND_TELL, 4);
+    uint8_t flags = 0;
+    if (is_broadcast) {
+        flags |= 0x01;
+    }
+    if (is_title) {
+        flags |= 0x02;
+    }
+    write_uint8be(buf + 6, flags);
+    int clen = write_cstring(buf + 7, message);
+    write_uint16be(buf + 4, 1 + clen);
+    buf[7 + clen] = '\n';
+    return 4 + 2 + 1 + clen + 1;
+}
+
+int server_scoreboard_update(uint8_t* buf, uint16_t entries_count, char** names, uint16_t* deaths, uint16_t* kills) {
+    memcpy(buf, SERVER_COMMAND_SCOR, 4);
+    write_uint16be(buf + 6, entries_count);
+    int plen = 2;
+    for (int i = 0; i < entries_count; i++) {
+        plen += write_cstring(buf + 8 + plen, names[i]);
+    }
+    for (int i = 0; i < entries_count; i++) {
+        write_uint16be(buf + 8 + plen, deaths[i]);
+        plen += 2;
+    }
+    for (int i = 0; i < entries_count; i++) {
+        write_uint16be(buf + 8 + plen, kills[i]);
+        plen += 2;
+    }
+    write_uint16be(buf + 4, plen);
+    buf[8 + plen] = '\n';
+    return 4 + 2 + plen + 1;
+}
+
+int server_player_damage(uint8_t *buf, uint64_t player_id, uint64_t src_player_id, float damage) {
+    memcpy(buf, SERVER_COMMAND_DAMG, 4);
+    write_uint16be(buf + 4, 8 + 8 + 4);
+    write_uint64be(buf + 6, player_id);
+    write_uint64be(buf + 14, src_player_id);
+    write_uint32be(buf + 22, damage*1000);
+    buf[26] = '\n';
+    return 4 + 2 + 8 + 8 + 4 + 1;
+}
+
+int server_player_heal(uint8_t *buf, uint64_t player_id, float gain) {
+    memcpy(buf, SERVER_COMMAND_HEAL, 4);
+    write_uint16be(buf + 4, 8 + 4);
+    write_uint64be(buf + 6, player_id);
+    write_uint32be(buf + 14, gain*1000);
+    buf[18] = '\n';
+    return 4 + 2 + 8 + 4 + 1;
+}
+
+int server_player_health(uint8_t *buf, uint64_t player_id, float health, float max_health) {
+    memcpy(buf, SERVER_COMMAND_HLTH, 4);
+    write_uint16be(buf + 4, 8 + 4 + 4);
+    write_uint64be(buf + 6, player_id);
+    write_uint32be(buf + 14, health*1000);
+    write_uint32be(buf + 18, max_health*1000);
+    buf[22] = '\n';
+    return 4 + 2 + 8 + 4 + 4 + 1;
+}
+
+int server_player_kill(uint8_t *buf, uint64_t player_id, uint64_t src_player_id) {
+    memcpy(buf, SERVER_COMMAND_KILL, 4);
+    write_uint16be(buf + 4, 8 + 8);
+    write_uint64be(buf + 6, player_id);
+    write_uint64be(buf + 14, src_player_id);
+    buf[22] = '\n';
+    return 4 + 2 + 8 + 8 + 1;
+}
+
+int server_acpt_from(uint8_t* buf, uint64_t* player_id) {
+    *player_id = read_uint64be(buf + 6);
+    return 4 + 2 + 8 + 1;
+}
+
+int server_join_from(uint8_t* buf, uint64_t* player_id, char** player_name) {
+    *player_id = read_uint64be(buf + 6);
+    int clen = read_uint16be(buf + 4) - 8;
+    int clen_ = clen;
+    if (clen >= 128) {
+        clen_ = 128;
+    }
+    memcpy(*player_name, buf + 14, clen_);
+    (*player_name)[clen_-1] = '\0';
+    return 4 + 2 + 8 + clen + 1;
+
+}
+
+int server_kick_from(uint8_t* buf, char** reason) {
+    int clen = read_uint16be(buf + 4);
+    int clen_ = clen;
+    if (clen >= 1024) {
+        clen_ = 1024;
+    }
+    memcpy(*reason, buf + 6, clen_);
+    (*reason)[clen_-1] = '\0';
+    return 4 + 2 + clen + 1;
+}
+
+int server_pong_from(uint8_t* buf, uint64_t* data) {
+    *data = read_uint64be(buf + 6);
+    return 4 + 2 + 8 + 1;
+}
+
+int server_quit_from(uint8_t* buf, uint64_t* player_id) {
+    *player_id = read_uint64be(buf + 6);
+    return 4 + 2 + 8 + 1;
+}
+
+int server_player_move_from(uint8_t* buf, uint64_t* player_id, double* x, double* y, double* z, double* angle) {
+    *player_id = read_uint64be(buf + 6);
+    *x = ((double) read_int64be(buf + 14)) / 1000.0;
+    *y = ((double) read_int64be(buf + 22)) / 1000.0;
+    *z = ((double) read_int64be(buf + 30)) / 1000.0;
+    *angle = ((double) read_int64be(buf + 38)) / 1000.0;
+    return 4 + 2 + 8*5 + 1;
+}
+
+int server_player_chat_from(uint8_t* buf, uint64_t* player_id, char** message) {
+    *player_id = read_uint64be(buf + 6);
+    int clen = read_uint16be(buf + 4) - 8;
+    int clen_ = clen;
+    if (clen >= 1024) {
+        clen_ = 1024;
+    }
+    memcpy(*message, buf + 14, clen_);
+    (*message)[clen_-1] = '\0';
+    return 4 + 2 + 8 + clen + 1;
+}
+
+int server_server_chat_from(uint8_t* buf, char** message, bool* is_broadcast, bool* is_title) {
+    int clen = read_uint16be(buf + 4) - 1;
+    int clen_ = clen;
+    if (clen >= 1024) {
+        clen_ = 1024;
+    }
+    *is_broadcast = (buf[6] & 0x01) != 0;
+    *is_title = (buf[6] & 0x02) != 0;
+    memcpy(*message, buf + 7, clen_);
+    (*message)[clen_-1] = '\0';
+    return 4 + 2 + 1 + clen + 1;
+}
+
+int server_scoreboard_update_from(uint8_t* buf, uint16_t* entries_count, char*** names, uint16_t** deaths, uint16_t** kills) {
+    *entries_count = read_uint16be(buf + 6);
+    int plen = 2;
+    *names = malloc(*entries_count * sizeof(char*));
+    for (int i = 0; i < *entries_count; i++) {
+        int clen = strnlen((char*) buf + 8 + plen, 127);
+        (*names)[i] = malloc(clen * sizeof(char));
+        (*names)[i][clen-1] = '\0';
+        plen += clen;
+    }
+    *deaths = malloc(*entries_count * sizeof(uint16_t));
+    for (int i = 0; i < *entries_count; i++) {
+        (*deaths)[i] = read_uint16be(buf + 8 + plen);
+        plen += 2;
+    }
+    *kills = malloc(*entries_count * sizeof(uint16_t));
+    for (int i = 0; i < *entries_count; i++) {
+        (*kills)[i] = read_uint16be(buf + 8 + plen);
+        plen += 2;
+    }
+    return 4 + 2 + plen + 1;
+}
+
+int server_player_damage_from(uint8_t *buf, uint64_t *player_id, uint64_t *src_player_id, float *damage) {
+    *player_id = read_uint64be(buf + 6);
+    *src_player_id = read_uint64be(buf + 14);
+    *damage = ((float) read_int32be(buf + 22)) / 1000.0;
+    return 4 + 2 + 8 + 8 + 4 + 1;
+}
+
+int server_player_heal_from(uint8_t *buf, uint64_t *player_id, float *gain) {
+    *player_id = read_uint64be(buf + 6);
+    *gain = ((float) read_int32be(buf + 14)) / 1000.0;
+    return 4 + 2 + 8 + 4 + 1;
+}
+
+int server_player_health_from(uint8_t *buf, uint64_t *player_id, float *health, float *max_health) {
+    *player_id = read_uint64be(buf + 6);
+    *health = ((float) read_int32be(buf + 14)) / 1000.0;
+    *max_health = ((float) read_int32be(buf + 18)) / 1000.0;
+    return 4 + 2 + 8 + 4 + 4 + 1;
+}
+
+int server_player_kill_from(uint8_t *buf, uint64_t *player_id, uint64_t *src_player_id) {
+    *player_id = read_uint64be(buf + 6);
+    *src_player_id = read_uint64be(buf + 14);
+    return 4 + 2 + 8 + 8 + 1;
 }

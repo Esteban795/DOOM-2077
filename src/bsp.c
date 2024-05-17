@@ -1,4 +1,6 @@
 #include "../include/bsp.h"
+#include "../include/player.h"
+#include "../include/component/position.h"
 
 bsp *bsp_init(engine *e, player *p) {
   bsp *b = malloc(sizeof(bsp));
@@ -31,8 +33,11 @@ static bool check_if_bbox_visible(bbox bb, player *p) {
   vec2 c = {.x = bb.right, .y = bb.top};
   vec2 d = {.x = bb.right, .y = bb.bottom};
   vec2 possibly_visible_bb_sides[4];
-  double x = p->pos.x;
-  double y = p->pos.y;
+
+  position_ct* player_pos = player_get_position(p);
+
+  double x = position_get_x(player_pos);
+  double y = position_get_y(player_pos);
   size_t counter = 0;
   if (x < bb.left) {
     if (y > bb.top) {
@@ -82,14 +87,14 @@ static bool check_if_bbox_visible(bbox bb, player *p) {
     } else
       return true; // we are inside the box
   }
-  vec2 player_pos = p->pos;
+  vec2 pos = position_get_pos(player_pos);
   for (size_t i = 0; i < 2 * counter; i += 2) {
-    double angle1 = point_to_angle(player_pos, possibly_visible_bb_sides[i]); // angle between player and point 1 of face i
+    double angle1 = point_to_angle(pos, possibly_visible_bb_sides[i]);
     double angle2 =
-        point_to_angle(player_pos, possibly_visible_bb_sides[i + 1]); // angle between player and point 2 of face i
+        point_to_angle(pos, possibly_visible_bb_sides[i + 1]);
     double span = norm(angle1 - angle2);
-    angle1 += p->angle;
-    double span1 = norm(angle1 + HALF_FOV); // determines if point 1 is in FOV
+    angle1 += position_get_angle(player_pos);
+    double span1 = norm(angle1 + HALF_FOV);
     if (span1 > FOV) {
       if (span1 + 0.1 >= span + FOV)
         continue;
@@ -107,14 +112,17 @@ bool is_segment_in_fov(player *p, segment seg, int *x1, int *x2,
   vertex *v2 = seg.end_vertex;
   vec2 v1v = {.x = v1->x, .y = v1->y};
   vec2 v2v = {.x = v2->x, .y = v2->y};
-  double angle1 = point_to_angle(p->pos, v1v); // angle from player to v1
-  double angle2 = point_to_angle(p->pos, v2v); // angle from player to v2
+
+  position_ct* player_pos = player_get_position(p);
+
+  double angle1 = point_to_angle(position_get_pos(player_pos), v1v); // angle from player to v1
+  double angle2 = point_to_angle(position_get_pos(player_pos), v2v); // angle from player to v2
   double span = norm(angle1 - angle2);
   if (span >= 180.0) // segment is not facing us
     return false;
-  *raw_angle_1 = angle1; // save the angle for later use when drawing
-  angle1 += p->angle; // total angle from origin to v1, don't forget y-axis is reversed
-  angle2 += p->angle; // total angle from origin to v2,don't forget y-axis is reversed
+  *raw_angle_1 = angle1;
+  angle1 += position_get_angle(player_pos);
+  angle2 += position_get_angle(player_pos);
   double span1 = norm(HALF_FOV + angle1);
   if (span1 > FOV) {
     if (span1 + 0.1 >= span + FOV)
@@ -134,10 +142,11 @@ bool is_segment_in_fov(player *p, segment seg, int *x1, int *x2,
   return true;
 }
 
-// determines if a player is on the backside of a node
-static bool is_on_back_side(bsp *b, node n) { 
-  i16 dx = b->player->pos.x - n.x_partition;
-  i16 dy = b->player->pos.y - n.y_partition;
+static bool is_on_back_side(bsp *b, node n) {
+  position_ct* player_pos = player_get_position(b->player);
+
+  i16 dx = position_get_x(player_pos) - n.x_partition;
+  i16 dy = position_get_y(player_pos) - n.y_partition;
   return dx * n.dy_partition - dy * n.dx_partition <= 0;
 }
 

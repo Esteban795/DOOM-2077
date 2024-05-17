@@ -28,6 +28,11 @@ uint16_t read_uint16be(uint8_t* buf);
 uint32_t read_uint32be(uint8_t* buf);
 uint64_t read_uint64be(uint8_t* buf);
 
+int8_t  read_int8be(uint8_t* buf);
+int16_t read_int16be(uint8_t* buf);
+int32_t read_int32be(uint8_t* buf);
+int64_t read_int64be(uint8_t* buf);
+
 char* read_cstring(uint8_t* buf);
 
 char* read_copy_string(uint8_t* buf, int len);

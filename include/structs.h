@@ -1,13 +1,21 @@
+#include <time.h>
+#include <stdint.h>
+
 #ifndef STRUCTS_H
 #define STRUCTS_H
 
-#include <SDL2/SDL.h>
+#ifndef _LIB_SDL_NET_H
+#define _LIB_SDL_NET_H
+#include <SDL2/SDL_net.h>
+#endif
 
 #include "audio/mixer.h"
 #include "keybindings.h"
 #include "settings.h"
+#include "remote.h"
 #include "vec2.h"
 #include "wad_data.h"
+#include "ecs/world.h"
 
 #define STATE_COUNT 2
 
@@ -48,17 +56,19 @@ struct WeaponsArray {
 
 struct Player {
   struct Engine *engine;
-  thing thing; // thing associated with the player. It is wadData->things[0] by default
-  vec2 pos;
-  double angle;
+  thing thing;
+  entity_t* entity;
   struct PlayerSetting *settings;
   struct PlayerKeybind *keybinds;
-  double height;
-  int *ammo; /*Array of size weapon_number that indicates the number of ammo by
-                weapon (id)*/
-  int active_weapon;
-  int life;
-  int cooldown;
+};
+
+struct RemoteServer {
+    IPaddress addr;
+    UDPsocket socket;
+    UDPpacket* packet;
+    struct timespec next_tick;
+    int connected; // 0: not connected (waiting for connection), 1: handshake completed, 2: connected, -1: disconnected, -2: error
+    uint64_t player_id;
 };
 
 struct Engine {
@@ -71,7 +81,8 @@ struct Engine {
   struct Player *p;
   struct BSP *bsp;
   struct SegmentHandler *seg_handler;
-  struct Player** players;
+  struct RemoteServer *remote;
+  entity_t** players;
   AudioMixer* mixer;
   Uint32 pixels[WIDTH * HEIGHT];
   SDL_Texture *texture;
@@ -83,6 +94,7 @@ struct Engine {
   
   lift** lifts;
   int len_lifts;
+  world_t *world;
 };
 
 struct BSP {
