@@ -389,26 +389,28 @@ void update_weapons(map_renderer *mr){
     player_keybind *kb = p->keybinds;
     bool fists = keys[get_key_from_action(kb, "FISTS")], pistol = keys[get_key_from_action(kb, "PISTOL")], chaingun = keys[get_key_from_action(kb, "CHAINGUN")], shotgun = keys[get_key_from_action(kb, "SHOTGUN")];
     //, rocket = keys[get_key_from_action(kb, "ROCKET")], plasma = keys[get_key_from_action(kb, "PLASMA")], bfg = keys[get_key_from_action(kb, "BFG")];
-    if(fists){
-        if(p->active_weapon != 0){
-            switch_weapon(p,0);
+        if (!p->has_attacked){
+            if(fists){
+                if(p->active_weapon != 0){
+                    switch_weapon(p,0);
+                }
+            }
+            if(pistol){
+                if(p->active_weapon != 1 && p->ammo[1] >= 0){
+                    switch_weapon(p,1);
+                }
+            }
+            if(chaingun){
+                if(p->active_weapon != 2 && p->ammo[2] >= 0){
+                    switch_weapon(p,2);
+                }
+            }
+            if(shotgun){
+                if(p->active_weapon != 3 && p->ammo[3] >= 0){
+                    switch_weapon(p,3);
+                }
+            }
         }
-    }
-    if(pistol){
-        if(p->active_weapon != 1 && p->ammo[1] >= 0){
-            switch_weapon(p,1);
-        }
-    }
-    if(chaingun){
-        if(p->active_weapon != 2 && p->ammo[2] >= 0){
-            switch_weapon(p,2);
-        }
-    }
-    if(shotgun){
-        if(p->active_weapon != 3 && p->ammo[3] >= 0){
-            switch_weapon(p,3);
-        }
-    }
     update_animation(mr);
 
 }
