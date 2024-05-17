@@ -28,6 +28,7 @@
 #include "../include/event/player_chat.h"
 #include "../include/event/player_move.h"
 #include "../include/system/server/active.h"
+#include "../include/wad_data.h"
 
 // Interrupt signal handler
 //
@@ -82,6 +83,10 @@ int run_server(uint16_t port)
 
     // Register the systems
     world_register_active_systems(&SERVER_STATE->world);
+
+    // Load the WAD data and map
+    SERVER_STATE->map_name = "E1M3";
+    SERVER_STATE->wad_data = server_load_wad("maps/DOOM1.WAD", SERVER_STATE->map_name);
 
     // Listen for incoming packets
     SERVER_STATE->incoming = SDLNet_AllocPacket(4096);
@@ -159,6 +164,7 @@ int run_server(uint16_t port)
 
                             // Send the ACPT message
                             int len = server_acpt(SERVER_STATE->outgoing->data, SERVER_STATE->conns[SERVER_STATE->conn_count - 1].player_id);
+                            len += server_load_map(SERVER_STATE->outgoing->data + len, SERVER_STATE->map_name);
                             SERVER_STATE->outgoing->address = SERVER_STATE->incoming->address;
                             SERVER_STATE->outgoing->len = len;
                             if (SDLNet_UDP_Send(server, -1, SERVER_STATE->outgoing) > 0)
@@ -237,6 +243,7 @@ int run_server(uint16_t port)
     // Clean-up
     printf("Cleaning-up...\n");
     world_destroy(&SERVER_STATE->world);
+    server_free_wad(SERVER_STATE->wad_data);
     SDLNet_UDP_Close(server);
     SDLNet_FreePacket(SERVER_STATE->incoming);
     SDLNet_FreePacket(SERVER_STATE->outgoing);

@@ -94,7 +94,7 @@ wad_data *init_wad_data(const char *path) {
   wad_data *wd = malloc(sizeof(wad_data));
   wd->header = read_header(file);
   wd->directory = read_directory(file, wd->header);
-  load_textures(wd, path); 
+  load_textures(wd, path);
   load_sounds(wd, path);
   fclose(file);
   return wd;
@@ -117,6 +117,38 @@ void wad_data_free(wad_data *wd) {
   texture_maps_free(wd->texture_maps, wd->len_texture_maps);
   flats_free(wd->flats, wd->len_flats);
   sounds_free(wd->sounds, wd->len_sounds);
+  for (int i = 0; i < wd->header.lump_count; i++) {
+    free(wd->directory[i].lump_name);
+  }
+  free(wd->directory);
+  free(wd);
+}
+
+wad_data *server_load_wad(const char *path, char *map_name) {
+  FILE *file = fopen(path, "rb");
+  if (file == NULL) {
+    printf("Error opening file\n");
+    exit(1);
+  }
+  wad_data *wd = malloc(sizeof(wad_data));
+  wd->header = read_header(file);
+  wd->directory = read_directory(file, wd->header);
+  load_map(wd, path, map_name);
+  fclose(file);
+  return wd;
+}
+
+void server_free_wad(wad_data *wd) {
+  free(wd->vertexes);
+  linedefs_free(wd->linedefs, wd->len_linedefs);
+  free(wd->nodes);
+  free(wd->segments);
+  free(wd->things);
+  free(wd->header.wad_type);
+  sectors_free(wd->sectors);
+  blockmap_free(wd->blockmap);
+  subsectors_free(wd->subsectors, wd->len_subsectors);
+  sidedefs_free(wd->sidedefs);
   for (int i = 0; i < wd->header.lump_count; i++) {
     free(wd->directory[i].lump_name);
   }

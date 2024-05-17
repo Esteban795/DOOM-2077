@@ -222,3 +222,10 @@ The `reason` argument is a NUL-terminated string, whose length cannot exceed 255
 * `player_id`, the 8 byte-long unique identifier of the player affected.
 * `health`: the health points of the player.
 * `max_health`: the maximum health, the player can have.
+
+## LMAP - Load Map
+
+**Description:** The server requests the client to load the following map.
+
+**Args:**:
+* `map_name` (cstring), a NUL-terminated string identifing the map in the WAP.
