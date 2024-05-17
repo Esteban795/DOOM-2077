@@ -71,8 +71,7 @@ struct WeaponsArray {
 };
 
 typedef struct weaponsArray_Cooldown_spray {
-  double * cooldowns;
-  double * sprays;
+  double * cs;
   struct Player * p;
 }WACS; 
 

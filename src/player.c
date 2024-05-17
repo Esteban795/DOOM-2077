@@ -348,7 +348,7 @@ void update_player(player *p) {
   double rot_speed = DT * PLAYER_ROTATION_SPEED;
   p->angle += rot_speed * ((double)mouse[NUM_MOUSE_BUTTONS]);
   p->angle = norm(p->angle);
-  p->cooldowns_sprays=update_cooldowns_sprays(p->cooldowns_sprays);
+  //p->cooldowns_sprays=update_cooldowns_sprays(p->cooldowns_sprays);
   double vec[2] = {0.0, 0.0};
   int count_dir = 0;
   int count_strafe = 0;
@@ -401,12 +401,9 @@ WACS * create_cooldowns_sprays(player* p){
   WACS * w=malloc(sizeof(WACS));
   w->p=p;
   double a[WEAPONS_NUMBER];
-  w->cooldowns=a;
-  double b[WEAPONS_NUMBER];
-  w->sprays=b;
+  w->cs=a;
   for(int i=0;i<WEAPONS_NUMBER;i++){
-    w->cooldowns[i]=0;
-    w->sprays[i]=0;
+    w->cs[i]=0;
   }
   return w;
 }
@@ -417,8 +414,7 @@ void free_cooldowns_sprays(player* p){
 
 WACS* update_cooldowns_sprays(WACS* w){
   for(int i=0;i<WEAPONS_NUMBER;i++){
-    printf("%f\n",w->sprays[i]);
-    w->sprays[i]=0;//SPRAY_DECREATE_RATE;
+    w->cs[i]=0;//SPRAY_DECREATE_RATE;
   }
   return w;
 }
