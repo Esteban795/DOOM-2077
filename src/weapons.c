@@ -24,21 +24,21 @@ void init_animation_sprite(animation_sprite *as, patch sprite, bool (*linked_fun
     as->layer_index_len = 0;
     as -> layers_index = NULL;
     if (strcmp(sprite.patchname, "PUNGB0") == 0){
-        as->duration = 500;
+        as->duration = 100;
         //printf("PUNGB0 init with duration %d\n",as->duration);
         return;
     }
     if(strcmp(sprite.patchname, "PUNGC0") == 0){
-        as->duration = 1000;
+        as->duration = 300;
         //printf("PUNGC0 init with duration %d\n",as->duration);
         return;
     }
     if(strcmp(sprite.patchname, "PUNGD0") == 0){
-        as->duration = 750;
+        as->duration = 200;
         //printf("PUNGD0 init with duration %d\n",as->duration);
         return;
     }
-    as->duration = 500;
+    as->duration = 100;
     //printf("Default init of %s with duration %d\n",sprite.patchname,as->duration);
     return;
 }
@@ -290,10 +290,34 @@ void idle_weapon_animation(map_renderer *mr,weapon *w, bool is_moving){
 
 }
 
+void add_fire_layer(animations_array *fire_layer,animation_sprite as,int time_elapsed,map_renderer *mr){
+    if (fire_layer == NULL){
+        return;
+    }
+    printf("J'allume le feu\n");
+    int *layers_index = as.layers_index;
+    int layer_index_len = as.layer_index_len;
+    int layer_accumulated_duration = 0;
+    animation_sprite *fire_layer_anim_sprite; 
+    int x;
+    int y;
+    for (int j = 0; j < layer_index_len; j++) {
+        int layer_duration = fire_layer->animation_sprites_array[layers_index[j]].duration;
+        if (time_elapsed > layer_accumulated_duration && time_elapsed <= layer_accumulated_duration + layer_duration) {
+            fire_layer_anim_sprite = &fire_layer->animation_sprites_array[layers_index[j]];
+            x = fire_layer_anim_sprite->wanim_origin.x;
+            y = fire_layer_anim_sprite->wanim_origin.y;
+            draw_weapon(mr, fire_layer->animation_sprites_array[layers_index[j]].animation_sprite, x, y);
+        }
+        layer_accumulated_duration += layer_duration;
+    }
+}
+
 void fire_weapon_animation(map_renderer *mr,weapon *w){
     player *p = mr->engine->p;
     animations_array *aa = w->sprites;
     animation_sprite *fire_anim = aa[ANIMATION].animation_sprites_array; //Tableau de toutes les animations de l'arme
+    animation_sprite *idle_anim = aa[IDLE].animation_sprites_array; // Idle animation
     animations_array *fire_layer = NULL; //Layer a ajouter
     if (w->id!=0){ // Si c'est pas les poings
         fire_layer = &aa[FIRE]; // On récupère la couche qui se rajoute sur l'animation
@@ -316,6 +340,7 @@ void fire_weapon_animation(map_renderer *mr,weapon *w){
         x = fire_anim[0].wanim_origin.x;
         y = fire_anim[0].wanim_origin.y;
         draw_weapon(mr,fire_anim[0].animation_sprite,x,y);
+        add_fire_layer(fire_layer,fire_anim[0],time_elapsed,mr);
     } else {
         int i = 1;
         int accumulated_duration = fire_anim[0].duration;
@@ -332,19 +357,7 @@ void fire_weapon_animation(map_renderer *mr,weapon *w){
         x = fire_anim[i - 1].wanim_origin.x;
         y = fire_anim[i - 1].wanim_origin.y;
         draw_weapon(mr,fire_anim[i-1].animation_sprite,x,y);
-        if(fire_layer != NULL){
-            int *layers_index = fire_anim[i - 1].layers_index;
-            int layer_index_len = fire_anim[i - 1].layer_index_len;
-            int layer_accumulated_duration = 0;
-            for (int j = 0; j < layer_index_len; j++) {
-                if (time_elapsed > layer_accumulated_duration) {
-                    x = fire_anim[i - 1].wanim_origin.x;
-                    y = fire_anim[i - 1].wanim_origin.y;
-                    draw_weapon(mr, fire_layer->animation_sprites_array[layers_index[j]].animation_sprite, x, y);
-                }
-                layer_accumulated_duration += fire_layer->animation_sprites_array[layers_index[j]].duration;
-            }
-        }
+        add_fire_layer(fire_layer,fire_anim[i-1],time_elapsed,mr);
     }
 }
 
