@@ -61,13 +61,17 @@ wad_data *init_wad_data(const char *path);
 
 void load_map(wad_data *wd, const char *path, char *map_name);
 
-void free_map(wad_data* wd);
+void free_map(wad_data *wd);
+
 void wad_data_free(wad_data *wd);
+
+// Check if a map is currently loaded in the wad_data struct.
+bool wad_is_map_loaded(wad_data *wd);
 
 // Server function to load a WAD file and a particular map.
 //
 // When using this function, the server will not load any textures, sounds, or
-// sprites. It will only load the map data. Therefore you MUST only use 
+// sprites. It will only load the map data. Therefore you MUST only use
 // 'server_free_wad' to free the wad_data struct.
 //
 // You can use `load_map` to load another map into the wad_data struct. This is fine.
