@@ -382,15 +382,22 @@ void draw_sprite_column(map_renderer *mr, patch *sprite,
                         int sprite_column, // does NOT WORK YET
                         int screen_x, int y1, int y2, double inverted_scale,
                         Uint32 c) {
-  double sprite_y = (HALF_HEIGHT - sprite->header.height / 2) +
-                    (sprite_column - 0.5) * inverted_scale;
-  int sprite_y_int = (int)sprite_y;
-  int sprite_height = sprite->header.height;
-  for (int screen_y = y1; screen_y < y2; screen_y++) {
-    int texture_y = (int)mod(sprite_y_int, sprite_height);
-    // Uint32 pixel = sprite->pixels[texture_y * sprite->header.width +
-    // sprite_column];
-    mr->engine->pixels[screen_y * WIDTH + screen_x] = c;
+  if (y1 < y2) {
+    double sprite_y = y1 < 0 ? -y1 * inverted_scale : 0;
+    y1 = max(y1, 0); // clipping
+    y2 = min(y2, HEIGHT - 1);
+    int sprite_y_int;
+    for (int top = y1; top < y2 - 1; top++) {
+      sprite_y_int = (int)sprite_y;
+      Uint32 pixel =
+          sprite->pixels[sprite_y_int * sprite->header.width + sprite_column];
+      if (pixel == 0) {
+        sprite_y += inverted_scale;
+        continue;
+      }
+      mr->engine->pixels[top * WIDTH + screen_x] = pixel;
+      sprite_y += inverted_scale;
+    }
   }
 }
 
@@ -398,31 +405,37 @@ double get_height_difference(bsp *b, vec2 pos1, vec2 pos2) {
   return get_xy_floor_height(b, pos1) - get_xy_floor_height(b, pos2);
 }
 
-void get_drawing_rect(vs_sprite vssprite,int* top,int* height,double z_diff) {
-  *top = HALF_HEIGHT - vssprite.scale * vssprite.sprite->header.height - z_diff * vssprite.scale;
+void get_drawing_rect(vs_sprite vssprite, int *top, int *height,
+                      double z_diff) {
+  *top = HALF_HEIGHT - vssprite.scale * vssprite.sprite->header.height -
+         z_diff * vssprite.scale;
   *height = 2 * vssprite.scale * vssprite.sprite->header.height;
 }
 
 void render_vssprite(map_renderer *mr, vs_sprite vssprite) {
   patch *sprite = vssprite.sprite;
-  double z_diff = get_height_difference(mr->engine->bsp, mr->engine->p->pos, vssprite.pos); // height difference between the player and the sprite
-  int top,height; // top and height of the sprite
-  get_drawing_rect(vssprite,&top,&height,z_diff);
+  double z_diff = get_height_difference(
+      mr->engine->bsp, mr->engine->p->pos,
+      vssprite.pos); // height difference between the player and the sprite
+  int top, height;   // top and height of the sprite
+  get_drawing_rect(vssprite, &top, &height, z_diff); // get left,top corner and height width  
   int left = vssprite.x1;
   int width = vssprite.x2 - vssprite.x1;
-  double inverted_scale = 1 / (2 * vssprite.scale); // used later as a function to scale the sprite
-
+  double inverted_scale =
+      1 / (2 * vssprite.scale); // used later as a function to scale the sprite
   int ds_ind = find_clip_seg(
       vssprite.x1, vssprite.x2, vssprite.scale,
       DRAWSEGS_INDEX); // this seg is partially obscuring the sprite
-  if (ds_ind == -1) {  // nothing is obscuring the sprite that is before in the FOV, draw the whole sprite
-    for (int screen_x = max(vssprite.x1, 0); screen_x < min(vssprite.x2, WIDTH); 
+  if (ds_ind == -1) {  // nothing is obscuring the sprite that is before in the
+                       // FOV, draw the whole sprite
+    double sprite_column = vssprite.x1 < 0 ? -vssprite.x1 * inverted_scale : 0; // account for clipping the sprite
+    int sprite_column_int = 0;
+    for (int screen_x = max(vssprite.x1, 0); screen_x < min(vssprite.x2, WIDTH);
          screen_x++) {
-      double sprite_column =
-          (screen_x - left) / ((double)width * vssprite.scale);
-      draw_sprite_column(mr, sprite, sprite_column, screen_x, max(top, 0),
-                         min(HEIGHT, top + height), inverted_scale,
-                         vssprite.color);
+      sprite_column_int = (int)sprite_column;
+      draw_sprite_column(mr, sprite, sprite_column_int, screen_x, top,
+                         top + height, inverted_scale, vssprite.color);
+      sprite_column += inverted_scale;
     }
   } else { // something is obscuring the sprite
     int left_clip = INT_MAX;
@@ -433,23 +446,40 @@ void render_vssprite(map_renderer *mr, vs_sprite vssprite) {
       ds_ind =
           find_clip_seg(vssprite.x1, vssprite.x2, vssprite.scale, ds_ind - 1);
     } while (ds_ind != -1);
-
-    for (int screen_x = max(0, left); screen_x < min(WIDTH, left_clip);
-         screen_x++) {
-      double sprite_column =
-          (screen_x - left) / ((double)width * vssprite.scale);
-      draw_sprite_column(mr, sprite, sprite_column, screen_x, max(top, 0),
-                         min(HEIGHT, top + height), inverted_scale,
-                         vssprite.color);
-    }
-
-    for (int screen_x = max(right_clip, 0); screen_x < min(WIDTH, left + width);
-         screen_x++) {
-      double sprite_column =
-          (screen_x - left) / ((double)width * vssprite.scale);
-      draw_sprite_column(mr, sprite, sprite_column, screen_x, max(top, 0),
-                         min(HEIGHT, top + height), inverted_scale,
-                         vssprite.color);
+    if (vssprite.x1 <= left_clip && right_clip <= vssprite.x2) { // seg is visible on both sides (e.g : there is a pillar in between but the sprite is wider than pillar)
+      double sprite_column = vssprite.x1 < 0 ? -vssprite.x1 * inverted_scale : 0; // account for clipping the sprite
+      int sprite_column_int = 0;
+      for (int screen_x = max(0, vssprite.x1); screen_x < min(WIDTH, vssprite.x2);
+          screen_x++) {
+        sprite_column_int = (int)(sprite_column);
+        if (left_clip < screen_x && screen_x < right_clip) {
+          sprite_column += inverted_scale;
+          continue;
+        }
+        draw_sprite_column(mr, sprite, sprite_column_int, screen_x, top,
+                          top + height, inverted_scale, vssprite.color);
+        sprite_column += inverted_scale;
+      }
+    } else if (vssprite.x1 <= left_clip) { // only the left part of the sprite is visible
+      double sprite_column = vssprite.x1 < 0 ? -vssprite.x1 * inverted_scale : 0;
+      int sprite_column_int = 0;
+      for (int screen_x = max(0, vssprite.x1); screen_x < min(WIDTH, left_clip);
+          screen_x++) {
+        sprite_column_int = (int)(sprite_column);
+        draw_sprite_column(mr, sprite, sprite_column_int, screen_x, top,
+                          top + height, inverted_scale, vssprite.color);
+        sprite_column += inverted_scale;
+      }
+    } else if (right_clip <= vssprite.x2) { // only the right part of the sprite is visible
+      double sprite_column = (double)(right_clip - vssprite.x1) * inverted_scale;
+      int sprite_column_int = 0;
+      for (int screen_x = max(0, right_clip); screen_x < min(WIDTH, vssprite.x2);
+          screen_x++) {
+        sprite_column_int = (int)(sprite_column);
+        draw_sprite_column(mr, sprite, sprite_column_int, screen_x, top,
+                          top + height, inverted_scale, vssprite.color);
+        sprite_column += inverted_scale;
+      }
     }
   }
 }
@@ -460,4 +490,28 @@ void render_vssprites(map_renderer *mr) {
   }
   VSSPRITES_INDEX = 0;
   DRAWSEGS_INDEX = 0;
+}
+
+// Pour l'instant un int est renvoyé en fonction de l'angle relatif des deux
+// joueurs, a changer plus tard (?)
+int sprite_orientation(player *player_1,
+                       player *player_2) { // le joueur controlé est le joueur
+  int angle_diff = abs(player_1->angle - player_2->angle);
+  if ((angle_diff < 22.5) || (angle_diff >= 337.5)) {
+    return 0; // Affichage du dos du sprite
+  } else if (angle_diff < 45 + 22.5) {
+    return 1; //
+  } else if (angle_diff < 90 + 22.5) {
+    return 2; // le joueur 2 regarde vers la droite du pov du joueur 1
+  } else if (angle_diff < 135 + 22.5) {
+    return 3;
+  } else if (angle_diff < 180 + 22.5) {
+    return 4; // les deux joueurs se font face
+  } else if (angle_diff < 225 + 22.5) {
+    return 5;
+  } else if (angle_diff < 270 + 22.5) {
+    return 6; // le joueur 2 regarde vers la gauche
+  } else {
+    return 7;
+  }
 }

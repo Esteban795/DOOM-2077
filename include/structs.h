@@ -69,6 +69,12 @@ struct WeaponsArray {
   int weapons_number;
   struct Weapon **weapons;
 };
+
+typedef struct weaponsArray_Cooldown_spray {
+  double * cs;
+  struct Player * p;
+}WACS; 
+
 struct Player {
   struct Engine *engine;
   thing thing;
@@ -84,9 +90,10 @@ struct Player {
   int active_weapon;
   /*Animation de l'arme*/
   int life;
-  int cooldown; //nombre d'unités de temps nécéssaires avant de tirer , 0 indique qu'on peut tirer
-  int spray; //nombre d'unités de temps nécéssaires avant de ne plus avoir de spray, 0 indique que le tir sera parfaitement droit
+  //int cooldown; //nombre d'unités de temps nécéssaires avant de tirer , 0 indique qu'on peut tirer
+  //double spray; //nombre d'unités de temps nécéssaires avant de ne plus avoir de spray, 0 indique que le tir sera parfaitement droit
   i16 subsector_id;
+  WACS* cooldowns_sprays;
 
 };
 

@@ -1,15 +1,20 @@
 #include "../include/player.h"
 #include "../include/weapons.h"
+#include <SDL2/SDL_keyboard.h>
 #include <SDL2/SDL_render.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 
+
+#define SPRAY_DECREATE_RATE 0.25
 #define SIGN(x) (int)(x > 0) ? 1 : ((x < 0) ? -1 : 0)
 #define DOT(a, b) (a.x * b.x) + (a.y * b.y)
 #define DISTANCE_VEC_VER(a, b) (sqrt(pow(b->x - a.x, 2) + pow(b->y - a.y, 2)))
 #define PLAYER_LIFE 100
 #define M_PI 3.14159265358979323846
+
+bool SHOULD_COLLIDE = true;
 
 player *player_init(engine *e) {
   player *p = malloc(sizeof(player));
@@ -31,8 +36,7 @@ player *player_init(engine *e) {
   p->has_attacked = false;
   p->life=PLAYER_LIFE;
   p->active_weapon = 0;
-  p->cooldown = 750; //nombre d'unités de temps nécéssaires avant de tirer , 0 indique qu'on peut tirer
-  p->spray=0;
+  p->cooldowns_sprays = create_cooldowns_sprays(e->p);
   return p;
 }
 
@@ -48,8 +52,8 @@ player **create_players(int num_players, engine *e) {
   Players[1]->pos.x = 0;
   Players[1]->pos.y = 544;
 
-  Players[2]->pos.x = 512;
-  Players[2]->pos.y = 640;
+  Players[2]->pos.x = 480;
+  Players[2]->pos.y = 576;
   return (Players);
 }
 
@@ -339,6 +343,10 @@ void update_height(player *p, double z) {
 
 void update_player(player *p) {
   int DT = p->engine->DT;
+  if (keys[SDL_GetScancodeFromKey(SDL_GetKeyFromName("M"))]) {
+    SHOULD_COLLIDE = !SHOULD_COLLIDE;
+  }
+
   bool forward = keys[get_key_from_action(p->keybinds, "MOVE_FORWARD")];
   bool left = keys[get_key_from_action(p->keybinds, "MOVE_LEFT")];
   bool backward = keys[get_key_from_action(p->keybinds, "MOVE_BACKWARD")];
@@ -347,6 +355,7 @@ void update_player(player *p) {
   double rot_speed = DT * PLAYER_ROTATION_SPEED;
   p->angle += rot_speed * ((double)mouse[NUM_MOUSE_BUTTONS]);
   p->angle = norm(p->angle);
+  //p->cooldowns_sprays=update_cooldowns_sprays(p->cooldowns_sprays);
   double vec[2] = {0.0, 0.0};
   int count_dir = 0;
   int count_strafe = 0;
@@ -374,16 +383,22 @@ void update_player(player *p) {
     vec[0] *= DIAGONAL_CORRECTION;
     vec[1] *= DIAGONAL_CORRECTION;
   }
-  // p->pos.x += vec[0];
-  // p->pos.y += vec[1];
-  move_and_slide(p, vec);
+  if (SHOULD_COLLIDE) {
+    move_and_slide(p, vec);
+  } else {
+    p->pos.x += vec[0];
+    p->pos.y += vec[1];
+  }
+
 }
 
 void player_free(player *p) {
   free_keybinds(p->keybinds);
   free_settings(p->settings);
   free(p->ammo);
+  free_cooldowns_sprays(p);
   free(p);
+
 }
 
 void players_free(player **players, int num_players) {
@@ -392,3 +407,27 @@ void players_free(player **players, int num_players) {
   }
   free(players);
 }
+
+WACS * create_cooldowns_sprays(player* p){
+  WACS * w=malloc(sizeof(WACS));
+  w->p=p;
+  double a[WEAPONS_NUMBER];
+  w->cs=a;
+  for(int i=0;i<WEAPONS_NUMBER;i++){
+    w->cs[i]=0;
+  }
+  return w;
+}
+
+void free_cooldowns_sprays(player* p){
+  free(p->cooldowns_sprays);
+}
+
+WACS* update_cooldowns_sprays(WACS* w){
+  for(int i=0;i<WEAPONS_NUMBER;i++){
+    w->cs[i]=0;//SPRAY_DECREATE_RATE;
+  }
+  return w;
+}
+
+

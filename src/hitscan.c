@@ -4,7 +4,8 @@
 #define PLAYER_HITBOX_SIZE 50
 #define HITSCAN_PRECISION 10
 #define MELEE_RADIUS 20
-#define MAX_SPRAY  10
+#define MAX_SPRAY  50
+#define SPRAY_COEFF 5 //Vitesse a laquelle le spray augmente
 
 bullet *create_bullet(player *player_) {
   bullet *bullet_ = malloc(sizeof(bullet));
@@ -18,11 +19,15 @@ double distance(double posx_a, double posy_a, double posx_b, double posy_b) {
   return sqrt(pow((posx_b - posx_a), 2) + pow((posy_b - posy_a), 2));
 }
 
-void fire_bullet(player **players, int num_players, player *player_,weapons_array weapons_list) { // toutes les valeurs de y sont négatives
+void fire_bullet(player **players, int num_players, player *player_,weapons_array* weapons_list) { // toutes les valeurs de y sont négatives
   //initialisation
   double distance_finale = 10000;
-  weapon* weapon_used=weapons_list.weapons[player_->active_weapon];
+  //printf("%i\n",player_->cooldown);
+  weapon* weapon_used=weapons_list->weapons[player_->active_weapon];
   int damage=weapon_used->max_damage;
+  int weapon_number=weapon_used->id;
+  double cs=player_->cooldowns_sprays->cs[weapon_number]; //temps depuis le dernier tir de cette arme
+  double time=SDL_GetTicks();
   int is_ranged; //0 correspond a une arme de melée sinon une arme a distance
   if(weapon_used->type==-1){
     is_ranged=0;
@@ -32,16 +37,16 @@ void fire_bullet(player **players, int num_players, player *player_,weapons_arra
   }
   //gestion du spray
   if(is_ranged==1){
-    if(player_->spray%2==0){
-      player_->angle+=player_->spray;
+    int spray=0;
+    if(spray%2==0){
+      player_->angle+=spray;
     }
     else{
-      player_->angle-=player_->spray; //le spray fait bouger la caméra
+      player_->angle-=spray; //le spray fait bouger la caméra
     }
   }
-  //gestion du tir
-  if ((player_->cooldown ==0)&&(!((is_ranged==1)&&(player_->ammo[player_->active_weapon]==0)))){ //On véfrifie d'un coté que le temps de cooldown est respecté et ensuite que si l'arme est a distance elle dispose d'assez de muntitions
-    player_->cooldown = player_->cooldown + 100;
+  //gestion du tir jusqu'au mur
+  if ((cs<time)&&(!((is_ranged==1)&&(player_->ammo[player_->active_weapon]==0)))){ //On véfrifie d'un coté que le temps de cooldown est respecté et ensuite que si l'arme est a distance elle dispose d'assez de muntitions
     linedef *linedefs = player_->engine->wData->linedefs;
     double x1 = player_->pos.x;
     double y1 = -player_->pos.y;
@@ -107,6 +112,7 @@ void fire_bullet(player **players, int num_players, player *player_,weapons_arra
         }
       }
     }
+    //Gestion de la collison du tir avec les joueurs
     for (int j = 0; j < num_players; j++) {
       double dist_to_hitscan =
           (fabs(a * (players[j]->pos.x) + (players[j]->pos.y) + b)) /
@@ -123,12 +129,10 @@ void fire_bullet(player **players, int num_players, player *player_,weapons_arra
         }
       }
     }
-    player_->cooldown+=weapon_used->fire_rate; //a update plus tard quand une unité de temps sera fixée
-    if(player_->spray<MAX_SPRAY*weapon_used->spray){ 
-    player_->spray+=weapon_used->spray;
+    //Update des etats du joueur
+    player_->cooldowns_sprays->cs[weapon_number]=time;
     }
   }
-}
 
 int correct_height(linedef wall, int height) {
   if (!(wall.has_back_sidedef)) {
@@ -151,3 +155,16 @@ int correct_height(linedef wall, int height) {
     }
   }
 }
+
+
+
+void aux_fire_bullet(map_renderer* mr,weapons_array* wa){
+    player *p = mr->engine->p;
+    player_keybind *kb = p->keybinds;
+    bool attack = keys[get_key_from_action(kb, "ATTACK")];
+    if(attack){
+      fire_bullet(mr->engine->players,NUM_PLAYERS,mr->engine->p,wa);
+    }
+}
+
+

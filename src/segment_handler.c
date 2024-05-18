@@ -169,6 +169,7 @@ void draw_portal_walls_range(segment_handler *sh, int x1, int x2) {
   double scale1 =
       scale_from_global_angle(sh->engine->p->angle, x1, normal_angle, raw_dist);
   double scale2 = scale1;
+  double prev_scale1 = scale1;
   if (x1 < x2) {
     scale2 = scale_from_global_angle(sh->engine->p->angle, x2, normal_angle,
                                      raw_dist);
@@ -327,7 +328,7 @@ void draw_portal_walls_range(segment_handler *sh, int x1, int x2) {
   }
 
   // log entry of what we've just drawn, used later for rendering sprites
-  drawseg_add(seg, x1, x2, scale1, scale2, rw_scale_step);
+  drawseg_add(seg, x1, x2, prev_scale1, scale2, rw_scale_step);
 }
 
 void clip_solid_walls(segment_handler *sh, int x1, int x2) {
