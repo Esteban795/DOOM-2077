@@ -398,7 +398,7 @@ void __client_door_trigger(engine* e, uint64_t door_id, bool is_lift) {
 
     int len = 0;
     if (is_lift) {
-        if (e->doors[door_id]->state) {
+        if (e->lifts[door_id]->state) {
             len = client_lift_descend(e->remote->packet->data, door_id);
         } else {
             len = client_lift_ascend(e->remote->packet->data, door_id);
