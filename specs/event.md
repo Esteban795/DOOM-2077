@@ -23,9 +23,9 @@
 
 ## Door/Elevator events
 
-* [ ] 0x0080 - DoorStateEvent {S} - set the current state of the doors and lifts
-* [ ] 0x0081 - DoorOpenEvent {CS} - a player is opening a door (lift ascending)
-* [ ] 0x0082 - DoorCloseEvent {CS} - a player is closing a door (lift descending) 
+* 0x0080 - DoorStateEvent {S} - set the current state of the doors and lifts
+* [x] 0x0081 - DoorOpenEvent {CS} - a player is opening a door (lift ascending)
+* [x] 0x0082 - DoorCloseEvent {CS} - a player is closing a door (lift descending) 
 
 ## Communication events
 

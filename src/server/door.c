@@ -4,24 +4,24 @@
 
 entity_t** server_world_load_doors(world_t* world, wad_data* wad, int* door_count) {
     *door_count = get_doors_count(wad->linedefs, wad->len_linedefs, wad->sectors, wad->len_sectors);
-    component_t*** components = malloc(sizeof(component_t**) * (*door_count));
+    component_t** components = malloc(sizeof(component_t*));
+    entity_t** entities = malloc(sizeof(entity_t*) * (*door_count));
     for (int i = 0; i < *door_count; i++) {
-        components[i] = malloc(sizeof(component_t*) * 1);
-        components[i][0] = door_state_create(i, false);
+        components[0] = door_state_create(i, false);
+        entities[i] = world_create_entity(world, components, 1);
     }
-    entity_t** entities = world_create_bulk_entity(world, components, 1, *door_count);
     free(components);
     return entities;
 }
 
 entity_t** server_world_load_lifts(world_t* world, wad_data* wad, int* lift_count) {
     *lift_count = get_lifts_count(wad->linedefs, wad->len_linedefs, wad->sectors, wad->len_sectors);
-    component_t*** components = malloc(sizeof(component_t**) * (*lift_count));
+    component_t** components = malloc(sizeof(component_t*));
+    entity_t** entities = malloc(sizeof(entity_t*) * (*lift_count));
     for (int i = 0; i < *lift_count; i++) {
-        components[i] = malloc(sizeof(component_t*) * 1);
-        components[i][0] = lift_state_create(i, false);
+        components[0] = lift_state_create(i, false);
+        entities[i] = world_create_entity(world, components, 1);
     }
-    entity_t** entities = world_create_bulk_entity(world, components, 1, *lift_count);
     free(components);
     return entities;
 }

@@ -8,6 +8,11 @@
 #include <stdbool.h>
 
 #include "event.h"
+#include "../ecs/world.h"
+#include "../ecs/entity.h"
+#include "../component/door_state.h"
+#include "../component/lift_state.h"
+
 
 #define CLIENT_DOOR_STATES_EVENT_TAG 0x0080
 #define SERVER_DOOR_STATES_EVENT_TAG (CLIENT_DOOR_STATES_EVENT_TAG | 0x8000)
@@ -45,5 +50,8 @@ inline door_close_event_t* DoorCloseEvent_new(uint64_t door_id, bool is_lift) {
     event->is_lift = is_lift;
     return event;
 }
+
+int door_states_generate(world_t* world, entity_t** doors, bool* doors_states, int doors_count);
+int lift_states_generate(world_t* world, entity_t** lifts, bool* lifts_states, int lifts_count);
 
 #endif

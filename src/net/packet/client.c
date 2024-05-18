@@ -15,7 +15,7 @@ const char* CLIENT_COMMAND_QUIT = "QUIT";
 const char* CLIENT_COMMAND_MOVE = "MOVE";
 const char* CLIENT_COMMAND_CHAT = "CHAT";
 const char* CLIENT_COMMAND_OPEN = "OPEN";
-const char* CLIENT_COMMAND_CLOSE = "CLOS";
+const char* CLIENT_COMMAND_CLOS = "CLOS";
 const char* CLIENT_COMMAND_LASC = "LASC";
 const char* CLIENT_COMMAND_LDSC = "LDSC";
 
@@ -81,7 +81,7 @@ int client_door_open(uint8_t* buf, uint64_t door_id) {
 }
 
 int client_door_close(uint8_t* buf, uint64_t door_id) {
-    return client_door_state_change(buf, CLIENT_COMMAND_CLOSE, door_id);
+    return client_door_state_change(buf, CLIENT_COMMAND_CLOS, door_id);
 }
 
 int client_lift_ascend(uint8_t* buf, uint64_t lift_id) {
