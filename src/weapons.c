@@ -24,18 +24,23 @@ void init_animation_sprite(animation_sprite *as, patch sprite, bool (*linked_fun
     as->layer_index_len = 0;
     as -> layers_index = NULL;
     if (strcmp(sprite.patchname, "PUNGB0") == 0){
-        as->duration = 100;
-        //printf("PUNGB0 init with duration %d\n",as->duration);
+        as->duration = 50;
         return;
     }
     if(strcmp(sprite.patchname, "PUNGC0") == 0){
-        as->duration = 300;
-        //printf("PUNGC0 init with duration %d\n",as->duration);
+        as->duration = 25;
         return;
     }
     if(strcmp(sprite.patchname, "PUNGD0") == 0){
         as->duration = 200;
-        //printf("PUNGD0 init with duration %d\n",as->duration);
+        return;
+    }
+    if(strcmp(sprite.patchname, "SHTGC0") == 0){
+        as->duration = 300;
+        return;
+    }
+    if(strcmp(sprite.patchname, "SHTGD0") == 0){
+        as->duration = 300;
         return;
     }
     as->duration = 100;
@@ -55,6 +60,8 @@ animations_array *init_animations_array(map_renderer *mr,char *abbreviation, jso
     int animation_len = 0;
     int all_sprites_len = 0;
     int i = 0;
+    int special_index = 0; // Index spécial pour rajouter des frames dans l'animation
+    int special_sprite_index = 0; // Index spécial pour rajouter des frames dans l'animation
     patch *sprites = mr->wData->sprites;
     char* to_cmp = malloc(10*sizeof(char));
     strcpy(to_cmp,sprites[i].patchname);
@@ -69,6 +76,12 @@ animations_array *init_animations_array(map_renderer *mr,char *abbreviation, jso
     while(strcmp(abbreviation,to_cmp)==0 && i<mr->wData->len_sprites){
         indexes[k] = i;
         k++;
+        if(k == special_index){
+            indexes[k] = special_sprite_index;
+            animation_len++;
+            all_sprites_len++;
+            k++;
+        }
         i++;
         strcpy(to_cmp,sprites[i].patchname);
         if (!(to_cmp[m] == 'F')){
@@ -76,6 +89,12 @@ animations_array *init_animations_array(map_renderer *mr,char *abbreviation, jso
         }
         all_sprites_len++;
         to_cmp[m]='\0';
+        
+        //Gère les index spéciaux pour rajouter des frames dans l'animation
+        if(strcmp("SHTGC0",sprites[i].patchname) == 0){
+            special_index = k+2;
+            special_sprite_index = i;
+        }
     }
     if(i==mr->wData->len_sprites){
         printf("Erreur lors du chargement des sprites \n");
@@ -171,17 +190,17 @@ void print_animations_patches(weapon *w){
     animations_array *aa = w->sprites;
     printf("Animation d'idle de base :%s \n",aa[0].animation_sprites_array->animation_sprite.patchname);
     for(int j = 1; j<3;j++){
-        //printf("Animation %d \n",j);
+        printf("Animation %d \n",j);
         for(int i = 0; i<aa[j].animation_len; i++){
-            //printf("Case %d \n", i);
-            //printf("Animation/Layer %d de %s : %s \n", i, w->weapon_name,aa[j].animation_sprites_array[i].animation_sprite.patchname);
-            //printf("Durée de l'animation : %d\n",aa[j].animation_sprites_array[i].duration);
-            //printf("Nombre de layers : %d\n",aa[j].animation_sprites_array[i].layer_index_len);
-            //printf("Layers : ");
+            printf("Case %d \n", i);
+            printf("Animation/Layer %d de %s : %s \n", i, w->weapon_name,aa[j].animation_sprites_array[i].animation_sprite.patchname);
+            printf("Durée de l'animation : %d\n",aa[j].animation_sprites_array[i].duration);
+            printf("Nombre de layers : %d\n",aa[j].animation_sprites_array[i].layer_index_len);
+            printf("Layers : ");
             for(int k = 0; k<aa[j].animation_sprites_array[i].layer_index_len;k++){
-                //printf("%d ",aa[j].animation_sprites_array[i].layers_index[k]);
+                printf("%d ",aa[j].animation_sprites_array[i].layers_index[k]);
             }
-            //printf("\n");
+            printf("\n");
         }
     }
 }
@@ -331,8 +350,8 @@ void fire_weapon_animation(map_renderer *mr,weapon *w){
     //Calcul de la durée totale de l'animation
     total_duration = aa->animation_duration + idle_anim[0].duration;
 
-    printf("time_elapsed: %d\n", time_elapsed);
-    printf("total_duration: %d\n", total_duration);
+    //printf("time_elapsed: %d\n", time_elapsed);
+    //printf("total_duration: %d\n", total_duration);
     
     if(time_elapsed < idle_anim[0].duration){
         x = idle_anim[0].wanim_origin.x;
@@ -341,24 +360,19 @@ void fire_weapon_animation(map_renderer *mr,weapon *w){
         add_fire_layer(fire_layer,idle_anim[0],time_elapsed,mr);
     } else {
         int fire_time_elapsed = time_elapsed - idle_anim[0].duration; // Subtract the duration of the idle animation
-        printf("fire_time_elapsed: %d\n", fire_time_elapsed);
         if(fire_time_elapsed < fire_anim[0].duration){
             x = fire_anim[0].wanim_origin.x;
             y = fire_anim[0].wanim_origin.y;
-            printf("Première animation : %s\n",fire_anim[0].animation_sprite.patchname);
             draw_weapon(mr,fire_anim[0].animation_sprite,x,y);
             add_fire_layer(fire_layer,fire_anim[0],fire_time_elapsed,mr);
         } else {
-            printf("\n");
-            printf("On passe a la suite\n");
-            printf("fire_time_elapsed: %d\n", fire_time_elapsed);
             int i = 1;
             int accumulated_duration = fire_anim[0].duration;
             while (fire_time_elapsed > accumulated_duration && i < animation_len && fire_time_elapsed <= total_duration) {
                 accumulated_duration += fire_anim[i].duration;
                 i++;
             }
-            printf("Sprite affiché : %s\n",fire_anim[i-1].animation_sprite.patchname);
+            //printf("Sprite affiché : %s\n",fire_anim[i-1].animation_sprite.patchname);
             x = fire_anim[i - 1].wanim_origin.x;
             y = fire_anim[i - 1].wanim_origin.y;
             draw_weapon(mr,fire_anim[i-1].animation_sprite,x,y);
@@ -382,9 +396,9 @@ void update_animation(map_renderer *mr){
     if(attack){
         if(p->has_attacked == false){
             p->t_last_shot = time_elapsed_in_game;
-            printf("\n");
-            printf("Reset t_last_shot\n");
-            printf("\n");
+            //printf("\n");
+            //printf("Reset t_last_shot\n");
+            //printf("\n");
         }
         p->has_attacked = true;
     }
