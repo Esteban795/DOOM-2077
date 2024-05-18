@@ -1,28 +1,32 @@
 #include "../../include/server/door.h"
 #include "../../include/linedef.h"
+#include "../../include/door.h"
+#include "../../include/lift.h"
 #include "../../include/collection/vec.h"
 
 entity_t** server_world_load_doors(world_t* world, wad_data* wad, int* door_count) {
-    *door_count = get_doors_count(wad->linedefs, wad->len_linedefs, wad->sectors, wad->len_sectors);
+    door** doors = get_doors(wad->linedefs, wad->len_linedefs, door_count, wad->sectors, wad->len_sectors);
     component_t** components = malloc(sizeof(component_t*));
     entity_t** entities = malloc(sizeof(entity_t*) * (*door_count));
     for (int i = 0; i < *door_count; i++) {
-        components[0] = door_state_create(i, false);
+        components[0] = door_state_create(i, doors[i]->init_state);
         entities[i] = world_create_entity(world, components, 1);
     }
     free(components);
+    doors_free(doors, *door_count);
     return entities;
 }
 
 entity_t** server_world_load_lifts(world_t* world, wad_data* wad, int* lift_count) {
-    *lift_count = get_lifts_count(wad->linedefs, wad->len_linedefs, wad->sectors, wad->len_sectors);
+    lift** lifts = get_lifts(wad->linedefs, wad->len_linedefs, lift_count, wad->sectors, wad->len_sectors);
     component_t** components = malloc(sizeof(component_t*));
     entity_t** entities = malloc(sizeof(entity_t*) * (*lift_count));
     for (int i = 0; i < *lift_count; i++) {
-        components[0] = lift_state_create(i, false);
+        components[0] = lift_state_create(i, lifts[i]->init_state);
         entities[i] = world_create_entity(world, components, 1);
     }
     free(components);
+    lifts_free(lifts, *lift_count);
     return entities;
 }
 
