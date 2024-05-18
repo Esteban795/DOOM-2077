@@ -331,8 +331,8 @@ void fire_weapon_animation(map_renderer *mr,weapon *w){
     //Calcul de la durée totale de l'animation
     total_duration = aa->animation_duration + idle_anim[0].duration;
 
-    //printf("time_elapsed: %d\n", time_elapsed);
-    //printf("total_duration: %d\n", total_duration);
+    printf("time_elapsed: %d\n", time_elapsed);
+    printf("total_duration: %d\n", total_duration);
     
     if(time_elapsed < idle_anim[0].duration){
         x = idle_anim[0].wanim_origin.x;
@@ -341,12 +341,17 @@ void fire_weapon_animation(map_renderer *mr,weapon *w){
         add_fire_layer(fire_layer,idle_anim[0],time_elapsed,mr);
     } else {
         int fire_time_elapsed = time_elapsed - idle_anim[0].duration; // Subtract the duration of the idle animation
+        printf("fire_time_elapsed: %d\n", fire_time_elapsed);
         if(fire_time_elapsed < fire_anim[0].duration){
             x = fire_anim[0].wanim_origin.x;
             y = fire_anim[0].wanim_origin.y;
+            printf("Première animation : %s\n",fire_anim[0].animation_sprite.patchname);
             draw_weapon(mr,fire_anim[0].animation_sprite,x,y);
             add_fire_layer(fire_layer,fire_anim[0],fire_time_elapsed,mr);
         } else {
+            printf("\n");
+            printf("On passe a la suite\n");
+            printf("fire_time_elapsed: %d\n", fire_time_elapsed);
             int i = 1;
             int accumulated_duration = fire_anim[0].duration;
             while (fire_time_elapsed > accumulated_duration && i < animation_len && fire_time_elapsed <= total_duration) {
@@ -383,7 +388,7 @@ void update_animation(map_renderer *mr){
         }
         p->has_attacked = true;
     }
-    uint64_t casted_cooldown = (uint64_t) w->sprites->animation_duration;
+    uint64_t casted_cooldown = (uint64_t) w->sprites->animation_duration + w->sprites[IDLE].animation_sprites_array[0].duration;
     
     if(p->has_attacked){
         if(time_elapsed_in_game - p->t_last_shot <= casted_cooldown){
