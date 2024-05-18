@@ -3,6 +3,7 @@
 
 #include "event_handler.h"
 #include "module.h"
+#include <stdbool.h>
 
 #define SUBSTATE_MENU_MAIN 0
 #define SUBSTATE_MENU_CONNECT 1

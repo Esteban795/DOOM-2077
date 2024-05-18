@@ -2,7 +2,7 @@
 #include <SDL2/SDL_ttf.h>
 
 #define NMODULES_MENU 4
-#define NMODULES_INGAME 2
+#define NMODULES_INGAME 3
 
 UIModule **get_ui_menu(SDL_Renderer *r, int *nuimodules)
 {
@@ -273,6 +273,53 @@ UIModule **get_ui_ingame(SDL_Renderer *r, int *nuimodules)
                       UIAP_BOTTOM_RIGHT, "14", 0xFF, 0xFF, 0xFF, 0xFF, font);
 
   uimodule_set_element(modules[1], 3, UIET_Label, hud_ammo);
+
+
+  // INFO: Module 2: killfeed
+
+  modules[2] = uimodule_create(2, 4);
+
+  // label
+  as = malloc(1 * sizeof(int));
+  as[0] = 0;
+
+  font = TTF_OpenFont("fonts/jersey25.ttf", 30);
+
+  UILabel *hud_killfeed_label_a =
+      uilabel_create(0.01, 0, 0.5, 0.5, UIAP_TOP_LEFT, as, 1,
+                      UIAP_TOP_LEFT, "", 0xFF, 0xFF, 0xFF, 0xFF, font);
+
+  uimodule_set_element(modules[2], 1, UIET_Label, hud_killfeed_label_a);
+
+  as = malloc(1 * sizeof(int));
+  as[0] = 0;
+
+  font = TTF_OpenFont("fonts/jersey25.ttf", 25);
+
+  UILabel *hud_killfeed_label_b =
+      uilabel_create(0.02, 0.047, 0.5, 0.5, UIAP_TOP_LEFT, as, 1,
+                      UIAP_TOP_LEFT, "", 0xFF, 0xFF, 0xFF, 0xFF, font);
+
+  uimodule_set_element(modules[2], 2, UIET_Label, hud_killfeed_label_b);
+
+  as = malloc(1 * sizeof(int));
+  as[0] = 0;
+
+  font = TTF_OpenFont("fonts/jersey25.ttf", 20);
+
+  UILabel *hud_killfeed_label_c =
+      uilabel_create(0.03, 0.09, 0.5, 0.5, UIAP_TOP_LEFT, as, 1,
+                      UIAP_TOP_LEFT, "", 0xFF, 0xFF, 0xFF, 0xFF, font);
+
+  uimodule_set_element(modules[2], 3, UIET_Label, hud_killfeed_label_c);
+
+  UILabel** hud_killfeed_labels = malloc(3*sizeof(UILabel*));
+  hud_killfeed_labels[0] = hud_killfeed_label_a;
+  hud_killfeed_labels[1] = hud_killfeed_label_b;
+  hud_killfeed_labels[2] = hud_killfeed_label_c;
+  UIFeed* hud_killfeed_feed = uifeed_create(hud_killfeed_labels, 3, false);
+
+  uimodule_set_element(modules[2], 0, UIET_Feed, hud_killfeed_feed);
 
   return modules;
 }

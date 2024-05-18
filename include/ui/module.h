@@ -8,12 +8,14 @@
 #include "image.h"
 #include "label.h"
 #include "textbox.h"
+#include "feed.h"
 
 typedef enum _UIElementType {
   UIET_Label,
   UIET_Image,
   UIET_Button,
   UIET_Textbox,
+  UIET_Feed
 } UIElementType;
 
 typedef struct _UIElement {

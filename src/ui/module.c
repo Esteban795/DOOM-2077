@@ -29,6 +29,8 @@ void uimodule_free(UIModule *module) {
       case UIET_Textbox:
         uitextbox_free(module->elements[i]->element);
         break;
+      case UIET_Feed:
+        uifeed_free(module->elements[i]->element);
       default:
         break;
       }

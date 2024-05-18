@@ -1,6 +1,4 @@
 #include "../include/game_states.h"
-#include <SDL2/SDL_events.h>
-#include <SDL2/SDL_mouse.h>
 
 bool firstTimeLaunching = true;
 
