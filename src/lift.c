@@ -4,7 +4,7 @@
 
 // WORKS THE EXACT SAME WAY AS IN door.c
 
-lift *lift_create(entity_t *id, sector *sector, enum LiftTransitionSpeed speed,
+lift *lift_create(uint64_t id, sector *sector, enum LiftTransitionSpeed speed,
                   i16 low_height, i16 high_height, int delay, bool init_state,bool once) {
   lift *l = malloc(sizeof(lift));
   l->id = id;

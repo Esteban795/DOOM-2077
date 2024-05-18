@@ -1,7 +1,9 @@
 #include "../../include/event/door.h"
 
-extern inline door_open_event_t* DoorOpenEvent_new(uint64_t door_id, bool is_lift);
-extern inline door_close_event_t* DoorCloseEvent_new(uint64_t door_id, bool is_lift); 
+extern inline door_open_event_t* ClientDoorOpenEvent_new(uint64_t door_id, bool is_lift);
+extern inline door_close_event_t* ClientDoorCloseEvent_new(uint64_t door_id, bool is_lift); 
+extern inline door_open_event_t* ServerDoorOpenEvent_new(uint64_t door_id, bool is_lift);
+extern inline door_close_event_t* ServerDoorCloseEvent_new(uint64_t door_id, bool is_lift);
 
 int door_states_generate(world_t* world, entity_t** doors, bool* doors_states, int doors_count) {
     for (int i = 0; i < doors_count; i++) {

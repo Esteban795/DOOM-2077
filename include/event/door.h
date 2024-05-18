@@ -35,7 +35,7 @@ typedef struct {
     bool is_lift;
 } door_close_event_t;
 
-inline door_open_event_t* DoorOpenEvent_new(uint64_t door_id, bool is_lift) {
+inline door_open_event_t* ClientDoorOpenEvent_new(uint64_t door_id, bool is_lift) {
     door_open_event_t *event = (door_open_event_t*)malloc(sizeof(door_open_event_t));
     event->tag = CLIENT_DOOR_OPEN_EVENT_TAG;
     event->door_id = door_id;
@@ -43,9 +43,25 @@ inline door_open_event_t* DoorOpenEvent_new(uint64_t door_id, bool is_lift) {
     return event;
 }
 
-inline door_close_event_t* DoorCloseEvent_new(uint64_t door_id, bool is_lift) {
+inline door_close_event_t* ClientDoorCloseEvent_new(uint64_t door_id, bool is_lift) {
     door_close_event_t *event = (door_close_event_t*)malloc(sizeof(door_close_event_t));
     event->tag = CLIENT_DOOR_CLOSE_EVENT_TAG;
+    event->door_id = door_id;
+    event->is_lift = is_lift;
+    return event;
+}
+
+inline door_open_event_t* ServerDoorOpenEvent_new(uint64_t door_id, bool is_lift) {
+    door_open_event_t *event = (door_open_event_t*)malloc(sizeof(door_open_event_t));
+    event->tag = SERVER_DOOR_OPEN_EVENT_TAG;
+    event->door_id = door_id;
+    event->is_lift = is_lift;
+    return event;
+}
+
+inline door_close_event_t* ServerDoorCloseEvent_new(uint64_t door_id, bool is_lift) {
+    door_close_event_t *event = (door_close_event_t*)malloc(sizeof(door_close_event_t));
+    event->tag = SERVER_DOOR_CLOSE_EVENT_TAG;
     event->door_id = door_id;
     event->is_lift = is_lift;
     return event;

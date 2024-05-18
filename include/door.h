@@ -77,7 +77,7 @@ enum DoorFunction { //how the door behaves
 };
 
 struct Door {
-    entity_t* id; // used by ECS
+    uint64_t id; // used by ECS
     enum DoorTransitionSpeed speed;
     enum DoorFunction function;
     int wait_time; // wait time until the door switches to the next state
@@ -103,7 +103,7 @@ void door_trigger_switch(door *d);
 
 void doors_free(door** doors,int len_doors);
 
-door *door_create(entity_t *id, enum DoorTransitionSpeed speed,
+door *door_create(uint64_t id, enum DoorTransitionSpeed speed,
                   enum DoorFunction function, int wait_time,sector *sector,bool init_state);
 
 door* add_door(door* head, door* new_door);

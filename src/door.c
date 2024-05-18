@@ -2,7 +2,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 
-door *door_create(entity_t *id, enum DoorTransitionSpeed speed,
+door *door_create(uint64_t id, enum DoorTransitionSpeed speed,
                   enum DoorFunction function, int wait_time, sector *sector,
                   bool init_state) {
   door *d = malloc(sizeof(door));
