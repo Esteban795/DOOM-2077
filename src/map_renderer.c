@@ -418,7 +418,7 @@ void render_vssprite(map_renderer *mr, vs_sprite vssprite) {
       mr->engine->bsp, mr->engine->p->pos,
       vssprite.pos); // height difference between the player and the sprite
   int top, height;   // top and height of the sprite
-  get_drawing_rect(vssprite, &top, &height, z_diff);
+  get_drawing_rect(vssprite, &top, &height, z_diff); // get left,top corner and height width  
   int left = vssprite.x1;
   int width = vssprite.x2 - vssprite.x1;
   double inverted_scale =
@@ -428,7 +428,7 @@ void render_vssprite(map_renderer *mr, vs_sprite vssprite) {
       DRAWSEGS_INDEX); // this seg is partially obscuring the sprite
   if (ds_ind == -1) {  // nothing is obscuring the sprite that is before in the
                        // FOV, draw the whole sprite
-    double sprite_column = vssprite.x1 < 0 ? -vssprite.x1 * inverted_scale : 0;
+    double sprite_column = vssprite.x1 < 0 ? -vssprite.x1 * inverted_scale : 0; // account for clipping the sprite
     int sprite_column_int = 0;
     for (int screen_x = max(vssprite.x1, 0); screen_x < min(vssprite.x2, WIDTH);
          screen_x++) {
@@ -446,9 +446,21 @@ void render_vssprite(map_renderer *mr, vs_sprite vssprite) {
       ds_ind =
           find_clip_seg(vssprite.x1, vssprite.x2, vssprite.scale, ds_ind - 1);
     } while (ds_ind != -1);
-    // printf("left_clip: %d, right_clip: %d\n", left_clip, right_clip);
-    if (vssprite.x2 <= right_clip) { // only the left part of the sprite is visible
-      printf("left part only\n");
+    if (vssprite.x1 <= left_clip && right_clip <= vssprite.x2) { // seg is visible on both sides (e.g : there is a pillar in between but the sprite is wider than pillar)
+      double sprite_column = vssprite.x1 < 0 ? -vssprite.x1 * inverted_scale : 0; // account for clipping the sprite
+      int sprite_column_int = 0;
+      for (int screen_x = max(0, vssprite.x1); screen_x < min(WIDTH, vssprite.x2);
+          screen_x++) {
+        sprite_column_int = (int)(sprite_column);
+        if (left_clip < screen_x && screen_x < right_clip) {
+          sprite_column += inverted_scale;
+          continue;
+        }
+        draw_sprite_column(mr, sprite, sprite_column_int, screen_x, top,
+                          top + height, inverted_scale, vssprite.color);
+        sprite_column += inverted_scale;
+      }
+    } else if (vssprite.x1 <= left_clip) { // only the left part of the sprite is visible
       double sprite_column = vssprite.x1 < 0 ? -vssprite.x1 * inverted_scale : 0;
       int sprite_column_int = 0;
       for (int screen_x = max(0, vssprite.x1); screen_x < min(WIDTH, left_clip);
@@ -458,8 +470,7 @@ void render_vssprite(map_renderer *mr, vs_sprite vssprite) {
                           top + height, inverted_scale, vssprite.color);
         sprite_column += inverted_scale;
       }
-    } else if (left_clip <= left) { // only the right part of the sprite is visible
-      printf("right part only\n");
+    } else if (right_clip <= vssprite.x2) { // only the right part of the sprite is visible
       double sprite_column = (double)(right_clip - vssprite.x1) * inverted_scale;
       int sprite_column_int = 0;
       for (int screen_x = max(0, right_clip); screen_x < min(WIDTH, vssprite.x2);
@@ -469,17 +480,6 @@ void render_vssprite(map_renderer *mr, vs_sprite vssprite) {
                           top + height, inverted_scale, vssprite.color);
         sprite_column += inverted_scale;
       }
-    } else  { // there is some shit in the middle of the sprite, we gotta render both sides properly !
-      printf("both parts\n");
-      // double sprite_column = vssprite.x1 < 0 ? -vssprite.x1 * inverted_scale : 0;
-      // int sprite_column_int = 0;
-      // for (int screen_x = max(0, vssprite.x1); screen_x < min(WIDTH, left_clip);
-      //     screen_x++) {
-      //   sprite_column_int = (int)(sprite_column);
-      //   draw_sprite_column(mr, sprite, sprite_column_int, screen_x, top,
-      //                     top + height, inverted_scale, vssprite.color);
-      //   sprite_column += inverted_scale;
-      // }
     }
   }
 }
