@@ -92,6 +92,11 @@ archetype_t* world_get_archetype(world_t* world, entity_t* entity);
 component_t* world_get_component(world_t* world, entity_t* entity, int tag);
 
 /*
+* Check if an entity has a component
+*/
+bool world_entity_has_component(world_t* world, entity_t* entity, int tag);
+
+/*
 * Get the archetype of a component tags
 */
 archetype_t* world_get_archetype_by_tags(world_t* world, int component_tags[], int component_count);
