@@ -294,7 +294,7 @@ void add_fire_layer(animations_array *fire_layer,animation_sprite as,int time_el
     if (fire_layer == NULL){
         return;
     }
-    printf("J'allume le feu\n");
+    //printf("J'allume le feu\n");
     int *layers_index = as.layers_index;
     int layer_index_len = as.layer_index_len;
     int layer_accumulated_duration = 0;
@@ -321,43 +321,44 @@ void fire_weapon_animation(map_renderer *mr,weapon *w){
     animations_array *fire_layer = NULL; //Layer a ajouter
     if (w->id!=0){ // Si c'est pas les poings
         fire_layer = &aa[FIRE]; // On récupère la couche qui se rajoute sur l'animation
-        //printf("fire_layer len: %d\n", fire_layer->animation_len);
     }
-    int x;
-    int y;
-
+    int x; //Position x du sprite
+    int y; //Position y du sprite
 
     int animation_len = aa[ANIMATION].animation_len; //Nombre d'animations de l'arme
     int time_elapsed = time_elapsed_in_game - p->t_last_shot; //Temps écoulé depuis le début de l'animation
     int total_duration = 0; //Durée totale de l'animation
     //Calcul de la durée totale de l'animation
-    total_duration = aa->animation_duration;
+    total_duration = aa->animation_duration + idle_anim[0].duration;
 
     printf("time_elapsed: %d\n", time_elapsed);
     printf("total_duration: %d\n", total_duration);
     
-    if(time_elapsed < fire_anim[0].duration){
-        x = fire_anim[0].wanim_origin.x;
-        y = fire_anim[0].wanim_origin.y;
-        draw_weapon(mr,fire_anim[0].animation_sprite,x,y);
-        add_fire_layer(fire_layer,fire_anim[0],time_elapsed,mr);
+    if(time_elapsed < idle_anim[0].duration){
+        x = idle_anim[0].wanim_origin.x;
+        y = idle_anim[0].wanim_origin.y;
+        draw_weapon(mr,idle_anim[0].animation_sprite,x,y);
+        add_fire_layer(fire_layer,idle_anim[0],time_elapsed,mr);
     } else {
-        int i = 1;
-        int accumulated_duration = fire_anim[0].duration;
-        while (time_elapsed > accumulated_duration && i < animation_len && time_elapsed <= total_duration) {
-            accumulated_duration += fire_anim[i].duration;
-            i++;
+        int fire_time_elapsed = time_elapsed - idle_anim[0].duration; // Subtract the duration of the idle animation
+        if(fire_time_elapsed < fire_anim[0].duration){
+            x = fire_anim[0].wanim_origin.x;
+            y = fire_anim[0].wanim_origin.y;
+            draw_weapon(mr,fire_anim[0].animation_sprite,x,y);
+            add_fire_layer(fire_layer,fire_anim[0],fire_time_elapsed,mr);
+        } else {
+            int i = 1;
+            int accumulated_duration = fire_anim[0].duration;
+            while (fire_time_elapsed > accumulated_duration && i < animation_len && fire_time_elapsed <= total_duration) {
+                accumulated_duration += fire_anim[i].duration;
+                i++;
+            }
+            printf("Sprite affiché : %s\n",fire_anim[i-1].animation_sprite.patchname);
+            x = fire_anim[i - 1].wanim_origin.x;
+            y = fire_anim[i - 1].wanim_origin.y;
+            draw_weapon(mr,fire_anim[i-1].animation_sprite,x,y);
+            add_fire_layer(fire_layer,fire_anim[i-1],fire_time_elapsed,mr);
         }
-        // if (i>= animation_len){
-        //     printf("i avant : %d\n", i);
-        //     i = 2 * animation_len -i - 1;
-        //     printf("i après : %d\n", i);
-        // }
-        printf("Sprite affiché : %s\n",fire_anim[i-1].animation_sprite.patchname);
-        x = fire_anim[i - 1].wanim_origin.x;
-        y = fire_anim[i - 1].wanim_origin.y;
-        draw_weapon(mr,fire_anim[i-1].animation_sprite,x,y);
-        add_fire_layer(fire_layer,fire_anim[i-1],time_elapsed,mr);
     }
 }
 
