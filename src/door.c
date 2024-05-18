@@ -22,15 +22,19 @@ door *door_create(uint64_t id, enum DoorTransitionSpeed speed,
 }
 
 // trigger switch for all doors in the list, but they need to not be switching and be in their initial state (closed or open)
-void door_trigger_switch(door *d) {
+bool door_trigger_switch(door *d) {
   if (d != NULL) {
+    bool switched = false;
     if (!d->is_switching && d->state == d->init_state) {
       d->is_switching = true;
+      switched = true;
     }
     if (d->next_door != NULL) {
-      door_trigger_switch(d->next_door);
+      switched = switched || door_trigger_switch(d->next_door);
     }
+    return switched;
   }
+  return false;
 }
 
 // Update door state

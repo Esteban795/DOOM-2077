@@ -99,7 +99,7 @@ void door_update(door *d, int DT);
 
 void door_update_height(door *d, int high_height);
 
-void door_trigger_switch(door *d);
+bool door_trigger_switch(door *d);
 
 void doors_free(door** doors,int len_doors);
 

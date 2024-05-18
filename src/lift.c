@@ -23,15 +23,19 @@ lift *lift_create(uint64_t id, sector *sector, enum LiftTransitionSpeed speed,
   return l;
 }
 
-void lift_trigger_switch(lift *l) {
+bool lift_trigger_switch(lift *l) {
   if (l != NULL) {
+    bool switched = false;
     if (!l->is_switching && !(l->state != l->init_state)) {
       l->is_switching = true;
+      switched = true;
     }
     if (l->next_lift != NULL) {
-      lift_trigger_switch(l->next_lift);
+      switched = switched || lift_trigger_switch(l->next_lift);
     }
+    return switched;
   }
+  return false;
 }
 
 void lift_update(lift *l, int DT) {

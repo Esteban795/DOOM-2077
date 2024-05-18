@@ -419,11 +419,13 @@ void __client_door_trigger(engine* e, uint64_t door_id, bool is_lift) {
 }
 
 void client_door_trigger(engine* e, uint64_t door_id) {
-    __client_door_trigger(e, door_id, false);
-    door_trigger_switch(e->doors[door_id]);
+    if (door_trigger_switch(e->doors[door_id])) {
+        __client_door_trigger(e, door_id, false);
+    }
 }
 
 void client_lift_trigger(engine* e, uint64_t lift_id) {
-    __client_door_trigger(e, lift_id, true);
-    lift_trigger_switch(e->lifts[lift_id]);
+    if (lift_trigger_switch(e->lifts[lift_id])) {
+        __client_door_trigger(e, lift_id, true);
+    }
 }
