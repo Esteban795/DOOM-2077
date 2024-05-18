@@ -161,6 +161,9 @@ int remote_update(engine* e, remote_server_t* r) {
                 char map_name_[128] = {0};
                 char* map_name = (char*) map_name_;
                 server_load_map_from(sdata+offset, (char**) &map_name);
+                if (wad_is_map_loaded(e->wData)) {
+                    free_map(e->wData);
+                }
                 read_map(e, map_name);
                 printf("Server loaded map: %s\n", map_name);
             } else if (strncmp(cmd, SERVER_COMMAND_PONG, 4) == 0) {
