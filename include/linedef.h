@@ -60,5 +60,11 @@ lift** get_lifts(linedef** linedefs,int len_linedefs, int* lifts_count,sector* s
 door **get_doors(linedef **linedefs, int len_linedefs, int *doors_count,
                  sector *sectors, int len_sectors);
 
+int get_doors_count(linedef **linedefs, int len_linedefs, sector *sectors,
+                    int len_sectors);
+
+int get_lifts_count(linedef **linedefs, int len_linedefs, sector *sectors,
+                    int len_sectors);
+
 void linedefs_free(linedef **linedefs, int len_linedefs);
 #endif

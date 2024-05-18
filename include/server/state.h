@@ -38,6 +38,10 @@ typedef struct {
     UDPpacket* outgoing;
     wad_data* wad_data;
     char* map_name;
+    entity_t** doors;
+    int door_count;
+    entity_t** lifts;
+    int lift_count;
 } server_state_t;
 
 #define SERVER_STATE (&server_state)

@@ -29,6 +29,7 @@
 #include "../include/event/player_move.h"
 #include "../include/system/server/active.h"
 #include "../include/wad_data.h"
+#include "../include/server/door.h"
 
 // Interrupt signal handler
 //
@@ -87,6 +88,13 @@ int run_server(uint16_t port)
     // Load the WAD data and map
     SERVER_STATE->map_name = "E1M3";
     SERVER_STATE->wad_data = server_load_wad("maps/DOOM1.WAD", SERVER_STATE->map_name);
+    if (SERVER_STATE->wad_data == NULL)
+    {
+        printf("Failed to load WAD data.\n");
+        return -1;
+    }
+    SERVER_STATE->doors = server_world_load_doors(&SERVER_STATE->world, SERVER_STATE->wad_data, &SERVER_STATE->door_count);
+    SERVER_STATE->lifts = server_world_load_lifts(&SERVER_STATE->world, SERVER_STATE->wad_data, &SERVER_STATE->lift_count);
 
     // Listen for incoming packets
     SERVER_STATE->incoming = SDLNet_AllocPacket(4096);
@@ -242,6 +250,8 @@ int run_server(uint16_t port)
 
     // Clean-up
     printf("Cleaning-up...\n");
+    server_world_unload_doors(&SERVER_STATE->world, SERVER_STATE->doors, SERVER_STATE->door_count);
+    server_world_unload_lifts(&SERVER_STATE->world, SERVER_STATE->lifts, SERVER_STATE->lift_count);
     world_destroy(&SERVER_STATE->world);
     server_free_wad(SERVER_STATE->wad_data);
     SDLNet_UDP_Close(server);
