@@ -5,6 +5,7 @@
 #include "../net/tracked_connection.h"
 #include "../settings.h"
 #include "../wad_data.h"
+#include "task.h"
 
 #ifndef _LIB_SDL_NET_H
 #define _LIB_SDL_NET_H
@@ -38,6 +39,7 @@ typedef struct {
     UDPpacket* outgoing;
     wad_data* wad_data;
     char* map_name;
+    task_executor_t task_executor;
 } server_state_t;
 
 #define SERVER_STATE (&server_state)

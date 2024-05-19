@@ -80,6 +80,7 @@ int run_server(uint16_t port)
     SERVER_RUNNING = 1;
     INSTANT_NOW(&SERVER_STATE->last_tick);
     world_init(&SERVER_STATE->world);
+    task_executor_init(&SERVER_STATE->task_executor);
 
     // Register the systems
     world_register_active_systems(&SERVER_STATE->world);
@@ -209,6 +210,9 @@ int run_server(uint16_t port)
             elapsed = INSTANT_DIFF_MS(cur_time, SERVER_STATE->last_tick);
         }
 
+        // Run the scheduled tasks
+        task_executor_run(&SERVER_STATE->task_executor, &cur_time);
+
         // Update the world state
         if (world_queue_length(&SERVER_STATE->world) > 0)
         {
@@ -244,6 +248,7 @@ int run_server(uint16_t port)
     printf("Cleaning-up...\n");
     world_destroy(&SERVER_STATE->world);
     server_free_wad(SERVER_STATE->wad_data);
+    task_executor_destroy(&SERVER_STATE->task_executor);
     SDLNet_UDP_Close(server);
     SDLNet_FreePacket(SERVER_STATE->incoming);
     SDLNet_FreePacket(SERVER_STATE->outgoing);
