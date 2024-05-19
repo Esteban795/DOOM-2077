@@ -145,7 +145,6 @@ bool is_segment_in_fov(player *p, segment seg, int *x1, int *x2,
   return true;
 }
 
-
 Uint32 red_pixel = 0xFF0000FF;
 int shift = 0;
 
@@ -154,28 +153,26 @@ void render_bsp_node(bsp *b, size_t node_id) {
   if (BSP_TRAVERSE) {
     position_ct *player_pos = player_get_position(b->player);
     vec2 player_pos_v = position_get_pos(player_pos);
-    if (node_id >= SUBSECTOR_IDENTIFIER) {
-
+    if (node_id >= SUBSECTOR_IDENTIFIER) { // leaf reached
       i16 subsector_id = node_id - SUBSECTOR_IDENTIFIER;
-      // printf("subsector_id: %d\n", subsector_id);
       subsector ss = b->subsectors[subsector_id];
       int x1, x2;
       double raw_angle_1;
       patch *player_sprite = get_patch_from_name(
           b->engine->wData->sprites, b->engine->wData->len_sprites, "SARGE1");
       for (int i = 0; i < NUM_PLAYERS; i++) {
-        entity_t* player = b->engine->players[i];
-        if (player == NULL) continue;
-        printf("player_id: %lu\n", player->id);
-        position_ct* pos = (position_ct*)world_get_component(b->engine->world, player,COMPONENT_TAG_POSITION);
-        subsector_id_ct* player_subsector_id = (subsector_id_ct*)world_get_component(b->engine->world, player,COMPONENT_TAG_SUBSECTOR_ID);
-        printf("subsector_id: %d\n", player_subsector_id->subsector_id);
-        // if (player_subsector_id->subsector_id == subsector_id &&
-        //     is_point_in_FOV(player_pos->x, player_pos->y, player_pos->angle,
-        //                     FOV, pos->x, pos->y)) {
-        //   vssprite_add(player_pos_v, player_pos->angle, position_get_pos(pos),
-        //                player_sprite, red_pixel >> (i * 2));
-        // }
+        entity_t *player = b->engine->players[i];
+        if (player == NULL)
+          continue;
+        position_ct *pos = (position_ct *)world_get_component(
+            b->engine->world, player, COMPONENT_TAG_POSITION);
+        subsector_id_ct *player_subsector_id = (subsector_id_ct *)world_get_component(b->engine->world, player,COMPONENT_TAG_SUBSECTOR_ID);
+        if (player_subsector_id->subsector_id == subsector_id &&
+            is_point_in_FOV(player_pos->x, player_pos->y, player_pos->angle,
+                            FOV, pos->x, pos->y)) {
+          vssprite_add(player_pos_v, player_pos->angle, position_get_pos(pos),
+                       player_sprite);
+        }
       }
       for (i16 i = 0; i < ss.num_segs; i++) {
         segment seg = ss.segs[i];
@@ -205,7 +202,7 @@ void render_bsp_node(bsp *b, size_t node_id) {
 
 void get_ssector_height(bsp *b) {
   size_t node_id = b->root_node_id;
-  position_ct* player_pos = player_get_position(b->player);
+  position_ct *player_pos = player_get_position(b->player);
   vec2 player_pos_v = position_get_pos(player_pos);
   while (node_id < SUBSECTOR_IDENTIFIER) {
     node n = b->nodes[node_id];
@@ -234,8 +231,11 @@ void bsp_free(bsp *b) { free(b); }
 
 void update_players_subsectors(bsp *b) {
   for (int i = 0; i < NUM_PLAYERS; i++) {
-    entity_t* player = b->engine->players[i];
-    position_ct* pos = (position_ct*)world_get_component(b->engine->world, player,COMPONENT_TAG_POSITION);
+    entity_t *player = b->engine->players[i];
+    if (player == NULL)
+      continue;
+    position_ct *pos = (position_ct *)world_get_component(
+        b->engine->world, player, COMPONENT_TAG_POSITION);
     vec2 pos_v = position_get_pos(pos);
     size_t node_id = b->root_node_id;
     while (node_id < SUBSECTOR_IDENTIFIER) {
@@ -248,7 +248,8 @@ void update_players_subsectors(bsp *b) {
       }
     }
     i16 subs_id = node_id - SUBSECTOR_IDENTIFIER;
-    subsector_id_ct* subsector_id = (subsector_id_ct*)world_get_component(b->engine->world, player,COMPONENT_TAG_SUBSECTOR_ID);
+    subsector_id_ct *subsector_id = (subsector_id_ct *)world_get_component(
+        b->engine->world, player, COMPONENT_TAG_SUBSECTOR_ID);
     subsector_id_set(subsector_id, subs_id);
   }
 }

@@ -14,7 +14,6 @@ struct VSSprite {
     int x2; // projection onto screen (right side)
     double scale; // rendering scale
     patch* sprite; 
-    Uint32 color;
 };
 
 typedef struct VSSprite vs_sprite;
@@ -22,7 +21,7 @@ typedef struct VSSprite vs_sprite;
 extern vs_sprite VSSPRITES[MAX_SPRITES];
 extern int VSSPRITES_INDEX;
 
-void vssprite_add(vec2 camera_pos, double angle, vec2 pos, patch *sprite,Uint32 color);
+void vssprite_add(vec2 camera_pos, double angle, vec2 pos, patch *sprite);
 
 void vssprite_sort();
 #endif
