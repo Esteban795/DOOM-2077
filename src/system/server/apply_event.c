@@ -6,7 +6,9 @@
 #include "../../../include/component/health.h"
 #include "../../../include/component/statistic.h"
 #include "../../../include/collection/vec.h"
-
+#include "../../../include/server/state.h"
+#include "../../../include/component/door_state.h"
+#include "../../../include/component/lift_state.h"
 
 const system_t APPLY_EVENT_SYSTEM = {
     .fn = apply_event,

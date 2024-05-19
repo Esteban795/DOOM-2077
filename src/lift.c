@@ -4,7 +4,7 @@
 
 // WORKS THE EXACT SAME WAY AS IN door.c
 
-lift *lift_create(entity_t *id, sector *sector, enum LiftTransitionSpeed speed,
+lift *lift_create(uint64_t id, sector *sector, enum LiftTransitionSpeed speed,
                   i16 low_height, i16 high_height, int delay, bool init_state,bool once) {
   lift *l = malloc(sizeof(lift));
   l->id = id;
@@ -23,15 +23,19 @@ lift *lift_create(entity_t *id, sector *sector, enum LiftTransitionSpeed speed,
   return l;
 }
 
-void lift_trigger_switch(lift *l) {
+bool lift_trigger_switch(lift *l) {
   if (l != NULL) {
+    bool switched = false;
     if (!l->is_switching && !(l->state != l->init_state)) {
       l->is_switching = true;
+      switched = true;
     }
     if (l->next_lift != NULL) {
-      lift_trigger_switch(l->next_lift);
+      switched = switched || lift_trigger_switch(l->next_lift);
     }
+    return switched;
   }
+  return false;
 }
 
 void lift_update(lift *l, int DT) {

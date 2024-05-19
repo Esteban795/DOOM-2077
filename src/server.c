@@ -27,8 +27,10 @@
 #include "../include/event/server_quit.h"
 #include "../include/event/player_chat.h"
 #include "../include/event/player_move.h"
+#include "../include/event/door.h"
 #include "../include/system/server/active.h"
 #include "../include/wad_data.h"
+#include "../include/server/door.h"
 
 // Interrupt signal handler
 //
@@ -87,6 +89,13 @@ int run_server(uint16_t port)
     // Load the WAD data and map
     SERVER_STATE->map_name = "E1M3";
     SERVER_STATE->wad_data = server_load_wad("maps/DOOM1.WAD", SERVER_STATE->map_name);
+    if (SERVER_STATE->wad_data == NULL)
+    {
+        printf("Failed to load WAD data.\n");
+        return -1;
+    }
+    SERVER_STATE->doors = server_world_load_doors(&SERVER_STATE->world, SERVER_STATE->wad_data, &SERVER_STATE->door_count);
+    SERVER_STATE->lifts = server_world_load_lifts(&SERVER_STATE->world, SERVER_STATE->wad_data, &SERVER_STATE->lift_count);
 
     // Listen for incoming packets
     SERVER_STATE->incoming = SDLNet_AllocPacket(4096);
@@ -191,6 +200,26 @@ int run_server(uint16_t port)
                         // Remove the connection
                         SERVER_STATE->conns[conn_i] = SERVER_STATE->conns[SERVER_STATE->conn_count - 1];
                         SERVER_STATE->conn_count--;
+                    } else if (strncmp(cmd, CLIENT_COMMAND_OPEN, 4) == 0) {
+                        uint64_t door_id;
+                        client_door_open_from(sdata + cursor, &door_id);
+                        door_open_event_t* ev = ServerDoorOpenEvent_new(door_id, false);
+                        world_queue_event(&SERVER_STATE->world, (event_t*) ev);
+                    } else if (strncmp(cmd, CLIENT_COMMAND_CLOS, 4) == 0) {
+                        uint64_t door_id;
+                        client_door_close_from(sdata + cursor, &door_id);
+                        door_close_event_t* ev = ServerDoorCloseEvent_new(door_id, false);
+                        world_queue_event(&SERVER_STATE->world, (event_t*) ev);
+                    } else if (strncmp(cmd, CLIENT_COMMAND_LASC, 4) == 0) {
+                        uint64_t door_id;
+                        client_lift_ascend_from(sdata + cursor, &door_id);
+                        door_open_event_t* ev = ServerDoorOpenEvent_new(door_id, true);
+                        world_queue_event(&SERVER_STATE->world, (event_t*) ev);
+                    } else if (strncmp(cmd, CLIENT_COMMAND_LDSC, 4) == 0) {
+                        uint64_t door_id;
+                        client_lift_descend_from(sdata + cursor, &door_id);
+                        door_close_event_t* ev = ServerDoorCloseEvent_new(door_id, true);
+                        world_queue_event(&SERVER_STATE->world, (event_t*) ev);
                     } else {
                         printf("Unknown command: %s\n", cmd);
                     }
@@ -242,6 +271,8 @@ int run_server(uint16_t port)
 
     // Clean-up
     printf("Cleaning-up...\n");
+    server_world_unload_doors(&SERVER_STATE->world, SERVER_STATE->doors, SERVER_STATE->door_count);
+    server_world_unload_lifts(&SERVER_STATE->world, SERVER_STATE->lifts, SERVER_STATE->lift_count);
     world_destroy(&SERVER_STATE->world);
     server_free_wad(SERVER_STATE->wad_data);
     SDLNet_UDP_Close(server);
