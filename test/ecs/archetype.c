@@ -355,9 +355,9 @@ int test_archetype_match() {
     // Create an archetype_tag
     archetype_tag_t archetype_tag;
     archetype_tag.component_tags = malloc(3 * sizeof(int));
-    archetype_tag.component_tags[0] = 1;
-    archetype_tag.component_tags[1] = 2;
-    archetype_tag.component_tags[2] = 3;
+    archetype_tag.component_tags[0] = 3;
+    archetype_tag.component_tags[1] = 1;
+    archetype_tag.component_tags[2] = 2;
     archetype_tag.component_count = 3;
 
     archetype_t* arch = &archetype;

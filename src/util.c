@@ -25,7 +25,7 @@ unsigned long ElfHash(char *s) {
 
 char *strtoupper(char *dest, const char *src) {
   char *result = dest;
-  while (*dest++ = toupper(*src++));
+  while ((*dest++ = toupper(*src++)));
   return result;
 }
 

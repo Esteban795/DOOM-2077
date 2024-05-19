@@ -1,5 +1,5 @@
 {
-    "weaponCount": 3,
+    "weaponCount": 4,
     "_comment": "Dans fire_frames/fire_layers, si on après l'abbreviation on a un A, alors c'est l'élément 0, un B l'élément 1 etc.",
     "weapons": [
       {

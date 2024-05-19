@@ -2,7 +2,7 @@
 
 Uint32 *get_pixels_from_patchmaps(texture_map tm, patch *patches) {
   Uint32 *pixels = malloc(sizeof(Uint32) * tm.width * tm.height);
-  for (int k = 0; k < tm.patch_count; k++) {
+  for (int k = 0; k < tm.patch_count; k++) { // for each patch, rewrite pixels using painter's algorithm. MAKE SURE THAT IT IS CORRECTLY ENCODED IN THE WAD FILE
     patch_map pm = tm.patch_maps[k];
     patch p = patches[pm.patch_index];
     for (int i = 0; i < p.header.height; i++) {

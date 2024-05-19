@@ -1,6 +1,8 @@
 #ifndef UTIL_H
 #define UTIL_H
 
+#include <ctype.h>
+#include "string.h"
 #include "byte_reader.h"
 #include <ctype.h>
 

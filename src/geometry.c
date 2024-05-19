@@ -3,6 +3,7 @@
 double rad_to_deg(double rad) { return rad * (180 / M_PI); }
 
 double deg_to_rad(double deg) { return deg * (M_PI / 180); }
+
 /*
 Project point coordinate in SCREEN_DISTANCE, according to the angle
 they form with player's POV
@@ -60,18 +61,6 @@ bool is_point_in_FOV(double origin_x, double origin_y, double origin_angle,
   return delta_theta <= fov / 2;
 }
 
-double scale_from_global_angle(double angle, int x, double normal_angle,
-                               double dist) {
-
-  double x_angle = rad_to_deg(atan((HALF_WIDTH - x) / SCREEN_DISTANCE));
-  double num =
-      fabs(SCREEN_DISTANCE * cos(deg_to_rad(-normal_angle + x_angle - angle)));
-  double den = dist * cos(deg_to_rad(x_angle));
-  double scale = num / den;
-  scale = fmin(MAX_SCALE, fmax(MIN_SCALE, scale));
-  return scale;
-}
-
 // Given endpoints of each segment, returns the coordinates of the point of
 // intersection . /!\ assumes that the segments intersect
 vec2 find_segments_intersection(vec2 p1, vec2 q1, vec2 p2, vec2 q2) {
@@ -92,4 +81,8 @@ vec2 find_segments_intersection(vec2 p1, vec2 q1, vec2 p2, vec2 q2) {
 
 bool do_segs_intersect(int x1a, int x2a, int x1b, int x2b) {
   return !(x1a > x2b || x2a < x1b);
+}
+
+double distance(double posx_a, double posy_a, double posx_b, double posy_b) {
+  return sqrt(pow((posx_b - posx_a), 2) + pow((posy_b - posy_a), 2));
 }

@@ -1,13 +1,21 @@
+#include <time.h>
+#include <stdint.h>
+
 #ifndef STRUCTS_H
 #define STRUCTS_H
 
-#include <SDL2/SDL.h>
+#ifndef _LIB_SDL_NET_H
+#define _LIB_SDL_NET_H
+#include <SDL2/SDL_net.h>
+#endif
 
 #include "audio/mixer.h"
 #include "keybindings.h"
 #include "settings.h"
+#include "remote.h"
 #include "vec2.h"
 #include "wad_data.h"
+#include "ecs/world.h"
 
 #define STATE_COUNT 2
 
@@ -20,7 +28,6 @@ struct AnimationsArray;
 struct Player;
 struct BSP;
 struct Engine;
-struct MapRenderer;
 struct SegmentHandler;
 struct Weapon;
 struct WeaponsArray;
@@ -78,8 +85,7 @@ typedef struct weaponsArray_Cooldown_spray {
 struct Player {
   struct Engine *engine;
   thing thing;
-  vec2 pos;
-  double angle;
+  entity_t* entity;
   struct PlayerSetting *settings;
   struct PlayerKeybind *keybinds;
   double height;
@@ -97,20 +103,39 @@ struct Player {
 
 };
 
+struct RemoteServer {
+    IPaddress addr;
+    UDPsocket socket;
+    UDPpacket* packet;
+    struct timespec next_tick;
+    int connected; // 0: not connected (waiting for connection), 1: handshake completed, 2: connected, -1: disconnected, -2: error
+    uint64_t player_id;
+};
+
 struct Engine {
+  SDL_Renderer *renderer;
   const char *wadPath;
   bool running;
-  wad_data *wData;
-  Uint32 pixels[WIDTH * HEIGHT];
-  SDL_Texture *texture;
+  int DT; // time used to render last frame
+
+  struct WADData *wData;
   struct Player *p;
   struct BSP *bsp;
-  struct MapRenderer *map_renderer;
   struct SegmentHandler *seg_handler;
+  struct RemoteServer *remote;
+  entity_t** players;
+  AudioMixer* mixer;
+  Uint32 pixels[WIDTH * HEIGHT];
+  SDL_Texture *texture;
   GameState state;
-  int DT;
-  struct Player **players;
-  AudioMixer *mixer;
+  
+  
+  door** doors;
+  int num_doors;
+  
+  lift** lifts;
+  int len_lifts;
+  world_t *world;
 };
 
 struct BSP {
@@ -122,40 +147,25 @@ struct BSP {
   size_t root_node_id;
 };
 
-struct MapRenderer {
+struct SegmentHandler {
   struct Engine *engine;
-  SDL_Renderer *renderer;
-  wad_data *wData;
-  vertex *vertexes;
-  linedef *linedefs;
-  bbox map_bounds;
-};
+  struct Player *player;
+  segment *seg;
+  double raw_angle_1;
+  int screen_range[WIDTH + 1];
+  double upper_clip[WIDTH + 1];
+  double lower_clip[WIDTH + 1];
+  size_t screen_range_count;
+}; 
+
 
 typedef struct Player player;
 typedef struct Engine engine;
 typedef struct BSP bsp;
-typedef struct MapRenderer map_renderer;
+typedef struct SegmentHandler segment_handler;
 typedef struct Weapon weapon;
 typedef struct WeaponsArray weapons_array;
 typedef weapon **WeaponInventory;
-
-struct SegmentHandler {
-  struct Engine *engine;
-  player *player;
-  segment *seg;
-  double raw_angle_1;
-  int screen_range[WIDTH + 1];
-  int upper_clip[WIDTH + 1];
-  int lower_clip[WIDTH + 1];
-  size_t screen_range_count;
-};
-
-typedef struct SegmentHandler segment_handler;
-
-typedef struct {
-  struct Engine *engine;
-  bool *isFirstTime;
-  bool isRunning;
-} GameStateArgs;
+typedef struct RemoteServer remote_server_t;
 
 #endif

@@ -1,5 +1,8 @@
+#include "unistd.h"
+
 #include "../include/engine.h"
 #include "../include/weapons.h"
+#include <stdio.h>
 
 weapons_array *wa;
 
@@ -27,23 +30,55 @@ int main() {
     printf("Error at SDL startup\n");
     exit(-1);
   }
+  status = SDLNet_Init();
+  if (status == -1) {
+    printf("Error at SDLNet startup");
+    exit(-2);
+  }
   status = Mix_Init(MIX_INIT_MOD);
   if (status == 1) {
     printf("Error at Mix startup\n");
     exit(-1);
   }
-  
+
   uint64_t now;
   uint64_t old = SDL_GetTicks();
-  SDL_ShowCursor(SDL_DISABLE);
-  SDL_SetRelativeMouseMode(SDL_TRUE);
+  // DEV: How to disable pointer/mousecapture
+  SDL_ShowCursor(SDL_DISABLE);        // Set to true for debug
+  SDL_SetRelativeMouseMode(SDL_TRUE); // Set to false for debug
   SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
-  engine *e = init_engine("maps/DOOM1.WAD",renderer);
-  read_map(e, renderer, "E1M2");
-  for(int i=1; i<WEAPONS_NUMBER; i++){
-      add_weapon(e->p, i, wa);
+  engine *e = init_engine("maps/DOOM1.WAD", renderer);
+
+  // Waiting for connection to server
+  old = SDL_GetTicks();
+  while (SDL_GetTicks() - old < 5000) {
+    int status = remote_update(e, e->remote);
+    if (e->remote->connected == 1) {
+      e->remote->connected = 2;
+      break; // Connection established
+    } else if (e->remote->connected == -2) {
+      printf("Error at remote connection\n");
+      break;
+    } else if (e->remote->connected == -1) {
+      break; // Solo mode
+    }
+    if (status < 0) {
+      printf("Error while initializing the remote sync...");
+    }
   }
-  //print_animations_patches(wa->weapons[1]);
+  if (e->remote->connected < 2) {
+    printf("Connection to server failed! Pursuing in solo...\n");
+    e->remote->connected = -1;
+    e->remote->player_id = 0;
+    read_map(e, "E1M3");
+  } else {
+    printf("Connection to server successful!\n");
+  }
+
+  for (int i = 1; i < WEAPONS_NUMBER - 1; i++) {
+    add_weapon(e->p, i, wa);
+  }
+  // print_animations_patches(wa->weapons[1]);
   int dt = 0;
   while (e->running) {
     now = SDL_GetTicks();
@@ -53,16 +88,20 @@ int main() {
     if (res == 1)
       break;
 
-
-    aux_fire_bullet(e->map_renderer,wa);
-    //printf("%f\n",e->p->spray);
-    //printf("FPS: %f\n",1000/dt);
+    // printf("%f\n",e->p->spray);
+    //  printf("FPS: %f\n",1000/dt);
     old = now;
     // break;
   }
+  // Wait 100ms to be sure no other packet is sent during the same server tick.
+  // Bug was: Segfault because we tried to access a component of a now removed
+  // entity (for instance during a MOVE event)... While the bug is fixed, it
+  // might reappear in the future (because C)! So just in case!
+  usleep(100000);
+  remote_disconnect(e->remote);
   free_weapons_array(wa);
   engine_free(e);
+  SDLNet_Quit();
   Mix_Quit();
   return 0;
 }
-

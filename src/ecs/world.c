@@ -1,9 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 
 #include "../../include/ecs/archetype.h"
 #include "../../include/collection/vec.h"
 #include "../../include/ecs/world.h"
+
+#define INSTANT_NOW(t) clock_gettime(CLOCK_MONOTONIC, t)
+#define INSTANT_DIFF_US(a, b) ((a.tv_sec - b.tv_sec) * 1000000 + (a.tv_nsec - b.tv_nsec) / 1000)
 
 void world_init(world_t* world) {
     vec_init(&world->entities);
@@ -11,6 +15,8 @@ void world_init(world_t* world) {
     vec_init(&world->archetypes);
     vec_init(&world->systems);
     vec_init(&world->event_queue);
+    INSTANT_NOW(&world->last_tick);
+    world->delta_time = 0;
 }
 
 void world_destroy(world_t* world) {
@@ -26,11 +32,16 @@ void world_destroy(world_t* world) {
     vec_destroy(&world->event_queue, true);
 }
 
-entity_t* world_create_entity(world_t* world, component_t** components, int component_count) {
+entity_t* world_insert_entity(world_t* world, uint64_t entity_id, component_t** components, int component_count) {
     // Create the entity
     entity_t* entity = malloc(sizeof(entity_t));
-    entity->id = vec_length(&world->entities) + 1;
-    vec_push(&world->entities, (void*) entity);
+    entity->id = entity_id;
+    int eind = vec_binary_search(&world->entities, entity, compare_entity);
+    if (eind >= 0) {
+        fprintf(stderr, "FATAL: Entity with id %ld already exists in world!\n", entity->id);
+        return NULL;
+    }
+    vec_insert(&world->entities, ~eind, (void*) entity);
 
     // Find the archetype corresponding to the components of the entity
     archetype_tag_t archetype_pat;
@@ -61,6 +72,10 @@ entity_t* world_create_entity(world_t* world, component_t** components, int comp
     vec_push(&world->entity_archetype, (void*) arch_index_ptr);
 
     return entity;
+}
+
+entity_t* world_create_entity(world_t* world, component_t** components, int component_count) {
+    return world_insert_entity(world, vec_length(&world->entities) + 1, components, component_count);
 }
 
 entity_t** world_create_bulk_entity(world_t* world, component_t*** components, int component_count, int count) {
@@ -121,6 +136,30 @@ void world_remove_entity(world_t* world, entity_t* entity) {
     free(entity);
 }
 
+void world_remove_entity_by_id(world_t* world, uint64_t entity_id) {
+    entity_t e = {.id = entity_id};
+
+    // Find the entity in the world
+    int ind = vec_binary_search(&world->entities, &e, compare_entity);
+    if (ind < 0) {
+        fprintf(stderr, "FATAL: Entity with id %ld not found in world!\n", entity_id);
+        return;
+    }
+
+    // Remove the entity from the world
+    entity_t* entity = (entity_t*) vec_get(&world->entities, ind);
+    vec_remove(&world->entities, ind, false);
+    int arch_index = *(int*) vec_get(&world->entity_archetype, ind);
+    archetype_t* archetype = (archetype_t*) vec_get(&world->archetypes, arch_index);
+    //printf("DEBUG: world->archetypes len: %d, looking for %d\n", vec_length(&world->archetypes), arch_index);
+    //printf("DEBUG: archetype->tags len: %d\n", vec_length(&archetype->tags));
+    //printf("DEBUG: archetype->entities len: %d\n", vec_length(&archetype->entities));
+    archetype_remove_entity(archetype, entity, true);
+    vec_remove(&world->entity_archetype, ind, true);
+
+    free(entity);
+}
+
 void world_register_system(world_t* world, int (*system_fn)(world_t*, event_t*)) {
     system_t* s = malloc(sizeof(system_t));
     s->fn = system_fn;
@@ -163,6 +202,9 @@ void world_queue_event(world_t* world, event_t* event) {
     vec_push(&world->event_queue, (void*) event);
 }
 
+unsigned int world_queue_length(world_t* world) {
+    return (unsigned int) vec_length(&world->event_queue);
+}
 
 void world_add_components(world_t* world, entity_t* entity, component_t** components, int component_count) {
     // Find the entity in the world
@@ -189,8 +231,12 @@ void world_add_components(world_t* world, entity_t* entity, component_t** compon
         new_components[old_tag_count + i] = components[i];
     }
     
+    archetype_tag_t archtag;
+    archtag.component_count = old_tag_count + component_count;
+    archtag.component_tags = new_tags;
+
     // Find the new archetype
-    int dest_index = vec_binary_search(&world->archetypes, new_tags, archetype_match);
+    int dest_index = vec_binary_search(&world->archetypes, &archtag, archetype_match);
     if (dest_index < 0) {
         // Create a new archetype if it doesn't exist
         archetype_t* dest_archetype = malloc(sizeof(archetype_t));
@@ -250,8 +296,12 @@ void world_remove_components(world_t* world, entity_t* entity, int* component_ta
         return;
     }
 
+    archetype_tag_t archtag;
+    archtag.component_count = new_tag_count;
+    archtag.component_tags = new_tags;
+
     // Find the new archetype
-    int dest_index = vec_binary_search(&world->archetypes, new_tags, archetype_match);
+    int dest_index = vec_binary_search(&world->archetypes, &archtag, archetype_match);
     if (dest_index < 0) {
         // Create a new archetype if it doesn't exist
         archetype_t* dest_archetype = malloc(sizeof(archetype_t));
@@ -285,14 +335,34 @@ void world_update(world_t* world) {
     // IMPORTANT NOTE: We process each event one after the other by all systems. 
     // This is to ensure that the order of events is maintained, and that systems can create new events
     // that are processed in the same tick. (This is why we don't use a for loop here and we iterate these items like this)
+    struct timespec now;
+    INSTANT_NOW(&now);
+    world->delta_time = INSTANT_DIFF_US(now, world->last_tick);
     int i = 0;
     while (i < (int) vec_length(&world->event_queue)) {
         event_t* event = (event_t*) vec_get(&world->event_queue, i);
         for (int j = 0; j < (int) vec_length(&world->systems); j++) {
             system_t* system = (system_t*) vec_get(&world->systems, j);
-            system->fn(world, event);
+            if (system->fn(world, event) < 0) {
+                // Prevent further processing of the event if the system returns a negative value.
+                break;
+            } 
         }
         i++;
     }
     vec_clear(&world->event_queue, true);
+    world->last_tick = now;
+}
+
+bool world_entity_has_component(world_t* world, entity_t* entity, int tag) {
+    archetype_t* archetype = world_get_archetype(world, entity);
+    if (archetype == NULL) {
+        return false;
+    }
+    for (int i = 0; i < (int) vec_length(&archetype->tags); i++) {
+        if (*(int*) vec_get(&archetype->tags, i) == tag) {
+            return true;
+        }
+    }
+    return false;
 }

@@ -1,4 +1,5 @@
 #include "../include/node.h"
+#include <stdio.h>
 
 node read_node(FILE *f, int offset) {
   node n;
@@ -29,4 +30,25 @@ node *get_nodes_from_lump(FILE *f, lump *directory, int lump_index,
     nodes[i] = read_node(f, offset);
   }
   return nodes;
+}
+
+bool is_on_back_side(node n, vec2 pos) {
+  i16 dx = pos.x - n.x_partition;
+  i16 dy = pos.y - n.y_partition;
+  return dx * n.dy_partition - dy * n.dx_partition <= 0;
+}
+
+i16 get_subsector_id_from_pos(size_t root_node_id,node* nodes,vec2 pos){
+  size_t node_id = root_node_id;
+  while (node_id < SUBSECTOR_IDENTIFIER) {
+    node n = nodes[node_id];
+    bool is_back_side = is_on_back_side(n, pos);
+    if (is_back_side) {
+      node_id = n.back_child_id;
+    } else {
+      node_id = n.front_child_id;
+    }
+  }
+  i16 subsector_id = node_id - SUBSECTOR_IDENTIFIER;
+  return subsector_id;
 }

@@ -3,6 +3,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include <stdint.h>
+#include <limits.h>
 
 #include "../../include/net/util.h"
 
@@ -86,6 +87,34 @@ uint64_t read_uint64be(uint8_t* buf) {
     data |= ((uint64_t) buf[1]) << 48;
     data |= ((uint64_t) buf[0]) << 56;
     return data;
+}
+
+int8_t read_int8be(uint8_t* buf) {
+    if ((buf[0] & 0x80) == 0) {
+        return (int8_t) buf[0];
+    }
+    return -(int8_t)~buf[0] - 1;
+}
+
+int16_t read_int16be(uint8_t* buf) {
+    if ((buf[0] & 0x80) == 0) {
+        return (int16_t) read_uint16be(buf);
+    }
+    return -(int16_t)~read_uint16be(buf) - 1;
+}
+
+int32_t read_int32be(uint8_t* buf) {
+    if ((buf[0] & 0x80) == 0) {
+        return (int32_t) read_uint32be(buf);
+    }
+    return -(int32_t)~read_uint32be(buf) - 1;
+}
+
+int64_t read_int64be(uint8_t* buf) {
+    if ((buf[0] & 0x80) == 0) {
+        return (int64_t) read_uint64be(buf);
+    }
+    return -(int64_t)~read_uint64be(buf) - 1;
 }
 
 char* read_cstring(uint8_t* buf) {

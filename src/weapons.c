@@ -1,9 +1,12 @@
-#include "../include/weapons.h"
 #include "../include/game_states.h"
 
 #include <jansson.h>
 #include <assert.h>
+#include <stdio.h>
 
+#include "../include/weapons.h"
+#include "../include/player.h"
+#include "../include/component/position.h"
 #define ANIMATION_WIDTH 100
 #define ANIMATION_HEIGTH 50
 
@@ -48,7 +51,7 @@ void init_animation_sprite(animation_sprite *as, patch sprite, bool (*linked_fun
     return;
 }
 
-animations_array *init_animations_array(map_renderer *mr,char *abbreviation, json_t *fire_frames, json_t *fire_layers){
+animations_array *init_animations_array(engine* e,char *abbreviation, json_t *fire_frames, json_t *fire_layers){
     animations_array *ar = malloc(3*sizeof(animations_array)); // A priori pas besoin de plus vu qu'on a que 2 animations 
                                                             //pour les armes : IDLE et animation + la partie qui se rajoute sur l'animation
     // PREMIERE PARTIE : RECUPERE LES INDEX TOUS LES SPRITES RELATIF A L'ARME + LA LONGUEUR DE L'ANIMATION
@@ -62,18 +65,18 @@ animations_array *init_animations_array(map_renderer *mr,char *abbreviation, jso
     int i = 0;
     int special_index = 0; // Index spécial pour rajouter des frames dans l'animation
     int special_sprite_index = 0; // Index spécial pour rajouter des frames dans l'animation
-    patch *sprites = mr->wData->sprites;
+    patch *sprites = e->wData->sprites;
     char* to_cmp = malloc(10*sizeof(char));
     strcpy(to_cmp,sprites[i].patchname);
     to_cmp[m]='\0';
-    while(!(strcmp(abbreviation,to_cmp)==0) && i<mr->wData->len_sprites){
+    while(!(strcmp(abbreviation,to_cmp)==0) && i < e->wData->len_sprites){
         i++;
         strcpy(to_cmp,sprites[i].patchname);
         to_cmp[m]='\0';
     };
     
     int k = 0;
-    while(strcmp(abbreviation,to_cmp)==0 && i<mr->wData->len_sprites){
+    while(strcmp(abbreviation,to_cmp)==0 && i< e->wData->len_sprites){
         indexes[k] = i;
         k++;
         if(k == special_index){
@@ -96,7 +99,7 @@ animations_array *init_animations_array(map_renderer *mr,char *abbreviation, jso
             special_sprite_index = i;
         }
     }
-    if(i==mr->wData->len_sprites){
+    if(i==e->wData->len_sprites){
         printf("Erreur lors du chargement des sprites \n");
         return NULL;
     }
@@ -168,13 +171,13 @@ animations_array *init_animations_array(map_renderer *mr,char *abbreviation, jso
     return ar;
 }
 
-weapon* init_one_weapon(map_renderer *mr,int id, char* weapon_name, char* abbreviation, json_t *fire_frames, json_t *fire_layers,
+weapon* init_one_weapon(engine* e,int id, char* weapon_name, char* abbreviation, json_t *fire_frames, json_t *fire_layers,
                             int magsize, int max_damage, int min_damage, double fire_rate, double spray, int ammo_bounce, int ammo_id, int type){
     weapon* w = malloc(sizeof(weapon));
     w->id = id;
     w->weapon_name = strdup(weapon_name);
     w->abbreviation = strdup(abbreviation);
-    w->sprites = init_animations_array(mr,abbreviation,fire_frames,fire_layers);
+    w->sprites = init_animations_array(e,abbreviation,fire_frames,fire_layers);
     w->magsize = magsize;
     w->max_damage = max_damage;
     w->min_damage = min_damage;
@@ -205,7 +208,7 @@ void print_animations_patches(weapon *w){
     }
 }
 
-weapons_array* init_weapons_array(map_renderer *mr){
+weapons_array* init_weapons_array(engine* en){
     weapons_array* wa = malloc(sizeof(weapons_array));
 
     json_error_t error;
@@ -246,7 +249,7 @@ weapons_array* init_weapons_array(map_renderer *mr){
         json_t *fire_layers = json_object_get(weapon_data, "fire_layers");
 
         //printf("id: %d, weapon_name: %s, abbreviation: %s, magsize: %d, max_damage: %d, min_damage: %d, fire_rate: %lf, spray: %lf, ammo_bounce: %d, ammo_id: %d, type: %d\n",id,weapon_name,abbreviation,magsize,max_damage,min_damage,fire_rate,spray,ammo_bounce,ammo_id,type);
-        weapon *new_weapon = init_one_weapon(mr, id, (char *)weapon_name, (char *) abbreviation, fire_frames, fire_layers, 
+        weapon *new_weapon = init_one_weapon(en, id, (char *)weapon_name, (char *) abbreviation, fire_frames, fire_layers, 
                     magsize, max_damage, min_damage, fire_rate, spray, ammo_bounce, ammo_id, type);
         winv[i] = new_weapon;
     }
@@ -258,7 +261,7 @@ weapons_array* init_weapons_array(map_renderer *mr){
 }
 
 //Affiche le sprite a la bonne taille a l'endroit donné
-void draw_weapon(map_renderer *mr, patch sprite, int x, int y) {
+void draw_weapon(engine* e, patch sprite, int x, int y) {
     SDL_Rect dest_rect;
     dest_rect.x = x;
     dest_rect.y = y;
@@ -266,10 +269,10 @@ void draw_weapon(map_renderer *mr, patch sprite, int x, int y) {
     dest_rect.w = sprite.header.width * X_SCALE;
     dest_rect.h = sprite.header.height * Y_SCALE;
 
-    SDL_RenderCopy(mr->renderer, sprite.tex, NULL, &dest_rect);
+    SDL_RenderCopy(e->renderer, sprite.tex, NULL, &dest_rect);
 }
 
-void idle_weapon_animation(map_renderer *mr,weapon *w, bool is_moving){
+void idle_weapon_animation(engine *e,weapon *w, bool is_moving){
     animation_sprite *idle_anim_sprite = &w->sprites->animation_sprites_array[0];
     
     if(is_moving){
@@ -305,11 +308,11 @@ void idle_weapon_animation(map_renderer *mr,weapon *w, bool is_moving){
     idle_anim_sprite->wanim_pos.x += dx;
     idle_anim_sprite->wanim_pos.y += dy;
 
-    draw_weapon(mr,idle_anim_sprite->animation_sprite,idle_anim_sprite->wanim_pos.x,idle_anim_sprite->wanim_pos.y);
+    draw_weapon(e,idle_anim_sprite->animation_sprite,idle_anim_sprite->wanim_pos.x,idle_anim_sprite->wanim_pos.y);
 
 }
 
-void add_fire_layer(animations_array *fire_layer,animation_sprite as,int time_elapsed,map_renderer *mr){
+void add_fire_layer(animations_array *fire_layer,animation_sprite as,int time_elapsed,engine* e){
     if (fire_layer == NULL){
         return;
     }
@@ -326,14 +329,14 @@ void add_fire_layer(animations_array *fire_layer,animation_sprite as,int time_el
             fire_layer_anim_sprite = &fire_layer->animation_sprites_array[layers_index[j]];
             x = fire_layer_anim_sprite->wanim_origin.x;
             y = fire_layer_anim_sprite->wanim_origin.y;
-            draw_weapon(mr, fire_layer->animation_sprites_array[layers_index[j]].animation_sprite, x, y);
+            draw_weapon(e, fire_layer->animation_sprites_array[layers_index[j]].animation_sprite, x, y);
         }
         layer_accumulated_duration += layer_duration;
     }
 }
 
-void fire_weapon_animation(map_renderer *mr,weapon *w){
-    player *p = mr->engine->p;
+void fire_weapon_animation(engine* e,weapon *w){
+    player *p = e->p;
     animations_array *aa = w->sprites;
     animation_sprite *fire_anim = aa[ANIMATION].animation_sprites_array; //Tableau de toutes les animations de l'arme
     animation_sprite *idle_anim = aa[IDLE].animation_sprites_array; // Idle animation
@@ -356,15 +359,15 @@ void fire_weapon_animation(map_renderer *mr,weapon *w){
     if(time_elapsed < idle_anim[0].duration){
         x = idle_anim[0].wanim_origin.x;
         y = idle_anim[0].wanim_origin.y;
-        draw_weapon(mr,idle_anim[0].animation_sprite,x,y);
-        add_fire_layer(fire_layer,idle_anim[0],time_elapsed,mr);
+        draw_weapon(e,idle_anim[0].animation_sprite,x,y);
+        add_fire_layer(fire_layer,idle_anim[0],time_elapsed,e);
     } else {
         int fire_time_elapsed = time_elapsed - idle_anim[0].duration; // Subtract the duration of the idle animation
         if(fire_time_elapsed < fire_anim[0].duration){
             x = fire_anim[0].wanim_origin.x;
             y = fire_anim[0].wanim_origin.y;
-            draw_weapon(mr,fire_anim[0].animation_sprite,x,y);
-            add_fire_layer(fire_layer,fire_anim[0],fire_time_elapsed,mr);
+            draw_weapon(e,fire_anim[0].animation_sprite,x,y);
+            add_fire_layer(fire_layer,fire_anim[0],fire_time_elapsed,e);
         } else {
             int i = 1;
             int accumulated_duration = fire_anim[0].duration;
@@ -375,14 +378,14 @@ void fire_weapon_animation(map_renderer *mr,weapon *w){
             //printf("Sprite affiché : %s\n",fire_anim[i-1].animation_sprite.patchname);
             x = fire_anim[i - 1].wanim_origin.x;
             y = fire_anim[i - 1].wanim_origin.y;
-            draw_weapon(mr,fire_anim[i-1].animation_sprite,x,y);
-            add_fire_layer(fire_layer,fire_anim[i-1],fire_time_elapsed,mr);
+            draw_weapon(e,fire_anim[i-1].animation_sprite,x,y);
+            add_fire_layer(fire_layer,fire_anim[i-1],fire_time_elapsed,e);
         }
     }
 }
 
-void update_animation(map_renderer *mr){
-    player *p = mr->engine->p;
+void update_animation(engine* e){
+    player *p = e->p;
     weapon *w = wa->weapons[p->active_weapon];
     player_keybind *kb = p->keybinds;
     bool forward = keys[get_key_from_action(kb, "MOVE_FORWARD")];
@@ -406,18 +409,18 @@ void update_animation(map_renderer *mr){
     
     if(p->has_attacked){
         if(time_elapsed_in_game - p->t_last_shot <= casted_cooldown){
-            fire_weapon_animation(mr,w);
+            fire_weapon_animation(e,w);
         }
         if(time_elapsed_in_game - p->t_last_shot > casted_cooldown){
             p->has_attacked = false;
         }
     } else {
-        idle_weapon_animation(mr,w,move);
+        idle_weapon_animation(e,w,move);
     }  
 }
 
-void update_weapons(map_renderer *mr){
-    player *p = mr->engine->p;
+void update_weapons(engine* e){
+    player *p = e->p;
     //weapon *w = wa->weapons[p->active_weapon];
     player_keybind *kb = p->keybinds;
     bool fists = keys[get_key_from_action(kb, "FISTS")], pistol = keys[get_key_from_action(kb, "PISTOL")], chaingun = keys[get_key_from_action(kb, "CHAINGUN")], shotgun = keys[get_key_from_action(kb, "SHOTGUN")];
@@ -444,7 +447,7 @@ void update_weapons(map_renderer *mr){
                 }
             }
         }
-    update_animation(mr);
+    update_animation(e);
 
 }
 
@@ -481,28 +484,29 @@ void free_weapons_array(weapons_array* wa){
 
 
 void switch_weapon(player* p, int weapon_id){
-    p->active_weapon = weapon_id;
+    weapon_ct* weapon = player_get_weapon(p);
+    weapon->active_weapon = weapon_id;
 }
 
 void add_weapon(player* p, int weapon_id,weapons_array* wa){
     /*If the player doesnt have the weapon and the weapon have a limited magsize*/
-    if (p->ammo[weapon_id] < 0){
-        //printf("tout va  bien\n");
-        assert(weapon_id < wa->weapons_number);
-        assert(wa->weapons[weapon_id] != NULL);
-        if (wa->weapons[weapon_id]->magsize > 0){
-            //printf("Prends ton chargeur gamin\n");
-            p->ammo[weapon_id] = wa->weapons[weapon_id]->magsize;
-        } else {
-            //printf("Munitions infinies G_G\n");
-            p->ammo[weapon_id] = -2;
-        }
-        switch_weapon(p,weapon_id);
+    int* ammo = player_get_weapon(p)->ammunitions;
+    //printf("tout va  bien\n");
+    assert(weapon_id < wa->weapons_number);
+    assert(wa->weapons[weapon_id] != NULL);
+    if (wa->weapons[weapon_id]->magsize > 0){
+        //printf("Prends ton chargeur gamin\n");
+        ammo[weapon_id] = wa->weapons[weapon_id]->magsize;
+    } else {
+        //printf("Munitions infinies G_G\n");
+        ammo[weapon_id] = -2;
     }
+    switch_weapon(p,weapon_id);
 }
 
 void add_ammo(player* p, int weapon_id, int ammo){
-    if (p->ammo[weapon_id] >= 0){
-        p->ammo[weapon_id] += ammo;
+    int* ammos = player_get_weapon(p)->ammunitions;
+    if (ammos[weapon_id] >= 0){
+        ammos[weapon_id] += ammo;
     }
 }

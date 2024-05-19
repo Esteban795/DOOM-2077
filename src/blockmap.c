@@ -9,6 +9,7 @@ static blockmap_header *read_blockmap_header(FILE *f, int offset) {
   return bh;
 }
 
+// Find number of linedefs in the block `block_offset`
 static size_t find_number_of_linedefs(FILE *f, int lump_offset,
                                       int block_offset) {
   size_t nlinedefs = 0;
@@ -25,19 +26,19 @@ static size_t find_number_of_linedefs(FILE *f, int lump_offset,
 }
 
 static block read_block(FILE *f, int lump_offset, int block_offset,
-                        linedef *linedefs) {
+                        linedef **linedefs) {
   block b;
   b.nlinedefs = find_number_of_linedefs(f, lump_offset, block_offset);
   int offset = lump_offset + block_offset + 2; // Skip BLOCK_START
   b.linedefs = malloc(sizeof(linedef) * b.nlinedefs);
   for (size_t i = 0; i < b.nlinedefs; i++) {
-    linedef l = linedefs[read_i16(f,  2 *i + offset)];
+    linedef* l = linedefs[read_i16(f,  2 *i + offset)];
     b.linedefs[i] = l;
   }
   return b;
 }
 
-blockmap *read_blockmap(FILE *f, int lump_offset, linedef *linedefs) {
+blockmap *read_blockmap(FILE *f, int lump_offset, linedef **linedefs) {
   const int HEADER_LENGTH = 8;
   blockmap *bm = malloc(sizeof(blockmap));
   bm->header = read_blockmap_header(f, lump_offset);
@@ -55,7 +56,7 @@ blockmap *read_blockmap(FILE *f, int lump_offset, linedef *linedefs) {
 }
 
 blockmap *read_blockmap_from_lump(FILE *f, lump *directory, int lump_index,
-                                  linedef *linedefs) {
+                                  linedef **linedefs) {
   lump lump_info = directory[lump_index];
   return read_blockmap(f, lump_info.lump_offset, linedefs);
 }
@@ -69,6 +70,7 @@ void blockmap_free(blockmap *bm) {
   free(bm);
 }
 
+// Given `x` and `y` coords, return the index of the block that contains the point
 int blockmap_get_block_index(blockmap *bm, int x, int y) {
   int col = (x - bm->header->x) / 128;
   int row = (y - bm->header->y) / 128;
