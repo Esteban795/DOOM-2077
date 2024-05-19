@@ -33,7 +33,6 @@ void update_ingame_state(engine *e) {
   for (int i = 0; i < e->len_lifts; i++) {
     lift_update(e->lifts[i], e->DT);
   }
-  get_ssector_height(e->bsp);
   update_players_subsectors(e->bsp);
   segment_handler_update(e->seg_handler);
   update_bsp(e->bsp);
@@ -41,9 +40,7 @@ void update_ingame_state(engine *e) {
   render_vssprites(e);
   // draw_crosshair(e->map_renderer,get_color(50,0),20);
   SDL_UpdateTexture(e->texture, NULL, e->pixels, WIDTH * 4);
-  
   SDL_SetTextureBlendMode(e->texture, SDL_BLENDMODE_BLEND);
-  
   SDL_RenderCopy(e->renderer, e->texture, NULL, NULL);
   update_weapons(e);
   return;

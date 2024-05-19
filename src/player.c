@@ -274,11 +274,14 @@ void move_and_slide(player *p, double *velocity) {
   free(linedefs);
 }
 
-void update_height(player *p, double z) {
+void update_height(player *p,i16 subsector_id) {
+  bsp* b = p->engine->bsp;
   position_ct* pos = player_get_position(p);
-
-  double target_height = z + PLAYER_HEIGHT;
-  double grav_height = position_get_z(pos) - G * 10e-2 / 2.0 * p->engine->DT * p->engine->DT / 2;
+  subsector player_ssector = b->subsectors[subsector_id];
+  segment seg = player_ssector.segs[0];
+  double floor_height = seg.front_sector->floor_height;
+  double target_height = floor_height + PLAYER_HEIGHT;
+  double grav_height = position_get_z(pos) - G * 10e-3 * p->engine->DT * p->engine->DT / 2.0;
   position_set_z(pos, fmax(grav_height, target_height));
 }
 
@@ -377,7 +380,6 @@ linedef *cast_ray(linedef **linedefs, int len_linedefs, vec2 player_pos,
 
 void update_player(player *p) {
   position_ct* pos = player_get_position(p);
-
   int DT = p->engine->DT;
   if (keys[SDL_GetScancodeFromKey(SDL_GetKeyFromName("M"))]) {
     SHOULD_COLLIDE = !SHOULD_COLLIDE;
@@ -441,6 +443,10 @@ void update_player(player *p) {
     pos->x += vec[0];
     pos->y += vec[1];
   }
+  subsector_id_ct* subsector_id_ecs = (subsector_id_ct*)world_get_component(p->engine->world, p->entity, COMPONENT_TAG_SUBSECTOR_ID);
+  i16 subsector_id = get_subsector_id_from_pos(p->engine->wData->len_nodes - 1, p->engine->wData->nodes, (vec2){.x = position_get_x(pos), .y = position_get_y(pos)});
+  subsector_id_set(subsector_id_ecs, subsector_id);
+  update_height(p,subsector_id);
 }
 
 void player_free(player *p) {

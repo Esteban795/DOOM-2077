@@ -19,7 +19,5 @@ void update_bsp(bsp *b);
 
 void bsp_free(bsp *b);
 
-void get_ssector_height(bsp* b);
-
 void update_players_subsectors(bsp *b);
 #endif

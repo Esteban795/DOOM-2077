@@ -145,9 +145,6 @@ bool is_segment_in_fov(player *p, segment seg, int *x1, int *x2,
   return true;
 }
 
-Uint32 red_pixel = 0xFF0000FF;
-int shift = 0;
-
 // BSP traveral algorithm
 void render_bsp_node(bsp *b, size_t node_id) {
   if (BSP_TRAVERSE) {
@@ -200,27 +197,6 @@ void render_bsp_node(bsp *b, size_t node_id) {
   }
 }
 
-void get_ssector_height(bsp *b) {
-  size_t node_id = b->root_node_id;
-  position_ct *player_pos = player_get_position(b->player);
-  vec2 player_pos_v = position_get_pos(player_pos);
-  while (node_id < SUBSECTOR_IDENTIFIER) {
-    node n = b->nodes[node_id];
-    bool is_back_side = is_on_back_side(n, player_pos_v);
-    if (is_back_side) {
-      node_id = n.back_child_id;
-    } else {
-      node_id = n.front_child_id;
-    }
-  }
-  i16 subsector_id = node_id - SUBSECTOR_IDENTIFIER;
-  b->engine->p->subsector_id = subsector_id;
-  subsector player_ssector = b->subsectors[subsector_id];
-  segment seg = player_ssector.segs[0];
-  double floor_height = seg.front_sector->floor_height;
-  update_height(b->engine->p, floor_height);
-}
-
 void update_bsp(bsp *b) {
   BSP_TRAVERSE = true;
   VSSPRITES_INDEX = 0;
@@ -237,19 +213,9 @@ void update_players_subsectors(bsp *b) {
     position_ct *pos = (position_ct *)world_get_component(
         b->engine->world, player, COMPONENT_TAG_POSITION);
     vec2 pos_v = position_get_pos(pos);
-    size_t node_id = b->root_node_id;
-    while (node_id < SUBSECTOR_IDENTIFIER) {
-      node n = b->nodes[node_id];
-      bool is_back_side = is_on_back_side(n, pos_v);
-      if (is_back_side) {
-        node_id = n.back_child_id;
-      } else {
-        node_id = n.front_child_id;
-      }
-    }
-    i16 subs_id = node_id - SUBSECTOR_IDENTIFIER;
-    subsector_id_ct *subsector_id = (subsector_id_ct *)world_get_component(
+    i16 subsector_id = get_subsector_id_from_pos(b->root_node_id, b->nodes, pos_v);
+    subsector_id_ct *subsector_id_ecs = (subsector_id_ct *)world_get_component(
         b->engine->world, player, COMPONENT_TAG_SUBSECTOR_ID);
-    subsector_id_set(subsector_id, subs_id);
+    subsector_id_set(subsector_id_ecs, subsector_id);
   }
 }

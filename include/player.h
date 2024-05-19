@@ -23,8 +23,6 @@ void update_player(player *p);
 
 void player_free(player *p);
 
-void update_height(player* p,double z);
-
 // Get the player's position component
 position_ct* player_get_position(player* p);
 
