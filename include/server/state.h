@@ -29,17 +29,35 @@
 
 typedef struct timespec Instant;
 
+// The game state
+typedef enum {
+    GAME_STATE_WAITING,
+    GAME_STATE_COOLDOWN,
+    GAME_STATE_RUNNING,
+    GAME_STATE_ENDING,
+} game_state_t;
+
+// The server state
 typedef struct {
+    // The world ECS
     world_t world;
+    // The server socket
     UDPsocket sock;
+    // Connection sockets to clients
     tracked_connection_t conns[MAX_CLIENTS];
     int conn_count;
+    // The last tick time
     Instant last_tick;
+    // The incoming and outgoing packets
     UDPpacket* incoming;
     UDPpacket* outgoing;
+    // The WAD data & map name
     wad_data* wad_data;
     char* map_name;
+    // The task executor
     task_executor_t task_executor;
+    // The game state
+    game_state_t game_state;
 } server_state_t;
 
 #define SERVER_STATE (&server_state)

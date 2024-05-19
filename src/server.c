@@ -78,6 +78,7 @@ int run_server(uint16_t port)
     SERVER_STATE->sock = server;
     SERVER_STATE->conn_count = 0;
     SERVER_RUNNING = 1;
+    SERVER_STATE->game_state = GAME_STATE_WAITING;
     INSTANT_NOW(&SERVER_STATE->last_tick);
     world_init(&SERVER_STATE->world);
     task_executor_init(&SERVER_STATE->task_executor);
