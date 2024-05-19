@@ -386,7 +386,8 @@ void fire_weapon_animation(engine* e,weapon *w){
 
 void update_animation(engine* e){
     player *p = e->p;
-    weapon *w = wa->weapons[p->active_weapon];
+    weapon_ct* weapon_ecs = player_get_weapon(p);
+    weapon *w = wa->weapons[weapon_ecs->active_weapon];
     player_keybind *kb = p->keybinds;
     bool forward = keys[get_key_from_action(kb, "MOVE_FORWARD")];
     bool left = keys[get_key_from_action(kb, "MOVE_LEFT")];
@@ -421,28 +422,29 @@ void update_animation(engine* e){
 
 void update_weapons(engine* e){
     player *p = e->p;
-    //weapon *w = wa->weapons[p->active_weapon];
+    //weapon *w = wa->weapons[weapon->active_weapon];
+    weapon_ct* weapon = player_get_weapon(p);
     player_keybind *kb = p->keybinds;
     bool fists = keys[get_key_from_action(kb, "FISTS")], pistol = keys[get_key_from_action(kb, "PISTOL")], chaingun = keys[get_key_from_action(kb, "CHAINGUN")], shotgun = keys[get_key_from_action(kb, "SHOTGUN")];
     //, rocket = keys[get_key_from_action(kb, "ROCKET")], plasma = keys[get_key_from_action(kb, "PLASMA")], bfg = keys[get_key_from_action(kb, "BFG")];
         if (!p->has_attacked){
             if(fists){
-                if(p->active_weapon != 0){
+                if(weapon->active_weapon != 0){
                     switch_weapon(p,0);
                 }
             }
             if(pistol){
-                if(p->active_weapon != 1 && p->ammo[1] >= 0){
+                if(weapon->active_weapon != 1 && weapon->ammunitions[1] >= 0){
                     switch_weapon(p,1);
                 }
             }
             if(chaingun){
-                if(p->active_weapon != 2 && p->ammo[2] >= 0){
+                if(weapon->active_weapon != 2 &&weapon->ammunitions[2] >= 0){
                     switch_weapon(p,2);
                 }
             }
             if(shotgun){
-                if(p->active_weapon != 3 && p->ammo[3] >= 0){
+                if(weapon->active_weapon != 3 && weapon->ammunitions[3] >= 0){
                     switch_weapon(p,3);
                 }
             }

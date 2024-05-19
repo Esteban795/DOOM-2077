@@ -75,7 +75,7 @@ int main() {
     printf("Connection to server successful!\n");
   }
 
-  for (int i = 1; i < WEAPONS_NUMBER - 1; i++) {
+  for (int i = 1; i < WEAPONS_NUMBER; i++) {
     add_weapon(e->p, i, wa);
   }
   // print_animations_patches(wa->weapons[1]);

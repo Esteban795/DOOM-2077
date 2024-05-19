@@ -34,7 +34,7 @@ void update_ingame_state(engine *e) {
     lift_update(e->lifts[i], e->DT);
   }
   get_ssector_height(e->bsp);
-  // update_players_subsectors(e->bsp);
+  update_players_subsectors(e->bsp);
   segment_handler_update(e->seg_handler);
   update_bsp(e->bsp);
   vssprite_sort(); // sorts the sprite by ascending scale
@@ -45,7 +45,7 @@ void update_ingame_state(engine *e) {
   SDL_SetTextureBlendMode(e->texture, SDL_BLENDMODE_BLEND);
   
   SDL_RenderCopy(e->renderer, e->texture, NULL, NULL);
-  // update_weapons(e);
+  update_weapons(e);
   return;
 }
 

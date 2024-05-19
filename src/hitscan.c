@@ -28,7 +28,7 @@ void fire_bullet(
   double distance_finale = 10000;
   if (weapon_get_active_cooldown(weapon_ecs) < 80) {
     *weapon_get_mut_active_cooldown(weapon_ecs) += 100;
-    weapon *weapon_used = weapons_list->weapons[player_->active_weapon];
+    weapon *weapon_used = weapons_list->weapons[weapon_ecs->active_weapon];
     int damage = weapon_used->max_damage;
     int weapon_number = weapon_used->id;
     double cs =
@@ -53,7 +53,7 @@ void fire_bullet(
     // gestion du tir jusqu'au mur
     if ((cs < time) &&
         (!((is_ranged == 1) &&
-           (player_->ammo[player_->active_weapon] ==
+           (player_->ammo[weapon_ecs->active_weapon] ==
             0)))) { // On véfrifie d'un coté que le temps de cooldown est
                     // respecté et ensuite que si l'arme est a distance elle
                     // dispose d'assez de muntitions
@@ -142,7 +142,7 @@ void fire_bullet(
               (min(y1, y_final) < -position_get_y(pos_pj))) {
             if ((dist_to_hitscan < MELEE_RADIUS)) {
               health_sub(health_pj, damage);
-              player_->ammo[player_->active_weapon] -= 1;
+              player_->ammo[weapon_ecs->ammunitions[weapon_ecs->active_weapon]] -= 1;
             }
           }
         }
