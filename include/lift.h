@@ -54,7 +54,7 @@ enum LiftTransitionSpeed {
 };
 
 struct Lift {
-    entity_t* id;
+    uint64_t id;
     int time_elapsed;
     sector* sector;
     enum LiftTransitionSpeed speed;
@@ -70,10 +70,10 @@ struct Lift {
 
 typedef struct Lift lift;
 
-lift *lift_create(entity_t *id, sector *sector, enum LiftTransitionSpeed speed,
+lift *lift_create(uint64_t id, sector *sector, enum LiftTransitionSpeed speed,
                   i16 low_height, i16 high_height, int delay, bool init_state,bool once);
 
-void lift_trigger_switch(lift* l);
+bool lift_trigger_switch(lift* l);
 
 void lifts_free(lift** lifts,int len_lifts);
 

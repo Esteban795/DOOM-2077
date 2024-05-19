@@ -9,6 +9,16 @@
 #define INSTANT_NOW(t) clock_gettime(CLOCK_MONOTONIC, t)
 #define INSTANT_DIFF_US(a, b) ((a.tv_sec - b.tv_sec) * 1000000 + (a.tv_nsec - b.tv_nsec) / 1000)
 
+int find_archetype(world_t* world, archetype_tag_t* archetype_pat) {
+    for (int i = 0; i < (int) vec_length(&world->archetypes); i++) {
+        archetype_t* archetype = (archetype_t*) vec_get(&world->archetypes, i);
+        if (archetype_match((void*) &archetype_pat, (void*) &archetype) == 0) {
+            return i;
+        }
+    }
+    return -1;
+}
+
 void world_init(world_t* world) {
     vec_init(&world->entities);
     vec_init(&world->entity_archetype);
@@ -51,13 +61,13 @@ entity_t* world_insert_entity(world_t* world, uint64_t entity_id, component_t** 
         archetype_pat.component_tags[i] = components[i]->tag;
     }
     
-    int arch_index = vec_binary_search(&world->archetypes, &archetype_pat, archetype_match);
+    int arch_index = find_archetype(world, &archetype_pat);
     if (arch_index < 0) {
         // Create a new archetype if it doesn't exist
         archetype_t* archetype = malloc(sizeof(archetype_t));
         archetype_init(archetype, component_count, archetype_pat.component_tags);
-        vec_insert(&world->archetypes, ~arch_index, (void*) archetype);
-        arch_index = ~arch_index;
+        vec_push(&world->archetypes, (void*) archetype);
+        arch_index = (int) vec_length(&world->archetypes) - 1;
     }
 
     free(archetype_pat.component_tags);
@@ -95,13 +105,13 @@ entity_t** world_create_bulk_entity(world_t* world, component_t*** components, i
         archetype_pat.component_tags[i] = components[0][i]->tag;
     }
 
-    int arch_index = vec_binary_search(&world->archetypes, &archetype_pat, archetype_match);
+    int arch_index = find_archetype(world, &archetype_pat);
     if (arch_index < 0) {
         // Create a new archetype if it doesn't exist
         archetype_t* archetype = malloc(sizeof(archetype_t));
         archetype_init(archetype, component_count, archetype_pat.component_tags);
-        vec_insert(&world->archetypes, ~arch_index, (void*) archetype);
-        arch_index = ~arch_index;
+        vec_push(&world->archetypes, (void*) archetype);
+        arch_index = (int) vec_length(&world->archetypes) - 1;
     }
 
     // Add the entities to the archetype
@@ -185,12 +195,25 @@ component_t* world_get_component(world_t* world, entity_t* entity, int tag) {
     return archetype_get_component(archetype, entity, tag);
 }
 
+bool world_entity_has_component(world_t* world, entity_t* entity, int tag) {
+    archetype_t* archetype = world_get_archetype(world, entity);
+    if (archetype == NULL) {
+        return false;
+    }
+    for (int i = 0; i < (int) vec_length(&archetype->tags); i++) {
+        if (*(int*) vec_get(&archetype->tags, i) == tag) {
+            return true;
+        }
+    }
+    return false;
+}
+
 archetype_t* world_get_archetype_by_tags(world_t* world, int component_tags[], int component_count) {
     archetype_tag_t archetype_pat;
     archetype_pat.component_count = component_count;
     archetype_pat.component_tags = component_tags;
 
-    int arch_index = vec_binary_search(&world->archetypes, &archetype_pat, archetype_match);
+    int arch_index = find_archetype(world, &archetype_pat);
     if (arch_index < 0) {
         return NULL;
     }
@@ -236,13 +259,13 @@ void world_add_components(world_t* world, entity_t* entity, component_t** compon
     archtag.component_tags = new_tags;
 
     // Find the new archetype
-    int dest_index = vec_binary_search(&world->archetypes, &archtag, archetype_match);
+    int dest_index = find_archetype(world, &archtag);
     if (dest_index < 0) {
         // Create a new archetype if it doesn't exist
         archetype_t* dest_archetype = malloc(sizeof(archetype_t));
         archetype_init(dest_archetype, old_tag_count + component_count, new_tags);
-        vec_insert(&world->archetypes, ~dest_index, (void*) dest_archetype);
-        dest_index = ~dest_index;
+        vec_push(&world->archetypes, (void*) dest_archetype);
+        dest_index = (int) vec_length(&world->archetypes) - 1;
     }
 
     // Remove the entity from the old archetype
@@ -301,13 +324,13 @@ void world_remove_components(world_t* world, entity_t* entity, int* component_ta
     archtag.component_tags = new_tags;
 
     // Find the new archetype
-    int dest_index = vec_binary_search(&world->archetypes, &archtag, archetype_match);
+    int dest_index = find_archetype(world, &archtag);
     if (dest_index < 0) {
         // Create a new archetype if it doesn't exist
         archetype_t* dest_archetype = malloc(sizeof(archetype_t));
         archetype_init(dest_archetype, new_tag_count, new_tags);
-        vec_insert(&world->archetypes, ~dest_index, (void*) dest_archetype);
-        dest_index = ~dest_index;
+        vec_push(&world->archetypes, (void*) dest_archetype);
+        dest_index = (int) vec_length(&world->archetypes) - 1;
     }
 
     // Remove the entity from the old archetype

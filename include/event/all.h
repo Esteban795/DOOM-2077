@@ -11,3 +11,4 @@
 #include "scoreboard_update.h"
 #include "server_join.h"
 #include "server_quit.h"
+#include "door.h"

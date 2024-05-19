@@ -14,6 +14,10 @@ const char* CLIENT_COMMAND_PING = "PING";
 const char* CLIENT_COMMAND_QUIT = "QUIT";
 const char* CLIENT_COMMAND_MOVE = "MOVE";
 const char* CLIENT_COMMAND_CHAT = "CHAT";
+const char* CLIENT_COMMAND_OPEN = "OPEN";
+const char* CLIENT_COMMAND_CLOS = "CLOS";
+const char* CLIENT_COMMAND_LASC = "LASC";
+const char* CLIENT_COMMAND_LDSC = "LDSC";
 
 int client_join(uint8_t* buf, char* player_name) {
     memcpy(buf, CLIENT_COMMAND_JOIN, 4);
@@ -64,6 +68,30 @@ int client_chat(uint8_t* buf, char* message) {
     return 4 + 2 + clen + 1;
 }
 
+inline int client_door_state_change(uint8_t* buf, const char* command, uint64_t door_id) {
+    memcpy(buf, command, 4);
+    write_uint16be(buf + 4, 8);
+    write_uint64be(buf + 6, door_id);
+    buf[14] = '\n';
+    return 4 + 2 + 8 + 1;
+}
+
+int client_door_open(uint8_t* buf, uint64_t door_id) {
+    return client_door_state_change(buf, CLIENT_COMMAND_OPEN, door_id);
+}
+
+int client_door_close(uint8_t* buf, uint64_t door_id) {
+    return client_door_state_change(buf, CLIENT_COMMAND_CLOS, door_id);
+}
+
+int client_lift_ascend(uint8_t* buf, uint64_t lift_id) {
+    return client_door_state_change(buf, CLIENT_COMMAND_LASC, lift_id);
+}
+
+int client_lift_descend(uint8_t* buf, uint64_t lift_id) {
+    return client_door_state_change(buf, CLIENT_COMMAND_LDSC, lift_id);
+}
+
 int client_join_from(uint8_t* buf, char** player_name) {
     int clen = read_uint16be(buf + 4);
     int clen_ = clen;
@@ -98,4 +126,25 @@ int client_chat_from(uint8_t* buf, char** message) {
     memcpy(*message, buf + 6, clen_);
     (*message)[clen_-1] = '\0';
     return 4 + 2 + clen + 1;
+}
+
+inline int client_door_state_change_from(uint8_t* buf, uint64_t* door_id) {
+    *door_id = read_uint64be(buf + 6);
+    return 4 + 2 + 8 + 1;
+}
+
+int client_door_open_from(uint8_t* buf, uint64_t* door_id) {
+    return client_door_state_change_from(buf, door_id);
+}
+
+int client_door_close_from(uint8_t* buf, uint64_t* door_id) {
+    return client_door_state_change_from(buf, door_id);
+}
+
+int client_lift_ascend_from(uint8_t* buf, uint64_t* lift_id) {
+    return client_door_state_change_from(buf, lift_id);
+}
+
+int client_lift_descend_from(uint8_t* buf, uint64_t* lift_id) {
+    return client_door_state_change_from(buf, lift_id);
 }

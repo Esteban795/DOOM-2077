@@ -33,4 +33,10 @@ void remote_disconnect(remote_server_t* r);
 // from the server. If it receives a packet from the server, it will handle it.
 // Returns 0 on success, -1 on failure, 1 if the server has kicked the client.
 int remote_update(engine* e, remote_server_t* r);
+
+// Trigger a door, sync it with the server if necessary
+void client_door_trigger(engine* e, uint64_t door_id);
+
+// Trigger a lift, sync it with the server if necessary
+void client_lift_trigger(engine* e, uint64_t lift_id);
 #endif

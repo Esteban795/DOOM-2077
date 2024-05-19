@@ -237,7 +237,7 @@ void move_and_slide(player *p, double *velocity) {
       // else: use the first linedef (first linedef faces "clockwise")
       if (linedefs[i]->has_doors && linedefs[i]->is_collidable) {
         if (!linedefs[i]->used) {
-          door_trigger_switch(linedefs[i]->door);
+          client_door_trigger(p->engine, linedefs[i]->door->id);
           if (!linedefs[i]->is_repeatable) {
             linedefs[i]->used = true;
           }
@@ -245,7 +245,7 @@ void move_and_slide(player *p, double *velocity) {
       }
       if (linedefs[i]->has_lifts && linedefs[i]->is_collidable) {
         if (!linedefs[i]->used) {
-          lift_trigger_switch(linedefs[i]->lifts);
+          client_lift_trigger(p->engine, linedefs[i]->lifts->id);
           if (!linedefs[i]->is_repeatable) {
             linedefs[i]->used = true;
           }
@@ -379,10 +379,10 @@ void update_player(player *p) {
                  position_get_pos(pos), position_get_angle(pos), position_get_z(pos));
     if (trigger_linedef != NULL) {
       if (trigger_linedef->door != NULL) {
-        door_trigger_switch(trigger_linedef->door);
+        client_door_trigger(p->engine, trigger_linedef->door->id);
       }
       if (trigger_linedef->lifts != NULL) {
-        lift_trigger_switch(trigger_linedef->lifts);
+        client_lift_trigger(p->engine, trigger_linedef->lifts->id);
       }
     }
   }

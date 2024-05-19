@@ -298,6 +298,66 @@ int remote_update(engine* e, remote_server_t* r) {
                 server_player_damage_from(sdata+offset, &player_id, &src_player_id, &damage);
                 event_t* event = (event_t*) ClientPlayerDamageEvent_new(player_id, src_player_id, damage);
                 world_queue_event(e->world, event);
+            } else if (strncmp(cmd, SERVER_COMMAND_DOST, 4) == 0) {
+                uint16_t doors_count;
+                bool* doors_states;
+                server_door_states_from(sdata+offset, &doors_count, &doors_states);
+                if (doors_count != e->num_doors) {
+                    fprintf(stderr, "Mismatched door count: %d != %d\n", doors_count, e->num_doors);
+                } else {
+                    for (int i = 0; i < doors_count; i++) {
+                        if (e->doors[i]->state != doors_states[i]) {
+                            door_trigger_switch(e->doors[i]);
+                        }
+                    }
+                }
+                free(doors_states);
+            } else if (strncmp(cmd, SERVER_COMMAND_L_ST, 4) == 0) {
+                uint16_t lifts_count;
+                bool* lifts_states;
+                server_door_states_from(sdata+offset, &lifts_count, &lifts_states);
+                if (lifts_count != e->len_lifts) {
+                    fprintf(stderr, "Mismatched lift count: %d != %d\n", lifts_count, e->len_lifts);
+                } else {
+                    for (int i = 0; i < lifts_count; i++) {
+                        if (e->lifts[i]->state != lifts_states[i]) {
+                            lift_trigger_switch(e->lifts[i]);
+                        }
+                    }
+                }
+                free(lifts_states);
+            } else if (strncmp(cmd, SERVER_COMMAND_OPEN, 4) == 0) {
+                uint64_t door_id;
+                server_door_open_from(sdata+offset, &door_id);
+                if (door_id < e->num_doors && e->doors[door_id]->state == false) {
+                    door_trigger_switch(e->doors[door_id]);
+                }
+                event_t* event = (event_t*) ClientDoorOpenEvent_new(door_id, false);
+                world_queue_event(e->world, event);
+            } else if (strncmp(cmd, SERVER_COMMAND_CLOS, 4) == 0) {
+                uint64_t door_id;
+                server_door_close_from(sdata+offset, &door_id);
+                if (door_id < e->num_doors && e->doors[door_id]->state == true) {
+                    door_trigger_switch(e->doors[door_id]);
+                }
+                event_t* event = (event_t*) ClientDoorCloseEvent_new(door_id, false);
+                world_queue_event(e->world, event);
+            } else if (strncmp(cmd, SERVER_COMMAND_LASC, 4) == 0) {
+                uint64_t lift_id;
+                server_lift_ascend_from(sdata+offset, &lift_id);
+                if (lift_id < e->len_lifts && e->lifts[lift_id]->state == false) {
+                    lift_trigger_switch(e->lifts[lift_id]);
+                }
+                event_t* event = (event_t*) ClientDoorOpenEvent_new(lift_id, true);
+                world_queue_event(e->world, event);
+            } else if (strncmp(cmd, SERVER_COMMAND_LDSC, 4) == 0) {
+                uint64_t lift_id;
+                server_lift_descend_from(sdata+offset, &lift_id);
+                if (lift_id < e->len_lifts && e->lifts[lift_id]->state == true) {
+                    lift_trigger_switch(e->lifts[lift_id]);
+                }
+                event_t* event = (event_t*) ClientDoorCloseEvent_new(lift_id, true);
+                world_queue_event(e->world, event);
             } else {
                 printf("Unknown command: %s\n", cmd);
             }
@@ -332,4 +392,43 @@ int remote_update(engine* e, remote_server_t* r) {
     angle = pos->angle;
 
     return 0;
+}
+
+void __client_door_trigger(engine* e, uint64_t door_id, bool is_lift) {
+    if (e->remote->connected < 2) {
+        return;
+    }
+
+    int len = 0;
+    if (is_lift) {
+        if (e->lifts[door_id]->state) {
+            len = client_lift_descend(e->remote->packet->data, door_id);
+        } else {
+            len = client_lift_ascend(e->remote->packet->data, door_id);
+        }
+    } else {
+        if (e->doors[door_id]->state) {
+            len = client_door_close(e->remote->packet->data, door_id);
+        } else {
+            len = client_door_open(e->remote->packet->data, door_id);
+        }
+    }
+    e->remote->packet->len = len;
+    e->remote->packet->address.host = e->remote->addr.host;
+    e->remote->packet->address.port = e->remote->addr.port;
+    if (SDLNet_UDP_Send(e->remote->socket, -1, e->remote->packet) == 0) {
+        fprintf(stderr, "SDLNet_UDP_Send: trigger command: %s\n", SDLNet_GetError());
+    }
+}
+
+void client_door_trigger(engine* e, uint64_t door_id) {
+    if (door_trigger_switch(e->doors[door_id])) {
+        __client_door_trigger(e, door_id, false);
+    }
+}
+
+void client_lift_trigger(engine* e, uint64_t lift_id) {
+    if (lift_trigger_switch(e->lifts[lift_id])) {
+        __client_door_trigger(e, lift_id, true);
+    }
 }
