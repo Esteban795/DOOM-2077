@@ -101,49 +101,6 @@ int apply_event(world_t* world, event_t* event) {
             world_queue_event(world, scoreboard_event);
             break;
         }
-        /* case SERVER_DOOR_OPEN_EVENT_TAG: {
-            door_open_event_t* door_open_event = (door_open_event_t*)event;
-            entity_t* did;
-            if (door_open_event->is_lift) {
-                // If the lift does not exist, we cannot apply the event, cancel it.
-                if (door_open_event->door_id >= SERVER_STATE->lift_count) return -1;
-                did = SERVER_STATE->lifts[door_open_event->door_id];
-                lift_state_ct* state = (lift_state_ct*) world_get_component(world, did, COMPONENT_TAG_LIFT_STATE);
-                if (state == NULL) return -1; // If the lift does not have a state, we cannot apply the event, cancel it.
-                //if (state->is_open) return -1; // If the lift is already open, we do not need to apply the event.
-                state->is_open = true;
-            } else {
-                // If the door does not exist, we cannot apply the event, cancel it.
-                if (door_open_event->door_id >= SERVER_STATE->door_count) return -1;
-                did = SERVER_STATE->doors[door_open_event->door_id];
-                door_state_ct* state = (door_state_ct*) world_get_component(world, did, COMPONENT_TAG_DOOR_STATE);
-                if (state == NULL) return -1; // If the door does not have a state, we cannot apply the event, cancel it.
-                //if (state->is_open) return -2; // If the door is already open, we do not need to apply the event.
-                state->is_open = true;
-            }
-            break;
-        }
-        case SERVER_DOOR_CLOSE_EVENT_TAG: {
-            door_close_event_t* door_close_event = (door_close_event_t*)event;
-            entity_t* did;
-            if (door_close_event->is_lift) {
-                // If the lift does not exist, we cannot apply the event, cancel it.
-                if (door_close_event->door_id >= SERVER_STATE->lift_count) return -1;
-                did = SERVER_STATE->lifts[door_close_event->door_id];
-                lift_state_ct* state = (lift_state_ct*) world_get_component(world, did, COMPONENT_TAG_LIFT_STATE);
-                if (state == NULL) return -1; // If the lift does not have a state, we cannot apply the event, cancel it.
-                //if (!state->is_open) return -2; // If the lift is already close, we do not need to apply the event.
-                state->is_open = false;
-            } else {
-                // If the door does not exist, we cannot apply the event, cancel it.
-                if (door_close_event->door_id >= SERVER_STATE->door_count) return -1;
-                did = SERVER_STATE->doors[door_close_event->door_id];
-                door_state_ct* state = (door_state_ct*) world_get_component(world, did, COMPONENT_TAG_DOOR_STATE);
-                if (state == NULL) return -1; // If the door does not have a state, we cannot apply the event, cancel it.
-                //if (!state->is_open) return -2; // If the door is already close, we do not need to apply the event.
-                state->is_open = false;
-            }
-        } */
         default:
             break;
     }
