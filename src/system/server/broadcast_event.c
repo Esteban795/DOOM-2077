@@ -90,7 +90,7 @@ int broadcast_event(world_t* world, event_t* event) {
                 position_ct* pos = (position_ct*) world_get_component(world, &pid, COMPONENT_TAG_POSITION);
                 health_ct* health = (health_ct*) world_get_component(world, &pid, COMPONENT_TAG_HEALTH);
                 if (display_name == NULL) continue;
-                outgoing->len += server_join(outgoing->data, conns[i].player_id, display_name_get(display_name));
+                outgoing->len += server_join(outgoing->data + outgoing->len, conns[i].player_id, display_name_get(display_name));
                 if (pos == NULL) continue;
                 outgoing->len += server_player_move(outgoing->data + outgoing->len, conns[i].player_id, pos->x, pos->y, pos->z, pos->angle);
                 if (health == NULL) continue;
