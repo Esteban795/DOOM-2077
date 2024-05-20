@@ -133,7 +133,7 @@ void draw_solid_walls_range(segment_handler *sh, int x1, int x2) {
     scale1 += rw_scale_step;
   }
   // log entry used later for sprite rendering
-  drawseg_add(seg, x1, x2, prev_scale1, scale2, rw_scale_step);
+  drawseg_add(seg, x1, x2, prev_scale1, scale2, rw_scale_step, NULL,NULL,DRAWSEG_SOLID_WALL);
 }
 
 void draw_portal_walls_range(segment_handler *sh, int x1, int x2) {
@@ -281,10 +281,18 @@ void draw_portal_walls_range(segment_handler *sh, int x1, int x2) {
     }
   }
 
+  // keep tracks of the top and bottom clips for sprite rendering
+  double* top_clips = malloc(sizeof(double) * (x2 - x1));
+  double* bottom_clips = malloc(sizeof(double) * (x2 - x1));
+  for (int i = 0; i < x2 - x1; i++) {
+    top_clips[i] = -1;
+    bottom_clips[i] = HEIGHT;
+  }
   // lets start actually rendering
   double angle = 0;
   double texture_column = 0;
   double inverted_scale = 1.0 / scale1;
+
   for (int i = x1; i < x2; i++) {
     double draw_wall_y1 = wall_y1 - 1;
     double draw_wall_y2 = wall_y2;
@@ -314,6 +322,7 @@ void draw_portal_walls_range(segment_handler *sh, int x1, int x2) {
                        inverted_scale, light_level);
       if (sh->upper_clip[i] < wy2) {
         sh->upper_clip[i] = wy2;
+        top_clips[i - x1] = wy2;
       }
       portal_y1 += portal_y1_step;
     }
@@ -325,6 +334,7 @@ void draw_portal_walls_range(segment_handler *sh, int x1, int x2) {
                 cy2, world_front_z1);
       if (sh->upper_clip[i] < cy2) {
         sh->upper_clip[i] = cy2;
+        top_clips[i - x1] = cy2;
       }
     }
 
@@ -344,6 +354,7 @@ void draw_portal_walls_range(segment_handler *sh, int x1, int x2) {
                        inverted_scale, light_level);
       if (sh->lower_clip[i] > wy1) {
         sh->lower_clip[i] = wy1;
+        bottom_clips[i - x1] = wy1;
       }
       portal_y2 += portal_y2_step;
     }
@@ -354,8 +365,10 @@ void draw_portal_walls_range(segment_handler *sh, int x1, int x2) {
       draw_flat(sh->engine, floor_texture, light_level, i, fy1,
                 fy2, world_front_z2);
 
-      if (sh->lower_clip[i] > draw_wall_y2)
+      if (sh->lower_clip[i] > draw_wall_y2) {
         sh->lower_clip[i] = fy1;
+        bottom_clips[i - x1] = fy1;
+      }
     }
     wall_y1 += wall_y1_step; // we're working with linear interpolation, don't forget to update the y_1 and y_2 positions
     wall_y2 += wall_y2_step;
@@ -363,7 +376,7 @@ void draw_portal_walls_range(segment_handler *sh, int x1, int x2) {
   }
 
   // log entry of what we've just drawn, used later for rendering sprites
-  drawseg_add(seg, x1, x2, prev_scale1, scale2, rw_scale_step);
+  drawseg_add(seg, x1, x2, prev_scale1, scale2, rw_scale_step, top_clips,bottom_clips,DRAWSEG_PORTAL_WALL);
 }
 
 // Given x1 and x2, clip the solid wall with what is already existing on the screen

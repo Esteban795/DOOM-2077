@@ -1,5 +1,4 @@
 #include "../include/map_renderer.h"
-#include <stdio.h>
 
 double get_xy_floor_height(bsp *b, vec2 pos) {
   size_t node_id = b->root_node_id;
@@ -174,48 +173,50 @@ void render_vssprite(engine *e, vs_sprite vssprite) {
       sprite_column += inverted_scale;
     }
   } else { // something is obscuring the sprite
-    // int* ranges = malloc(sizeof(int) * WIDTH);
-    // memset(ranges, 0, sizeof(int) * WIDTH);
-    // drawseg ds;
-    // int marker = 0;
-    // double* upper_clip = malloc(sizeof(double) * WIDTH);
-    // double* lower_clip = malloc(sizeof(double) * WIDTH);
-    // for (int i = 0; i < WIDTH; i++){
-    //   upper_clip[i] = top;
-    //   lower_clip[i] = top + height;
-    // }
+    int* ranges = malloc(sizeof(int) * WIDTH);
+    memset(ranges, 0, sizeof(int) * WIDTH);
+    drawseg ds;
+    int marker = 0;
 
-    // for (int i = DRAWSEGS_INDEX;i >= 0; i--){ // calculate where exactly we can draw the sprite
-    //   ds = DRAWSEGS[i];
-    //   marker = ds.type == DRAWSEG_SOLID_WALL ? 1 : -1;
-    //   if (vssprite.scale < ds.scale1 && vssprite.scale < ds.scale2 && do_segs_intersect(vssprite.x1, vssprite.x2, ds.x1, ds.x2)){
-    //     for (int j = ds.x1 ; j < ds.x2; j++){
-    //       if (!ranges[j]) { // mark iff no walls was previously seen before, because previous wall could be a solid wall !
-    //         ranges[j] = marker;
-    //       }
-    //       if (marker == -1) {
-    //         upper_clip[j] = max(ds.top_clips[j - ds.x1],upper_clip[j]);
-    //         lower_clip[j] = min(ds.bottom_clips[j - ds.x1],lower_clip[j]);
-    //       }
-    //     }
-    //   }
-    // }
-    // double sprite_column = vssprite.x1 < 0
-    //                            ? -vssprite.x1 * inverted_scale
-    //                            : 0; // clipping the sprite
-    // int sprite_column_int = 0;
-    // for (int screen_x = max(vssprite.x1, 0); screen_x < min(vssprite.x2, WIDTH);
-    //      screen_x++) {
-    //   sprite_column_int = (int)sprite_column;
-    //   if (ranges[screen_x] == 1){ // solid wall, we can't draw anything
-    //     sprite_column += inverted_scale;
-    //     continue;
-    //   }
-    //   draw_sprite_column_partial(e, sprite, sprite_column_int, screen_x, top,
-    //                      top + height, upper_clip,lower_clip,inverted_scale);
-    //   sprite_column += inverted_scale;
-    // }
-    // free(ranges);
+    double* upper_clip = malloc(sizeof(double) * WIDTH);
+    double* lower_clip = malloc(sizeof(double) * WIDTH);
+    for (int i = 0; i < WIDTH; i++){
+      upper_clip[i] = top;
+      lower_clip[i] = top + height;
+    }
+
+    for (int i = 0;i < DRAWSEGS_INDEX; i++){ // calculate where exactly we can draw the sprite
+      ds = DRAWSEGS[i];
+      marker = ds.type == DRAWSEG_SOLID_WALL ? 1 : -1;
+      if (vssprite.scale < ds.scale1 && vssprite.scale < ds.scale2 && do_segs_intersect(vssprite.x1, vssprite.x2, ds.x1, ds.x2)){
+        for (int j = ds.x1 ; j < ds.x2; j++){
+            ranges[j] = marker;
+            if (marker == -1) {
+              upper_clip[j] = max(ds.top_clips[j - ds.x1],upper_clip[j]);
+              lower_clip[j] = min(ds.bottom_clips[j - ds.x1],lower_clip[j]);
+
+          }
+        }
+      }
+    }
+    double sprite_column = vssprite.x1 < 0
+                               ? -vssprite.x1 * inverted_scale
+                               : 0; // clipping the sprite
+    int sprite_column_int = 0;
+    for (int screen_x = max(vssprite.x1, 0); screen_x < min(vssprite.x2, WIDTH);
+         screen_x++) {
+      sprite_column_int = (int)sprite_column;
+      if (ranges[screen_x] == 1){ // solid wall, we can't draw anything
+        sprite_column += inverted_scale;
+        continue;
+      }
+      draw_sprite_column_partial(e, sprite, sprite_column_int, screen_x, top,
+                         top + height, upper_clip,lower_clip,inverted_scale);
+      sprite_column += inverted_scale;
+    }
+    free(ranges);
+    free(upper_clip);
+    free(lower_clip);
   }
 }
 
