@@ -8,7 +8,6 @@
 #include "../include/component/health.h"
 #include "../include/component/position.h"
 #include "../include/component/weapon.h"
-#include "../include/ecs/archetype.h"
 #include "../include/ecs/component.h"
 #include "../include/ecs/entity.h"
 #include "../include/ecs/world.h"
@@ -287,7 +286,7 @@ int correct_height(linedef *wall, int height) {
   }
 }
 
-bool fire_bullet(entity_t **players, int num_players, player *player_,
+void fire_bullet(entity_t **players, int num_players, player *player_,
                  int damage) { // toutes les valeurs de y sont négatives
 
   position_ct *pos = player_get_position(player_);
@@ -481,8 +480,8 @@ void process_keys(player *p) {
       if (trigger_linedef->lifts != NULL) {
         client_lift_trigger(p->engine, trigger_linedef->lifts->id);
       }
-      // add_sound_to_play(SWITCH_USE_SOUND, p->pos.x, p->pos.y, p->angle,
-      //                   p->pos.x, p->pos.y);
+      add_sound_to_play(SWITCH_USE_SOUND, pos->x, pos->y, pos->angle, pos->x,
+                        pos->y);
       INTERACT_CD = MAX_INTERACT_COOLDOWN;
     }
   }

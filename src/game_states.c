@@ -36,6 +36,11 @@ void update_ingame_state(engine *e) {
   SDL_RenderCopy(e->renderer, e->texture, NULL, NULL);
   for (int i = 0; i < SOUNDS_INDEX;i++){
     sound* s = get_sound_by_name(e->wData->sounds, e->wData->len_sounds, SOUNDS_TO_PLAY[i]->sound);
+    if (s == NULL) {
+      printf("Sound %s not found\n",SOUNDS_TO_PLAY[i]->sound);
+      free(SOUNDS_TO_PLAY[i]);
+      continue;
+    }
     audiomixer_play(e->mixer, s, SOUNDS_TO_PLAY[i]->angle , SOUNDS_TO_PLAY[i]->volume);
     free(SOUNDS_TO_PLAY[i]);
   }

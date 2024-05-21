@@ -10,13 +10,14 @@
 
 #define DOOR_OPEN_SOUND "DSDOROPN"
 #define DOOR_CLOSE_SOUND "DSDORCLS"
-#define LIFT_START_SOUND "DSPSTART "
+#define LIFT_START_SOUND "DSPSTART"
 #define LIFT_STOP_SOUND "DSPSTOP"
 #define SWITCH_USE_SOUND "DSSWTCHN"
 
 #define PISTOL_SOUND "DSPISTOL"
 #define SHOTGUN_SOUND "DSSHOTGN"
 #define PUNCH_SOUND "DSPUNCH"
+
 // https://doomwiki.org/wiki/Sound
 
 struct Sound {
