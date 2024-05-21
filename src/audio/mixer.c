@@ -28,7 +28,9 @@ void audiomixer_free(AudioMixer *am) {
 void audiomixer_update(AudioMixer *am, int dt) {
   for (int i = 0; i < AUDIO_MIXER_CHANNELS; i++) {
     if (am->channels[i] != 0) {
-      audioemitter_update(&(am->channels[i]), dt);
+      if (audioemitter_update(am->channels[i], dt)) {
+        am->channels[i] = 0; // mark it as a free channel
+      }
     }
   }
 }
@@ -51,7 +53,7 @@ int audiomixer_play(AudioMixer *am, sound *sound, float angle, float volume) {
       volume_min_index = i;
     }
   }
-  if (volume >= volume_min) {
+  if (volume > volume_min) {
     audioemitter_free(&(am->channels[volume_min_index]));
     am->channels[volume_min_index] =
         audioemitter_create(sound, angle, volume, volume_min_index);

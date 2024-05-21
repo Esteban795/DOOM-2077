@@ -23,7 +23,7 @@ AudioEmitter *audioemitter_create(sound *sound, float angle, float volume,
   ae->current_sound = sound;
   ae->angle = angle;
   ae->volume = volume;
-
+  ae->sample_position = 0; 
   ae->chunk = Mix_QuickLoad_RAW(ae->current_sound->samples,
                                 (Uint32)ae->current_sound->sample_count);
   ae->channel = channel;
@@ -43,11 +43,12 @@ void audioemitter_free(AudioEmitter **ae) {
   *ae = 0;
 }
 
-void audioemitter_update(AudioEmitter **ae, int dt) {
-  int dt_samples = (*ae)->current_sound->sample_rate * (float)dt / 1000.0;
-  (*ae)->sample_position += dt_samples;
-  if ((*ae)->sample_position > (*ae)->current_sound->sample_count) {
-    audioemitter_free(ae);
-    *ae = 0;
+bool audioemitter_update(AudioEmitter *ae, int dt) {
+  int dt_samples = ae->current_sound->sample_rate * (float)dt / 1000.0;
+  ae->sample_position += dt_samples;
+  if ( ae->sample_position > ae->current_sound->sample_count) {
+    audioemitter_free(&ae);
+    return true;
   }
+  return false;
 }
