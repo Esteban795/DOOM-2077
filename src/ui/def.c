@@ -405,10 +405,6 @@ UIModule **get_ui_ingame(SDL_Renderer *r, int *nuimodules)
 
   uimodule_set_element(modules[3], 4, UIET_Button, hud_chat_sender);
 
-  // label
-  as = malloc(1 * sizeof(int));
-  as[0] = 0;
-
   UILabel **hud_chat_labels = malloc(3 * sizeof(UILabel *));
   hud_chat_labels[0] = hud_chat_label_a;
   hud_chat_labels[1] = hud_chat_label_b;
