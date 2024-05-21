@@ -1,7 +1,10 @@
 #include "../include/lift.h"
 #include <stdio.h>
 
-lift *lift_create(entity_t *id, sector *sector, enum LiftTransitionSpeed speed,
+
+// WORKS THE EXACT SAME WAY AS IN door.c
+
+lift *lift_create(uint64_t id, sector *sector, enum LiftTransitionSpeed speed,
                   i16 low_height, i16 high_height, int delay, bool init_state,bool once) {
   lift *l = malloc(sizeof(lift));
   l->id = id;
@@ -21,16 +24,20 @@ lift *lift_create(entity_t *id, sector *sector, enum LiftTransitionSpeed speed,
   return l;
 }
 
-void lift_trigger_switch(vec2 cam_pos,double cam_angle,lift *l) {
+bool lift_trigger_switch(vec2 cam_pos,double cam_angle,lift *l) {
   if (l != NULL) {
+    bool switched = false;
     if (!l->is_switching && !(l->state != l->init_state)) {
       l->is_switching = true;
       add_sound_to_play(LIFT_START_SOUND, cam_pos.x, cam_pos.y, cam_angle, l->sector->center_pos.x, l->sector->center_pos.y);
+      switched = true;
     }
     if (l->next_lift != NULL) {
-      lift_trigger_switch(cam_pos,cam_angle,l->next_lift);
+      switched = switched || lift_trigger_switch(cam_pos,cam_angle,l->next_lift);
     }
+    return switched;
   }
+  return false;
 }
 
 void lift_update(lift *l, vec2 player_pos, double player_angle,int DT) {

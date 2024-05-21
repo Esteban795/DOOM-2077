@@ -1,16 +1,6 @@
 #include "../include/color.h"
 #include <stdio.h>
 
-color get_color(color* cp,unsigned long text_hash, i16 light_level) {
-  fast_srand(text_hash);
-  int randed = fast_rand() % 256;
-  color c = cp[randed];
-  c.r = (c.r * light_level) / 255;
-  c.g = (c.g * light_level) / 255 ;
-  c.b = (c.b * light_level) / 255;
-  return c;
-}
-
 color read_color(FILE* f,int offset) {
   color c;
   c.r = (int)read_1_byte(f, offset);

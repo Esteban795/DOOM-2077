@@ -81,7 +81,7 @@ enum DoorFunction { //how the door behaves
 };
 
 struct Door {
-    entity_t* id; // used by ECS
+    uint64_t id; // used by ECS
     enum DoorTransitionSpeed speed;
     enum DoorFunction function;
     int wait_time; // wait time until the door switches to the next state
@@ -97,19 +97,17 @@ struct Door {
 
 typedef struct Door door;
 
-extern door* COLLISIONNED_DOOR;
-
 void door_timeout(door *d, int DT);
 
 void door_update(door *d,vec2 player_pos,double player_angle, int DT);
 
 void door_update_height(door *d, int high_height);
 
-void door_trigger_switch(vec2 cam_pos, double cam_angle,door *d);
+bool door_trigger_switch(vec2 cam_pos, double cam_angle,door *d);
 
 void doors_free(door** doors,int len_doors);
 
-door *door_create(entity_t *id, enum DoorTransitionSpeed speed,
+door *door_create(uint64_t id, enum DoorTransitionSpeed speed,
                   enum DoorFunction function, int wait_time,sector *sector,bool init_state);
 
 door* add_door(door* head, door* new_door);

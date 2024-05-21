@@ -18,12 +18,12 @@ sound read_sound(FILE *f, char *name, int offset) {
   return s;
 }
 
-// we are reading the Sound (PC SPEAKER) version
+// we are reading the Sound (Doom Format) version
 int count_sounds(FILE *f, lump *directory, int directory_size) {
   int count = 0;
   for (int i = 0; i < directory_size; i++) {
     i16 type = read_i16(f, directory[i].lump_offset);
-    if (type == 3 && directory[i].lump_name[0] == 'D') {
+    if (type == 3 && directory[i].lump_name[0] == 'D') { // idfk how to check if it's a sound better than that lmao
       count++;
     }
   }

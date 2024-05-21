@@ -9,6 +9,7 @@ static blockmap_header *read_blockmap_header(FILE *f, int offset) {
   return bh;
 }
 
+// Find number of linedefs in the block `block_offset`
 static size_t find_number_of_linedefs(FILE *f, int lump_offset,
                                       int block_offset) {
   size_t nlinedefs = 0;
@@ -69,6 +70,7 @@ void blockmap_free(blockmap *bm) {
   free(bm);
 }
 
+// Given `x` and `y` coords, return the index of the block that contains the point
 int blockmap_get_block_index(blockmap *bm, int x, int y) {
   int col = (x - bm->header->x) / 128;
   int row = (y - bm->header->y) / 128;

@@ -2,9 +2,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 
-door *COLLISIONNED_DOOR = NULL;
-
-door *door_create(entity_t *id, enum DoorTransitionSpeed speed,
+door *door_create(uint64_t id, enum DoorTransitionSpeed speed,
                   enum DoorFunction function, int wait_time, sector *sector,
                   bool init_state) {
   door *d = malloc(sizeof(door));
@@ -23,25 +21,31 @@ door *door_create(entity_t *id, enum DoorTransitionSpeed speed,
   return d;
 }
 
-void door_trigger_switch(vec2 cam_pos, double cam_angle,door *d) {
+// trigger switch for all doors in the list, but they need to not be switching and be in their initial state (closed or open)
+bool door_trigger_switch(vec2 cam_pos, double cam_angle,door *d) {
   if (d != NULL) {
+    bool switched = false;
     if (!d->is_switching && d->state == d->init_state) {
       d->is_switching = true;
+      switched = true;
       add_sound_to_play(DOOR_OPEN_SOUND, cam_pos.x, cam_pos.y,cam_angle,d->sector->center_pos.x, d->sector->center_pos.y);
     }
     if (d->next_door != NULL) {
-      door_trigger_switch(cam_pos,cam_angle,d->next_door);
+      switched = switched || door_trigger_switch(cam_pos,cam_angle,d->next_door);
     }
+    return switched;
   }
+  return false;
 }
 
 void door_update(door *d,vec2 player_pos,double player_angle, int DT) {
   if (d->speed == NO_SPEED) {
     return;
   }
-  if (d->state != d->init_state) {
+
+  if (d->state != d->init_state) { // update door's internal timer to know if it needs to switch
     d->time_elapsed += DT;
-    if (d->time_elapsed >= d->wait_time) {
+    if (d->time_elapsed >= d->wait_time) { // time's up, switch door
       d->time_elapsed = 0;
       d->is_switching = true;
       add_sound_to_play(DOOR_OPEN_SOUND, player_pos.x, player_pos.y,player_angle,d->sector->center_pos.x, d->sector->center_pos.y);
@@ -49,6 +53,7 @@ void door_update(door *d,vec2 player_pos,double player_angle, int DT) {
   }
   if (d->is_switching) {
     double multiplier;
+    // if the door is going up, we need to add to the height, if it's going down, we need to subtract
     if (d->state == d->init_state) {
       if (d->init_state) {
         multiplier = -1;

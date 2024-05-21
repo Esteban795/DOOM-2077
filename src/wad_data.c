@@ -1,16 +1,48 @@
 #include "../include/wad_data.h"
+#include <stdio.h>
 
-wad_data *init_wad_data(const char *path,char* map_name) {
+void load_textures(wad_data *wd, const char *path) {
   FILE *file = fopen(path, "rb");
   if (file == NULL) {
     printf("Error opening file\n");
     exit(1);
   }
-  wad_data *wd = malloc(sizeof(wad_data));
-  wd->header = read_header(file);
+  const int PLAYPAL =
+      get_lump_index(wd->directory, "PLAYPAL", wd->header.lump_count);
+  wd->color_palette =
+      get_color_palette_from_lump(file, wd->directory, PLAYPAL, 3, 0);
+  wd->sprites = get_sprites(wd->directory, &wd->header, file, wd->color_palette,
+                            &wd->len_sprites);
+  wd->texture_patches =
+      get_texture_patches(wd->directory, &wd->header, file, wd->color_palette,
+                          &wd->len_texture_patches);
+  wd->texture_maps =
+      get_texture_maps(file, wd->directory, &wd->header, wd->texture_patches,
+                       &wd->len_texture_maps);
+  wd->flats = get_flats(file, wd->directory, &wd->header, wd->color_palette,
+                        &wd->len_flats);
+  fclose(file);
+}
 
-  wd->directory = read_directory(file, wd->header);
-  wd->map_index = get_lump_index(wd->directory, map_name, wd->header.lump_count);
+void load_sounds(wad_data *wd, const char *path) {
+  FILE *file = fopen(path, "rb");
+  if (file == NULL) {
+    printf("Error opening file\n");
+    exit(1);
+  }
+  wd->sounds =
+      get_sounds(file, wd->directory, wd->header.lump_count, &wd->len_sounds);
+  fclose(file);
+}
+
+void load_map(wad_data *wd, const char *path, char *map_name) {
+  FILE *file = fopen(path, "rb");
+  if (file == NULL) {
+    printf("Error opening file\n");
+    exit(1);
+  }
+  wd->map_index =
+      get_lump_index(wd->directory, map_name, wd->header.lump_count);
   wd->len_vertexes = wd->directory[wd->map_index + VERTEXES].lump_size /
                      4; // 4 = number of bytes per vertex
   wd->len_linedefs = wd->directory[wd->map_index + LINEDEFS].lump_size /
@@ -27,20 +59,6 @@ wad_data *init_wad_data(const char *path,char* map_name) {
                     26; // 26 = number of bytes per sector
   wd->len_sidedefs = wd->directory[wd->map_index + SIDEDEFS].lump_size /
                      30; // 30 = number of bytes per sidedef
-  const int PLAYPAL =
-      get_lump_index(wd->directory, "PLAYPAL", wd->header.lump_count);
-  wd->color_palette =
-      get_color_palette_from_lump(file, wd->directory, PLAYPAL, 3, 0);
-  wd->sprites = get_sprites(wd->directory, &wd->header, file, wd->color_palette,
-                            &wd->len_sprites);
-  wd->texture_patches =
-      get_texture_patches(wd->directory, &wd->header, file, wd->color_palette,
-                          &wd->len_texture_patches);
-  wd->texture_maps =
-      get_texture_maps(file, wd->directory, &wd->header, wd->texture_patches,
-                       &wd->len_texture_maps);
-  wd->flats = get_flats(file, wd->directory, &wd->header, wd->color_palette,
-                        &wd->len_flats);
   wd->sectors =
       get_sectors_from_lump(file, wd->directory, wd->map_index + SECTORS, 26, 0,
                             wd->len_sectors, wd->flats, wd->len_flats);
@@ -64,29 +82,74 @@ wad_data *init_wad_data(const char *path,char* map_name) {
                                     10, 0, wd->len_things);
   wd->blockmap = read_blockmap_from_lump(
       file, wd->directory, wd->map_index + BLOCKMAP, wd->linedefs);
-  wd->sounds = get_sounds(file, wd->directory, wd->header.lump_count, &wd->len_sounds);
+  set_sectors_centers(wd->linedefs, wd->len_linedefs, wd->sectors,
+                      wd->len_sectors);
+}
+
+// loads only textures and flats to allow for hot reloading of maps in the same
+// WAD file
+wad_data *init_wad_data(const char *path) {
+  FILE *file = fopen(path, "rb");
+  if (file == NULL) {
+    printf("Error opening file\n");
+    exit(1);
+  }
+  wad_data *wd = malloc(sizeof(wad_data));
+  wd->header = read_header(file);
+  wd->directory = read_directory(file, wd->header);
+  wd->vertexes = NULL;
+  load_textures(wd, path);
+  load_sounds(wd, path);
   fclose(file);
-  set_sectors_centers(wd->linedefs, wd->len_linedefs, wd->sectors, wd->len_sectors);
   return wd;
 }
 
-void wad_data_free(wad_data *wd) {
+void free_map(wad_data *wd) {
   free(wd->vertexes);
   linedefs_free(wd->linedefs, wd->len_linedefs);
   free(wd->nodes);
   free(wd->segments);
   free(wd->things);
-  free(wd->header.wad_type);
-  sectors_free(wd->sectors);
+  free(wd->sectors);
+  free(wd->sidedefs);
   blockmap_free(wd->blockmap);
   subsectors_free(wd->subsectors, wd->len_subsectors);
-  sidedefs_free(wd->sidedefs);
+  wd->vertexes = NULL;
+}
+
+void wad_data_free(wad_data *wd) {
+  free_map(wd);
   free(wd->color_palette);
   sprites_free(wd->sprites, wd->len_sprites);
   textures_patches_free(wd->texture_patches, wd->len_texture_patches);
   texture_maps_free(wd->texture_maps, wd->len_texture_maps);
   flats_free(wd->flats, wd->len_flats);
   sounds_free(wd->sounds, wd->len_sounds);
+  for (int i = 0; i < wd->header.lump_count; i++) {
+    free(wd->directory[i].lump_name);
+  }
+  free(wd->directory);
+  free(wd);
+}
+
+bool wad_is_map_loaded(wad_data *wd) { return wd->vertexes != NULL; }
+
+wad_data *server_load_wad(const char *path, char *map_name) {
+  FILE *file = fopen(path, "rb");
+  if (file == NULL) {
+    printf("Error opening file\n");
+    exit(1);
+  }
+  wad_data *wd = malloc(sizeof(wad_data));
+  wd->header = read_header(file);
+  wd->directory = read_directory(file, wd->header);
+  load_map(wd, path, map_name);
+  fclose(file);
+  return wd;
+}
+
+void server_free_wad(wad_data *wd) {
+  free_map(wd);
   for (int i = 0; i < wd->header.lump_count; i++) {
     free(wd->directory[i].lump_name);
   }

@@ -11,12 +11,16 @@
 #define BLOCK_START ((int16_t)0x0000)
 #define BLOCK_END ((int16_t)0xFFFF)
 
+// https://doomwiki.org/wiki/Blockmap
+
+// A block is a 128x128 unit square that contains a list of linedefs that are incident to the block
 struct Block {
   linedef **linedefs;
   size_t nlinedefs;
 };
 
 typedef struct Block block;
+
 
 struct BlockmapHeader {
   i16 x;
@@ -40,5 +44,6 @@ blockmap *read_blockmap_from_lump(FILE *f, lump *directory, int lump_index,
 
 void blockmap_free(blockmap *bm);
 
+// Given `x` and `y` coords, return the index of the block that contains the point
 int blockmap_get_block_index(blockmap *bm, int x, int y);
 #endif

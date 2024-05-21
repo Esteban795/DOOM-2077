@@ -8,8 +8,6 @@
 #include <stdint.h>
 #include "vec2.h"
 
-extern int DOORS_COUNT;
-
 struct Sector {
   i16 floor_height;
   i16 ceiling_height;
