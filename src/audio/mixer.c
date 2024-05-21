@@ -51,7 +51,7 @@ int audiomixer_play(AudioMixer *am, sound *sound, float angle, float volume) {
       volume_min_index = i;
     }
   }
-  if (volume > volume_min) {
+  if (volume >= volume_min) {
     audioemitter_free(&(am->channels[volume_min_index]));
     am->channels[volume_min_index] =
         audioemitter_create(sound, angle, volume, volume_min_index);
