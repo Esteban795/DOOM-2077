@@ -294,8 +294,11 @@ bool fire_bullet(entity_t **players, int num_players, player *player_,
   weapon_ct *weapon = player_get_weapon(player_);
 
   double distance_finale = 10000;
-  if (weapon_get_active_cooldown(weapon) < 80) {
-    *weapon_get_mut_active_cooldown(weapon) += 100;
+  if (weapon_get_active_cooldown(weapon) < 0) {
+    *weapon_get_mut_active_cooldown(weapon) = 100;
+    add_sound_to_play(SHOTGUN_SOUND, pos->x, pos->y, pos->angle,
+                      pos->x + 10 * cos(deg_to_rad(pos->angle)),
+                      pos->y - 10 * sin(deg_to_rad(pos->angle)));
     linedef **linedefs = player_->engine->wData->linedefs;
     double x1 = position_get_x(pos);
     double y1 = -position_get_y(pos);
@@ -364,7 +367,8 @@ bool fire_bullet(entity_t **players, int num_players, player *player_,
 
     // TODO: Déplacer coté serveur le calcul des dégats sur un joueur.
     for (int j = 0; j < num_players; j++) {
-      if (players[j] == NULL) continue;
+      if (players[j] == NULL)
+        continue;
       position_ct *pos_pj = (position_ct *)world_get_component(
           player_->engine->world, players[j], COMPONENT_TAG_POSITION);
       health_ct *health_pj = (health_ct *)world_get_component(
@@ -464,11 +468,8 @@ void process_keys(player *p) {
   bool is_interacting = keys[get_key_from_action(p->keybinds, "INTERACT")];
   // to avoid spamming the interact key and crashing the audio lmao
   INTERACT_CD -= p->engine->DT;
-  for (int i = 0; i < WEAPONS_NUMBER;i++){
-    weapon->cooldowns[i] -= p->engine->DT;
-  }
-
-
+  weapon->cooldowns[weapon->active_weapon] -= p->engine->DT;
+  // printf("cooldown: %d\n", weapon->cooldowns[weapon->active_weapon]);
   if (is_interacting && INTERACT_CD <= 0) {
     linedef *trigger_linedef = cast_ray(
         p->engine->wData->linedefs, p->engine->wData->len_linedefs,
@@ -487,13 +488,7 @@ void process_keys(player *p) {
   }
   bool is_attacking = keys[get_key_from_action(p->keybinds, "ATTACK")];
   if (is_attacking) {
-    if (weapon_get_active_cooldown(weapon) < 80) {
-      add_sound_to_play(PISTOL_SOUND, pos->x, pos->y, pos->angle,
-                        pos->x + 10 * cos(deg_to_rad(pos->angle)),
-                        pos->y - 10 * sin(deg_to_rad(pos->angle)));
-      fire_bullet(p->engine->players, 1, p, 10);
-    }
-    
+    fire_bullet(p->engine->players, 1, p, 10);
   }
 
   if (keys[SDL_GetScancodeFromKey(SDL_GetKeyFromName("M"))]) {

@@ -49,7 +49,6 @@ sound *get_sounds(FILE *f, lump *directory, int directory_size,
   for (int i = 0; i < directory_size; i++) {
     i16 type = read_i16(f, directory[i].lump_offset);
     if (type == 3 && directory[i].lump_name[0] == 'D') {
-      printf("Reading sound %s\n", directory[i].lump_name);
       sounds[index] =
           read_sound(f, directory[i].lump_name, directory[i].lump_offset);
       index++;
@@ -60,7 +59,6 @@ sound *get_sounds(FILE *f, lump *directory, int directory_size,
 
 
 sound* get_sound_by_name(sound* sounds, int sounds_count, char* name) {
-  printf("Looking for sound %s\n", name);
   for (int i = 0; i < sounds_count; i++) {
     if (strcmp(sounds[i].name, name) == 0) {
       return &sounds[i];
