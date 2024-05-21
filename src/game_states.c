@@ -20,28 +20,40 @@ void update_ingame_state(engine *e) {
   update_player(e->p);
   update_height(e->p);
   process_keys(e->p);
-  position_ct* player_pos = player_get_position(e->p);
+  position_ct *player_pos = player_get_position(e->p);
   vec2 pos2d = position_get_pos(player_pos);
   double angle = position_get_angle(player_pos);
   for (int i = 0; i < e->num_doors; i++) {
-    door_update(e->doors[i], pos2d,angle,e->DT);
+    door_update(e->doors[i], pos2d, angle, e->DT);
   }
   for (int i = 0; i < e->len_lifts; i++) {
-    lift_update(e->lifts[i], pos2d,angle,e->DT);
+    lift_update(e->lifts[i], pos2d, angle, e->DT);
   }
   segment_handler_update(e->seg_handler);
   update_bsp(e->bsp);
   // draw_crosshair(e->map_renderer,get_color(50,0),20);
   SDL_UpdateTexture(e->texture, NULL, e->pixels, WIDTH * 4);
   SDL_RenderCopy(e->renderer, e->texture, NULL, NULL);
-  for (int i = 0; i < SOUNDS_INDEX;i++){
-    sound* s = get_sound_by_name(e->wData->sounds, e->wData->len_sounds, SOUNDS_TO_PLAY[i]->sound);
+
+  // enemies footsteps
+  for (int i = 0; i < PLAYER_MAXIMUM; i++) {
+    if (e->players[i] != NULL) {
+      position_ct *enemy_pos = (position_ct *)world_get_component(
+          e->world, e->players[i], COMPONENT_TAG_POSITION);
+      add_sound_to_play(TEMP_WALKING_SOUND, player_pos->x, player_pos->y,
+                        player_pos->angle, enemy_pos->x, enemy_pos->y);
+    }
+  }
+  for (int i = 0; i < SOUNDS_INDEX; i++) {
+    sound *s = get_sound_by_name(e->wData->sounds, e->wData->len_sounds,
+                                 SOUNDS_TO_PLAY[i]->sound);
     if (s == NULL) {
-      printf("Sound %s not found\n",SOUNDS_TO_PLAY[i]->sound);
+      printf("Sound %s not found\n", SOUNDS_TO_PLAY[i]->sound);
       free(SOUNDS_TO_PLAY[i]);
       continue;
     }
-    audiomixer_play(e->mixer, s, SOUNDS_TO_PLAY[i]->angle , SOUNDS_TO_PLAY[i]->volume);
+    audiomixer_play(e->mixer, s, SOUNDS_TO_PLAY[i]->angle,
+                    SOUNDS_TO_PLAY[i]->volume);
     free(SOUNDS_TO_PLAY[i]);
   }
   SOUNDS_INDEX = 0;

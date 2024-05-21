@@ -270,7 +270,7 @@ int remote_update(engine* e, remote_server_t* r) {
                 uint16_t* deaths = NULL;
                 uint16_t* kills  = NULL;
                 uint16_t entry_count;
-                server_scoreboard_update_from(sdata+offset, &entry_count, &names, &deaths, &kills);
+                // server_scoreboard_update_from(sdata+offset, &entry_count, &names, &deaths, &kills);
                 event_t* event = (event_t*) ClientScoreboardUpdateEvent_new(entry_count, names, deaths, kills);
                 world_queue_event(e->world, event);
                 free(deaths);
