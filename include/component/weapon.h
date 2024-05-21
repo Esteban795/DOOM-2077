@@ -2,6 +2,7 @@
 #define _LIB_DOOM_COMPONENT_WEAPON_H
 
 #include "../ecs/component.h"
+#include <stdlib.h>
 
 #ifndef WEAPONS_NUMBER
 #define WEAPONS_NUMBER 2 

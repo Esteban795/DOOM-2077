@@ -273,9 +273,12 @@ int remote_update(engine* e, remote_server_t* r) {
                 server_scoreboard_update_from(sdata+offset, &entry_count, &names, &deaths, &kills);
                 event_t* event = (event_t*) ClientScoreboardUpdateEvent_new(entry_count, names, deaths, kills);
                 world_queue_event(e->world, event);
-                free(names);
                 free(deaths);
                 free(kills);
+                for (int i = 0; i < entry_count;i++){
+                    free(names[i]);
+                }
+                free(names);
             } else if (strncmp(cmd, SERVER_COMMAND_HLTH, 4) == 0) {
                 uint64_t player_id;
                 float health, max_health;

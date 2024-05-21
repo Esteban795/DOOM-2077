@@ -30,7 +30,7 @@ player *player_init(engine *e) {
   int ammo[WEAPONS_NUMBER];
   ammo[0] = -2;
   for (int i = 1; i < WEAPONS_NUMBER; i++) {
-    ammo[i] = -1;
+    ammo[i] = 10;
   }
   p->engine = e;
   p->thing = e->wData->things[0];
@@ -287,95 +287,103 @@ int correct_height(linedef *wall, int height) {
   }
 }
 
-// void fire_bullet(player **players, int num_players, player *player_,
-//                  int damage) { // toutes les valeurs de y sont négatives
-//   double distance_finale = 100000;
-//   if (player_->cooldown < 80) {
-//     player_->cooldown = player_->cooldown + 100;
-//     linedef **linedefs = player_->engine->wData->linedefs;
-//     double x1 = player_->pos.x;
-//     double y1 = -player_->pos.y;
-//     double x2 = x1 + 100 * cos(deg_to_rad((player_->angle)));
-//     double y2 = y1 +
-//     SR_3_F_LNF = 123,
-//     S1_3_F_LNF = 122,
-//     WR_3_F_LNF = 120,
-//     W1_3_F_LNF = 121
-//     double x_final = 0;
-//     double y_final = 0;
-//     int direction =
-//         1; // 0 correspond a ni droite ni auche 1 a gauche 2 a droite
-//     double height = player_->height;
-//     if (x1 != x2) {
-//       a = (y2 - y1) / (x2 - x1);
-//       if (x1 > x2) {
-//         direction = 1; // vers la gauche
-//       } else {
-//         direction = 2; // vers la droite
-//       }
-//     }
-//     double b = y1 - a * x1;
-//     for (int i = 0; i < player_->engine->wData->len_linedefs; i++) {
-//       double x = 0;
-//       double y = 0;
-//       if ((!(linedefs[i]->has_back_sidedef)) ||
-//           (correct_height(linedefs[i], height))) {
-//         double x1a = linedefs[i]->start_vertex->x;
-//         double y1a = -linedefs[i]->start_vertex->y;
-//         double x2a = linedefs[i]->end_vertex->x;
-//         double y2a = -linedefs[i]->end_vertex->y;
-//         double c = 0;
-//         double d = 0;
-//         if (x1a != x2a) {
-//           c = (y2a - y1a) / (x2a - x1a);
-//           d = y1a - c * x1a;
-//           x = (d - b) / (a - c);
-//           y = a * x + b;
-//           if (distance(x1, y1, x, y) < 100) {
-//           }
-//           if (((x1a <= x) && (x <= x2a)) || ((x2a <= x) && (x <= x1a))) {
-//             if (((direction == 1) && (x1 > x)) ||
-//                 ((direction == 2) && (x1 < x))) {
-//               if (distance(x1, y1, x, y) < distance_finale) {
-//                 distance_finale = distance(x1, y1, x, y);
-//                 x_final = x;
-//                 y_final = y;
-//               }
-//             }
-//           }
+bool fire_bullet(entity_t **players, int num_players, player *player_,
+                 int damage) { // toutes les valeurs de y sont négatives
 
-//         } else {
-//           x = x1a;
-//           y = a * x + b;
-//           if (((y1a <= y) && (y <= y2a)) || ((y2a <= y) && (y <= y1a))) {
-//             if (((direction == 1) && (x1 >= x)) ||
-//                 ((direction == 2) && (x1 <= x))) {
-//               if (distance(x1, y1, x, y) < distance_finale) {
-//                 distance_finale = distance(x1, y1, x, y);
-//                 x_final = x;
-//                 y_final = y;
-//               }
-//             }
-//           }
-//         }
-//       }
-//     }
-//     for (int j = 0; j < num_players; j++) {
-//       double dist_to_hitscan =
-//           (fabs(a * (players[j]->pos.x) + (players[j]->pos.y) + b)) /
-//           (sqrt(pow(a, 2) + pow(-1, 2)));
-//       if (dist_to_hitscan < PLAYER_HITBOX_SIZE) {
-//         if ((min(x1, x_final) < players[j]->pos.x) &&
-//             (max(x1, x_final) > players[j]->pos.x) &&
-//             (min(y1, y_final) < -players[j]->pos.y) &&
-//             (min(y1, y_final) < -players[j]->pos.y)) {
-//           players[j]->life -= damage;
-//           break;
-//         }
-//       }
-//     }
-//   }
-// }
+  position_ct *pos = player_get_position(player_);
+  weapon_ct *weapon = player_get_weapon(player_);
+
+  double distance_finale = 10000;
+  if (weapon_get_active_cooldown(weapon) < 80) {
+    *weapon_get_mut_active_cooldown(weapon) += 100;
+    linedef **linedefs = player_->engine->wData->linedefs;
+    double x1 = position_get_x(pos);
+    double y1 = -position_get_y(pos);
+    double x2 = x1 + 100 * cos(deg_to_rad(position_get_angle(pos)));
+    double y2 = y1 + 100 * sin(deg_to_rad(position_get_angle(pos)));
+    double a = 0;
+    double x_final = 0;
+    double y_final = 0;
+    int direction =
+        1; // 0 correspond a ni droite ni auche 1 a gauche 2 a droite
+    double height = position_get_z(pos);
+    if (x1 != x2) {
+      a = (y2 - y1) / (x2 - x1);
+      if (x1 > x2) {
+        direction = 1; // vers la gauche
+      } else {
+        direction = 2; // vers la droite
+      }
+    }
+    double b = y1 - a * x1;
+    for (int i = 0; i < player_->engine->wData->len_linedefs; i++) {
+      double x = 0;
+      double y = 0;
+      if ((!(linedefs[i]->has_back_sidedef)) ||
+          (correct_height(linedefs[i], height))) {
+        double x1a = linedefs[i]->start_vertex->x;
+        double y1a = -linedefs[i]->start_vertex->y;
+        double x2a = linedefs[i]->end_vertex->x;
+        double y2a = -linedefs[i]->end_vertex->y;
+        double c = 0;
+        double d = 0;
+        if (x1a != x2a) {
+          c = (y2a - y1a) / (x2a - x1a);
+          d = y1a - c * x1a;
+          x = (d - b) / (a - c);
+          y = a * x + b;
+          if (distance(x1, y1, x, y) < 100) {
+          }
+          if (((x1a <= x) && (x <= x2a)) || ((x2a <= x) && (x <= x1a))) {
+            if (((direction == 1) && (x1 > x)) ||
+                ((direction == 2) && (x1 < x))) {
+              if (distance(x1, y1, x, y) < distance_finale) {
+                distance_finale = distance(x1, y1, x, y);
+                x_final = x;
+                y_final = y;
+              }
+            }
+          }
+
+        } else {
+          x = x1a;
+          y = a * x + b;
+          if (((y1a <= y) && (y <= y2a)) || ((y2a <= y) && (y <= y1a))) {
+            if (((direction == 1) && (x1 >= x)) ||
+                ((direction == 2) && (x1 <= x))) {
+              if (distance(x1, y1, x, y) < distance_finale) {
+                distance_finale = distance(x1, y1, x, y);
+                x_final = x;
+                y_final = y;
+              }
+            }
+          }
+        }
+      }
+    }
+
+    // TODO: Déplacer coté serveur le calcul des dégats sur un joueur.
+    for (int j = 0; j < num_players; j++) {
+      if (players[j] == NULL) continue;
+      position_ct *pos_pj = (position_ct *)world_get_component(
+          player_->engine->world, players[j], COMPONENT_TAG_POSITION);
+      health_ct *health_pj = (health_ct *)world_get_component(
+          player_->engine->world, players[j], COMPONENT_TAG_HEALTH);
+
+      double dist_to_hitscan =
+          (fabs(a * (position_get_x(pos_pj)) + (position_get_y(pos_pj)) + b)) /
+          (sqrt(pow(a, 2) + pow(-1, 2)));
+      if (dist_to_hitscan < PLAYER_HITBOX_SIZE) {
+        if ((min(x1, x_final) < position_get_x(pos_pj)) &&
+            (max(x1, x_final) > position_get_x(pos_pj)) &&
+            (min(y1, y_final) < -position_get_y(pos_pj)) &&
+            (min(y1, y_final) < -position_get_y(pos_pj))) {
+          health_sub(health_pj, damage);
+        }
+      }
+    }
+  }
+}
 
 linedef *cast_ray(linedef **linedefs, int len_linedefs, vec2 player_pos,
                   double player_angle, double height) {
@@ -452,17 +460,20 @@ linedef *cast_ray(linedef **linedefs, int len_linedefs, vec2 player_pos,
 
 void process_keys(player *p) {
   position_ct *pos = player_get_position(p);
+  weapon_ct *weapon = player_get_weapon(p);
   bool is_interacting = keys[get_key_from_action(p->keybinds, "INTERACT")];
   // to avoid spamming the interact key and crashing the audio lmao
   INTERACT_CD -= p->engine->DT;
-  // printf("interact cd: %d\n", INTERACT_CD);
+  for (int i = 0; i < WEAPONS_NUMBER;i++){
+    weapon->cooldowns[i] -= p->engine->DT;
+  }
+
+
   if (is_interacting && INTERACT_CD <= 0) {
-    // printf("interacting\n");
     linedef *trigger_linedef = cast_ray(
         p->engine->wData->linedefs, p->engine->wData->len_linedefs,
         position_get_pos(pos), position_get_angle(pos), position_get_z(pos));
     if (trigger_linedef != NULL) {
-      // printf("triggering linedef\n");
       if (trigger_linedef->door != NULL) {
         client_door_trigger(p->engine, trigger_linedef->door->id);
       }
@@ -476,11 +487,13 @@ void process_keys(player *p) {
   }
   bool is_attacking = keys[get_key_from_action(p->keybinds, "ATTACK")];
   if (is_attacking) {
-    printf("attacking\n");
-    add_sound_to_play(PISTOL_SOUND, pos->x, pos->y, pos->angle,
-                      pos->x + 10 * cos(deg_to_rad(pos->angle)),
-                      pos->y - 10 * sin(deg_to_rad(pos->angle)));
-    // fire_bullet(p->engine->players, 1, p, 10);
+    if (weapon_get_active_cooldown(weapon) < 80) {
+      add_sound_to_play(PISTOL_SOUND, pos->x, pos->y, pos->angle,
+                        pos->x + 10 * cos(deg_to_rad(pos->angle)),
+                        pos->y - 10 * sin(deg_to_rad(pos->angle)));
+      fire_bullet(p->engine->players, 1, p, 10);
+    }
+    
   }
 
   if (keys[SDL_GetScancodeFromKey(SDL_GetKeyFromName("M"))]) {
@@ -602,8 +615,8 @@ void update_height(player *p) {
   // p->height = fmax(grav_height, target_height);
 }
 
-void get_position_angle(player* p,vec2* res,double* angle){
-  position_ct* pos = player_get_position(p);
+void get_position_angle(player *p, vec2 *res, double *angle) {
+  position_ct *pos = player_get_position(p);
   res->x = pos->x;
   res->y = pos->y;
   *angle = pos->angle;
