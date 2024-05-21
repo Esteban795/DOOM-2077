@@ -8,9 +8,14 @@ typedef enum _UIEVENTCallback {
   UIEC_SetSubstate0,
   UIEC_SetSubstate1,
   UIEC_SetSubstate2,
-  UIEC_SetSubstate3
+  UIEC_SetSubstate3,
+  UIEC_JoinServer,
+  UIEC_SendChat,
 } UIEVENTCallback;
 
 void ui_handle_events(engine *e);
+
+void UIECJoinServer(engine *e);
+void UIECSendChat(engine *e);
 
 #endif

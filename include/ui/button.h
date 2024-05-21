@@ -16,13 +16,14 @@ typedef struct _UIButton {
   SDL_Color bg_color_pressed;     // pointers to make them optional
   SDL_Color border_color_pressed; // ^
   int assigned_event;
+  SDL_Scancode scancode;
 } UIButton;
 
 UIButton *uibutton_create(float x, float y, float w, float h,
                           UIAnchorPoint uianchor, int *as, int nas,
                           SDL_Color bg_color, SDL_Color border_color,
                           SDL_Color bg_color_pressed,
-                          SDL_Color border_color_pressed, int ae);
+                          SDL_Color border_color_pressed, int ae, SDL_Scancode sc);
 
 void uibutton_free(UIButton *uibutton);
 

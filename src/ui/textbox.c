@@ -36,6 +36,7 @@ UITextBox *uitextbox_create(float x, float y, float w, float h,
   tb->focused = false;
 
   tb->scancode = scancode;
+  tb->scancode_helper = false;
 
   return tb;
 }
@@ -85,7 +86,13 @@ void uitextbox_update(SDL_Renderer *r, int substate, UITextBox *tb) {
   }
 
   if (keys[tb->scancode]) {
-    tb->focused = !tb->focused;
+    if (!tb->scancode_helper){
+      tb->focused = !tb->focused;
+    }
+
+    tb->scancode_helper = true;
+  } else {
+    tb->scancode_helper = false;
   }
 
   if (tb->focused && textinput[0] != '\0') {

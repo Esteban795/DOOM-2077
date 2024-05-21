@@ -6,7 +6,8 @@ UIButton *uibutton_create(float x, float y, float w, float h,
                           UIAnchorPoint uianchor, int *as, int nas,
                           SDL_Color bg_color, SDL_Color border_color,
                           SDL_Color bg_color_pressed,
-                          SDL_Color border_color_pressed, int assigned_event) {
+                          SDL_Color border_color_pressed, int assigned_event, SDL_Scancode sc)
+{
   UIButton *b = malloc(sizeof(UIButton));
 
   b->common.x = x;
@@ -28,44 +29,60 @@ UIButton *uibutton_create(float x, float y, float w, float h,
 
   b->assigned_event = assigned_event;
 
+  b->scancode = sc;
+
   return b;
 }
 
-void uibutton_free(UIButton *uibutton) {
-  if (uibutton->common.active_substates) {
+void uibutton_free(UIButton *uibutton)
+{
+  if (uibutton->common.active_substates)
+  {
     free(uibutton->common.active_substates);
   }
   free(uibutton);
 }
 
 void uibutton_detect_click(UIButton *uibutton, SDL_Rect *rect,
-                           bool mouse_left_state, int *uinextevent) {
+                           bool mouse_left_state, int *uinextevent)
+{
   int mouse_x, mouse_y;
   SDL_GetMouseState(&mouse_x, &mouse_y);
 
-  if (mouse_x > rect->x + rect->w || mouse_x < rect->x ||
-      mouse_y > rect->y + rect->h || mouse_y < rect->y) {
-    uibutton->pressed = false;
-    return;
-  } else if (mouse_left_state) {
-    if (!uibutton->pressed) {
+  if (!(mouse_x > rect->x + rect->w || mouse_x < rect->x ||
+      mouse_y > rect->y + rect->h || mouse_y < rect->y) && mouse_left_state)
+  {
+    if (!uibutton->pressed)
+    {
       *uinextevent = uibutton->assigned_event;
     }
     uibutton->pressed = true;
+    return;
+  } else if (keys[uibutton->scancode]){
+    if (!uibutton->pressed){
+      *uinextevent = uibutton->assigned_event;
+    }
+    uibutton->pressed = true;
+  } else {
+    uibutton->pressed = false;
   }
 }
 
 void uibutton_update(SDL_Renderer *r, int substate, UIButton *uibutton,
-                     int *uinextevent) {
-  if (!uibutton->common.active) {
+                     int *uinextevent)
+{
+  if (!uibutton->common.active)
+  {
     return;
   }
 
   bool found_in_substates = false;
-  for (int i = 0; i < uibutton->common.n_active_substates; i++) {
+  for (int i = 0; i < uibutton->common.n_active_substates; i++)
+  {
     found_in_substates |= substate == uibutton->common.active_substates[i];
   }
-  if (!found_in_substates) {
+  if (!found_in_substates)
+  {
     return;
   }
 
@@ -77,7 +94,8 @@ void uibutton_update(SDL_Renderer *r, int substate, UIButton *uibutton,
 
   SDL_Color bg = uibutton->bg_color;
   SDL_Color border = uibutton->border_color;
-  if (uibutton->pressed) {
+  if (uibutton->pressed)
+  {
     bg = uibutton->bg_color_pressed;
     border = uibutton->border_color_pressed;
   }
