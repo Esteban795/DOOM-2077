@@ -3,7 +3,7 @@
 #include <SDL2/SDL_mixer.h>
 
 AudioMixer *audiomixer_init() {
-  Mix_OpenAudio(AUDIO_SAMPLE_RATE, AUDIO_U8, 1, 256);
+  Mix_OpenAudio(AUDIO_SAMPLE_RATE, AUDIO_U8, 2, 256);
   Mix_AllocateChannels(AUDIO_MIXER_CHANNELS);
 
   AudioMixer *am = malloc(sizeof(AudioMixer));
@@ -28,7 +28,9 @@ void audiomixer_free(AudioMixer *am) {
 void audiomixer_update(AudioMixer *am, int dt) {
   for (int i = 0; i < AUDIO_MIXER_CHANNELS; i++) {
     if (am->channels[i] != 0) {
-      audioemitter_update(&(am->channels[i]), dt);
+      if (audioemitter_update(am->channels[i], dt)) {
+        am->channels[i] = 0; // mark it as a free channel
+      }
     }
   }
 }

@@ -27,6 +27,7 @@ sector read_sector(FILE *f, int offset, flat *flats, int len_flats) {
   s.tag_number = read_i16(f, offset + 24);
   free(uppercased_floor_texture);
   free(uppercased_ceiling_texture);
+  s.center_pos = (vec2){.x = 0,.y = 0};
   return s;
 }
 

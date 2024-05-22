@@ -6,6 +6,10 @@
 #include "sector.h"
 #include "geometry.h"
 #include "sidedef.h"
+#include "sound.h"
+#include "audio/mixer.h"
+
+#define MINIMUM_FLOOR_HEIGHT -512
 
 // By default, P1 / PR and W1 / WR will still be activated in deathmatch 
 // OWC = open wait close

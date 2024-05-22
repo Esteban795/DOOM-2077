@@ -1,11 +1,9 @@
 #include "../include/wad_data.h"
 #include <stdio.h>
 
-void load_textures(wad_data *wd, const char *path)
-{
+void load_textures(wad_data *wd, const char *path) {
   FILE *file = fopen(path, "rb");
-  if (file == NULL)
-  {
+  if (file == NULL) {
     printf("Error opening file\n");
     exit(1);
   }
@@ -26,11 +24,9 @@ void load_textures(wad_data *wd, const char *path)
   fclose(file);
 }
 
-void load_sounds(wad_data *wd, const char *path)
-{
+void load_sounds(wad_data *wd, const char *path) {
   FILE *file = fopen(path, "rb");
-  if (file == NULL)
-  {
+  if (file == NULL) {
     printf("Error opening file\n");
     exit(1);
   }
@@ -39,11 +35,9 @@ void load_sounds(wad_data *wd, const char *path)
   fclose(file);
 }
 
-void load_map(wad_data *wd, const char *path, char *map_name)
-{
+void load_map(wad_data *wd, const char *path, char *map_name) {
   FILE *file = fopen(path, "rb");
-  if (file == NULL)
-  {
+  if (file == NULL) {
     printf("Error opening file\n");
     exit(1);
   }
@@ -88,14 +82,15 @@ void load_map(wad_data *wd, const char *path, char *map_name)
                                     10, 0, wd->len_things);
   wd->blockmap = read_blockmap_from_lump(
       file, wd->directory, wd->map_index + BLOCKMAP, wd->linedefs);
+  set_sectors_centers(wd->linedefs, wd->len_linedefs, wd->sectors,
+                      wd->len_sectors);
 }
 
-// loads only textures and flats to allow for hot reloading of maps in the same WAD file
-wad_data *init_wad_data(const char *path)
-{
+// loads only textures and flats to allow for hot reloading of maps in the same
+// WAD file
+wad_data *init_wad_data(const char *path) {
   FILE *file = fopen(path, "rb");
-  if (file == NULL)
-  {
+  if (file == NULL) {
     printf("Error opening file\n");
     exit(1);
   }
@@ -109,8 +104,7 @@ wad_data *init_wad_data(const char *path)
   return wd;
 }
 
-void free_map(wad_data *wd)
-{
+void free_map(wad_data *wd) {
   free(wd->vertexes);
   linedefs_free(wd->linedefs, wd->len_linedefs);
   free(wd->nodes);
@@ -123,8 +117,7 @@ void free_map(wad_data *wd)
   wd->vertexes = NULL;
 }
 
-void wad_data_free(wad_data *wd)
-{
+void wad_data_free(wad_data *wd) {
   free_map(wd);
   free(wd->color_palette);
   sprites_free(wd->sprites, wd->len_sprites);
@@ -132,24 +125,19 @@ void wad_data_free(wad_data *wd)
   texture_maps_free(wd->texture_maps, wd->len_texture_maps);
   flats_free(wd->flats, wd->len_flats);
   sounds_free(wd->sounds, wd->len_sounds);
-  for (int i = 0; i < wd->header.lump_count; i++)
-  {
+  for (int i = 0; i < wd->header.lump_count; i++) {
     free(wd->directory[i].lump_name);
   }
   free(wd->directory);
+  free(wd->header.wad_type);
   free(wd);
 }
 
-bool wad_is_map_loaded(wad_data *wd)
-{
-  return wd->vertexes != NULL;
-}
+bool wad_is_map_loaded(wad_data *wd) { return wd->vertexes != NULL; }
 
-wad_data *server_load_wad(const char *path, char *map_name)
-{
+wad_data *server_load_wad(const char *path, char *map_name) {
   FILE *file = fopen(path, "rb");
-  if (file == NULL)
-  {
+  if (file == NULL) {
     printf("Error opening file\n");
     exit(1);
   }
@@ -161,11 +149,9 @@ wad_data *server_load_wad(const char *path, char *map_name)
   return wd;
 }
 
-void server_free_wad(wad_data *wd)
-{
+void server_free_wad(wad_data *wd) {
   free_map(wd);
-  for (int i = 0; i < wd->header.lump_count; i++)
-  {
+  for (int i = 0; i < wd->header.lump_count; i++) {
     free(wd->directory[i].lump_name);
   }
   free(wd->directory);

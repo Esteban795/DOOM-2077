@@ -28,6 +28,7 @@ bool door_trigger_switch(door *d) {
     if (!d->is_switching && d->state == d->init_state) {
       d->is_switching = true;
       switched = true;
+      add_sound_to_play(DOOR_OPEN_SOUND,d->sector->center_pos.x,d->sector->center_pos.y);
     }
     if (d->next_door != NULL) {
       switched = switched || door_trigger_switch(d->next_door);
@@ -37,9 +38,8 @@ bool door_trigger_switch(door *d) {
   return false;
 }
 
-// Update door state
 void door_update(door *d, int DT) {
-  if (d->speed == NO_SPEED) { // door is not moving
+  if (d->speed == NO_SPEED) {
     return;
   }
 
@@ -48,6 +48,7 @@ void door_update(door *d, int DT) {
     if (d->time_elapsed >= d->wait_time) { // time's up, switch door
       d->time_elapsed = 0;
       d->is_switching = true;
+      add_sound_to_play(DOOR_OPEN_SOUND, d->sector->center_pos.x, d->sector->center_pos.y);
     }
   }
   if (d->is_switching) {
