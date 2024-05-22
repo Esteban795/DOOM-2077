@@ -28,4 +28,6 @@ int max(int x, int y);
 int min(int x, int y);
 
 double distance(double posx_a, double posy_a, double posx_b, double posy_b);
+
+double get_angular_distance(double origin_x, double origin_y, double origin_angle, double px, double py);
 #endif

@@ -4,6 +4,7 @@
 #include "../settings.h"
 #include "../sound.h"
 #include "emitter.h"
+#include "../geometry.h"
 
 #include "SDL2/SDL_mixer.h"
 
@@ -35,5 +36,7 @@ void audiomixer_update(AudioMixer *am, int dt);
 // you can pass it on to audiomixer_kill to stop it
 int audiomixer_play(AudioMixer *am, sound *sound, float angle, float volume);
 void audiomixer_kill(AudioMixer *am, int uid);
+
+double get_audio_gain(double distance);
 
 #endif
