@@ -24,23 +24,23 @@ lift *lift_create(uint64_t id, sector *sector, enum LiftTransitionSpeed speed,
   return l;
 }
 
-bool lift_trigger_switch(vec2 cam_pos,double cam_angle,lift *l) {
+bool lift_trigger_switch(lift *l) {
   if (l != NULL) {
     bool switched = false;
     if (!l->is_switching && !(l->state != l->init_state)) {
       l->is_switching = true;
-      add_sound_to_play(LIFT_START_SOUND, cam_pos.x, cam_pos.y, cam_angle, l->sector->center_pos.x, l->sector->center_pos.y);
+      add_sound_to_play(LIFT_START_SOUND, l->sector->center_pos.x, l->sector->center_pos.y);
       switched = true;
     }
     if (l->next_lift != NULL) {
-      switched = switched || lift_trigger_switch(cam_pos,cam_angle,l->next_lift);
+      switched = switched || lift_trigger_switch(l->next_lift);
     }
     return switched;
   }
   return false;
 }
 
-void lift_update(lift *l, vec2 player_pos, double player_angle,int DT) {
+void lift_update(lift *l,int DT) {
   if (l->speed == L_NO_SPEED) {
     return;
   }
@@ -50,7 +50,7 @@ void lift_update(lift *l, vec2 player_pos, double player_angle,int DT) {
     if (l->time_elapsed >= l->delay) {
       l->time_elapsed = 0;
       l->is_switching = true;
-      add_sound_to_play(LIFT_STOP_SOUND, player_pos.x, player_pos.y, player_angle,l->sector->center_pos.x, l->sector->center_pos.y);
+      add_sound_to_play(LIFT_STOP_SOUND,l->sector->center_pos.x, l->sector->center_pos.y);
     }
   }
 

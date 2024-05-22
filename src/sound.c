@@ -74,14 +74,14 @@ double get_audio_gain(double distance) {
   return gain;
 }
 
-sound_entry* add_sound_to_play(char* sound,double origin_x,double origin_y,double origin_angle,double px,double py) {
+sound_entry* add_sound_to_play(char* sound,double x, double y) {
   if (SOUNDS_INDEX >= MAX_SOUNDS_PLAYING) {
     return NULL;
   }
   sound_entry* se = malloc(sizeof(sound_entry));
   se->sound = sound;
-  se->angle = get_angular_distance(origin_x,origin_y,origin_angle,px,py);
-  se->volume = get_audio_gain(dist((vec2){px,py}, (vec2){origin_x,origin_y}));
+  se->x = x;
+  se->y = y;
   SOUNDS_TO_PLAY[SOUNDS_INDEX] = se;
   SOUNDS_INDEX++;
   return se;

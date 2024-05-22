@@ -99,11 +99,11 @@ typedef struct Door door;
 
 void door_timeout(door *d, int DT);
 
-void door_update(door *d,vec2 player_pos,double player_angle, int DT);
+void door_update(door *d, int DT);
 
 void door_update_height(door *d, int high_height);
 
-bool door_trigger_switch(vec2 cam_pos, double cam_angle,door *d);
+bool door_trigger_switch(door *d);
 
 void doors_free(door** doors,int len_doors);
 

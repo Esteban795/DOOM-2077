@@ -4,6 +4,7 @@
 #include "byte_reader.h"
 #include "lump.h"
 #include "geometry.h"
+#include "vec2.h"
 
 
 #define MAX_SOUNDS_PLAYING 32
@@ -33,8 +34,8 @@ typedef struct Sound sound;
 
 struct SoundEntry {
     char* sound;
-    float angle;
-    float volume;
+    double x;
+    double y;
 };
 
 typedef struct SoundEntry sound_entry;
@@ -48,5 +49,5 @@ sound* get_sounds(FILE* f,lump* directory,int directory_size, int* sounds_count)
 
 sound* get_sound_by_name(sound* sounds, int sounds_count, char* name);
 
-sound_entry* add_sound_to_play(char* sound,double origin_x,double origin_y,double origin_angle,double px,double py);
+sound_entry* add_sound_to_play(char* sound,double x, double y);
 #endif

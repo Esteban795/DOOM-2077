@@ -24,10 +24,10 @@ void update_ingame_state(engine *e) {
   vec2 pos2d = position_get_pos(player_pos);
   double angle = position_get_angle(player_pos);
   for (int i = 0; i < e->num_doors; i++) {
-    door_update(e->doors[i], pos2d, angle, e->DT);
+    door_update(e->doors[i], e->DT);
   }
   for (int i = 0; i < e->len_lifts; i++) {
-    lift_update(e->lifts[i], pos2d, angle, e->DT);
+    lift_update(e->lifts[i], e->DT);
   }
   segment_handler_update(e->seg_handler);
   update_bsp(e->bsp);
@@ -37,13 +37,21 @@ void update_ingame_state(engine *e) {
 
   // enemies footsteps
   for (int i = 0; i < PLAYER_MAXIMUM; i++) {
-    if (e->players[i] != NULL) {
-      position_ct *enemy_pos = (position_ct *)world_get_component(
-          e->world, e->players[i], COMPONENT_TAG_POSITION);
-      add_sound_to_play(TEMP_WALKING_SOUND, player_pos->x, player_pos->y,
-                        player_pos->angle, enemy_pos->x, enemy_pos->y);
+    if (e->players[i] == NULL)
+      continue;
+    position_ct *enemy_pos = (position_ct *)world_get_component(
+        e->world, e->players[i], COMPONENT_TAG_POSITION);
+    if (enemy_pos->was_updated && position_has_moved(enemy_pos) &&
+        position_get_walk_cooldown(enemy_pos) <=
+            0) { // make sure enemy really was moved and that the sound cooldown
+                 // is over
+      vec2 enemy_pos2d = position_get_pos(enemy_pos);
+      add_sound_to_play(TEMP_WALKING_SOUND, enemy_pos2d.x, enemy_pos2d.y);
+      position_set_walk_cooldown(enemy_pos, WALK_SOUND_COOLDOWN);
     }
   }
+
+  double volume, sound_angle;
   for (int i = 0; i < SOUNDS_INDEX; i++) {
     sound *s = get_sound_by_name(e->wData->sounds, e->wData->len_sounds,
                                  SOUNDS_TO_PLAY[i]->sound);
@@ -52,8 +60,11 @@ void update_ingame_state(engine *e) {
       free(SOUNDS_TO_PLAY[i]);
       continue;
     }
-    audiomixer_play(e->mixer, s, SOUNDS_TO_PLAY[i]->angle,
-                    SOUNDS_TO_PLAY[i]->volume);
+    sound_angle = get_angular_distance(pos2d.x, pos2d.y, angle, SOUNDS_TO_PLAY[i]->x,
+                                 SOUNDS_TO_PLAY[i]->y);
+    volume = get_audio_gain(
+        dist((vec2){SOUNDS_TO_PLAY[i]->x, SOUNDS_TO_PLAY[i]->y}, pos2d));
+    audiomixer_play(e->mixer, s, sound_angle, volume);
     free(SOUNDS_TO_PLAY[i]);
   }
   SOUNDS_INDEX = 0;

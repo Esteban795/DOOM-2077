@@ -295,8 +295,7 @@ void fire_bullet(entity_t **players, int num_players, player *player_,
   double distance_finale = 10000;
   if (weapon_get_active_cooldown(weapon) < 0) {
     *weapon_get_mut_active_cooldown(weapon) = 100;
-    add_sound_to_play(SHOTGUN_SOUND, pos->x, pos->y, pos->angle,
-                      pos->x + 10 * cos(deg_to_rad(pos->angle)),
+    add_sound_to_play(SHOTGUN_SOUND, pos->x + 10 * cos(deg_to_rad(pos->angle)),
                       pos->y - 10 * sin(deg_to_rad(pos->angle)));
     linedef **linedefs = player_->engine->wData->linedefs;
     double x1 = position_get_x(pos);
@@ -480,8 +479,7 @@ void process_keys(player *p) {
       if (trigger_linedef->lifts != NULL) {
         client_lift_trigger(p->engine, trigger_linedef->lifts->id);
       }
-      add_sound_to_play(SWITCH_USE_SOUND, pos->x, pos->y, pos->angle, pos->x,
-                        pos->y);
+      add_sound_to_play(SWITCH_USE_SOUND, pos->x, pos->y);
       INTERACT_CD = MAX_INTERACT_COOLDOWN;
     }
   }
