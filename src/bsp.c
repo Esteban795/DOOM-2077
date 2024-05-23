@@ -149,25 +149,29 @@ bool is_segment_in_fov(player *p, segment seg, int *x1, int *x2,
 void render_bsp_node(bsp *b, size_t node_id) {
   if (BSP_TRAVERSE) {
     position_ct *player_pos = player_get_position(b->player);
-    vec2 player_pos_v = position_get_pos(player_pos);
+    vec2 player_pos2d = position_get_pos(player_pos);
+    double player_angle = position_get_angle(player_pos);
     if (node_id >= SUBSECTOR_IDENTIFIER) { // leaf reached
       i16 subsector_id = node_id - SUBSECTOR_IDENTIFIER;
       subsector ss = b->subsectors[subsector_id];
       int x1, x2;
       double raw_angle_1;
-      patch *player_sprite = get_patch_from_name(
-          b->engine->wData->sprites, b->engine->wData->len_sprites, "SARGE1");
       for (int i = 0; i < NUM_PLAYERS; i++) {
         entity_t *player = b->engine->players[i];
         if (player == NULL)
           continue;
         position_ct *pos = (position_ct *)world_get_component(
             b->engine->world, player, COMPONENT_TAG_POSITION);
+        vec2 pos2d = position_get_pos(pos);
+        double angle = position_get_angle(pos);
         subsector_id_ct *player_subsector_id = (subsector_id_ct *)world_get_component(b->engine->world, player,COMPONENT_TAG_SUBSECTOR_ID);
         if (player_subsector_id->subsector_id == subsector_id &&
             is_point_in_FOV(player_pos->x, player_pos->y, player_pos->angle,
                             FOV, pos->x, pos->y)) {
-          vssprite_add(player_pos_v, player_pos->angle, position_get_pos(pos),
+          set_correct_animation_name(i, player_pos2d, player_angle, pos2d, angle, MOVING);
+          patch* player_sprite = get_patch_from_name(b->engine->wData->sprites, b->engine->wData->len_sprites, ANIMATION_NAME);
+          printf("Player sprite name: %s\n", ANIMATION_NAME);
+          vssprite_add(player_pos2d, player_pos->angle, position_get_pos(pos),
                        player_sprite);
         }
       }
@@ -179,7 +183,7 @@ void render_bsp_node(bsp *b, size_t node_id) {
       }
     } else {
       node n = b->nodes[node_id];
-      bool is_back_side = is_on_back_side(n, player_pos_v);
+      bool is_back_side = is_on_back_side(n, player_pos2d);
       if (is_back_side) {
         render_bsp_node(b, n.back_child_id);
         if (check_if_bbox_visible(n.front_bbox,

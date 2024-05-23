@@ -6,6 +6,7 @@
 #include "vec2.h"
 #include "segment_handler.h"
 #include "vssprite.h"
+#include "player_animation.h"
 
 extern bool BSP_TRAVERSE; // boolean used to determine if screen is filled and doesn't require anymore traversal
 
