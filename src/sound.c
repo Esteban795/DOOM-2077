@@ -1,4 +1,8 @@
 #include "../include/sound.h"
+#include <stdio.h>
+
+sound_entry* SOUNDS_TO_PLAY[MAX_SOUNDS_PLAYING];
+int SOUNDS_INDEX = 0;
 
 sound read_sound(FILE *f, char *name, int offset) {
   sound s;
@@ -51,4 +55,34 @@ sound *get_sounds(FILE *f, lump *directory, int directory_size,
     }
   }
   return sounds;
+}
+
+
+sound* get_sound_by_name(sound* sounds, int sounds_count, char* name) {
+  for (int i = 0; i < sounds_count; i++) {
+    if (strcmp(sounds[i].name, name) == 0) {
+      return &sounds[i];
+    }
+  }
+  return NULL;
+}
+
+double get_audio_gain(double distance) {
+  distance = min(AL_MAX_DISTANCE, max(AL_REFERENCE_DISTANCE, distance));
+  double gain = (1 - AL_ROLLOFF_FACTOR * (distance - AL_REFERENCE_DISTANCE) /
+                         (AL_MAX_DISTANCE - AL_REFERENCE_DISTANCE));
+  return gain;
+}
+
+sound_entry* add_sound_to_play(char* sound,double x, double y) {
+  if (SOUNDS_INDEX >= MAX_SOUNDS_PLAYING) {
+    return NULL;
+  }
+  sound_entry* se = malloc(sizeof(sound_entry));
+  se->sound = sound;
+  se->x = x;
+  se->y = y;
+  SOUNDS_TO_PLAY[SOUNDS_INDEX] = se;
+  SOUNDS_INDEX++;
+  return se;
 }

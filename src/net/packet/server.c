@@ -112,16 +112,20 @@ int server_scoreboard_update(uint8_t* buf, uint16_t entries_count, char** names,
     int plen = 2;
     for (int i = 0; i < entries_count; i++) {
         plen += write_cstring(buf + 6 + plen, names[i]);
+        plen += write_cstring(buf + 6 + plen, names[i]);
     }
     for (int i = 0; i < entries_count; i++) {
+        write_uint16be(buf + 6 + plen, deaths[i]);
         write_uint16be(buf + 6 + plen, deaths[i]);
         plen += 2;
     }
     for (int i = 0; i < entries_count; i++) {
         write_uint16be(buf + 6 + plen, kills[i]);
+        write_uint16be(buf + 6 + plen, kills[i]);
         plen += 2;
     }
     write_uint16be(buf + 4, plen);
+    buf[6 + plen] = '\n';
     buf[6 + plen] = '\n';
     return 4 + 2 + plen + 1;
 }

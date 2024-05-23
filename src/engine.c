@@ -2,9 +2,9 @@
 #include <SDL2/SDL_render.h>
 #include <SDL2/SDL_stdinc.h>
 
-#include "../include/remote.h"
-#include "../include/ecs/world.h"
 #include "../include/ecs/entity.h"
+#include "../include/ecs/world.h"
+#include "../include/remote.h"
 #include "../include/settings.h"
 #include "../include/system/client/active.h"
 
@@ -16,7 +16,6 @@
 #define SERVER_PORT 6942
 #endif
 
-
 engine *init_engine(const char *wadPath, SDL_Renderer *renderer) {
   engine *e = malloc(sizeof(engine));
   e->wadPath = wadPath;
@@ -25,7 +24,8 @@ engine *init_engine(const char *wadPath, SDL_Renderer *renderer) {
   game_states_init[e->state](e);
   e->DT = 0;
   e->texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
-                                 SDL_TEXTUREACCESS_STREAMING, WIDTH, HEIGHT); // texture we will be rendering to
+                                 SDL_TEXTUREACCESS_STREAMING, WIDTH,
+                                 HEIGHT); // texture we will be rendering to
   e->remote = malloc(sizeof(remote_server_t));
   remote_init(e->remote, SERVER_ADDR, SERVER_PORT);
   e->wData = init_wad_data(wadPath);
@@ -51,21 +51,37 @@ void read_map(engine *e, char *map_name) {
   e->p = player_init(e);
   e->bsp = bsp_init(e, e->p);
   e->seg_handler = segment_handler_init(e);
-  e->players = calloc(PLAYER_MAXIMUM, sizeof(entity_t*));
-  e->lifts = get_lifts(e->wData->linedefs, e->wData->len_linedefs, &e->len_lifts, e->wData->sectors, e->wData->len_sectors);
-  e->doors = get_doors(e->wData->linedefs, e->wData->len_linedefs, &e->num_doors, e->wData->sectors,e->wData->len_sectors);
+  e->players = calloc(PLAYER_MAXIMUM, sizeof(entity_t *));
+  e->lifts = get_lifts(e->wData->linedefs, e->wData->len_linedefs,
+                       &e->len_lifts, e->wData->sectors, e->wData->len_sectors);
+  e->doors = get_doors(e->wData->linedefs, e->wData->len_linedefs,
+                       &e->num_doors, e->wData->sectors, e->wData->len_sectors);
 }
 
 int update_engine(engine *e, int dt) {
   e->DT = dt;
   SDL_SetRenderDrawColor(e->renderer, 0, 0, 0, 255);
   SDL_RenderClear(e->renderer);
+
+  // because MOVE packets aren't always updated, we need a boolean to make sure that 
+  // each player actually got updated to make sure we play the walking sound
+  // If not, there would be lingering sounds of players walking around, until they move
+  // again
+  for (int i = 0; i < PLAYER_MAXIMUM; i++) {
+    if (e->players[i] == NULL)
+      continue;
+    position_ct *pos = (position_ct *)world_get_component(
+        e->world, e->players[i], COMPONENT_TAG_POSITION);
+    pos->was_updated = false;
+    pos->walk_cooldown = max(-1, pos->walk_cooldown - dt);
+  }
+
   remote_update(e, e->remote);
   if (world_queue_length(e->world) > 0) {
-    //printf("Processing %d events...\n", world_queue_length(e->world));
+    // printf("Processing %d events...\n", world_queue_length(e->world));
     world_update(e->world);
   }
-  memset(e->pixels, 0, WIDTH * HEIGHT * sizeof(Uint32)); // resets the screen
+  // memset(e->pixels, 0, WIDTH * HEIGHT * sizeof(Uint32)); // resets the screen
   handle_events(e); // process key presses and mouse movements
   game_states_update[e->state](e);
   audiomixer_update(e->mixer, dt);

@@ -19,6 +19,7 @@ lift *lift_create(uint64_t id, sector *sector, enum LiftTransitionSpeed speed,
   l->next_lift = NULL;
   l->time_elapsed = 0;
   l->next_lift = NULL;
+  l->center_pos =  (vec2){.x = 0, .y = 0};
   l->once = once;
   return l;
 }
@@ -28,6 +29,7 @@ bool lift_trigger_switch(lift *l) {
     bool switched = false;
     if (!l->is_switching && !(l->state != l->init_state)) {
       l->is_switching = true;
+      add_sound_to_play(LIFT_START_SOUND, l->sector->center_pos.x, l->sector->center_pos.y);
       switched = true;
     }
     if (l->next_lift != NULL) {
@@ -38,7 +40,7 @@ bool lift_trigger_switch(lift *l) {
   return false;
 }
 
-void lift_update(lift *l, int DT) {
+void lift_update(lift *l,int DT) {
   if (l->speed == L_NO_SPEED) {
     return;
   }
@@ -48,6 +50,7 @@ void lift_update(lift *l, int DT) {
     if (l->time_elapsed >= l->delay) {
       l->time_elapsed = 0;
       l->is_switching = true;
+      add_sound_to_play(LIFT_STOP_SOUND,l->sector->center_pos.x, l->sector->center_pos.y);
     }
   }
 

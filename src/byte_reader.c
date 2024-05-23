@@ -57,7 +57,7 @@ i32 read_i32(FILE *f, int offset) {
 }
 
 char *read_string(FILE *f, int offset, int num_bytes) {
-  char *str = malloc(sizeof(char) * num_bytes + 1);
+  char *str = malloc(sizeof(char) * (num_bytes + 1));
   str[num_bytes] = '\0';
   byte *bytes = read_bytes(f, offset, num_bytes);
   for (int i = 0; i < num_bytes; i++) {

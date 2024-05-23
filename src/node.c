@@ -30,3 +30,9 @@ node *get_nodes_from_lump(FILE *f, lump *directory, int lump_index,
   }
   return nodes;
 }
+
+bool is_on_back_side(node n,vec2 pos) {
+  i16 dx = pos.x - n.x_partition;
+  i16 dy = pos.y - n.y_partition;
+  return dx * n.dy_partition - dy * n.dx_partition <= 0;
+}

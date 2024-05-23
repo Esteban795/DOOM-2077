@@ -4,7 +4,8 @@
 #include "ecs/entity.h"
 #include "sector.h"
 #include "geometry.h"
-
+#include "sound.h"
+#include "audio/mixer.h"
 // https://doomwiki.org/wiki/Linedef_type#Platform_targets
 
 // S = slow
@@ -65,6 +66,7 @@ struct Lift {
     bool is_switching;
     bool init_state; // 0 = low, 1 = high
     bool state; // 0 = low, 1 = high
+    vec2 center_pos;
     struct Lift* next_lift;
 };
 
@@ -73,11 +75,11 @@ typedef struct Lift lift;
 lift *lift_create(uint64_t id, sector *sector, enum LiftTransitionSpeed speed,
                   i16 low_height, i16 high_height, int delay, bool init_state,bool once);
 
-bool lift_trigger_switch(lift* l);
+bool lift_trigger_switch(lift *l);
 
 void lifts_free(lift** lifts,int len_lifts);
 
-void lift_update(lift* l,int DT);
+void lift_update(lift *l,int DT);
 
 lift* lift_add(lift* l, lift* new_lift);
 
