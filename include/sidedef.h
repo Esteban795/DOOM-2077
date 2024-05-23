@@ -6,6 +6,7 @@
 #include "sector.h"
 #include "texture.h"
 #include "util.h"
+#include <assert.h>
 
 struct Sidedef {
   i16 x_offset;
@@ -15,7 +16,7 @@ struct Sidedef {
   texture_map *middle_texture;
   sector *sector;
   i16 sector_id;
-  unsigned long hash_upper;
+  unsigned long hash_upper; // to have faster comparison between textures when rendering
   unsigned long hash_lower;
   unsigned long hash_middle;
 };

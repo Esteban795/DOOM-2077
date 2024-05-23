@@ -1,14 +1,12 @@
 #include "../include/events.h"
-#include <SDL2/SDL_events.h>
-#include <SDL2/SDL_mouse.h>
 
-uint8_t keys[SDL_NUM_SCANCODES] = {0};
+uint16_t keys[SDL_NUM_SCANCODES] = {0};
 int mouse[NUM_MOUSE_BUTTONS + 4] = {
     0}; // left, right, middle, mouse_motion_x, mouse_motion_y, mx, my
 char textinput[SDL_TEXTINPUTEVENT_TEXT_SIZE] = {'\0'};
 bool running = 1;
 
-void handle_events() {
+void handle_events(int DT) {
   SDL_Event event;
   SDL_Scancode scancode;
   int mouse_x, mouse_y;
@@ -28,7 +26,7 @@ void handle_events() {
         running = 0;
       }
       scancode = event.key.keysym.scancode;
-      keys[scancode] = 1;
+      keys[scancode] += DT; // allows for keyholding detection
       break;
     case SDL_KEYUP:
       scancode = event.key.keysym.scancode;
@@ -52,4 +50,8 @@ void handle_events() {
       break;
     }
   }
+}
+
+bool is_key_held(SDL_Scancode scancode) {
+  return keys[scancode] > HOLD_DETECTION_DURATION;
 }

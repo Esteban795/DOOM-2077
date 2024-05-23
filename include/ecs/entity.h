@@ -12,4 +12,6 @@ typedef struct {
     uint64_t id;
 } entity_t;
 
+#define ENTITY_BY_ID(id_) (entity_t) { .id = id_ }
+
 #endif

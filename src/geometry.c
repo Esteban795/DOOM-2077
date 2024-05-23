@@ -3,6 +3,7 @@
 double rad_to_deg(double rad) { return rad * (180 / M_PI); }
 
 double deg_to_rad(double deg) { return deg * (M_PI / 180); }
+
 /*
 Project point coordinate in SCREEN_DISTANCE, according to the angle
 they form with player's POV
@@ -28,6 +29,7 @@ float norm(double angle) {
   return fmod((fmod(angle, 360.0) + 360.0),360.0);
 }
 
+// Modulo function that assure that the result is the same signe as mod
 double mod(double f,double mod) {
   return fmod((fmod(f, mod) + mod),mod);
 }
@@ -48,4 +50,22 @@ int max(int x, int y){
 }
 int min(int x, int y){
   return x < y ? x : y;
+}
+
+double distance(double posx_a, double posy_a, double posx_b, double posy_b) {
+  return sqrt(pow((posx_b - posx_a), 2) + pow((posy_b - posy_a), 2));
+}
+
+double get_angular_distance(double origin_x, double origin_y, double origin_angle, double px, double py) {
+  origin_angle = deg_to_rad(origin_angle);
+  double dx = px - origin_x;
+  double dy = py - origin_y;
+  double theta_p = atan2(-dy, dx);
+  double delta_theta = theta_p - origin_angle;
+  if (delta_theta < 0) {
+    delta_theta += 2 * M_PI;
+  } else if (delta_theta > 2 * M_PI) {
+    delta_theta -= 2 * M_PI;
+  }
+  return delta_theta;
 }

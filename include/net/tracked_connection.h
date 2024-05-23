@@ -20,6 +20,8 @@ typedef struct {
 
 int broadcast(UDPsocket* sock, tracked_connection_t* connections, int num_connections, uint8_t* buf, int len);
 
+int broadcast_except(UDPsocket* sock, tracked_connection_t* connections, int num_connections, uint64_t player_id, uint8_t* buf, int len);
+
 int find_conn_by_ip(tracked_connection_t* connections, int num_connections, IPaddress* ip);
 
 int find_conn_by_id(tracked_connection_t* connections, int num_connections, uint64_t id);
