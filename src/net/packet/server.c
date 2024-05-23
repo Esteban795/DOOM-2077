@@ -298,19 +298,19 @@ int server_scoreboard_update_from(uint8_t* buf, uint16_t* entries_count, char***
     int plen = 2;
     *names = malloc(*entries_count * sizeof(char*));
     for (int i = 0; i < *entries_count; i++) {
-        int clen = strnlen((char*) buf + 8 + plen, 127);
+        int clen = strnlen((char*) buf + 6 + plen, 127);
         (*names)[i] = malloc((clen+1) * sizeof(char));
-        (*names)[i][clen-1] = '\0';
+        (*names)[i][clen] = '\0';
         plen += clen;
     }
     *deaths = malloc(*entries_count * sizeof(uint16_t));
     for (int i = 0; i < *entries_count; i++) {
-        (*deaths)[i] = read_uint16be(buf + 8 + plen);
+        (*deaths)[i] = read_uint16be(buf + 6 + plen);
         plen += 2;
     }
     *kills = malloc(*entries_count * sizeof(uint16_t));
     for (int i = 0; i < *entries_count; i++) {
-        (*kills)[i] = read_uint16be(buf + 8 + plen);
+        (*kills)[i] = read_uint16be(buf + 6 + plen);
         plen += 2;
     }
     return 4 + 2 + plen + 1;
