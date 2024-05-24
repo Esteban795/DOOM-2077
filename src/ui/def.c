@@ -154,7 +154,7 @@ UIModule **get_ui_menu(SDL_Renderer *r, int *nuimodules)
   // INFO: Module 3: Connecting
   // substate 2
 
-  modules[3] = uimodule_create(3, 5);
+  modules[3] = uimodule_create(3, 9);
 
   // title
 
@@ -216,6 +216,48 @@ UIModule **get_ui_menu(SDL_Renderer *r, int *nuimodules)
                      as, 1, UIAP_CENTER, "connect", 0xFF, 0xFF, 0xFF, 0xFF, font);
 
   uimodule_set_element(modules[3], 4, UIET_Label, co_co_label);
+
+  as = malloc(1 * sizeof(int));
+  as[0] = 2;
+
+  font = TTF_OpenFont("fonts/jersey25.ttf", 30);
+
+  UILabel *co_name_label =
+      uilabel_create(0.05, 0.35, 0.2, 0.07, UIAP_TOP_LEFT,
+                     as, 1, UIAP_TOP_RIGHT, "nickname", 0xFF, 0xFF, 0xFF, 0xFF, font);
+
+  uimodule_set_element(modules[3], 5, UIET_Label, co_name_label);
+
+  as = malloc(1 * sizeof(int));
+  as[0] = 2;
+
+  font = TTF_OpenFont("fonts/jersey25.ttf", 30);
+
+  SDL_Color white = {.r = 0xff, .g = 0xff, .b = 0xff, .a = 0xff};
+
+  UITextBox *co_name_tb = uitextbox_create(0.35, 0.35, 0.5, 0.07, UIAP_TOP_LEFT, as, 1, font, UIAP_TOP_LEFT, 16, mm_settings_button_bg, mm_settings_button_bo, white, SDL_SCANCODE_LSHIFT);
+
+  uimodule_set_element(modules[3], 6, UIET_Textbox, co_name_tb);
+
+  as = malloc(1 * sizeof(int));
+  as[0] = 2;
+
+  font = TTF_OpenFont("fonts/jersey25.ttf", 30);
+
+  UILabel *co_ip_label =
+      uilabel_create(0.05, 0.5, 0.2, 0.07, UIAP_TOP_LEFT,
+                     as, 1, UIAP_TOP_RIGHT, "ip", 0xFF, 0xFF, 0xFF, 0xFF, font);
+
+  uimodule_set_element(modules[3], 7, UIET_Label, co_ip_label);
+
+  as = malloc(1 * sizeof(int));
+  as[0] = 2;
+
+  font = TTF_OpenFont("fonts/jersey25.ttf", 30);
+
+  UITextBox *co_ip_tb = uitextbox_create(0.35, 0.5, 0.5, 0.07, UIAP_TOP_LEFT, as, 1, font, UIAP_TOP_LEFT, 16, mm_settings_button_bg, mm_settings_button_bo, white, SDL_SCANCODE_LSHIFT);
+
+  uimodule_set_element(modules[3], 8, UIET_Textbox, co_ip_tb);
 
   return modules;
 }
@@ -410,7 +452,7 @@ UIModule **get_ui_ingame(SDL_Renderer *r, int *nuimodules)
   hud_chat_labels[1] = hud_chat_label_b;
   hud_chat_labels[2] = hud_chat_label_c;
 
-  UIFeed* hud_chat_feed = uifeed_create(hud_chat_labels, 3, false);
+  UIFeed *hud_chat_feed = uifeed_create(hud_chat_labels, 3, false);
 
   uimodule_set_element(modules[3], 5, UIET_Feed, hud_chat_feed);
 
