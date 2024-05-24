@@ -88,6 +88,7 @@ void uitextbox_update(SDL_Renderer *r, int substate, UITextBox *tb) {
   if (keys[tb->scancode]) {
     if (!tb->scancode_helper){
       tb->focused = !tb->focused;
+      textinput[0] = '\0';
     }
 
     tb->scancode_helper = true;
