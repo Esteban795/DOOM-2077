@@ -10,6 +10,7 @@
 #include "segment_handler.h"
 #include "structs.h"
 #include "timer.h"
+#include "ui/linker.h"
 
 #include "ui/def.h"
 #include "ui/event_handler.h"
