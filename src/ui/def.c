@@ -4,8 +4,27 @@
 #define NMODULES_MENU 4
 #define NMODULES_INGAME 5
 
+void create_setting(UIModule* module, int gridx, int gridy, char* label_text, int label_id, int textbox_id, SDL_Color mm_settings_button_bg, SDL_Color mm_settings_button_bo, SDL_Color white){
+  int* as = malloc(1 * sizeof(int));
+  as[0] = 1;
+  TTF_Font* font = TTF_OpenFont("fonts/jersey25.ttf", 25);
+  UILabel * label_ptr =
+      uilabel_create(0.2*( gridx +1)-0.01, 0.1*( gridy +2.5)+0.005, 0.09, 0.04, UIAP_TOP_RIGHT,
+                     as, 1, UIAP_TOP_RIGHT, label_text, 0xFF, 0xFF, 0xFF, 0xFF, font);
+  uimodule_set_element(module, label_id , UIET_Label, label_ptr );
+  as = malloc(1 * sizeof(int));
+  as[0] = 1;
+  font = TTF_OpenFont("fonts/jersey25.ttf", 25);
+  UITextBox * textbox_ptr =
+      uitextbox_create(0.2*( gridx +1)+0.01, 0.1*( gridy +2.5)+0.005, 0.09, 0.04, UIAP_TOP_LEFT, as, 1, font, UIAP_TOP_LEFT, 16,
+      mm_settings_button_bg, mm_settings_button_bo, white, SDL_SCANCODE_LSHIFT);
+  uimodule_set_element(module, textbox_id , UIET_Textbox, textbox_ptr );
+}
+
 UIModule **get_ui_menu(SDL_Renderer *r, int *nuimodules)
 {
+  SDL_Color white = {.r = 0xff, .g = 0xff, .b = 0xff, .a = 0xff};
+
   *nuimodules = NMODULES_MENU;
   UIModule **modules = malloc(*nuimodules * sizeof(UIModule *));
 
@@ -107,7 +126,7 @@ UIModule **get_ui_menu(SDL_Renderer *r, int *nuimodules)
   // INFO: Module 2: Settings
   // substate 1
 
-  modules[2] = uimodule_create(2, 3);
+  modules[2] = uimodule_create(2, 5 + 8 * 2);
 
   // title
 
@@ -133,7 +152,7 @@ UIModule **get_ui_menu(SDL_Renderer *r, int *nuimodules)
   float gl_back_h = 0.08;
 
   UIButton *co_back_button = uibutton_create(
-      gl_back_x, gl_back_y, gl_back_w, gl_back_h, UIAP_TOP_LEFT, as, 1,
+      gl_back_x + 0.1 + gl_back_w / 2, gl_back_y, gl_back_w, gl_back_h, UIAP_TOP_LEFT, as, 1,
       mm_settings_button_bg, mm_settings_button_bo, mm_settings_button_bg,
       mm_settings_button_bo, UIEC_SetSubstate0, SDL_SCANCODE_B);
   uimodule_set_element(modules[2], 1, UIET_Button, co_back_button);
@@ -146,10 +165,47 @@ UIModule **get_ui_menu(SDL_Renderer *r, int *nuimodules)
   font = TTF_OpenFont("fonts/jersey25.ttf", 25);
 
   UILabel *co_back_label =
-      uilabel_create(gl_back_x, gl_back_y, gl_back_w, gl_back_h, UIAP_TOP_LEFT,
+      uilabel_create(gl_back_x + 0.1 + gl_back_w / 2, gl_back_y, gl_back_w, gl_back_h, UIAP_TOP_LEFT,
                      as, 1, UIAP_CENTER, "back", 0xFF, 0xFF, 0xFF, 0xFF, font);
 
   uimodule_set_element(modules[2], 2, UIET_Label, co_back_label);
+
+  // back button
+
+  as = malloc(1 * sizeof(int));
+  as[0] = 1;
+
+  UIButton *se_save_button = uibutton_create(
+      gl_back_x - 0.1 - gl_back_w / 2, gl_back_y, gl_back_w, gl_back_h, UIAP_TOP_LEFT, as, 1,
+      mm_settings_button_bg, mm_settings_button_bo, mm_settings_button_bg,
+      mm_settings_button_bo, UIEC_SetSubstate0, SDL_SCANCODE_S);
+  uimodule_set_element(modules[2], 3, UIET_Button, se_save_button);
+
+  // back label
+
+  as = malloc(1 * sizeof(int));
+  as[0] = 1;
+
+  font = TTF_OpenFont("fonts/jersey25.ttf", 25);
+
+  UILabel *se_save_label =
+      uilabel_create(gl_back_x - 0.1 - gl_back_w / 2, gl_back_y, gl_back_w, gl_back_h, UIAP_TOP_LEFT,
+                     as, 1, UIAP_CENTER, "save", 0xFF, 0xFF, 0xFF, 0xFF, font);
+
+  uimodule_set_element(modules[2], 4, UIET_Label, se_save_label);
+
+  // KEYBINDS
+
+  create_setting(modules[2], 0, 0, "left", 5, 6, mm_settings_button_bg, mm_settings_button_bo, white);
+  create_setting(modules[2], 1, 0, "right", 7, 8, mm_settings_button_bg, mm_settings_button_bo, white);
+  create_setting(modules[2], 2, 0, "up", 9, 10, mm_settings_button_bg, mm_settings_button_bo, white);
+  create_setting(modules[2], 3, 0, "down", 11, 12, mm_settings_button_bg, mm_settings_button_bo, white);
+  create_setting(modules[2], 0, 1, "reload", 13, 14, mm_settings_button_bg, mm_settings_button_bo, white);
+  create_setting(modules[2], 1, 1, "intrct", 15, 16, mm_settings_button_bg, mm_settings_button_bo, white);
+
+  // SETTINGS
+  create_setting(modules[2], 0, 3, "sens", 17, 18, mm_settings_button_bg, mm_settings_button_bo, white);
+  create_setting(modules[2], 1, 3, "fov", 19, 20, mm_settings_button_bg, mm_settings_button_bo, white);
 
   // INFO: Module 3: Connecting
   // substate 2
@@ -232,8 +288,6 @@ UIModule **get_ui_menu(SDL_Renderer *r, int *nuimodules)
   as[0] = 2;
 
   font = TTF_OpenFont("fonts/jersey25.ttf", 30);
-
-  SDL_Color white = {.r = 0xff, .g = 0xff, .b = 0xff, .a = 0xff};
 
   UITextBox *co_name_tb = uitextbox_create(0.35, 0.35, 0.5, 0.07, UIAP_TOP_LEFT, as, 1, font, UIAP_TOP_LEFT, 16, mm_settings_button_bg, mm_settings_button_bo, white, SDL_SCANCODE_LSHIFT);
 
@@ -489,7 +543,7 @@ UIModule **get_ui_ingame(SDL_Renderer *r, int *nuimodules)
   UILabel *sb_1st = uilabel_create(0.1, 0.1, 0.8, 0.1, UIAP_TOP_LEFT, as, 1, UIAP_BOTTOM_LEFT, "1 - Username [69]", 0xff, 0xff, 0xff, 0xff, font);
 
   uimodule_set_element(modules[4], 0, UIET_Label, sb_1st);
-  
+
   as = malloc(1 * sizeof(int));
   as[0] = 1;
 

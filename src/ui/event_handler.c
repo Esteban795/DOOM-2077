@@ -21,6 +21,9 @@ void ui_handle_events(engine *e) {
     case UIEC_SendChat:
       UIECSendChat(e);
       break;
+    case UIEC_SaveSettings:
+      UIECSaveSettings(e);
+      break;
     }
     e->uinextevent = UIEC_None;
   }
@@ -36,5 +39,19 @@ void UIECSendChat(engine *e){
   printf("%s\n",GET_TEXTBOX->text);
   GET_TEXTBOX->text[0] = '\0';
   GET_TEXTBOX->text_index = 0;
+}
+
+#define GET_KEYBIND_LEFT SDL_GetScancodeFromName(((UITextBox*)e->uimodules[2]->elements[6]->element)->text)
+#define GET_KEYBIND_RIGHT SDL_GetScancodeFromName(((UITextBox*)e->uimodules[2]->elements[8]->element)->text)
+#define GET_KEYBIND_UP SDL_GetScancodeFromName(((UITextBox*)e->uimodules[2]->elements[10]->element)->text)
+#define GET_KEYBIND_DOWN SDL_GetScancodeFromName(((UITextBox*)e->uimodules[2]->elements[12]->element)->text)
+#define GET_KEYBIND_RELOAD SDL_GetScancodeFromName(((UITextBox*)e->uimodules[2]->elements[14]->element)->text)
+#define GET_KEYBIND_INTERACT SDL_GetScancodeFromName(((UITextBox*)e->uimodules[2]->elements[16]->element)->text)
+
+#define GET_SETTING_SENS (((UITextBox*)e->uimodules[2]->elements[18]->element)->text)
+#define GET_SETTING_FOV (((UITextBox*)e->uimodules[2]->elements[20]->element)->text)
+
+void UIECSaveSettings(engine *e){
+
 }
 

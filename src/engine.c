@@ -19,8 +19,8 @@
 engine *init_engine(const char *wadPath, SDL_Renderer *renderer) {
   engine *e = malloc(sizeof(engine));
   e->wadPath = wadPath;
-  e->state = STATE_INGAME;
-  e->substate = SUBSTATE_INGAME_PLAYING;
+  e->state = STATE_MENU;
+  e->substate = SUBSTATE_MENU_MAIN;
   e->uinextevent = 0;
   e->DT = 0;
   e->texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,

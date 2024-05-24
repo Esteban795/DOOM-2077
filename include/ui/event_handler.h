@@ -11,11 +11,13 @@ typedef enum _UIEVENTCallback {
   UIEC_SetSubstate3,
   UIEC_JoinServer,
   UIEC_SendChat,
+  UIEC_SaveSettings,
 } UIEVENTCallback;
 
 void ui_handle_events(engine *e);
 
 void UIECJoinServer(engine *e);
 void UIECSendChat(engine *e);
+void UIECSaveSettings(engine *e);
 
 #endif
