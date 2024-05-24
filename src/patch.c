@@ -125,6 +125,16 @@ Uint32 *get_pixels_from_patch(SDL_Renderer *renderer, patch p) {
   return row_based;
 }
 
+Uint32* mirror_pixels(Uint32* pixels, int width, int height) {
+  Uint32* mirrored = malloc(sizeof(Uint32) * width * height);
+  for (int i = 0; i < height; i++) {
+    for (int j = 0; j < width; j++) {
+      mirrored[i * width + j] = pixels[i * width + width - j - 1];
+    }
+  }
+  return mirrored;
+}
+
 SDL_Texture *get_texture_from_pixels(SDL_Renderer *renderer, Uint32 *pixels,
                                      int width, int height) {
   SDL_Texture* tex = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
@@ -147,6 +157,7 @@ patch create_patch(FILE *f, SDL_Renderer *renderer, int patch_offset,
   Uint32* pixels = get_pixels_from_patch(renderer, p);
   p.pixels = malloc(sizeof(Uint32) * p.header.width * p.header.height);
   memcpy(p.pixels, pixels, sizeof(Uint32) * p.header.width * p.header.height);
+  p.mirror_pixels = mirror_pixels(pixels, p.header.width, p.header.height);
   p.tex = get_texture_from_pixels(renderer, p.pixels, p.header.width, p.header.height);
   free(pixels);
   return p;
@@ -160,6 +171,7 @@ void sprite_free(patch p) {
     free(p.columns[i].data);
   }
   free(p.pixels);
+  free(p.mirror_pixels);
   free(p.columns);
 }
 
@@ -178,6 +190,7 @@ void texture_patch_free(patch p) {
     free(p.columns[i].data);
   }
   free(p.pixels);
+  free(p.mirror_pixels);
   free(p.columns);
   free(p.patchname);
 }

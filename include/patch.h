@@ -58,6 +58,7 @@ struct Patch {
   patch_column *columns;
   SDL_Texture *tex;
   Uint32 *pixels;
+  Uint32* mirror_pixels;
 };
 
 typedef struct Patch patch;
