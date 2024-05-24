@@ -320,7 +320,7 @@ UIModule **get_ui_ingame(SDL_Renderer *r, int *nuimodules)
 
   // INFO: Module 1 : HUD
 
-  modules[1] = uimodule_create(1, 4);
+  modules[1] = uimodule_create(1, 3);
 
   // health
 
@@ -343,23 +343,10 @@ UIModule **get_ui_ingame(SDL_Renderer *r, int *nuimodules)
   font = TTF_OpenFont("fonts/jersey25.ttf", 30);
 
   UILabel *hud_ammo_max =
-      uilabel_create(0.95, 0.95, 0.1, 0.1, UIAP_BOTTOM_RIGHT, as, 1,
+      uilabel_create(1, 0.95, 0.1, 0.1, UIAP_BOTTOM_RIGHT, as, 1,
                      UIAP_BOTTOM_LEFT, "/16", 0xAA, 0xAA, 0xAA, 0xFF, font);
 
   uimodule_set_element(modules[1], 1, UIET_Label, hud_ammo_max);
-
-  // ammo (total)
-
-  as = malloc(1 * sizeof(int));
-  as[0] = 0;
-
-  font = TTF_OpenFont("fonts/jersey25.ttf", 40);
-
-  UILabel *hud_ammo_total =
-      uilabel_create(0.95, 0.95, 0.1, 0.1, UIAP_BOTTOM_RIGHT, as, 1,
-                     UIAP_TOP_RIGHT, "69", 0xCC, 0xCC, 0xCC, 0xFF, font);
-
-  uimodule_set_element(modules[1], 2, UIET_Label, hud_ammo_total);
 
   // ammo
 
@@ -369,10 +356,10 @@ UIModule **get_ui_ingame(SDL_Renderer *r, int *nuimodules)
   font = TTF_OpenFont("fonts/jersey25.ttf", 60);
 
   UILabel *hud_ammo =
-      uilabel_create(0.85, 0.95, 0.1, 0.1, UIAP_BOTTOM_RIGHT, as, 1,
+      uilabel_create(0.9, 0.95, 0.1, 0.1, UIAP_BOTTOM_RIGHT, as, 1,
                      UIAP_BOTTOM_RIGHT, "14", 0xFF, 0xFF, 0xFF, 0xFF, font);
 
-  uimodule_set_element(modules[1], 3, UIET_Label, hud_ammo);
+  uimodule_set_element(modules[1], 2, UIET_Label, hud_ammo);
 
   // INFO: Module 2: killfeed
 
