@@ -511,9 +511,6 @@ void process_keys(player *p) {
   }
 
   bool is_reloading = keys[get_key_from_action(p->keybinds, "RELOAD")];
-  printf("Weapon : %d\n", weapon->active_weapon);
-  printf("Ammo : %d\n", weapon_get_active_ammos_left(weapon));
-  printf("Mags : %d\n\n\n", weapon_get_active_bullets_left(weapon));
   if (weapon->active_weapon != 0 && is_reloading) { // cannot reload fists..
     int ammos_left = weapon_get_active_ammos_left(weapon);
     int mags_left = weapon_get_active_bullets_left(weapon);
