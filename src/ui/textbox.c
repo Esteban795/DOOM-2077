@@ -80,7 +80,7 @@ void uitextbox_update(SDL_Renderer *r, int substate, UITextBox *tb) {
 
   if (mouse[MOUSE_LEFT]) {
     tb->focused = (mouse[MOUSE_X_INDEX] >= destrect.x &&
-                   mouse[MOUSE_X_INDEX] <= destrect.x + destrect.y &&
+                   mouse[MOUSE_X_INDEX] <= destrect.x + destrect.w &&
                    mouse[MOUSE_Y_INDEX] >= destrect.y &&
                    mouse[MOUSE_Y_INDEX] <= destrect.y + destrect.h);
   }
@@ -97,7 +97,7 @@ void uitextbox_update(SDL_Renderer *r, int substate, UITextBox *tb) {
   }
 
   static bool bspace_buffer = false;
-  if (!bspace_buffer && keys[SDL_SCANCODE_BACKSPACE]) {
+  if (tb->focused && !bspace_buffer && keys[SDL_SCANCODE_BACKSPACE]) {
     uitextbox_char_remove(tb);
   }
   bspace_buffer = keys[SDL_SCANCODE_BACKSPACE];

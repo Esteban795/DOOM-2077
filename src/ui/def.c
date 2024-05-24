@@ -16,8 +16,8 @@ void create_setting(UIModule* module, int gridx, int gridy, char* label_text, in
   as[0] = 1;
   font = TTF_OpenFont("fonts/jersey25.ttf", 25);
   UITextBox * textbox_ptr =
-      uitextbox_create(0.2*( gridx +1)+0.01, 0.1*( gridy +2.5)+0.005, 0.09, 0.04, UIAP_TOP_LEFT, as, 1, font, UIAP_TOP_LEFT, 16,
-      mm_settings_button_bg, mm_settings_button_bo, white, SDL_SCANCODE_LSHIFT);
+      uitextbox_create(0.2*( gridx +1)+0.01, 0.1*( gridy +2.5)+0.005, 0.09, 0.04, UIAP_TOP_LEFT, as, 1, font, UIAP_TOP_LEFT, 6,
+      mm_settings_button_bg, mm_settings_button_bo, white, SDL_SCANCODE_F20);
   uimodule_set_element(module, textbox_id , UIET_Textbox, textbox_ptr );
 }
 
