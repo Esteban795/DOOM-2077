@@ -18,6 +18,7 @@ typedef struct {
 
 void game_start_cooldown_task(void* data);
 void game_end_task(void* data);
+void game_restart_task(void* _data);
 
 // Game start cooldown task, this task is responsible for the countdown before the game starts.
 void game_start_cooldown_task(void* data) {
@@ -25,10 +26,11 @@ void game_start_cooldown_task(void* data) {
         return;
     }
     game_cooldown_data_t* gcd = (game_cooldown_data_t*)data;
+    game_start_event_t* game_start_event = ServerGameStartEvent_new(gcd->countdown);
+    world_queue_event(&SERVER_STATE->world, (event_t*)game_start_event);
     if (gcd->countdown == 0) {
+        // Start the game.
         SERVER_STATE->game_state = GAME_STATE_RUNNING;
-        server_chat_event_t* chat_event = ServerServerChatEvent_new("The game is starting!", true, true);
-        world_queue_event(&SERVER_STATE->world, (event_t*)chat_event);
         game_cooldown_data_t* new_gcd = malloc(sizeof(game_cooldown_data_t));
         new_gcd->countdown = SERVER_GAME_DURATION - 5;
         new_gcd->execute_at = gcd->execute_at;
@@ -36,10 +38,7 @@ void game_start_cooldown_task(void* data) {
         task_t task = task_new(game_end_task, new_gcd, new_gcd->execute_at);
         task_executor_add(&SERVER_STATE->task_executor, task);
     } else {
-        char message[64];
-        snprintf(message, 64, "The game is starting in %d seconds...", gcd->countdown);
-        server_chat_event_t* chat_event = ServerServerChatEvent_new(message, true, true);
-        world_queue_event(&SERVER_STATE->world, (event_t*)chat_event);
+        // Decrement the countdown.
         game_cooldown_data_t* new_gcd = malloc(sizeof(game_cooldown_data_t));
         new_gcd->countdown = gcd->countdown - 1;
         new_gcd->execute_at = gcd->execute_at;
@@ -55,15 +54,21 @@ void game_end_task(void* data) {
         return;
     }
     game_cooldown_data_t* gcd = (game_cooldown_data_t*)data;
+    game_end_event_t* game_end_event = ServerGameEndEvent_new(gcd->countdown);
+    world_queue_event(&SERVER_STATE->world, (event_t*)game_end_event);
     if (gcd->countdown == 0) {
         SERVER_STATE->game_state = GAME_STATE_ENDING;
-        server_chat_event_t* chat_event = ServerServerChatEvent_new("The game is ending!", true, true);
+        // Restart the game after a cooldown.
+        char msg[128];
+        snprintf(msg, 128, "Restarting in %d seconds...", SERVER_GAME_COOLDOWN_BEFORE_RESTART);
+        server_chat_event_t* chat_event = ServerServerChatEvent_new(msg, true, true);
         world_queue_event(&SERVER_STATE->world, (event_t*)chat_event);
+        struct timespec execute_at = gcd->execute_at;
+        execute_at.tv_sec += SERVER_GAME_COOLDOWN_BEFORE_RESTART;
+        task_t task = task_new(game_restart_task, NULL, execute_at);
+        task_executor_add(&SERVER_STATE->task_executor, task);
     } else {
-        char message[64];
-        snprintf(message, 64, "The game is ending in %d seconds...", gcd->countdown);
-        server_chat_event_t* chat_event = ServerServerChatEvent_new(message, true, true);
-        world_queue_event(&SERVER_STATE->world, (event_t*)chat_event);
+        // Decrement the countdown.
         game_cooldown_data_t* new_gcd = malloc(sizeof(game_cooldown_data_t));
         new_gcd->countdown = gcd->countdown - 1;
         new_gcd->execute_at = gcd->execute_at;
@@ -72,6 +77,26 @@ void game_end_task(void* data) {
         task_executor_add(&SERVER_STATE->task_executor, task);
     }
 }
+
+// Game restart task, this task is responsible for restarting the game after a reasonable cooldown.
+void game_restart_task(void* _data) {
+    if (SERVER_STATE->game_state != GAME_STATE_ENDING) {
+        return;
+    }
+    if (SERVER_STATE->conn_count >= SERVER_MINIMUM_PLAYERS) {
+        SERVER_STATE->game_state = GAME_STATE_COOLDOWN;
+        game_cooldown_data_t* gcd = malloc(sizeof(game_cooldown_data_t));
+        gcd->countdown = 5;
+        INSTANT_NOW(&gcd->execute_at);
+        task_t task = task_new(game_start_cooldown_task, gcd, gcd->execute_at);
+        task_executor_add(&SERVER_STATE->task_executor, task);
+    } else {
+        SERVER_STATE->game_state = GAME_STATE_WAITING;
+        server_chat_event_t* chat_event = ServerServerChatEvent_new("Not enough players to restart a game...", true, true);
+        world_queue_event(&SERVER_STATE->world, (event_t*)chat_event);
+    }
+}
+
 
 /*
 * Game managing system, this system is responsible for managing the launch and end of the game.
@@ -103,6 +128,8 @@ int game_managing(world_t* world, event_t* event) {
                 SERVER_STATE->game_state = GAME_STATE_ENDING;
                 server_chat_event_t* chat_event = ServerServerChatEvent_new("Game ended! Not enough players still in game.", true, true);
                 world_queue_event(world, (event_t*)chat_event);
+            } else if (SERVER_STATE->game_state == GAME_STATE_ENDING && SERVER_STATE->conn_count < 1) {
+                SERVER_STATE->game_state = GAME_STATE_WAITING;
             }
             break;
         }

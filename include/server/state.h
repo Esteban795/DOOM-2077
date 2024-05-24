@@ -58,6 +58,7 @@ typedef struct {
     task_executor_t task_executor;
     // The game state
     game_state_t game_state;
+    // Door-mappings and lift-mappings
     entity_t** doors;
     int door_count;
     entity_t** lifts;

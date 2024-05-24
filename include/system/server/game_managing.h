@@ -6,6 +6,7 @@
 
 #define SERVER_MINIMUM_PLAYERS 2
 #define SERVER_GAME_DURATION 10 // in seconds
+#define SERVER_GAME_COOLDOWN_BEFORE_RESTART 15 // in seconds
 
 extern const system_t GAME_MANAGING_SYSTEM;
 

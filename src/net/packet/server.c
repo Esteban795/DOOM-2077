@@ -27,6 +27,8 @@ const char *SERVER_COMMAND_DOST = "DOST";
 const char *SERVER_COMMAND_LASC = "LASC";
 const char *SERVER_COMMAND_LDSC = "LDSC";
 const char *SERVER_COMMAND_L_ST = "L_ST";
+const char *SERVER_COMMAND_GAME_START = "GSTR";
+const char *SERVER_COMMAND_GAME_END = "GEND";
 
 int server_acpt(uint8_t* buf, uint64_t player_id) {
     memcpy(buf, SERVER_COMMAND_ACPT, 4);
@@ -224,6 +226,22 @@ int server_lift_states(uint8_t *buf, uint16_t lifts_count, bool* lifts_states) {
     return 4 + 2 + lifts_count + 1;
 }
 
+int server_game_start(uint8_t* buf, int16_t countdown) {
+    memcpy(buf, SERVER_COMMAND_GAME_START, 4);
+    write_uint16be(buf + 4, 2);
+    write_uint16be(buf + 6, countdown);
+    buf[8] = '\n';
+    return 4 + 2 + 2 + 1;
+}
+
+int server_game_end(uint8_t* buf, int16_t countdown) {
+    memcpy(buf, SERVER_COMMAND_GAME_END, 4);
+    write_uint16be(buf + 4, 2);
+    write_uint16be(buf + 6, countdown);
+    buf[8] = '\n';
+    return 4 + 2 + 2 + 1;
+}
+
 int server_acpt_from(uint8_t* buf, uint64_t* player_id) {
     *player_id = read_uint64be(buf + 6);
     return 4 + 2 + 8 + 1;
@@ -393,4 +411,14 @@ int server_lift_states_from(uint8_t *buf, uint16_t *lifts_count, bool** lifts_st
         (*lifts_states)[i] = buf[6 + i] != 0;
     }
     return 4 + 2 + *lifts_count + 1;
+}
+
+int server_game_start_from(uint8_t* buf, int16_t* countdown) {
+    *countdown = read_int16be(buf + 6);
+    return 4 + 2 + 2 + 1;
+}
+
+int server_game_end_from(uint8_t* buf, int16_t* countdown) {
+    *countdown = read_int16be(buf + 6);
+    return 4 + 2 + 2 + 1;
 }

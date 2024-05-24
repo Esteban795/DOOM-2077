@@ -27,6 +27,8 @@ extern const char *SERVER_COMMAND_DOST;
 extern const char *SERVER_COMMAND_LASC;
 extern const char *SERVER_COMMAND_LDSC;
 extern const char *SERVER_COMMAND_L_ST;
+extern const char *SERVER_COMMAND_GSTA;
+extern const char *SERVER_COMMAND_GEND;
 
 int server_acpt(uint8_t *buf, uint64_t player_id);
 int server_join(uint8_t *buf, uint64_t player_id, char *player_name);
@@ -48,6 +50,8 @@ int server_door_states(uint8_t *buf, uint16_t doors_count, bool* doors_states);
 int server_lift_ascend(uint8_t *buf, uint64_t lift_id);
 int server_lift_descend(uint8_t *buf, uint64_t lift_id);
 int server_lift_states(uint8_t *buf, uint16_t lifts_count, bool* lifts_states);
+int server_game_start(uint8_t *buf, int16_t countdown);
+int server_game_end(uint8_t *buf, int16_t countdown);
 
 int server_acpt_from(uint8_t *buf, uint64_t *player_id);
 int server_join_from(uint8_t *buf, uint64_t *player_id, char **player_name);
@@ -69,4 +73,6 @@ int server_door_states_from(uint8_t *buf, uint16_t *doors_count, bool** doors_st
 int server_lift_ascend_from(uint8_t *buf, uint64_t *lift_id);
 int server_lift_descend_from(uint8_t *buf, uint64_t *lift_id);
 int server_lift_states_from(uint8_t *buf, uint16_t *lifts_count, bool** lifts_states);
+int server_game_start_from(uint8_t *buf, int16_t *countdown);
+int server_game_end_from(uint8_t *buf, int16_t *countdown);
 #endif
