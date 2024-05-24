@@ -318,17 +318,19 @@ int remote_update(engine *e, remote_server_t *r) {
         world_queue_event(e->world, event);
       } else if (strncmp(cmd, SERVER_COMMAND_KILL, 4) == 0) {
         uint64_t player_id, src_player_id;
-        server_player_kill_from(sdata + offset, &player_id, &src_player_id);
+        int8_t weapon_id;
+        server_player_kill_from(sdata + offset, &player_id, &src_player_id, &weapon_id);
         event_t *event =
-            (event_t *)ClientPlayerKillEvent_new(player_id, src_player_id);
+            (event_t *)ClientPlayerKillEvent_new(player_id, src_player_id, weapon_id);
         world_queue_event(e->world, event);
       } else if (strncmp(cmd, SERVER_COMMAND_DAMG, 4) == 0) {
         uint64_t player_id, src_player_id;
+        int8_t weapon_id;
         float damage;
-        server_player_damage_from(sdata + offset, &player_id, &src_player_id,
+        server_player_damage_from(sdata + offset, &player_id, &src_player_id, &weapon_id,
                                   &damage);
         event_t *event = (event_t *)ClientPlayerDamageEvent_new(
-            player_id, src_player_id, damage);
+            player_id, src_player_id, weapon_id, damage);
         world_queue_event(e->world, event);
       } else if (strncmp(cmd, SERVER_COMMAND_DOST, 4) == 0) {
         uint16_t doors_count;

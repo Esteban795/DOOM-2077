@@ -18,13 +18,13 @@ typedef struct {
     // entity_id of the player
     uint64_t entity_id;
     // id of the weapon fired
-    uint8_t weapon_id;
+    int8_t weapon_id;
 } player_fire_event_t;
 
 // ClientPlayerFireEvent creates a new ClientPlayerFireEvent.
-player_fire_event_t* ClientPlayerFireEvent_new(uint64_t entity_id, uint8_t weapon_id);
+player_fire_event_t* ClientPlayerFireEvent_new(uint64_t entity_id, int8_t weapon_id);
 
 // ServerPlayerFireEvent creates a new ServerPlayerFireEvent.
-player_fire_event_t* ServerPlayerFireEvent_new(uint64_t entity_id, uint8_t weapon_id);
+player_fire_event_t* ServerPlayerFireEvent_new(uint64_t entity_id, int8_t weapon_id);
 
 #endif

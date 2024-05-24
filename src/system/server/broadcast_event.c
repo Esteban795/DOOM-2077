@@ -127,7 +127,7 @@ int broadcast_event(world_t* world, event_t* event) {
             pid = ENTITY_BY_ID(player_damage_event->entity_id);
             health_ct* health = (health_ct*) world_get_component(world, &pid, COMPONENT_TAG_HEALTH);
             if (health == NULL) break;
-            len = server_player_damage(buf, player_damage_event->entity_id, player_damage_event->source_entity_id, player_damage_event->damage);
+            len = server_player_damage(buf, player_damage_event->entity_id, player_damage_event->source_entity_id, player_damage_event->weapon_id, player_damage_event->damage);
             broadcast(&sock, conns, SERVER_STATE->conn_count, buf, len);
             break;
         }
@@ -166,7 +166,7 @@ int broadcast_event(world_t* world, event_t* event) {
                 strncat(death_msg, display_name_get(killer_name), 128);
             }
             printf("%s\n", death_msg);
-            len = server_player_kill(buf, player_kill_event->entity_id, player_kill_event->source_entity_id);
+            len = server_player_kill(buf, player_kill_event->entity_id, player_kill_event->source_entity_id, player_kill_event->weapon_id);
             len += server_server_chat(buf + len, death_msg, true, true);
             broadcast(&sock, conns, SERVER_STATE->conn_count, buf, len);
             break;
