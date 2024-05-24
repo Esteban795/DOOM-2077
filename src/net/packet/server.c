@@ -21,6 +21,12 @@ const char *SERVER_COMMAND_HEAL = "HEAL";
 const char *SERVER_COMMAND_HLTH = "HLTH";
 const char *SERVER_COMMAND_KILL = "KILL";
 const char *SERVER_COMMAND_LMAP = "LMAP";
+const char *SERVER_COMMAND_OPEN = "OPEN";
+const char *SERVER_COMMAND_CLOS = "CLOS";
+const char *SERVER_COMMAND_DOST = "DOST";
+const char *SERVER_COMMAND_LASC = "LASC";
+const char *SERVER_COMMAND_LDSC = "LDSC";
+const char *SERVER_COMMAND_L_ST = "L_ST";
 
 int server_acpt(uint8_t* buf, uint64_t player_id) {
     memcpy(buf, SERVER_COMMAND_ACPT, 4);
@@ -105,18 +111,22 @@ int server_scoreboard_update(uint8_t* buf, uint16_t entries_count, char** names,
     write_uint16be(buf + 6, entries_count);
     int plen = 2;
     for (int i = 0; i < entries_count; i++) {
-        plen += write_cstring(buf + 8 + plen, names[i]);
+        plen += write_cstring(buf + 6 + plen, names[i]);
+        plen += write_cstring(buf + 6 + plen, names[i]);
     }
     for (int i = 0; i < entries_count; i++) {
-        write_uint16be(buf + 8 + plen, deaths[i]);
+        write_uint16be(buf + 6 + plen, deaths[i]);
+        write_uint16be(buf + 6 + plen, deaths[i]);
         plen += 2;
     }
     for (int i = 0; i < entries_count; i++) {
-        write_uint16be(buf + 8 + plen, kills[i]);
+        write_uint16be(buf + 6 + plen, kills[i]);
+        write_uint16be(buf + 6 + plen, kills[i]);
         plen += 2;
     }
     write_uint16be(buf + 4, plen);
-    buf[8 + plen] = '\n';
+    buf[6 + plen] = '\n';
+    buf[6 + plen] = '\n';
     return 4 + 2 + plen + 1;
 }
 
@@ -168,6 +178,50 @@ int server_load_map(uint8_t* buf, char* map_name) {
     write_uint16be(buf + 4, clen);
     buf[6 + clen] = '\n';
     return 4 + 2 + clen + 1;
+}
+
+inline int server_door_state_change(uint8_t* buf, const char* command, uint64_t door_id) {
+    memcpy(buf, command, 4);
+    write_uint16be(buf + 4, 8);
+    write_uint64be(buf + 6, door_id);
+    buf[14] = '\n';
+    return 4 + 2 + 8 + 1;
+}
+
+int server_door_open(uint8_t *buf, uint64_t door_id) {
+    return server_door_state_change(buf, SERVER_COMMAND_OPEN, door_id);
+}
+
+int server_door_close(uint8_t *buf, uint64_t door_id) {
+    return server_door_state_change(buf, SERVER_COMMAND_CLOS, door_id);
+}
+
+int server_door_states(uint8_t *buf, uint16_t doors_count, bool* doors_states) {
+    memcpy(buf, SERVER_COMMAND_DOST, 4);
+    write_uint16be(buf + 4, doors_count);
+    for (int i = 0; i < doors_count; i++) {
+        buf[6 + i] = doors_states[i] ? 1 : 0;
+    }
+    buf[6 + doors_count] = '\n';
+    return 4 + 2 + doors_count + 1;
+}
+
+int server_lift_ascend(uint8_t *buf, uint64_t lift_id) {
+    return server_door_state_change(buf, SERVER_COMMAND_LASC, lift_id);
+}
+
+int server_lift_descend(uint8_t *buf, uint64_t lift_id) {
+    return server_door_state_change(buf, SERVER_COMMAND_LDSC, lift_id);
+}
+
+int server_lift_states(uint8_t *buf, uint16_t lifts_count, bool* lifts_states) {
+    memcpy(buf, SERVER_COMMAND_L_ST, 4);
+    write_uint16be(buf + 4, lifts_count);
+    for (int i = 0; i < lifts_count; i++) {
+        buf[6 + i] = lifts_states[i] ? 1 : 0;
+    }
+    buf[6 + lifts_count] = '\n';
+    return 4 + 2 + lifts_count + 1;
 }
 
 int server_acpt_from(uint8_t* buf, uint64_t* player_id) {
@@ -248,19 +302,19 @@ int server_scoreboard_update_from(uint8_t* buf, uint16_t* entries_count, char***
     int plen = 2;
     *names = malloc(*entries_count * sizeof(char*));
     for (int i = 0; i < *entries_count; i++) {
-        int clen = strnlen((char*) buf + 8 + plen, 127);
-        (*names)[i] = malloc(clen * sizeof(char));
-        (*names)[i][clen-1] = '\0';
+        int clen = strnlen((char*) buf + 6 + plen, 127);
+        (*names)[i] = malloc((clen+1) * sizeof(char));
+        (*names)[i][clen] = '\0';
         plen += clen;
     }
     *deaths = malloc(*entries_count * sizeof(uint16_t));
     for (int i = 0; i < *entries_count; i++) {
-        (*deaths)[i] = read_uint16be(buf + 8 + plen);
+        (*deaths)[i] = read_uint16be(buf + 6 + plen);
         plen += 2;
     }
     *kills = malloc(*entries_count * sizeof(uint16_t));
     for (int i = 0; i < *entries_count; i++) {
-        (*kills)[i] = read_uint16be(buf + 8 + plen);
+        (*kills)[i] = read_uint16be(buf + 6 + plen);
         plen += 2;
     }
     return 4 + 2 + plen + 1;
@@ -301,4 +355,42 @@ int server_load_map_from(uint8_t* buf, char** map_name) {
     memcpy(*map_name, buf + 6, clen_-1);
     (*map_name)[clen_-1] = '\0';
     return 4 + 2 + clen + 1;
+}
+
+int server_door_open_from(uint8_t *buf, uint64_t *door_id) {
+    *door_id = read_uint64be(buf + 6);
+    return 4 + 2 + 8 + 1;
+}
+
+int server_door_close_from(uint8_t *buf, uint64_t *door_id) {
+    *door_id = read_uint64be(buf + 6);
+    return 4 + 2 + 8 + 1;
+}
+
+int server_door_states_from(uint8_t *buf, uint16_t *doors_count, bool** doors_states) {
+    *doors_count = read_uint16be(buf + 4);
+    *doors_states = malloc(*doors_count * sizeof(bool));
+    for (int i = 0; i < *doors_count; i++) {
+        (*doors_states)[i] = buf[6 + i] != 0;
+    }
+    return 4 + 2 + *doors_count + 1;
+}
+
+int server_lift_ascend_from(uint8_t *buf, uint64_t *lift_id) {
+    *lift_id = read_uint64be(buf + 6);
+    return 4 + 2 + 8 + 1;
+}
+
+int server_lift_descend_from(uint8_t *buf, uint64_t *lift_id) {
+    *lift_id = read_uint64be(buf + 6);
+    return 4 + 2 + 8 + 1;
+}
+
+int server_lift_states_from(uint8_t *buf, uint16_t *lifts_count, bool** lifts_states) {
+    *lifts_count = read_uint16be(buf + 4);
+    *lifts_states = malloc(*lifts_count * sizeof(bool));
+    for (int i = 0; i < *lifts_count; i++) {
+        (*lifts_states)[i] = buf[6 + i] != 0;
+    }
+    return 4 + 2 + *lifts_count + 1;
 }

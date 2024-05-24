@@ -6,6 +6,7 @@
 #include "lump.h"
 #include "util.h"
 #include <stdint.h>
+#include "vec2.h"
 
 struct Sector {
   i16 floor_height;
@@ -18,6 +19,7 @@ struct Sector {
   i16 tag_number;
   unsigned long hash_floor;
   unsigned long hash_ceiling;
+  vec2 center_pos;
 };
 
 typedef struct Sector sector;

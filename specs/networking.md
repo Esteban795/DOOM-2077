@@ -2,7 +2,7 @@
 
 | Date of creation | Latest edit      | Version | Status (adopted?) |
 |------------------|------------------|---------|-------------------|
-| 07/03/2024       | 16/05/2024       | RC1     | Release Candidate |
+| 07/03/2024       | 18/05/2024       | RC1     | Release Candidate |
 
 
 ## Introduction
@@ -229,3 +229,25 @@ The `reason` argument is a NUL-terminated string, whose length cannot exceed 255
 
 **Args:**:
 * `map_name` (cstring), a NUL-terminated string identifing the map in the WAP.
+
+## OPEN / CLOS - Open / Close doors 
+
+**Description:** A player is opening/closing a door
+
+**Args:**:
+* `door_id` (uint64): unique index of the door opening/closing 
+
+## LASC / LDSC - Lift Ascend / Descend
+
+**Description:** A lift is ascending / descending
+
+**Args:**:
+* `lift_id` (uint64): unique index of the lift ascending/descending
+
+# DOST / L_ST - Door States / Lift States
+
+**Description:** States of all doors/lifts (generally sent at join)
+
+**Args:**:
+* `door_count`/`lift_count` (uint16): the number of items in the following array
+* `states` (uint8 array as bool array): the state of each door : 1 for Open/High and 0 for Closed/Low

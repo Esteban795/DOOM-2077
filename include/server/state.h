@@ -58,6 +58,10 @@ typedef struct {
     task_executor_t task_executor;
     // The game state
     game_state_t game_state;
+    entity_t** doors;
+    int door_count;
+    entity_t** lifts;
+    int lift_count;
 } server_state_t;
 
 #define SERVER_STATE (&server_state)

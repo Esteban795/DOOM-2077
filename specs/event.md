@@ -2,7 +2,7 @@
 
 | Date of creation | Latest edit      | Version | Status (adopted?) |
 |------------------|------------------|---------|-------------------|
-| 27/04/2024       | 03/05/2024       | beta   | Experimental      |
+| 27/04/2024       | 17/05/2024       | beta   | Experimental      |
 
 ## Global events
 
@@ -18,14 +18,13 @@
 * [x] 0x0042 - PlayerHealEvent {CS} - a player has been healed
 * [x] 0x0043 - PlayerHealthUpdateEvent {CS} - a player's health has been changed.
 * [x] 0x0044 - PlayerKilledEvent {CS} - a player has been killed
-* [ ] 0x0045 - PlayerTriggerEvent {S} - a player triggers a button/door
-* [ ] 0x0046 - PlayerFireEvent {S} - a player fires a weapon
+* [ ] 0x0045 - PlayerFireEvent {S} - a player fires a weapon
 
 ## Door/Elevator events
 
-* [ ] 0x0080 - DoorOpenEvent {CS} - open a door
-* [ ] 0x0081 - DoorCloseEvent {CS} - close a door
-* [ ] 0x0082 - ElevatorTriggeredEvent {CS} - trigger an elevator
+* 0x0080 - DoorStateEvent {S} - set the current state of the doors and lifts
+* [x] 0x0081 - DoorOpenEvent {CS} - a player is opening a door (lift ascending)
+* [x] 0x0082 - DoorCloseEvent {CS} - a player is closing a door (lift descending) 
 
 ## Communication events
 

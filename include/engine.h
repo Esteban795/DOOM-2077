@@ -5,7 +5,6 @@
 #include "map_renderer.h"
 #include "player.h"
 #include "structs.h"
-#include "hitscan.h"
 #include "segment_handler.h"
 #include "events.h"
 #include "game_states.h"
