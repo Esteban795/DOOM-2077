@@ -202,9 +202,12 @@ int remote_update(engine *e, remote_server_t *r) {
         // If the player is not us, then insert the player in the ECCS
         if (player_id != e->p->entity->id) {
           int ammo[WEAPONS_NUMBER];
+          int mags[WEAPONS_NUMBER];
           ammo[0] = -2;
+          mags[0] = 0;
           for (int i = 1; i < WEAPONS_NUMBER; i++) {
-            ammo[i] = -1;
+            ammo[i] = 10;
+            mags[i] = 10;
           }
 
           // Add player to the ECS world
@@ -212,7 +215,7 @@ int remote_update(engine *e, remote_server_t *r) {
           component_t **comps = malloc(sizeof(component_t *) * 4);
           comps[0] = position_create(coords, 180.0);
           comps[1] = health_create(100.0, 100.0);
-          comps[2] = weapon_create(ammo);
+          comps[2] = weapon_create(ammo,mags);
           comps[3] = display_name_create(player_name);
           entity_t *entity = world_insert_entity(e->world, player_id, comps, 4);
           // If entity == NULL, an entity already exists with this id, replacing
