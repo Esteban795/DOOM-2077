@@ -1,5 +1,6 @@
 #include "../include/game_states.h"
 #include <stdio.h>
+//#include "../include/events.h"
 
 bool firstTimeLaunching = true;
 
@@ -23,10 +24,16 @@ void init_ingame_state(engine *e) {
 }
 
 void update_menu_state(engine *e) {
-  // faire les trucs du menu
+  
 }
 
 void update_ingame_state(engine *e) {
+  if (keys[SDL_SCANCODE_TAB] && e->substate == SUBSTATE_INGAME_PLAYING){
+    e->substate = SUBSTATE_INGAME_SCOREBOARD;
+  } else if (!keys[SDL_SCANCODE_TAB] && e->substate == SUBSTATE_INGAME_SCOREBOARD) {
+    e->substate = SUBSTATE_INGAME_PLAYING;
+  }
+
   update_player(e->p);
   update_height(e->p);
   process_keys(e->p);
