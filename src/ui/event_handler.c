@@ -35,5 +35,6 @@ void UIECJoinServer(engine *e){
 void UIECSendChat(engine *e){
   printf("%s\n",GET_TEXTBOX->text);
   GET_TEXTBOX->text[0] = '\0';
+  GET_TEXTBOX->text_index = 0;
 }
 

@@ -95,15 +95,15 @@ void uitextbox_update(SDL_Renderer *r, int substate, UITextBox *tb) {
     tb->scancode_helper = false;
   }
 
-  if (tb->focused && textinput[0] != '\0') {
-    uitextbox_string_add(tb);
-  }
-
   static bool bspace_buffer = false;
   if (!bspace_buffer && keys[SDL_SCANCODE_BACKSPACE]) {
     uitextbox_char_remove(tb);
   }
   bspace_buffer = keys[SDL_SCANCODE_BACKSPACE];
+
+  if (tb->focused && textinput[0] != '\0') {
+    uitextbox_string_add(tb);
+  }
 
   SDL_Surface *text =
       TTF_RenderText_Blended(tb->font, tb->text, tb->text_color);

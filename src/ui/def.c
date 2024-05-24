@@ -393,7 +393,7 @@ UIModule **get_ui_ingame(SDL_Renderer *r, int *nuimodules)
   SDL_Color bg = {.r = 0x00, .g = 0x00, .b = 0x00, .a = 0x00};
   SDL_Color border = {.r = 0x88, .g = 0x88, .b = 0x88, .a = 0x88};
 
-  UITextBox *hud_chat_tb = uitextbox_create(0.01, 0.84, 0.5, 0.035, UIAP_BOTTOM_LEFT, as, 1, font, UIAP_BOTTOM_LEFT, 128, bg, bg, border, SDL_SCANCODE_Y);
+  UITextBox *hud_chat_tb = uitextbox_create(0.01, 0.84, 0.5, 0.035, UIAP_BOTTOM_LEFT, as, 1, font, UIAP_BOTTOM_LEFT, 128, bg, bg, border, SDL_SCANCODE_RSHIFT);
 
   uimodule_set_element(modules[3], 3, UIET_Textbox, hud_chat_tb);
 
