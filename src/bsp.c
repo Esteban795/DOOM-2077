@@ -168,11 +168,14 @@ void render_bsp_node(bsp *b, size_t node_id) {
         if (player_subsector_id->subsector_id == subsector_id &&
             is_point_in_FOV(player_pos->x, player_pos->y, player_pos->angle,
                             FOV, pos->x, pos->y)) {
-          set_correct_animation_name(i, player_pos2d, player_angle, pos2d, angle, MOVING);
+          bool use_mirror = set_correct_animation_name(i, player_pos2d, player_angle, pos2d, angle, IDLE);
           patch* player_sprite = get_patch_from_name(b->engine->wData->sprites, b->engine->wData->len_sprites, ANIMATION_NAME);
-          printf("Player sprite name: %s\n", ANIMATION_NAME);
+          if (player_sprite == NULL) {
+            printf("Error: sprite %s not found\n", ANIMATION_NAME);
+            exit(1);
+          }
           vssprite_add(player_pos2d, player_pos->angle, position_get_pos(pos),
-                       player_sprite);
+                       player_sprite,use_mirror);
         }
       }
       for (i16 i = 0; i < ss.num_segs; i++) {

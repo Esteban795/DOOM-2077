@@ -58,5 +58,5 @@ will be set to -1 if the animation is over and 0 when switching to a new animati
 */
 extern int CURRENT_ANIMATION_PROGRESS[NUM_PLAYERS];
 
-void set_correct_animation_name(int i,vec2 origin_pos,double origin_angle, vec2 pos,double angle,enum AnimationType type);
+bool set_correct_animation_name(int i,vec2 origin_pos,double origin_angle, vec2 pos,double angle,enum AnimationType type);
 #endif

@@ -1,9 +1,10 @@
 #include "../include/player_animation.h"
+#include <math.h>
 #include <stdio.h>
 
 char ANIMATION_NAME[9] = {'P','L','A','Y','A','1','A','1','\0'};
 int CURRENT_ANIMATION_PROGRESS[NUM_PLAYERS] = {0};
-enum AnimationType CURRENT_ANIMATION[NUM_PLAYERS] = {0};
+enum AnimationType CURRENT_ANIMATION[NUM_PLAYERS] = {IDLE, IDLE, IDLE};
 
 const int A_OFFSET = (int)'A';
 
@@ -28,25 +29,33 @@ int get_sprite_orientation(vec2 origin_pos,double origin_angle, vec2 target_pos,
   } else {
     res = 7;
   }
-  return (res + 5) % NUMBER_ORIENTATION;
+  return (res + 4) % NUMBER_ORIENTATION + 1;
 }
 
 void set_orientation(int sprite_orientation) {
-    if (1 < sprite_orientation && sprite_orientation < 5){
-        ANIMATION_NAME[5] = sprite_orientation;
-        ANIMATION_NAME[5 + 2] = NUMBER_ORIENTATION - 1 + sprite_orientation;
-    } else if (5 < sprite_orientation && sprite_orientation < NUMBER_ORIENTATION) {
-        ANIMATION_NAME[5 + 2] = sprite_orientation;
-        ANIMATION_NAME[5] =  NUMBER_ORIENTATION + 2 - sprite_orientation;
-    } else {
-        ANIMATION_NAME[5] = sprite_orientation; 
+    if (sprite_orientation == 1 || sprite_orientation == 5) {
+        ANIMATION_NAME[5] = '0' + sprite_orientation;
+        ANIMATION_NAME[6] = '\0';
+        printf("first branch\n");
+        printf("Animation name: %s\n", ANIMATION_NAME);
+    } else if (1 < sprite_orientation && sprite_orientation < 5){
+        ANIMATION_NAME[5] = '0' + sprite_orientation;
+        ANIMATION_NAME[5 + 2] = '0' + NUMBER_ORIENTATION + 2 - sprite_orientation;
+        printf("second branch\n");
+        printf("Animation name: %s\n", ANIMATION_NAME);
+    } else if (5 < sprite_orientation && sprite_orientation < NUMBER_ORIENTATION + 1) {
+        ANIMATION_NAME[5 + 2] =  '0' + sprite_orientation;
+        ANIMATION_NAME[5] = '0' + NUMBER_ORIENTATION + 2 - sprite_orientation;
+        printf("Animation name: %s\n", ANIMATION_NAME);
     }
+    printf("%s\n", ANIMATION_NAME);
 }
 
-void set_correct_animation_name(int i,vec2 origin_pos,double origin_angle, vec2 pos,double angle,enum AnimationType type) {
+bool set_correct_animation_name(int i,vec2 origin_pos,double origin_angle, vec2 pos,double angle,enum AnimationType type) {
     int sprite_orientation = get_sprite_orientation(origin_pos,origin_angle, pos, angle);
-    printf("Sprite orientation: %d\n", sprite_orientation);
+    fflush(stdout);
     if (type == IDLE){
+        set_orientation(sprite_orientation);
         ANIMATION_NAME[4] = ANIMATION_IDLE_INIT;
         if (sprite_orientation != 1 && sprite_orientation != 5) {
             ANIMATION_NAME[6] = ANIMATION_IDLE_INIT;
@@ -108,4 +117,5 @@ void set_correct_animation_name(int i,vec2 origin_pos,double origin_angle, vec2 
             }
         }
     }
+    return !(5 < sprite_orientation && sprite_orientation < NUMBER_ORIENTATION + 1); // should we use the mirror 
 }
