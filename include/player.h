@@ -6,6 +6,7 @@
 #include "geometry.h"
 #include "structs.h"
 #include "events.h"
+#include "weapons.h"
 #include "component/position.h"
 #include "component/health.h"
 #include "component/weapon.h"
@@ -17,6 +18,7 @@
 
 #define PLAYER_HITBOX_SIZE 50
 #define HITSCAN_PRECISION 10
+#define WEAPON_AMMO_CAPACITY 10
 
 player *player_init(engine *e);
 

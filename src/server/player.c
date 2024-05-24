@@ -9,9 +9,12 @@
 
 entity_t* server_create_player(world_t* world, char* name) {
     int ammo[WEAPONS_NUMBER];
+    int mags[WEAPONS_NUMBER];
     ammo[0] = -2;
+    mags[0] = 0;
     for (int i = 1; i < WEAPONS_NUMBER; i++) {
-        ammo[i] = -1;
+        ammo[i] = 10;
+        mags[i] = 10;
     }
     double xi = SERVER_STATE->wad_data->things[0].x;
     double yi = SERVER_STATE->wad_data->things[0].y;
@@ -20,7 +23,7 @@ entity_t* server_create_player(world_t* world, char* name) {
     component_t** comps = malloc(sizeof(component_t*) * 5);
     comps[0] = position_create(coords, anglei);
     comps[1] = health_create(100.0, 100.0);
-    comps[2] = weapon_create(ammo);
+    comps[2] = weapon_create(ammo,mags);
     comps[3] = display_name_create(name);
     comps[4] = statistic_create(0, 0);
         
