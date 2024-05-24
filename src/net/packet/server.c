@@ -27,6 +27,8 @@ const char *SERVER_COMMAND_DOST = "DOST";
 const char *SERVER_COMMAND_LASC = "LASC";
 const char *SERVER_COMMAND_LDSC = "LDSC";
 const char *SERVER_COMMAND_L_ST = "L_ST";
+const char *SERVER_COMMAND_FIRE = "FIRE";
+const char *SERVER_COMMAND_WEAP = "WEAP";
 
 int server_acpt(uint8_t* buf, uint64_t player_id) {
     memcpy(buf, SERVER_COMMAND_ACPT, 4);
@@ -226,6 +228,27 @@ int server_lift_states(uint8_t *buf, uint16_t lifts_count, bool* lifts_states) {
     return 4 + 2 + lifts_count + 1;
 }
 
+int server_player_fire(uint8_t *buf, uint64_t player_id, int8_t weapon_id) {
+    memcpy(buf, SERVER_COMMAND_FIRE, 4);
+    write_uint16be(buf + 4, 8 + 1);
+    write_uint64be(buf + 6, player_id);
+    write_uint8be(buf + 14, weapon_id);
+    buf[15] = '\n';
+    return 4 + 2 + 8 + 1 + 1;
+}
+
+int server_player_weapon_update(uint8_t *buf, int ammunitions[WEAPONS_NUMBER], int mags[WEAPONS_NUMBER], int cooldowns[WEAPONS_NUMBER]) {
+    memcpy(buf, SERVER_COMMAND_WEAP, 4);
+    write_uint16be(buf + 4, 4*WEAPONS_NUMBER*3);
+    for (int i = 0; i < WEAPONS_NUMBER; i++) {
+        write_uint32be(buf + 6 + (i*3*4), ammunitions[i]);
+        write_uint32be(buf + 6 + (i*3*4) + 4, mags[i]);
+        write_uint32be(buf + 6 + (i*3*4) + 8, cooldowns[i]);
+    }
+    buf[6 + (WEAPONS_NUMBER*3*4)] = '\n';
+    return 4 + 2 + 4*WEAPONS_NUMBER*3 + 1;
+}
+
 int server_acpt_from(uint8_t* buf, uint64_t* player_id) {
     *player_id = read_uint64be(buf + 6);
     return 4 + 2 + 8 + 1;
@@ -397,4 +420,19 @@ int server_lift_states_from(uint8_t *buf, uint16_t *lifts_count, bool** lifts_st
         (*lifts_states)[i] = buf[6 + i] != 0;
     }
     return 4 + 2 + *lifts_count + 1;
+}
+
+int server_player_fire_from(uint8_t *buf, uint64_t *player_id, int8_t *weapon_id) {
+    *player_id = read_uint64be(buf + 6);
+    *weapon_id = read_uint8be(buf + 14);
+    return 4 + 2 + 8 + 1 + 1;
+}
+
+int server_player_weapon_update_from(uint8_t *buf, int *ammunitions, int *mags, int *cooldowns) {
+    for (int i = 0; i < WEAPONS_NUMBER; i++) {
+        ammunitions[i] = read_int32be(buf + 6 + (i*3*4));
+        mags[i] = read_int32be(buf + 6 + (i*3*4) + 4);
+        cooldowns[i] = read_int32be(buf + 6 + (i*3*4) + 8);
+    }
+    return 4 + 2 + 4*WEAPONS_NUMBER*3 + 1;
 }
