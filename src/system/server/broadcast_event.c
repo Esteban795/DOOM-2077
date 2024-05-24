@@ -195,6 +195,12 @@ int broadcast_event(world_t* world, event_t* event) {
             broadcast(&sock, conns, SERVER_STATE->conn_count, buf, len);
             break;
         }
+        case SERVER_PLAYER_FIRE_EVENT_TAG: {
+            player_fire_event_t* ev = (player_fire_event_t*) event;
+            len = server_player_fire(buf, ev->entity_id, ev->weapon_id);
+            broadcast(&sock, conns, SERVER_STATE->conn_count, buf, len);
+            break;
+        }
         default:
             printf("Unimplemented event tag: %d\n", event->tag);
             break;

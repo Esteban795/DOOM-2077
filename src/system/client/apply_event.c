@@ -54,6 +54,21 @@ int apply_event(world_t* world, event_t* event) {
             health_set(health, 0);
             break;
         }
+        case CLIENT_PLAYER_FIRE_EVENT_TAG: {
+            // For future use.
+            break;
+        }
+        case CLIENT_PLAYER_WEAPON_UPDATE_EVENT_TAG: {
+            player_weapon_update_event_t* ev = (player_weapon_update_event_t*)event;
+            pid = ENTITY_BY_ID(ev->entity_id); // Always us, the player
+            weapon_ct* weapon = (weapon_ct*) world_get_component(world, &pid, COMPONENT_TAG_WEAPON);
+            if (weapon == NULL) return -1; // If the player does not have a weapon, we cannot apply the event, cancel it.
+            memcpy(weapon->ammunitions, ev->ammunitions, sizeof(int) * WEAPONS_NUMBER);
+            memcpy(weapon->mags, ev->mags, sizeof(int) * WEAPONS_NUMBER);
+            memcpy(weapon->cooldowns, ev->cooldowns, sizeof(int) * WEAPONS_NUMBER);
+            weapon->active_weapon = 0;
+            break;
+        }
         default:
             break;
     }

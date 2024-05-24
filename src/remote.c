@@ -394,6 +394,19 @@ int remote_update(engine *e, remote_server_t *r) {
         }
         event_t *event = (event_t *)ClientDoorCloseEvent_new(lift_id, true);
         world_queue_event(e->world, event);
+      } else if (strncmp(cmd, SERVER_COMMAND_FIRE, 4) == 0) {
+        uint64_t player_id;
+        int8_t weapon_id;
+        server_player_fire_from(sdata + offset, &player_id, &weapon_id);
+        event_t *event = (event_t *)ClientPlayerFireEvent_new(player_id, weapon_id);
+        world_queue_event(e->world, event);
+      } else if (strncmp(cmd, SERVER_COMMAND_WEAP, 4) == 0) {
+        int ammunitions[WEAPONS_NUMBER];
+        int magazines[WEAPONS_NUMBER];
+        int cooldowns[WEAPONS_NUMBER];
+        server_player_weapon_update_from(sdata + offset, (int*)ammunitions, (int*)magazines, (int*)cooldowns);
+        event_t *event = (event_t *)ClientPlayerWeaponUpdateEvent_new(e->p->entity->id, (int*)ammunitions, (int*)magazines, (int*)cooldowns);
+        world_queue_event(e->world, event);
       } else {
         printf("Unknown command: %s\n", cmd);
       }
