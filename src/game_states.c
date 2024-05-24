@@ -46,7 +46,7 @@ void update_ingame_state(engine *e) {
             0) { // make sure enemy really was moved and that the sound cooldown
                  // is over
       vec2 enemy_pos2d = position_get_pos(enemy_pos);
-      add_sound_to_play(TEMP_WALKING_SOUND, enemy_pos2d.x, enemy_pos2d.y);
+      add_sound_to_play(FOOTSTEP_SOUND, enemy_pos2d.x, enemy_pos2d.y);
       position_set_walk_cooldown(enemy_pos, WALK_SOUND_COOLDOWN);
     }
   }
