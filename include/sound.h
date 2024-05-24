@@ -26,7 +26,7 @@ struct Sound {
     char* name;
     u16 format_number;
     u16 sample_rate;
-    u16 sample_count;
+    u32 sample_count;
     u8* samples;
 };
 
