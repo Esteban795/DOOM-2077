@@ -8,6 +8,8 @@
 
 #include "SDL2/SDL_mixer.h"
 
+/// Auxio mixer
+///
 /// ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
 /// ┃ HOW TO USE THE AUDIO MIXER:                             ┃
 /// ┃ - fetch the Sound object you want through wad data      ┃
@@ -24,7 +26,6 @@
 /// ┃ needed, wth                                             ┃
 /// ┃ `audiomixer_kill`                                       ┃
 /// ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
-
 typedef struct _AudioMixer {
   AudioEmitter *channels[AUDIO_MIXER_CHANNELS];
 } AudioMixer;

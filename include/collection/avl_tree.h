@@ -9,6 +9,7 @@
 
 /**
 AVL C implementation
+
 Uses lexico-graphical of patch->patchname order to sort elements.
 */
 
@@ -39,7 +40,7 @@ Checks whether the key already is in the AVL or not.
 bool avl_member(avl_tree* t,char* key);
 
 /**
-Returns elements that are in the AVL tree, in an sorted array. 
+Returns elements that are in the AVL tree, in an sorted array.  
 Access its length through avl_nb_elements
 */
 texture_map** avl_elements(avl_tree* t);
