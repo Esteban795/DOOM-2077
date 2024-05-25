@@ -1,10 +1,10 @@
-# Event System
+\page event Event System
 
 | Date of creation | Latest edit      | Version | Status (adopted?) |
 |------------------|------------------|---------|-------------------|
-| 27/04/2024       | 17/05/2024       | beta   | Experimental      |
+| 27/04/2024       | 25/05/2024       | beta   | Experimental      |
 
-## Global events
+# Global events
 
 * [x] 0x0001 - PlayerJoinEvent {CS} - a player has joined the party
 * [x] 0x0002 - PlayerQuitEvent {CS} - a player has quitted the party
@@ -12,7 +12,7 @@
 * [ ] 0x0004 - GameStartEvent {CS} - start the party
 * [ ] 0x0005 - GameEndEvent {CS} - end the party
 
-## Player-specific events
+# Player-specific events
 
 * [x] 0x0040 - PlayerMoveEvent {CS} - a player is moving to a position
 * [x] 0x0041 - PlayerDamageEvent {CS} - a player takes damages
@@ -21,13 +21,13 @@
 * [x] 0x0044 - PlayerKilledEvent {CS} - a player has been killed
 * [ ] 0x0045 - PlayerFireEvent {S} - a player fires a weapon
 
-## Door/Elevator events
+# Door/Elevator events
 
 * 0x0080 - DoorStateEvent {S} - set the current state of the doors and lifts
 * [x] 0x0081 - DoorOpenEvent {CS} - a player is opening a door (lift ascending)
 * [x] 0x0082 - DoorCloseEvent {CS} - a player is closing a door (lift descending) 
 
-## Communication events
+# Communication events
 
 * [x] 0x00c0 - PlayerChatEvent {CS} - a player sent a message in the chat
 * [x] 0x00c1 - ServerChatEvent {CS} - the server sent a messsage in the chat
