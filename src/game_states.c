@@ -1,5 +1,6 @@
 #include "../include/game_states.h"
 #include <stdio.h>
+//#include "../include/events.h"
 
 bool firstTimeLaunching = true;
 
@@ -9,14 +10,30 @@ void switch_scene(engine *e, int scene) {
   game_states_init[e->state](e);
 }
 
-void init_menu_state(engine *e) {}
-void init_ingame_state(engine *e) {}
+void init_menu_state(engine *e) {
+  SDL_ShowCursor(SDL_ENABLE);
+  SDL_SetRelativeMouseMode(SDL_FALSE);
+  e->substate = 0;
+  e->uimodules = get_ui_menu(e->renderer, &e->nuimodules);
+}
+void init_ingame_state(engine *e) {
+  SDL_ShowCursor(SDL_DISABLE);
+  SDL_SetRelativeMouseMode(SDL_TRUE);
+  e->substate = 0;
+  e->uimodules = get_ui_ingame(e->renderer, &e->nuimodules);
+}
 
 void update_menu_state(engine *e) {
-  // faire les trucs du menu
+  
 }
 
 void update_ingame_state(engine *e) {
+  if (keys[SDL_SCANCODE_TAB] && e->substate == SUBSTATE_INGAME_PLAYING){
+    e->substate = SUBSTATE_INGAME_SCOREBOARD;
+  } else if (!keys[SDL_SCANCODE_TAB] && e->substate == SUBSTATE_INGAME_SCOREBOARD) {
+    e->substate = SUBSTATE_INGAME_PLAYING;
+  }
+
   update_player(e->p);
   update_height(e->p);
   process_keys(e->p);
@@ -71,8 +88,8 @@ void update_ingame_state(engine *e) {
   return;
 }
 
-void free_menu_state(engine *e) {}
-void free_ingame_state(engine *e) {}
+void free_menu_state(engine *e) { free_ui(e->uimodules, e->nuimodules); }
+void free_ingame_state(engine *e) { free_ui(e->uimodules, e->nuimodules); }
 
 GameStateFunction game_states_init[] = {init_menu_state, init_ingame_state};
 

@@ -19,9 +19,9 @@
 engine *init_engine(const char *wadPath, SDL_Renderer *renderer) {
   engine *e = malloc(sizeof(engine));
   e->wadPath = wadPath;
-  e->running = true;
-  e->state = STATE_INGAME;
-  game_states_init[e->state](e);
+  e->state = STATE_MENU;
+  e->substate = SUBSTATE_MENU_MAIN;
+  e->uinextevent = 0;
   e->DT = 0;
   e->texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
                                  SDL_TEXTUREACCESS_STREAMING, WIDTH,
@@ -56,10 +56,12 @@ void read_map(engine *e, char *map_name) {
                        &e->len_lifts, e->wData->sectors, e->wData->len_sectors);
   e->doors = get_doors(e->wData->linedefs, e->wData->len_linedefs,
                        &e->num_doors, e->wData->sectors, e->wData->len_sectors);
+  game_states_init[e->state](e);
 }
 
 int update_engine(engine *e, int dt) {
   e->DT = dt;
+
   SDL_SetRenderDrawColor(e->renderer, 0, 0, 0, 255);
   SDL_RenderClear(e->renderer);
 
@@ -82,8 +84,13 @@ int update_engine(engine *e, int dt) {
     world_update(e->world);
   }
   // memset(e->pixels, 0, WIDTH * HEIGHT * sizeof(Uint32)); // resets the screen
-  handle_events(e); // process key presses and mouse movements
+  handle_events(e->DT); // process key presses and mouse movements
   game_states_update[e->state](e);
+  for (int i = 0; i < e->nuimodules; i++) {
+    update_uimodule(e->renderer, e->substate, e->uimodules[i],
+                    &(e->uinextevent));
+  }
+  ui_handle_events(e);
   audiomixer_update(e->mixer, dt);
   // draw_crosshair(e->map_renderer,get_color(50,0),20);
   SDL_RenderPresent(e->renderer);
