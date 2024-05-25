@@ -13,7 +13,7 @@
 void set_origin(animation_sprite *as){
     patch sprite = as->animation_sprite;
     as->wanim_origin.x = -sprite.header.x_offset * X_SCALE;
-    as->wanim_origin.y = -sprite.header.y_offset * Y_SCALE;
+    as->wanim_origin.y = HEIGHT - sprite.header.height * Y_SCALE;
     as->wanim_pos.x = as->wanim_origin.x;
     as->wanim_pos.y = as->wanim_origin.y;
     as->wanim_speed.x = 0;
@@ -23,6 +23,8 @@ void set_origin(animation_sprite *as){
 void init_animation_sprite(animation_sprite *as, patch sprite, bool (*linked_function)(engine *e)){
     as->animation_sprite = sprite;
     as->linked_function = linked_function;
+    as->y_difference = HEIGHT - sprite.header.height * Y_SCALE + sprite.header.y_offset * Y_SCALE;
+    printf("Y difference of %s : %d\n",sprite.patchname,as->y_difference);
     set_origin(as);
     as->layer_index_len = 0;
     as -> layers_index = NULL;
@@ -116,7 +118,6 @@ animations_array *init_animations_array(engine* e,char *abbreviation, json_t *fi
     animation_sprite *fire_anim_sprites = malloc(sizeof(animation_sprite)*(animation_len-1));
     for(int j = 1; j<animation_len;j++){
         init_animation_sprite(&fire_anim_sprites[j-1],sprites[indexes[j]],NULL);
-        
     }
 
 
@@ -128,43 +129,76 @@ animations_array *init_animations_array(engine* e,char *abbreviation, json_t *fi
         animations_array fire_layer = {.animation_sprites_array = NULL,.animation_len = 0};
         ar[FIRE] = fire_layer;
     } else {
+        //Crée un tableau d'animation_sprite de taille all_sprites_len - animation_len pour les layers
         animation_sprite *layer_sprites = malloc(sizeof(animation_sprite)*(all_sprites_len - animation_len));
+        //Initialise les cases du tableau avec les sprites correspondants
         for(int j = animation_len; j<all_sprites_len;j++){
             init_animation_sprite(&layer_sprites[j-animation_len],sprites[indexes[j]],NULL);
         }
+        //Ajoute le tableau dans l'animation array
         animations_array fire_layer = {.animation_sprites_array = layer_sprites,.animation_len = all_sprites_len - animation_len};
         ar[FIRE] = fire_layer;
 
-        int n = json_array_size(fire_frames); // Nombre de frames de l'animation qui ont un layer
+        int n = json_array_size(fire_frames); // Récupère le nombre de frames de l'animation qui ont un layer du fichier json
         for(int i = 0; i<n;i++){
-            //Tant que la frame suivante est la même que la frame actuelle, c'est a dire que la frame à plusieurs layers
+            //Pour chaque frame de l'animation
+            
+            
+            //Tant que la frame d'animation suivante est la même que la frame actuelle dans l'array, c'est a dire que la frame à plusieurs layers
+            //On avance en indice pour récupérer tous les layers de la frame
             int j = i;
-            //printf("frame %d : %d\n",i,json_integer_value(json_array_get(fire_frames,i)));
             while(i+1<n && json_integer_value(json_array_get(fire_frames,i+1)) == json_integer_value(json_array_get(fire_frames,i))){
                 i++;
             }
+            //J = première occurence de la frame, i = dernière occurence de la frame
+
 
             //On récupère les index et la durée de chaque layers de l'animation
+            //Alloue le tableau des index des layers de l'animation, avec pour chaque case l'indice du layer a utiliser dans le tableau ar[FIRE].animation_sprites_array
             int* layer_index = malloc((i-j+1)*sizeof(int));
             int layer_index_len = i-j+1;
             int duration = 0;
             for(int k = 0; k<i-j+1;k++){
+                //Pour chaque layer de la frame, on récupère l'index du layer dans le tableau ar[FIRE].animation_sprites_array et l'ajoute au tableau layer_index
                 layer_index[k] = json_integer_value(json_array_get(fire_layers,j+k));
+                //printf("Layer index %d\n",layer_index[k]);
                 duration += ar[FIRE].animation_sprites_array[layer_index[k]].duration;
             }
+
+            //On récupère l'index de la frame d'animation en question depuis l'origine (j)
             int index = json_integer_value(json_array_get(fire_frames,j));
             if(index == 0){
+                //Si l'indice vaut 0, le layer s'applique à l'idle
                 ar[IDLE].animation_sprites_array[0].layers_index = layer_index;
                 ar[IDLE].animation_sprites_array[0].layer_index_len = layer_index_len;
                 ar[IDLE].animation_sprites_array[0].duration = duration;
             } else {
+                //Sinon, il s'applique à la frame d'animation correspondante
                 ar[ANIMATION].animation_sprites_array[index-1].layers_index = layer_index;
                 ar[ANIMATION].animation_sprites_array[index-1].layer_index_len = layer_index_len;
                 ar[ANIMATION].animation_sprites_array[index-1].duration = duration;
             }
         }
     }
+
+    //Initialise les positions des layers de l'animation et les décale comme il faut
+    animation_sprite as = ar[IDLE].animation_sprites_array[0];
+    for(int k = 0; k<as.layer_index_len;k++){
+            //printf("Original pos y %f of the layer %d\n",ar[FIRE].animation_sprites_array[as.layers_index[k]].wanim_origin.y,as.layers_index[k]);
+            ar[FIRE].animation_sprites_array[as.layers_index[k]].wanim_origin.y = -ar[FIRE].animation_sprites_array[as.layers_index[k]].animation_sprite.header.y_offset * Y_SCALE + as.y_difference;
+            //printf("Initialisation pos y %f of the layer %d\n",ar[FIRE].animation_sprites_array[as.layers_index[k]].wanim_origin.y,as.layers_index[k]);
+            ar[FIRE].animation_sprites_array[as.layers_index[k]].wanim_pos.y = ar[FIRE].animation_sprites_array[as.layers_index[k]].wanim_origin.y;
+    }
     for(int i = 0; i<ar[ANIMATION].animation_len;i++){
+        as = ar[ANIMATION].animation_sprites_array[i];
+        //printf("Animation %d : %s\n",i,as.animation_sprite.patchname);
+        for(int k = 0; k<as.layer_index_len;k++){
+            //printf("Original pos of the animation frame %f %f \n",as.wanim_origin.x,as.wanim_origin.y);
+            //printf("Original pos y %d of the layer %d\n",ar[FIRE].animation_sprites_array[as.layers_index[k]].animation_sprite.header.y_offset * Y_SCALE,as.layers_index[k]);
+            ar[FIRE].animation_sprites_array[as.layers_index[k]].wanim_origin.y = -ar[FIRE].animation_sprites_array[as.layers_index[k]].animation_sprite.header.y_offset * Y_SCALE + as.y_difference;
+            //printf("Initialisation pos y %f of the layer %d\n",ar[FIRE].animation_sprites_array[as.layers_index[k]].wanim_origin.y,as.layers_index[k]);
+            ar[FIRE].animation_sprites_array[as.layers_index[k]].wanim_pos.y = ar[FIRE].animation_sprites_array[as.layers_index[k]].wanim_origin.y;
+        }
         ar->animation_duration += ar[ANIMATION].animation_sprites_array[i].duration;
     }
     free(to_cmp);

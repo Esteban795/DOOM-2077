@@ -34,6 +34,7 @@ struct WeaponsArray;
 
 typedef struct AnimationSprite{
   patch animation_sprite; //sprite de l'animation
+  int y_difference; //Pour ajuster le sprite et ses layers par rapport à la nouvelle position de l'animation
   vec2 wanim_origin; //origine de l'animation
   vec2 wanim_pos;
   vec2 wanim_speed;
