@@ -9,11 +9,16 @@ sound read_sound(FILE *f, char *name, int offset) {
   s.name = name;
   s.format_number = 3;
   s.sample_rate = read_u16(f, offset + 2);
-  s.sample_count = read_u32(f, offset + 4);
+  s.sample_count = 2 * read_u32(f, offset + 4);
   s.samples = malloc(sizeof(u8) * s.sample_count);
   offset += 18;
-  for (int i = 0; i < s.sample_count; i++) {
-    s.samples[i] = read_u8(f, offset + i);
+  u8 sample;
+  int sample_index = 0;
+  for (u32 i = 0; i < s.sample_count / 2; i++) {
+    sample = read_u8(f, offset + i);
+    s.samples[sample_index] = sample;
+    s.samples[sample_index + 1] = sample;
+    sample_index += 2;
   }
   return s;
 }
