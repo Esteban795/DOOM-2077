@@ -310,6 +310,9 @@ UIModule **get_ui_menu(SDL_Renderer *r, int *nuimodules)
   font = TTF_OpenFont("fonts/jersey25.ttf", 30);
 
   UITextBox *co_ip_tb = uitextbox_create(0.35, 0.5, 0.5, 0.07, UIAP_TOP_LEFT, as, 1, font, UIAP_TOP_LEFT, 22, mm_settings_button_bg, mm_settings_button_bo, white, SDL_SCANCODE_LSHIFT);
+  char *default_ip = "127.0.0.1";
+  int len = strlen(default_ip);
+  memcpy(co_ip_tb->text, default_ip, len+1);
 
   uimodule_set_element(modules[3], 8, UIET_Textbox, co_ip_tb);
 

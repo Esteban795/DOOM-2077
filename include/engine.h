@@ -25,6 +25,8 @@ void read_map(engine *e, char *map_name);
 ///
 /// It will deallocate all resources and reinitialize the loaded map, player, bsp, segment handler,
 /// players, lifts, and doors.
+///
+/// \remark the game_start will not be destroyed by this function, the caller should take care of it.
 void engine_reset(engine *e);
 
 void engine_free(engine *e);

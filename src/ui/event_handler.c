@@ -49,6 +49,10 @@ void ui_handle_events(engine *e) {
 }
 
 void UIECJoinServer(engine *e){
+  if (strlen(GET_PLAYER_NAME) == 0 || strlen(GET_SERVER_IP) == 0) {
+    return;
+  }
+
   printf("Joining server %s as %s...\n", GET_SERVER_IP, GET_PLAYER_NAME);
   
   // Try to connect to the server
