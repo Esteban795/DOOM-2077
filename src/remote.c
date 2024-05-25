@@ -16,7 +16,7 @@
 #include "../include/remote.h"
 #include "../include/settings.h"
 #include "../include/structs.h"
-#include "../include/ui/event_handler.h"
+#include "../include/ui/linker.h"
 
 #include "../include/event/all.h"
 
@@ -297,7 +297,7 @@ int remote_update(engine *e, remote_server_t *r) {
           }
         }
         snprintf(fmt_msg, 1024 + 128, "%s: %s", name, message);
-        uifeed_append(GET_UIFEAD_CHAT(e), fmt_msg);
+        UILINK_FEED_CHAT(e->uimodules, fmt_msg);
       } else if (strncmp(cmd, SERVER_COMMAND_TELL, 4) == 0) {
         bool is_title, is_broadcast;
         char message_[1024] = {0};
@@ -313,7 +313,7 @@ int remote_update(engine *e, remote_server_t *r) {
         // Display the message
         char fmt_msg[1024 + 32] = {0};
         snprintf(fmt_msg, 1024 + 32, "[SERVER] %s", message);
-        uifeed_append(GET_UIFEAD_CHAT(e), fmt_msg);
+        UILINK_FEED_CHAT(e->uimodules, fmt_msg);
       } else if (strncmp(cmd, SERVER_COMMAND_SCOR, 4) == 0) {
         char **names = NULL;
         uint16_t *deaths = NULL;
@@ -508,7 +508,7 @@ void remote_send_chat(engine* e, char *message) {
     char fmt_msg[1024 + 128 + 2] = {0};
     display_name_ct* name_ct = (display_name_ct*) world_get_component(e->world, e->p->entity, COMPONENT_TAG_DISPLAY_NAME);
     snprintf(fmt_msg, 1024 + 128, "%s: %s", name_ct->name, message);
-    uifeed_append(GET_UIFEAD_CHAT(e), fmt_msg);
+    UILINK_FEED_CHAT(e->uimodules, fmt_msg);
     return;
   }
 
