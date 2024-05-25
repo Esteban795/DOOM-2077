@@ -29,11 +29,19 @@
 
 typedef struct timespec Instant;
 
-// The game state
+/// The game state, determining the current state of the party.
 typedef enum {
+    /// The game is waiting for players to join.
     GAME_STATE_WAITING,
+    /// The game is in cooldown, waiting for the game to start.  
+    /// This state is used to allow the clients to prepare for the game,
+    /// and to allow the server to wait for other players to join.
     GAME_STATE_COOLDOWN,
+    /// The game is running.
     GAME_STATE_RUNNING,
+    /// The game is ending, or has ended.  
+    /// This state is used to allow a small delay before the game restarts, and 
+    /// let the clients take a breath before the next game.
     GAME_STATE_ENDING,
 } game_state_t;
 
