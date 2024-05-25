@@ -24,7 +24,6 @@ void init_animation_sprite(animation_sprite *as, patch sprite, bool (*linked_fun
     as->animation_sprite = sprite;
     as->linked_function = linked_function;
     as->y_difference = HEIGHT - sprite.header.height * Y_SCALE + sprite.header.y_offset * Y_SCALE;
-    printf("Y difference of %s : %d\n",sprite.patchname,as->y_difference);
     set_origin(as);
     as->layer_index_len = 0;
     as -> layers_index = NULL;
