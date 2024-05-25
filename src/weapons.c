@@ -7,6 +7,7 @@
 #include "../include/weapons.h"
 #include "../include/player.h"
 #include "../include/component/position.h"
+#include "../include/hitscan.h"
 #define ANIMATION_WIDTH 100
 #define ANIMATION_HEIGTH 50
 
@@ -401,6 +402,7 @@ void fire_weapon_animation(engine* e,weapon *w){
             y = fire_anim[0].wanim_origin.y;
             draw_weapon(e,fire_anim[0].animation_sprite,x,y);
             add_fire_layer(fire_layer,fire_anim[0],fire_time_elapsed,e);
+            fire_bullet(e->players, NUM_PLAYERS, p, wa);
         } else {
             int i = 1;
             int accumulated_duration = fire_anim[0].duration;
@@ -413,6 +415,7 @@ void fire_weapon_animation(engine* e,weapon *w){
             y = fire_anim[i - 1].wanim_origin.y;
             draw_weapon(e,fire_anim[i-1].animation_sprite,x,y);
             add_fire_layer(fire_layer,fire_anim[i-1],fire_time_elapsed,e);
+            fire_bullet(e->players, NUM_PLAYERS, p, wa);
         }
     }
 }
