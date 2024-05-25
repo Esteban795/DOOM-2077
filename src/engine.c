@@ -61,6 +61,7 @@ void read_map(engine *e, char *map_name) {
 
 int update_engine(engine *e, int dt) {
   e->DT = dt;
+  fmt = SDL_AllocFormat(SDL_PIXELFORMAT_RGBA8888);
   SDL_SetRenderDrawColor(e->renderer, 0, 0, 0, 255);
   SDL_RenderClear(e->renderer);
   remote_update(e, e->remote);

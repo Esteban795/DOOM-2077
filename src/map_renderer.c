@@ -1,9 +1,12 @@
 #include "../include/map_renderer.h"
+#include <SDL2/SDL_pixels.h>
 #include <SDL2/SDL_stdinc.h>
 
 int ranges[WIDTH] = {0};
 double upper_clip[WIDTH] = {0};
 double lower_clip[WIDTH] = {0};
+
+Uint8 r, g, b, a;
 
 double get_xy_floor_height(bsp *b, vec2 pos) {
   size_t node_id = b->root_node_id;
@@ -98,7 +101,7 @@ void draw_crosshair(engine *e, color c, int size) {
 
 void draw_sprite_column_full(engine *engine, patch *sprite, int sprite_column,
                              int screen_x, int y1, int y2,
-                             double inverted_scale, bool use_mirror) {
+                             double inverted_scale, bool use_mirror,int i) {
   double sprite_y = y1 < 0 ? -y1 * inverted_scale : 0;
   y1 = max(y1, 0); // clipping
   y2 = min(y2, HEIGHT - 1);
@@ -112,6 +115,8 @@ void draw_sprite_column_full(engine *engine, patch *sprite, int sprite_column,
       sprite_y += inverted_scale;
       continue;
     }
+    SDL_GetRGBA(pixel, fmt, &r, &g, &b, &a);
+    pixel = AdjustHSL(r, g, b, a, i);
     engine->pixels[top * WIDTH + screen_x] = pixel;
     sprite_y += inverted_scale;
   }
@@ -120,13 +125,14 @@ void draw_sprite_column_full(engine *engine, patch *sprite, int sprite_column,
 void draw_sprite_column_partial(engine *engine, patch *sprite,
                                 int sprite_column, int screen_x, int y1, int y2,
                                 double *upper_clip, double *lower_clip,
-                                double inverted_scale,bool use_mirror) {
+                                double inverted_scale,bool use_mirror,int i) {
   int top_clip = (int)upper_clip[screen_x];
   int bot_clip = (int)lower_clip[screen_x];
   double sprite_y = y1 < top_clip ? -(y1 - top_clip) * inverted_scale : 0;
   int sprite_y_int;
   Uint32 pixel;
   Uint32* pixels = use_mirror ? sprite->mirror_pixels : sprite->pixels;
+  
   for (int top = max(top_clip, max(0, y1));
        top < min(bot_clip, min(y2, HEIGHT)); top++) {
     sprite_y_int = (int)sprite_y;
@@ -135,6 +141,9 @@ void draw_sprite_column_partial(engine *engine, patch *sprite,
       sprite_y += inverted_scale;
       continue;
     }
+    
+    SDL_GetRGBA(pixel, fmt, &r, &g, &b, &a);
+    pixel = AdjustHSL(r, g, b, a, i);
     engine->pixels[top * WIDTH + screen_x] = pixel;
     sprite_y += inverted_scale;
   }
@@ -178,7 +187,7 @@ void render_vssprite(engine *e, vs_sprite vssprite) {
          screen_x++) {
       sprite_column_int = (int)sprite_column;
       draw_sprite_column_full(e, sprite, sprite_column_int, screen_x, top,
-                              top + height, inverted_scale,vssprite.use_mirror);
+                              top + height, inverted_scale,vssprite.use_mirror,vssprite.shift);
       sprite_column += inverted_scale;
     }
   } else { // something is obscuring the sprite
@@ -217,7 +226,7 @@ void render_vssprite(engine *e, vs_sprite vssprite) {
       }
       draw_sprite_column_partial(e, sprite, sprite_column_int, screen_x, top,
                                  top + height, upper_clip, lower_clip,
-                                 inverted_scale,vssprite.use_mirror);
+                                 inverted_scale,vssprite.use_mirror,vssprite.shift);
       sprite_column += inverted_scale;
     }
   }

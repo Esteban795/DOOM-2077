@@ -12,9 +12,6 @@
 #include "drawseg.h"
 #include "vssprite.h"
 
-extern player* players_to_draw[NUM_PLAYERS];
-extern int next_index;
-
 void draw_crosshair(engine* e,color c,int size);
 
 void draw_wall_column(engine* e, texture_map *texture,

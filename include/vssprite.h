@@ -15,6 +15,7 @@ struct VSSprite {
     double scale; // rendering scale
     patch* sprite; 
     bool use_mirror;
+    int shift;
 };
 
 typedef struct VSSprite vs_sprite;
@@ -22,7 +23,7 @@ typedef struct VSSprite vs_sprite;
 extern vs_sprite VSSPRITES[MAX_SPRITES];
 extern int VSSPRITES_INDEX;
 
-void vssprite_add(vec2 camera_pos, double angle, vec2 pos, patch *sprite,bool use_mirror);
+void vssprite_add(vec2 camera_pos, double angle, vec2 pos, patch *sprite,bool use_mirror,int shift);
 
 void vssprite_sort();
 #endif

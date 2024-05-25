@@ -3,7 +3,7 @@
 vs_sprite VSSPRITES[MAX_SPRITES];
 int VSSPRITES_INDEX = 0;
 
-void vssprite_add(vec2 camera_pos, double angle, vec2 pos, patch *sprite, bool use_mirror) {
+void vssprite_add(vec2 camera_pos, double angle, vec2 pos, patch *sprite, bool use_mirror,int shift) {
   if (VSSPRITES_INDEX >= MAX_SPRITES) {
     return;
   }
@@ -20,6 +20,7 @@ void vssprite_add(vec2 camera_pos, double angle, vec2 pos, patch *sprite, bool u
   s.scale = scale1;
   s.sprite = sprite;
   s.use_mirror = use_mirror;
+  s.shift = shift * 120;
   VSSPRITES[VSSPRITES_INDEX] = s;
   VSSPRITES_INDEX++;
 }
