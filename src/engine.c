@@ -7,9 +7,10 @@
 #include "../include/remote.h"
 #include "../include/settings.h"
 #include "../include/system/client/active.h"
+#include "../include/shared.h"
 
 engine *init_engine(const char *wadPath, SDL_Renderer *renderer) {
-  engine *e = malloc(sizeof(engine));
+  engine *e = SHARED_ENGINE;
   e->wadPath = wadPath;
   e->state = STATE_MENU;
   e->substate = SUBSTATE_MENU_MAIN;
@@ -127,5 +128,4 @@ void engine_free(engine *e) {
   SDL_DestroyRenderer(e->renderer);
   world_destroy(e->world);
   free(e->world);
-  free(e);
 }
