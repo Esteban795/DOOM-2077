@@ -1,4 +1,5 @@
 #include "../../include/ui/def.h"
+#include <SDL2/SDL_scancode.h>
 #include <SDL2/SDL_ttf.h>
 
 #define NMODULES_MENU 4
@@ -178,7 +179,7 @@ UIModule **get_ui_menu(SDL_Renderer *r, int *nuimodules)
   UIButton *se_save_button = uibutton_create(
       gl_back_x - 0.1 - gl_back_w / 2, gl_back_y, gl_back_w, gl_back_h, UIAP_TOP_LEFT, as, 1,
       mm_settings_button_bg, mm_settings_button_bo, mm_settings_button_bg,
-      mm_settings_button_bo, UIEC_SetSubstate0, SDL_SCANCODE_S);
+      mm_settings_button_bo, UIEC_SaveSettings, SDL_SCANCODE_S);
   uimodule_set_element(modules[2], 3, UIET_Button, se_save_button);
 
   // back label
@@ -233,7 +234,7 @@ UIModule **get_ui_menu(SDL_Renderer *r, int *nuimodules)
   UIButton *se_back_button = uibutton_create(
       gl_back_x, gl_back_y, gl_back_w, gl_back_h, UIAP_TOP_LEFT, as, 1,
       mm_settings_button_bg, mm_settings_button_bo, mm_settings_button_bg,
-      mm_settings_button_bo, UIEC_SetSubstate0, SDL_SCANCODE_B);
+      mm_settings_button_bo, UIEC_SetSubstate0, SDL_SCANCODE_F13);
   uimodule_set_element(modules[3], 1, UIET_Button, se_back_button);
 
   // back label

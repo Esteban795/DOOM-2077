@@ -102,6 +102,7 @@ void keybinds_write(const char *fp, player_keybind *settings) {
 
 // Modify a keybind in memory
 void keybind_modify(player_keybind *keybinds, char *name, char *key) {
+  if (strcmp(key, "") == 0) return;
   player_keybind *current = keybinds;
   while (current != NULL) {
     if (strcmp(current->name, name) == 0) {
