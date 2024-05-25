@@ -19,7 +19,7 @@
 #define SHOTGUN_SOUND "DSSHOTGN"
 #define PUNCH_SOUND "DSPUNCH"
 
-#define TEMP_WALKING_SOUND "DSBGACT"
+#define FOOTSTEP_SOUND "DFTSTEP"
 // https://doomwiki.org/wiki/Sound
 
 struct Sound {
