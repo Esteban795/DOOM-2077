@@ -10,6 +10,7 @@
 #include "events.h"
 #include "game_states.h"
 #include "timer.h"
+#include "player_animation.h"
 
 engine *init_engine(const char *wadPath, SDL_Renderer *renderer);
 

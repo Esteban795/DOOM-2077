@@ -28,15 +28,15 @@ enum AnimationType {
 #define ANIMATION_IDLE_FRAME_COUNT (ANIMATION_IDLE_END - ANIMATION_IDLE_INIT + 1)
 
 // DEATH ANIMATION DO NOT SEEM TO BE ORIENTATION DEPENDENT ??
-#define ANIMATION_DEATH_INIT 'G'
+#define ANIMATION_DEATH_INIT 'H'
 #define ANIMATION_DEATH_END 'N'
 #define ANIMATION_DEATH_FRAME_COUNT (ANIMATION_DEATH_END - ANIMATION_DEATH_INIT + 1)
 
 #define ANIMATION_EXTREME_DEATH_INIT 'O'
-#define ANIMATION_EXTREME_DEATH_END 'P'
+#define ANIMATION_EXTREME_DEATH_END 'W'
 #define ANIMATION_EXTREME_DEATH_FRAME_COUNT (ANIMATION_EXTREME_DEATH_END - ANIMATION_EXTREME_DEATH_INIT + 1)
 
-
+#define ANIMATION_COOLDOWN 150
 /*
 String builder to find the animation that is going to be played next for the opponent
 A player sprite name is in the following format : 
@@ -57,6 +57,8 @@ Keep tracks of what was the last frame of the current animation that was played,
 will be set to -1 if the animation is over and 0 when switching to a new animation
 */
 extern int CURRENT_ANIMATION_PROGRESS[NUM_PLAYERS];
+
+extern int ANIMATION_COOLDOWNS[NUM_PLAYERS];
 
 bool set_correct_animation_name(int i,vec2 origin_pos,double origin_angle, vec2 pos,double angle,enum AnimationType type);
 #endif

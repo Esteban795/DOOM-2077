@@ -68,6 +68,10 @@ int update_engine(engine *e, int dt) {
     //printf("Processing %d events...\n", world_queue_length(e->world));
     world_update(e->world);
   }
+  for (int i = 0; i < PLAYER_MAXIMUM; i++) {
+    if (e->players[i] == NULL) continue;
+    ANIMATION_COOLDOWNS[i] -= dt;
+  }
   memset(e->pixels, 0, WIDTH * HEIGHT * sizeof(Uint32)); // resets the screen
   handle_events(e); // process key presses and mouse movements
   game_states_update[e->state](e);
