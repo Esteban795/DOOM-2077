@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-/*
+/**
 * Component representation
 *
 * A component is a piece of data that is attached to an entity. It is used to store data that is relevant to the entity.
