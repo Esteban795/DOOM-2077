@@ -1,6 +1,8 @@
 #include "../../include/ui/event_handler.h"
 #include "../../include/game_states.h"
 #include "../../include/engine.h"
+#include "../../include/remote.h"
+#include <string.h>
 
 #define GET_KEYBIND_LEFT SDL_GetScancodeFromName(((UITextBox*)e->uimodules[2]->elements[6]->element)->text)
 #define GET_KEYBIND_RIGHT SDL_GetScancodeFromName(((UITextBox*)e->uimodules[2]->elements[8]->element)->text)
@@ -54,11 +56,12 @@ void UIECJoinServer(engine *e){
   }
 
   printf("Joining server %s as %s...\n", GET_SERVER_IP, GET_PLAYER_NAME);
+  strncpy(e->player_name, GET_PLAYER_NAME, 127);
   
   // Try to connect to the server
   // but before a very wrongful way to reset the engine (while it's running)
   engine_reset(e);
-  remote_init(e->remote, GET_SERVER_IP, SERVER_PORT, GET_PLAYER_NAME);
+  remote_init(e->remote, GET_SERVER_IP, SERVER_PORT, (char*)e->player_name);
   e->state = STATE_INGAME;
   game_states_free[STATE_MENU](e);
 
@@ -90,7 +93,12 @@ void UIECJoinServer(engine *e){
 }
 
 void UIECSendChat(engine *e){
-  printf("%s\n",GET_TEXTBOX->text);
+  if (strlen(GET_TEXTBOX->text) == 0) {
+    return;
+  }
+
+  remote_send_chat(e, GET_TEXTBOX->text);
+  
   GET_TEXTBOX->text[0] = '\0';
   GET_TEXTBOX->text_index = 0;
 }

@@ -3,7 +3,7 @@
 #include "../../../include/component/position.h"
 #include "../../../include/ecs/world.h"
 #include "../../../include/component/health.h"
-
+#include "../../../include/ui/feed.h"
 
 const system_t APPLY_EVENT_SYSTEM = {
     .fn = apply_event,

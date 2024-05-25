@@ -31,6 +31,7 @@ engine *init_engine(const char *wadPath, SDL_Renderer *renderer) {
   e->len_lifts = 0;
   e->doors = NULL;
   e->num_doors = 0;
+  strncpy(e->player_name, "Player", 127);
   return e;
 }
 

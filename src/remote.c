@@ -16,6 +16,7 @@
 #include "../include/remote.h"
 #include "../include/settings.h"
 #include "../include/structs.h"
+#include "../include/ui/event_handler.h"
 
 #include "../include/event/all.h"
 
@@ -272,19 +273,47 @@ int remote_update(engine *e, remote_server_t *r) {
         uint64_t player_id;
         char message_[1024] = {0};
         char *message = (char *)message_;
+        
+        // Schedule the event
         server_player_chat_from(sdata + offset, &player_id, (char **)&message);
         event_t *event =
             (event_t *)ClientPlayerChatEvent_new(player_id, message);
         world_queue_event(e->world, event);
+
+        // Display the message
+        char fmt_msg[1024 + 128 + 2] = {0};
+        int pind = player_find_by_id(e->players, player_id);
+        display_name_ct* name_ct;
+        char* name;
+        if (pind >= 0) {
+          name_ct = (display_name_ct*) world_get_component(e->world, e->players[pind], COMPONENT_TAG_DISPLAY_NAME);
+          name = name_ct->name;
+        } else {
+          if (player_id == e->p->entity->id) {
+            name_ct = (display_name_ct*) world_get_component(e->world, e->p->entity, COMPONENT_TAG_DISPLAY_NAME);
+            name = name_ct->name;
+          } else {
+            name = "Unknown";
+          }
+        }
+        snprintf(fmt_msg, 1024 + 128, "%s: %s", name, message);
+        uifeed_append(GET_UIFEAD_CHAT(e), fmt_msg);
       } else if (strncmp(cmd, SERVER_COMMAND_TELL, 4) == 0) {
         bool is_title, is_broadcast;
         char message_[1024] = {0};
         char *message = (char *)message_;
+
+        // Schedule the event
         server_server_chat_from(sdata + offset, (char **)&message,
                                 &is_broadcast, &is_title);
         event_t *event = (event_t *)ClientServerChatEvent_new(
             message, is_broadcast, is_title);
         world_queue_event(e->world, event);
+
+        // Display the message
+        char fmt_msg[1024 + 32] = {0};
+        snprintf(fmt_msg, 1024 + 32, "[SERVER] %s", message);
+        uifeed_append(GET_UIFEAD_CHAT(e), fmt_msg);
       } else if (strncmp(cmd, SERVER_COMMAND_SCOR, 4) == 0) {
         char **names = NULL;
         uint16_t *deaths = NULL;
@@ -468,5 +497,26 @@ void client_door_trigger(engine *e, uint64_t door_id) {
 void client_lift_trigger(engine *e, uint64_t lift_id) {
   if (lift_trigger_switch(e->lifts[lift_id])) {
     __client_door_trigger(e, lift_id, true);
+  }
+}
+
+void remote_send_chat(engine* e, char *message) {
+  remote_server_t *r = e->remote;
+  if (r->connected < 2) {
+    event_t* ev = (event_t*) ClientPlayerChatEvent_new(0, message);
+    world_queue_event(e->world, ev);
+    char fmt_msg[1024 + 128 + 2] = {0};
+    display_name_ct* name_ct = (display_name_ct*) world_get_component(e->world, e->p->entity, COMPONENT_TAG_DISPLAY_NAME);
+    snprintf(fmt_msg, 1024 + 128, "%s: %s", name_ct->name, message);
+    uifeed_append(GET_UIFEAD_CHAT(e), fmt_msg);
+    return;
+  }
+
+  int len = client_chat(r->packet->data, message);
+  r->packet->len = len;
+  r->packet->address.host = r->addr.host;
+  r->packet->address.port = r->addr.port;
+  if (SDLNet_UDP_Send(r->socket, -1, r->packet) == 0) {
+    fprintf(stderr, "SDLNet_UDP_Send: chat command: %s\n", SDLNet_GetError());
   }
 }

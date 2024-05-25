@@ -39,4 +39,11 @@ void client_door_trigger(engine* e, uint64_t door_id);
 
 // Trigger a lift, sync it with the server if necessary
 void client_lift_trigger(engine* e, uint64_t lift_id);
+
+/// Send a chat message to the server
+///
+/// This function will send a chat message to the server, which will broadcast it to all clients.
+///
+/// \remark If the client is not connected to a server, this function will trigger a chat event locally.
+void remote_send_chat(engine* e, char *message);
 #endif
