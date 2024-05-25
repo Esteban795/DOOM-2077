@@ -1,5 +1,6 @@
 #include "../../include/ui/event_handler.h"
 #include "../../include/game_states.h"
+#include "../../include/engine.h"
 
 #define GET_KEYBIND_LEFT SDL_GetScancodeFromName(((UITextBox*)e->uimodules[2]->elements[6]->element)->text)
 #define GET_KEYBIND_RIGHT SDL_GetScancodeFromName(((UITextBox*)e->uimodules[2]->elements[8]->element)->text)
@@ -13,6 +14,10 @@
 #define GET_SETTING_SENS (((UITextBox*)e->uimodules[2]->elements[18]->element)->text)
 #define GET_SETTING_FOV (((UITextBox*)e->uimodules[2]->elements[20]->element)->text)
 #define GET_TEXTBOX ((UITextBox*)e->uimodules[3]->elements[3]->element)
+
+#ifndef SERVER_PORT
+#define SERVER_PORT 9999
+#endif
 
 void ui_handle_events(engine *e) {
   if (e->uinextevent != UIEC_None) {
@@ -44,9 +49,40 @@ void ui_handle_events(engine *e) {
 }
 
 void UIECJoinServer(engine *e){
-  printf("Joining server %s...\n", GET_SERVER_IP);
-  printf("Player name: %s\n", GET_PLAYER_NAME);
-  switch_scene(e, STATE_INGAME);
+  printf("Joining server %s as %s...\n", GET_SERVER_IP, GET_PLAYER_NAME);
+  
+  // Try to connect to the server
+  // but before a very wrongful way to reset the engine (while it's running)
+  engine_reset(e);
+  remote_init(e->remote, GET_SERVER_IP, SERVER_PORT, GET_PLAYER_NAME);
+  e->state = STATE_INGAME;
+  game_states_free[STATE_MENU](e);
+
+  // Wait for the connection to be established
+  uint64_t old = SDL_GetTicks();
+  while(SDL_GetTicks() - old < 5000) {
+    int status = remote_update(e, e->remote);
+    if (e->remote->connected == 1) {
+      e->remote->connected = 2;
+      break; // Connection established
+    } else if (e->remote->connected == -2) {
+      printf("Error at remote connection\n");
+      break;
+    } else if (e->remote->connected == -1) {
+      break; // Solo mode
+    }
+    if (status < 0) {
+      printf("Error while initializing the remote sync...");
+    }
+  }
+  if (e->remote->connected < 2) {
+    printf("Connection to server failed! Pursuing in solo...\n");
+    e->remote->connected = -1;
+    e->remote->player_id = 0;
+    read_map(e, "E1M3");
+  } else {
+    printf("Connection to server successful!\n");
+  }
 }
 
 void UIECSendChat(engine *e){

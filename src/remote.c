@@ -43,7 +43,7 @@
 
 typedef struct timespec Instant;
 
-int remote_init(remote_server_t *server, char *addr, int port) {
+int remote_init(remote_server_t *server, char *addr, int port, char* player_name) {
   if (strncat(addr, "", 1) == 0) {
     fprintf(stderr,
             "WARN: No SERVER_ADDR found! No connection will be initiated!\n");
@@ -74,7 +74,7 @@ int remote_init(remote_server_t *server, char *addr, int port) {
     fprintf(stderr, "SDLNet_AllocPacket: %s\n", SDLNet_GetError());
     return -1;
   }
-  int len = client_join(server->packet->data, PLAYER_USERNAME);
+  int len = client_join(server->packet->data, player_name);
   server->packet->address.host = server->addr.host;
   server->packet->address.port = server->addr.port;
   server->packet->len = len;
@@ -110,8 +110,8 @@ void remote_disconnect(remote_server_t *r) {
 }
 
 void remote_destroy(remote_server_t *r) {
-  SDLNet_FreePacket(r->packet);
-  SDLNet_UDP_Close(r->socket);
+  if (r->packet != NULL) SDLNet_FreePacket(r->packet);
+  if (r->socket != NULL) SDLNet_UDP_Close(r->socket);
   r->socket = NULL;
   r->packet = NULL;
   free(r);

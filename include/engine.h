@@ -21,5 +21,12 @@ int update_engine(engine *e, int dt);
 // reads `map_name` from the wad file and initializes the wadData properly
 void read_map(engine *e, char *map_name);
 
+/// Reset the engine to its initial state, freeing all resources and reinitializing
+///
+/// It will deallocate all resources and reinitialize the loaded map, player, bsp, segment handler,
+/// players, lifts, and doors.
+void engine_reset(engine *e);
+
 void engine_free(engine *e);
+
 #endif

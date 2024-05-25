@@ -13,7 +13,7 @@ typedef struct Engine engine;
 
 // Initialize the remote connection to the server
 // Returns 0 on success, -1 on failure
-int remote_init(remote_server_t* server, char* host, int port);
+int remote_init(remote_server_t *server, char *addr, int port, char* player_name);
 
 // Destroy the remote connection to the server
 // 

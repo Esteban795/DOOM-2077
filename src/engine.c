@@ -8,14 +8,6 @@
 #include "../include/settings.h"
 #include "../include/system/client/active.h"
 
-#ifndef SERVER_ADDR
-#define SERVER_ADDR ""
-#endif
-
-#ifndef SERVER_PORT
-#define SERVER_PORT 6942
-#endif
-
 engine *init_engine(const char *wadPath, SDL_Renderer *renderer) {
   engine *e = malloc(sizeof(engine));
   e->wadPath = wadPath;
@@ -26,8 +18,7 @@ engine *init_engine(const char *wadPath, SDL_Renderer *renderer) {
   e->texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
                                  SDL_TEXTUREACCESS_STREAMING, WIDTH,
                                  HEIGHT); // texture we will be rendering to
-  e->remote = malloc(sizeof(remote_server_t));
-  remote_init(e->remote, SERVER_ADDR, SERVER_PORT);
+  e->remote = calloc(1, sizeof(remote_server_t));
   e->wData = init_wad_data(wadPath);
   e->mixer = NULL;
   e->mixer = audiomixer_init();
@@ -57,6 +48,29 @@ void read_map(engine *e, char *map_name) {
   e->doors = get_doors(e->wData->linedefs, e->wData->len_linedefs,
                        &e->num_doors, e->wData->sectors, e->wData->len_sectors);
   game_states_init[e->state](e);
+}
+
+void engine_reset(engine *e) {
+  free_map(e->wData);
+  bsp_free(e->bsp);
+  player_free(e->p);
+  segment_handler_free(e->seg_handler);
+  free(e->players);
+  lifts_free(e->lifts, e->len_lifts);
+  doors_free(e->doors, e->num_doors);
+  remote_destroy(e->remote);
+  world_destroy(e->world);
+  free(e->world);
+  e->p = NULL;
+  e->bsp = NULL;
+  e->seg_handler = NULL;
+  e->players = NULL;
+  e->lifts = NULL;
+  e->len_lifts = 0;
+  e->doors = NULL;
+  e->num_doors = 0;
+  e->world = NULL;
+  e->remote = calloc(1, sizeof(remote_server_t));
 }
 
 int update_engine(engine *e, int dt) {
