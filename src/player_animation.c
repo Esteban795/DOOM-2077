@@ -6,28 +6,24 @@ enum AnimationType CURRENT_ANIMATION[NUM_PLAYERS] = {IDLE, IDLE, IDLE};
 int ANIMATION_COOLDOWNS[NUM_PLAYERS] = {0};
 
 // RETURNS A NUMBER BETWEEN 1-8 depending on the orientation of the sprite relative to the player
-int get_sprite_orientation(vec2 origin_pos,double origin_angle, vec2 target_pos, double target_angle) {
-  int angle_diff = (int)fabs(origin_angle - target_angle);
-  int res;
-  if ((angle_diff < 22.5) || (angle_diff >= 337.5)) {
-    res = 0; // Affichage du dos du sprite
-  } else if (angle_diff < 45 + 22.5) {
-    res = 7; //
-  } else if (angle_diff < 90 + 22.5) {
-    res = 2; // le joueur 2 regarde vers la droite du pov du joueur 1
-  } else if (angle_diff < 135 + 22.5) {
-    res = 5;
-  } else if (angle_diff < 180 + 22.5) {
-    res = 4; // les deux joueurs se font face
-  } else if (angle_diff < 225 + 22.5) {
-    res = 3;
-  } else if (angle_diff < 270 + 22.5) {
-    res = 6; // le joueur 2 regarde vers la gauche
-  } else {
-    res = 1;
-  }
-  return (res + 4) % NUMBER_ORIENTATION + 1;
+int get_sprite_orientation(vec2 origin_pos,double origin_angle, vec2 pos,double angle) {
+    double angle_diff = angle - origin_angle;
+    double angle_to_camera = atan2(pos.y - origin_pos.y, pos.x - origin_pos.x);
+    if (angle_to_camera > angle) {
+        if (angle_diff > 180) {
+            angle_diff -= 360;
+        }
+    } else {
+        if (angle_diff < -180) {
+            angle_diff += 360;
+        }
+    }
+    angle_diff = (angle_diff / 360) + 0.5;
+    double direction = 8 * angle_diff + 0.5;
+    int orientation = (int)direction % 8;
+    return orientation + 1;
 }
+
 
 void set_orientation(int sprite_orientation) {
     if (sprite_orientation == 1 || sprite_orientation == 5) {
@@ -44,6 +40,7 @@ void set_orientation(int sprite_orientation) {
 
 bool set_correct_animation_name(int i,vec2 origin_pos,double origin_angle, vec2 pos,double angle,enum AnimationType type) {
     int sprite_orientation = get_sprite_orientation(origin_pos,origin_angle, pos, angle);
+    // int sprite_orientation = calculate_sprite_orientation(origin_pos.x, origin_pos.y, origin_angle, pos.x, pos.y, angle);
     if (type == IDLE){
         set_orientation(sprite_orientation);
         ANIMATION_NAME[4] = ANIMATION_IDLE_INIT;
@@ -121,5 +118,5 @@ bool set_correct_animation_name(int i,vec2 origin_pos,double origin_angle, vec2 
             }
         }
     }
-    return !(5 < sprite_orientation && sprite_orientation < NUMBER_ORIENTATION + 1); // should we use the mirror 
+    return (5 < sprite_orientation && sprite_orientation < NUMBER_ORIENTATION + 1); // should we use the mirror 
 }

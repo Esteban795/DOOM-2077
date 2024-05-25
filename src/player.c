@@ -25,6 +25,7 @@
 #define M_PI 3.14159265358979323846
 
 bool SHOULD_COLLIDE = true;
+bool ALLOWED_TO_TURN = true;
 
 player *player_init(engine *e) {
   player *p = malloc(sizeof(player));
@@ -402,13 +403,19 @@ void update_player(player *p) {
     SHOULD_COLLIDE = !SHOULD_COLLIDE;
   }
 
+  if (keys[SDL_GetScancodeFromKey(SDL_GetKeyFromName("N"))]) {
+    ALLOWED_TO_TURN = !ALLOWED_TO_TURN;
+  }
   bool forward = keys[get_key_from_action(p->keybinds, "MOVE_FORWARD")];
   bool left = keys[get_key_from_action(p->keybinds, "MOVE_LEFT")];
   bool backward = keys[get_key_from_action(p->keybinds, "MOVE_BACKWARD")];
   bool right_d = keys[get_key_from_action(p->keybinds, "MOVE_RIGHT")];
   double speed = DT * PLAYER_SPEED;
   double rot_speed = DT * PLAYER_ROTATION_SPEED;
-  position_set_angle(pos, norm(position_get_angle(pos) + rot_speed * ((double)mouse[NUM_MOUSE_BUTTONS])));
+  if (ALLOWED_TO_TURN) {
+    position_set_angle(pos, norm(position_get_angle(pos) + rot_speed * ((double)mouse[NUM_MOUSE_BUTTONS])));
+  }
+  
   //p->cooldowns_sprays=update_cooldowns_sprays(p->cooldowns_sprays);
   double vec[2] = {0.0, 0.0};
   int count_dir = 0;
