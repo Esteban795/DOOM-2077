@@ -6,10 +6,11 @@
 #include "vec2.h"
 #include "segment_handler.h"
 
+/// boolean used to determine if screen is filled and doesn't require anymore traversal
+extern bool BSP_TRAVERSE; 
 
-extern bool BSP_TRAVERSE; // boolean used to determine if screen is filled and doesn't require anymore traversal
-
-#define SUBSECTOR_IDENTIFIER (size_t)0x8000 // identifier used by BSP to determine if the node is a leaf or not
+/// identifier used by BSP to determine if the node is a leaf or not
+#define SUBSECTOR_IDENTIFIER (size_t)0x8000
 
 bsp *bsp_init(engine *e, player *p);
 

@@ -7,7 +7,7 @@
 
 #include <stdbool.h>
 
-// https://doomwiki.org/wiki/Node
+/// Ref: https://doomwiki.org/wiki/Node
 
 struct BBox {
   i16 top;

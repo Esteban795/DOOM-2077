@@ -3,7 +3,8 @@
 
 #include "byte_reader.h"
 #include "lump.h"
-// https://doomwiki.org/wiki/Thing
+
+/// Ref: https://doomwiki.org/wiki/Thing
 
 struct Thing {
   i16 x;

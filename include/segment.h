@@ -5,7 +5,8 @@
 #include "linedef.h"
 #include "lump.h"
 #include "vertex.h"
-// https://doomwiki.org/wiki/Seg
+
+///Ref: https://doomwiki.org/wiki/Seg
 
 struct Segment {
   vertex* start_vertex;

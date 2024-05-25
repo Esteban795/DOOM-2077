@@ -30,20 +30,25 @@ void update_height(player *p);
 
 void process_keys(player* p);
 
-// Get the player's position component
+/// Get the player's position component
 position_ct* player_get_position(player* p);
 
-// Get the player's health component
+/// Get the player's health component
 health_ct* player_get_health(player* p);
 
-// Get the player's weapon component
+/// Get the player's weapon component
 weapon_ct* player_get_weapon(player* p);
 
-// Find the player index in the player list.
+/// Find the player index in the player list.
 int player_find(entity_t** list, entity_t* p);
 
-// Find a player by id in the player list.
+/// Find a player by id in the player list.
 int player_find_by_id(entity_t** list, uint64_t id);
 
+/// Get the player's angle and xy position
+///
+/// \param p The main player
+/// \param res The resulting XY position as a vec2
+/// \param angle The resulting angle as a double
 void get_position_angle(player* p,vec2* res,double* angle);
 #endif

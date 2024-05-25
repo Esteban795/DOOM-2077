@@ -20,7 +20,8 @@
 #define PUNCH_SOUND "DSPUNCH"
 
 #define TEMP_WALKING_SOUND "DSBGACT"
-// https://doomwiki.org/wiki/Sound
+
+/// Ref: https://doomwiki.org/wiki/Sound
 
 struct Sound {
     char* name;

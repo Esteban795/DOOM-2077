@@ -6,19 +6,22 @@
 #include "geometry.h"
 #include "sound.h"
 #include "audio/mixer.h"
-// https://doomwiki.org/wiki/Linedef_type#Platform_targets
 
-// S = slow
-// F = fast
-// SR = switchable, retriggerable
-// S1 = switchable, non-retriggerable
-// WR = walkover, retriggerable
-// W1 = walkover, non-retriggerable
-// LNF = Lowest Neighbor Floor
-// RNF = Raise Next Floor
-// LFHP = Lowest and Highest Floor perpetual
-//  xU where x is a number = raise of x units
-// Order : TRIGGER_DELAY_SPEED_BEHAVIOR
+/// Linedef types
+///
+/// S = slow  
+/// F = fast  
+/// SR = switchable, retriggerable  
+/// S1 = switchable, non-retriggerable  
+/// WR = walkover, retriggerable  
+/// W1 = walkover, non-retriggerable  
+/// LNF = Lowest Neighbor Floor  
+/// RNF = Raise Next Floor  
+/// LFHP = Lowest and Highest Floor perpetual  
+///  xU where x is a number = raise of x units  
+/// Order : TRIGGER_DELAY_SPEED_BEHAVIOR  
+///
+/// More info: https://doomwiki.org/wiki/Linedef_type#Platform_targets
 enum LiftType {
     WR_3_S_LNF = 88,
     W1_3_S_LNF = 10,

@@ -31,12 +31,13 @@ struct Linedef {
   vertex *end_vertex;
   u16 flag;
   u16 line_type;
-  u16 sector_tag; // used to link a linedef to an action
+  /// used to link a linedef to an action
+  u16 sector_tag;
   sidedef *front_sidedef;
   sidedef *back_sidedef;
   bool has_back_sidedef;
-
-  bool used; // used to check if the linedef has been used in the game, for one time stuff
+  /// used to check if the linedef has been used in the game, for one time stuff
+  bool used;
   bool is_repeatable;
   bool is_shootable;
   bool is_pushable;
