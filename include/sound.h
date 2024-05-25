@@ -19,14 +19,14 @@
 #define SHOTGUN_SOUND "DSSHOTGN"
 #define PUNCH_SOUND "DSPUNCH"
 
-#define TEMP_WALKING_SOUND "DSBGACT"
+#define FOOTSTEP_SOUND "DFTSTEP"
 // https://doomwiki.org/wiki/Sound
 
 struct Sound {
     char* name;
     u16 format_number;
     u16 sample_rate;
-    u16 sample_count;
+    u32 sample_count;
     u8* samples;
 };
 

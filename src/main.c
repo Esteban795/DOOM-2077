@@ -31,12 +31,18 @@ int main() {
     printf("Error at SDLNet startup");
     exit(-2);
   }
+  status = TTF_Init();
+  if (status == 1) {
+    printf("Error at SDL_TTF startup");
+    exit(-1);
+  }
+  IMG_Init(IMG_INIT_PNG || IMG_INIT_JPG);
   status = Mix_Init(MIX_INIT_MOD);
   if (status == 1) {
     printf("Error at Mix startup\n");
     exit(-1);
   }
-  
+
   uint64_t now;
   uint64_t old = SDL_GetTicks();
   // DEV: How to disable pointer/mousecapture
@@ -70,14 +76,14 @@ int main() {
     printf("Connection to server successful!\n");
   }
   int dt = 0;
-  while (e->running) {
+  while (running) {
     now = SDL_GetTicks();
     dt = now - old;
     int res = update_engine(e, dt);
     if (res == 1)
       break;
-    
-    // printf("FPS: %f\n", 1000.0 / dt);
+
+    //  printf("FPS: %f\n", 1000.0 / dt);
     old = now;
   }
   // Wait 100ms to be sure no other packet is sent during the same server tick.
@@ -89,7 +95,8 @@ int main() {
   remote_disconnect(e->remote);
   engine_free(e);
   SDLNet_Quit();
+  IMG_Quit();
+  TTF_Quit();
   Mix_Quit();
   return 0;
 }
-

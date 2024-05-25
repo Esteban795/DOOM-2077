@@ -3,6 +3,7 @@
 
 #include "structs.h"
 
+#define WEAPONS_NUMBER 4
 
 weapons_array* init_weapons_array();
 void switch_weapon(player* p, int weapon_id);

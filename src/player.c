@@ -21,15 +21,21 @@
 
 #define M_PI 3.14159265358979323846
 #define MAX_INTERACT_COOLDOWN 100
+
+
+
 bool SHOULD_COLLIDE = true;
 int INTERACT_CD = 0;
 
 player *player_init(engine *e) {
   player *p = malloc(sizeof(player));
   int ammo[WEAPONS_NUMBER];
+  int mags[WEAPONS_NUMBER];
   ammo[0] = -2;
+  mags[0] = 0;
   for (int i = 1; i < WEAPONS_NUMBER; i++) {
     ammo[i] = 10;
+    mags[i] = 10;
   }
   p->engine = e;
   p->thing = e->wData->things[0];
@@ -41,7 +47,7 @@ player *player_init(engine *e) {
   component_t **comps = malloc(sizeof(component_t *) * 4);
   comps[0] = position_create(coords, p->thing.angle + 180.0);
   comps[1] = health_create(100.0, 100.0);
-  comps[2] = weapon_create(ammo);
+  comps[2] = weapon_create(ammo,mags);
   comps[3] = display_name_create(PLAYER_USERNAME);
   p->entity = world_insert_entity(e->world, e->remote->player_id, comps, 4);
   free(comps);
@@ -295,6 +301,7 @@ void fire_bullet(entity_t **players, int num_players, player *player_,
   double distance_finale = 10000;
   if (weapon_get_active_cooldown(weapon) < 0) {
     *weapon_get_mut_active_cooldown(weapon) = 100;
+    weapon_decrease_active_bullets(weapon);
     add_sound_to_play(SHOTGUN_SOUND, pos->x + 10 * cos(deg_to_rad(pos->angle)),
                       pos->y - 10 * sin(deg_to_rad(pos->angle)));
     linedef **linedefs = player_->engine->wData->linedefs;
@@ -483,11 +490,45 @@ void process_keys(player *p) {
       INTERACT_CD = MAX_INTERACT_COOLDOWN;
     }
   }
-  bool is_attacking = keys[get_key_from_action(p->keybinds, "ATTACK")];
-  if (is_attacking) {
-    fire_bullet(p->engine->players, 1, p, 10);
+
+  // WEAPON SWITCHING
+  bool switch_to_fists = keys[get_key_from_action(p->keybinds, "FISTS")];
+  bool switch_to_shotgun =
+      keys[get_key_from_action(p->keybinds, "SHOTGUN")];
+  bool switch_to_pistol = keys[get_key_from_action(p->keybinds, "PISTOL")];
+  bool switch_to_chaingun = keys[get_key_from_action(p->keybinds, "CHAINGUN")];
+  if (switch_to_fists) {
+    weapon->active_weapon = 0;
+  }
+  if (switch_to_pistol) {
+    weapon->active_weapon = 1;
+  }
+  if (switch_to_chaingun) {
+    weapon->active_weapon = 2;
+  }
+  if (switch_to_shotgun) {
+    weapon->active_weapon = 3;
   }
 
+  bool is_reloading = keys[get_key_from_action(p->keybinds, "RELOAD")];
+  if (weapon->active_weapon != 0 && is_reloading) { // cannot reload fists..
+    int ammos_left = weapon_get_active_ammos_left(weapon);
+    int mags_left = weapon_get_active_bullets_left(weapon);
+    int room_left = WEAPON_AMMO_CAPACITY - mags_left;
+    if (ammos_left < room_left) {
+      weapon->ammunitions[weapon->active_weapon] = 0;
+      weapon->mags[weapon->active_weapon] += ammos_left;
+    } else {
+      weapon->ammunitions[weapon->active_weapon] -= room_left;
+      weapon->mags[weapon->active_weapon] = WEAPON_AMMO_CAPACITY;
+    }
+  }
+
+  bool is_attacking = keys[get_key_from_action(p->keybinds, "ATTACK")];
+  if (is_attacking && weapon_get_active_bullets_left(weapon) > 0) {
+    fire_bullet(p->engine->players, 1, p, 10);
+  }
+  // DEBUG OPTION TO GO THROUGH WALLS
   if (keys[SDL_GetScancodeFromKey(SDL_GetKeyFromName("M"))]) {
     SHOULD_COLLIDE = !SHOULD_COLLIDE;
   }
