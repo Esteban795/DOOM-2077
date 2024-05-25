@@ -289,7 +289,7 @@ UIModule **get_ui_menu(SDL_Renderer *r, int *nuimodules)
 
   font = TTF_OpenFont("fonts/jersey25.ttf", 30);
 
-  UITextBox *co_name_tb = uitextbox_create(0.35, 0.35, 0.5, 0.07, UIAP_TOP_LEFT, as, 1, font, UIAP_TOP_LEFT, 16, mm_settings_button_bg, mm_settings_button_bo, white, SDL_SCANCODE_LSHIFT);
+  UITextBox *co_name_tb = uitextbox_create(0.35, 0.35, 0.5, 0.07, UIAP_TOP_LEFT, as, 1, font, UIAP_TOP_LEFT, 24, mm_settings_button_bg, mm_settings_button_bo, white, SDL_SCANCODE_LSHIFT);
 
   uimodule_set_element(modules[3], 6, UIET_Textbox, co_name_tb);
 
@@ -309,7 +309,7 @@ UIModule **get_ui_menu(SDL_Renderer *r, int *nuimodules)
 
   font = TTF_OpenFont("fonts/jersey25.ttf", 30);
 
-  UITextBox *co_ip_tb = uitextbox_create(0.35, 0.5, 0.5, 0.07, UIAP_TOP_LEFT, as, 1, font, UIAP_TOP_LEFT, 16, mm_settings_button_bg, mm_settings_button_bo, white, SDL_SCANCODE_LSHIFT);
+  UITextBox *co_ip_tb = uitextbox_create(0.35, 0.5, 0.5, 0.07, UIAP_TOP_LEFT, as, 1, font, UIAP_TOP_LEFT, 22, mm_settings_button_bg, mm_settings_button_bo, white, SDL_SCANCODE_LSHIFT);
 
   uimodule_set_element(modules[3], 8, UIET_Textbox, co_ip_tb);
 
