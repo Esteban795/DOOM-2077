@@ -154,7 +154,7 @@ UIModule **get_ui_menu(SDL_Renderer *r, int *nuimodules)
   UIButton *co_back_button = uibutton_create(
       gl_back_x + 0.1 + gl_back_w / 2, gl_back_y, gl_back_w, gl_back_h, UIAP_TOP_LEFT, as, 1,
       mm_settings_button_bg, mm_settings_button_bo, mm_settings_button_bg,
-      mm_settings_button_bo, UIEC_SetSubstate0, SDL_SCANCODE_B);
+      mm_settings_button_bo, UIEC_SetSubstate0, SDL_SCANCODE_F14);
   uimodule_set_element(modules[2], 1, UIET_Button, co_back_button);
 
   // back label
@@ -178,7 +178,7 @@ UIModule **get_ui_menu(SDL_Renderer *r, int *nuimodules)
   UIButton *se_save_button = uibutton_create(
       gl_back_x - 0.1 - gl_back_w / 2, gl_back_y, gl_back_w, gl_back_h, UIAP_TOP_LEFT, as, 1,
       mm_settings_button_bg, mm_settings_button_bo, mm_settings_button_bg,
-      mm_settings_button_bo, UIEC_SetSubstate0, SDL_SCANCODE_S);
+      mm_settings_button_bo, UIEC_SetSubstate0, SDL_SCANCODE_F14);
   uimodule_set_element(modules[2], 3, UIET_Button, se_save_button);
 
   // back label
@@ -233,7 +233,7 @@ UIModule **get_ui_menu(SDL_Renderer *r, int *nuimodules)
   UIButton *se_back_button = uibutton_create(
       gl_back_x, gl_back_y, gl_back_w, gl_back_h, UIAP_TOP_LEFT, as, 1,
       mm_settings_button_bg, mm_settings_button_bo, mm_settings_button_bg,
-      mm_settings_button_bo, UIEC_SetSubstate0, SDL_SCANCODE_B);
+      mm_settings_button_bo, UIEC_SetSubstate0, SDL_SCANCODE_F14);
   uimodule_set_element(modules[3], 1, UIET_Button, se_back_button);
 
   // back label
@@ -257,7 +257,7 @@ UIModule **get_ui_menu(SDL_Renderer *r, int *nuimodules)
   UIButton *co_co_button = uibutton_create(
       gl_back_x - 0.1, gl_back_y - 0.15, gl_back_w + 0.2, gl_back_h, UIAP_TOP_LEFT, as, 1,
       mm_settings_button_bg, mm_settings_button_bo, mm_settings_button_bg,
-      mm_settings_button_bo, UIEC_JoinServer, SDL_SCANCODE_C);
+      mm_settings_button_bo, UIEC_JoinServer, SDL_SCANCODE_F14);
   uimodule_set_element(modules[3], 3, UIET_Button, co_co_button);
 
   // back label

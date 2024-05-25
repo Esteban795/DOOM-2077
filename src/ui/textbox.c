@@ -37,6 +37,7 @@ UITextBox *uitextbox_create(float x, float y, float w, float h,
 
   tb->scancode = scancode;
   tb->scancode_helper = false;
+  tb->backspace_helper = false;
 
   return tb;
 }
@@ -96,11 +97,11 @@ void uitextbox_update(SDL_Renderer *r, int substate, UITextBox *tb) {
     tb->scancode_helper = false;
   }
 
-  static bool bspace_buffer = false;
-  if (tb->focused && !bspace_buffer && keys[SDL_SCANCODE_BACKSPACE]) {
+  if (tb->focused && !tb->backspace_helper && keys[SDL_SCANCODE_BACKSPACE]) {
+    printf("remove\n");
     uitextbox_char_remove(tb);
   }
-  bspace_buffer = keys[SDL_SCANCODE_BACKSPACE];
+  tb->backspace_helper = keys[SDL_SCANCODE_BACKSPACE];
 
   if (tb->focused && textinput[0] != '\0') {
     uitextbox_string_add(tb);
