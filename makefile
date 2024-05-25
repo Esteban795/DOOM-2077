@@ -69,7 +69,7 @@ LIBECS_LIB = libcollection.a
 # - END OF TARGETS  -  #
 
 .PHONY: all clean test before_build run_server run_client build_server build_client test test_collection \
-	test_ecs
+	test_ecs doc open_doc
 all: $(builddir)/server $(builddir)/client
 
 # helper targets
@@ -145,3 +145,8 @@ before_build:
 clean:
 	-rm -rf $(builddir)
 
+doc:
+	doxygen
+
+open_doc: doc
+	xdg-open ./build/doc/html/index.html
