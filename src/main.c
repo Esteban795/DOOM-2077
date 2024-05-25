@@ -42,7 +42,7 @@ int main() {
   // DEV: How to disable pointer/mousecapture
   SDL_ShowCursor(SDL_DISABLE); // Set to true for debug
   SDL_SetRelativeMouseMode(SDL_TRUE); // Set to false for debug
-  engine *e = init_engine("maps/DOOM1.WAD",renderer);
+  engine *e = init_engine("maps/DOOM1-NET.WAD",renderer);
   
   // Waiting for connection to server
   old = SDL_GetTicks();
@@ -65,7 +65,7 @@ int main() {
     printf("Connection to server failed! Pursuing in solo...\n");
     e->remote->connected = -1;
     e->remote->player_id = 0;
-    read_map(e, "E1M3");
+    read_map(e, "MAP01");
   } else {
     printf("Connection to server successful!\n");
   }
