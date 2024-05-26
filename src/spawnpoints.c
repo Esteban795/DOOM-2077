@@ -1,7 +1,7 @@
 #include "../include/spawnpoints.h"
 #include <time.h>
 
-const spawnpoint SPAWNPOINTS[SPAWNPOINTS_COUNT] = {
+spawnpoint SPAWNPOINTS[SPAWNPOINTS_COUNT] = {
     (spawnpoint){.x =-3072, .y = 768,.z = 264,.angle = 45.0},   
     (spawnpoint){.x = -1792, .y = -64,.z = 280,.angle = 0.0},
     (spawnpoint){.x = -1216, .y = -1344,.z = 8, .angle = 225.0}, 

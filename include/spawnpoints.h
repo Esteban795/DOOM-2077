@@ -17,7 +17,7 @@ struct Spawnpoint {
 
 typedef struct Spawnpoint spawnpoint;
 
-extern const spawnpoint SPAWNPOINTS[SPAWNPOINTS_COUNT];
+extern spawnpoint SPAWNPOINTS[SPAWNPOINTS_COUNT];
 
 spawnpoint get_random_spawnpoint();
 #endif
