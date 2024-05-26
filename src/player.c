@@ -44,7 +44,7 @@ player *player_init(engine *e) {
   ammo[0] = -2;
   mags[0] = 0;
   for (int i = 1; i < WEAPONS_NUMBER; i++) {
-    ammo[i] = 10;
+    ammo[i] = 0;
     mags[i] = 10;
   }
   p->engine = e;
@@ -345,7 +345,7 @@ void fire_bullet(
     // gestion du tir jusqu'au mur
     if (is_ranged == 0 ||
         weapon_ecs
-            ->ammunitions[weapon_ecs->active_weapon]) { // On véfrifie d'un coté
+            ->mags[weapon_ecs->active_weapon]) { // On véfrifie d'un coté
                                                         // que le temps de
                                                         // cooldown est
       // respecté et ensuite que si l'arme est a distance elle
@@ -424,6 +424,8 @@ void fire_bullet(
           continue;
         position_ct *pos_pj = (position_ct *)world_get_component(
             player_->engine->world, players[j], COMPONENT_TAG_POSITION);
+        health_ct *health_pj = (health_ct *)world_get_component(
+            player_->engine->world, players[j], COMPONENT_TAG_HEALTH);
 
         double dist_to_hitscan = (fabs(a * (position_get_x(pos_pj)) +
                                        (position_get_y(pos_pj)) + b)) /
@@ -433,16 +435,20 @@ void fire_bullet(
               (max(x1, x_final) > position_get_x(pos_pj)) &&
               (min(y1, y_final) < -position_get_y(pos_pj)) &&
               (min(y1, y_final) < -position_get_y(pos_pj))) {
-            if ((dist_to_hitscan < MELEE_RADIUS)) {
-              // Apply damage to player
+            if (is_ranged) {
+              health_sub(health_pj, damage);
+              printf("Health of player %d: %f\n", players[j]->id,health_pj->health);
               remote_damage_player(SHARED_ENGINE, players[j]->id,
                                    weapon_ecs->active_weapon, (float)damage);
+            } else {
+              
+            }
+            if (dist_to_hitscan < MELEE_RADIUS) {
+              // Apply damage to player
+
             }
           }
         }
-      }
-      if (is_ranged == 1) {
-        weapon_ecs->ammunitions[weapon_ecs->active_weapon] -= 1;
       }
     }
   }
