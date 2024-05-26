@@ -31,53 +31,39 @@ int main() {
     printf("Error at SDLNet startup");
     exit(-2);
   }
+  status = TTF_Init();
+  if (status == 1) {
+    printf("Error at SDL_TTF startup");
+    exit(-1);
+  }
+  IMG_Init(IMG_INIT_PNG || IMG_INIT_JPG);
   status = Mix_Init(MIX_INIT_MOD);
   if (status == 1) {
     printf("Error at Mix startup\n");
     exit(-1);
   }
-  
+
   uint64_t now;
   uint64_t old = SDL_GetTicks();
   // DEV: How to disable pointer/mousecapture
   SDL_ShowCursor(SDL_DISABLE); // Set to true for debug
   SDL_SetRelativeMouseMode(SDL_TRUE); // Set to false for debug
-  engine *e = init_engine("maps/DOOM1.WAD",renderer);
+  engine *e = init_engine("maps/DOOM1-NET.WAD",renderer);
   
-  // Waiting for connection to server
-  old = SDL_GetTicks();
-  while(SDL_GetTicks() - old < 5000) {
-    int status = remote_update(e, e->remote);
-    if (e->remote->connected == 1) {
-      e->remote->connected = 2;
-      break; // Connection established
-    } else if (e->remote->connected == -2) {
-      printf("Error at remote connection\n");
-      break;
-    } else if (e->remote->connected == -1) {
-      break; // Solo mode
-    }
-    if (status < 0) {
-      printf("Error while initializing the remote sync...");
-    }
-  }
-  if (e->remote->connected < 2) {
-    printf("Connection to server failed! Pursuing in solo...\n");
-    e->remote->connected = -1;
-    e->remote->player_id = 0;
-    read_map(e, "E1M3");
-  } else {
-    printf("Connection to server successful!\n");
-  }
+  // Start the client in solo mode.
+  // Connection might happen later, if the user decides to join a server.
+  e->remote->connected = -1;
+  e->remote->player_id = 0;
+  read_map(e, "E1M3");
   int dt = 0;
-  while (e->running) {
+  while (running) {
     now = SDL_GetTicks();
     dt = now - old;
     int res = update_engine(e, dt);
     if (res == 1)
       break;
-    
-    // printf("FPS: %f\n", 1000.0 / dt);
+
+    //  printf("FPS: %f\n", 1000.0 / dt);
     old = now;
   }
   // Wait 100ms to be sure no other packet is sent during the same server tick.
@@ -89,7 +75,8 @@ int main() {
   remote_disconnect(e->remote);
   engine_free(e);
   SDLNet_Quit();
+  IMG_Quit();
+  TTF_Quit();
   Mix_Quit();
   return 0;
 }
-

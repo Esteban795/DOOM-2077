@@ -43,7 +43,7 @@
 
 typedef struct timespec Instant;
 
-int remote_init(remote_server_t *server, char *addr, int port) {
+int remote_init(remote_server_t *server, char *addr, int port, char* player_name) {
   if (strncat(addr, "", 1) == 0) {
     fprintf(stderr,
             "WARN: No SERVER_ADDR found! No connection will be initiated!\n");
@@ -74,7 +74,7 @@ int remote_init(remote_server_t *server, char *addr, int port) {
     fprintf(stderr, "SDLNet_AllocPacket: %s\n", SDLNet_GetError());
     return -1;
   }
-  int len = client_join(server->packet->data, PLAYER_USERNAME);
+  int len = client_join(server->packet->data, player_name);
   server->packet->address.host = server->addr.host;
   server->packet->address.port = server->addr.port;
   server->packet->len = len;
@@ -110,8 +110,8 @@ void remote_disconnect(remote_server_t *r) {
 }
 
 void remote_destroy(remote_server_t *r) {
-  SDLNet_FreePacket(r->packet);
-  SDLNet_UDP_Close(r->socket);
+  if (r->packet != NULL) SDLNet_FreePacket(r->packet);
+  if (r->socket != NULL) SDLNet_UDP_Close(r->socket);
   r->socket = NULL;
   r->packet = NULL;
   free(r);
@@ -290,16 +290,15 @@ int remote_update(engine *e, remote_server_t *r) {
         uint16_t *deaths = NULL;
         uint16_t *kills = NULL;
         uint16_t entry_count;
-        // server_scoreboard_update_from(sdata+offset, &entry_count, &names,
-        // &deaths, &kills);
+        server_scoreboard_update_from(sdata+offset, &entry_count, &names, &deaths, &kills);
         event_t *event = (event_t *)ClientScoreboardUpdateEvent_new(
             entry_count, names, deaths, kills);
         world_queue_event(e->world, event);
-        free(deaths);
-        free(kills);
         for (int i = 0; i < entry_count; i++) {
           free(names[i]);
         }
+        free(deaths);
+        free(kills);
         free(names);
       } else if (strncmp(cmd, SERVER_COMMAND_HLTH, 4) == 0) {
         uint64_t player_id;
@@ -365,7 +364,7 @@ int remote_update(engine *e, remote_server_t *r) {
       } else if (strncmp(cmd, SERVER_COMMAND_OPEN, 4) == 0) {
         uint64_t door_id;
         server_door_open_from(sdata + offset, &door_id);
-        if (door_id < e->num_doors && e->doors[door_id]->state == false) {
+        if ((int) door_id < e->num_doors && e->doors[door_id]->state == false) {
           door_trigger_switch(e->doors[door_id]);
         }
         event_t *event = (event_t *)ClientDoorOpenEvent_new(door_id, false);
@@ -373,7 +372,7 @@ int remote_update(engine *e, remote_server_t *r) {
       } else if (strncmp(cmd, SERVER_COMMAND_CLOS, 4) == 0) {
         uint64_t door_id;
         server_door_close_from(sdata + offset, &door_id);
-        if (door_id < e->num_doors && e->doors[door_id]->state == true) {
+        if ((int) door_id < e->num_doors && e->doors[door_id]->state == true) {
           door_trigger_switch(e->doors[door_id]);
         }
         event_t *event = (event_t *)ClientDoorCloseEvent_new(door_id, false);
@@ -381,7 +380,7 @@ int remote_update(engine *e, remote_server_t *r) {
       } else if (strncmp(cmd, SERVER_COMMAND_LASC, 4) == 0) {
         uint64_t lift_id;
         server_lift_ascend_from(sdata + offset, &lift_id);
-        if (lift_id < e->len_lifts && e->lifts[lift_id]->state == false) {
+        if ((int) lift_id < e->len_lifts && e->lifts[lift_id]->state == false) {
           lift_trigger_switch(e->lifts[lift_id]);
         }
         event_t *event = (event_t *)ClientDoorOpenEvent_new(lift_id, true);
@@ -389,7 +388,7 @@ int remote_update(engine *e, remote_server_t *r) {
       } else if (strncmp(cmd, SERVER_COMMAND_LDSC, 4) == 0) {
         uint64_t lift_id;
         server_lift_descend_from(sdata + offset, &lift_id);
-        if (lift_id < e->len_lifts && e->lifts[lift_id]->state == true) {
+        if ((int) lift_id < e->len_lifts && e->lifts[lift_id]->state == true) {
           lift_trigger_switch(e->lifts[lift_id]);
         }
         event_t *event = (event_t *)ClientDoorCloseEvent_new(lift_id, true);
@@ -483,5 +482,22 @@ void client_door_trigger(engine *e, uint64_t door_id) {
 void client_lift_trigger(engine *e, uint64_t lift_id) {
   if (lift_trigger_switch(e->lifts[lift_id])) {
     __client_door_trigger(e, lift_id, true);
+  }
+}
+
+void remote_send_chat(engine* e, char *message) {
+  remote_server_t *r = e->remote;
+  if (r->connected < 2) {
+    event_t* ev = (event_t*) ClientPlayerChatEvent_new(0, message);
+    world_queue_event(e->world, ev);
+    return;
+  }
+
+  int len = client_chat(r->packet->data, message);
+  r->packet->len = len;
+  r->packet->address.host = r->addr.host;
+  r->packet->address.port = r->addr.port;
+  if (SDLNet_UDP_Send(r->socket, -1, r->packet) == 0) {
+    fprintf(stderr, "SDLNet_UDP_Send: chat command: %s\n", SDLNet_GetError());
   }
 }

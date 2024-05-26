@@ -13,6 +13,8 @@
 #include "keybindings.h"
 #include "settings.h"
 #include "remote.h"
+#include "ui/common.h"
+#include "ui/module.h"
 #include "vec2.h"
 #include "wad_data.h"
 #include "ecs/world.h"
@@ -74,7 +76,6 @@ struct RemoteServer {
 struct Engine {
   SDL_Renderer *renderer;
   const char *wadPath;
-  bool running;
   int DT; // time used to render last frame
 
   struct WADData *wData;
@@ -90,11 +91,18 @@ struct Engine {
   
   
   door** doors;
+  int substate;
+  // INFO: substate is used for UI stuff
+  // substates are defined in ui/def.c for each state!
   int num_doors;
+  UIModule **uimodules;
+  int nuimodules;
+  int uinextevent;
   
   lift** lifts;
   int len_lifts;
   world_t *world;
+  char player_name[128];
 };
 
 struct BSP {
