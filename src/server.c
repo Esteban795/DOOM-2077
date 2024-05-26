@@ -220,7 +220,7 @@ int run_server(uint16_t port)
                         int8_t weapon_id;
                         float damage;
                         client_damage_from(sdata + cursor, &target_id, &weapon_id, &damage);
-                        player_damage_event_t* ev = ClientPlayerDamageEvent_new(target_id, SERVER_STATE->conns[conn_i].player_id, weapon_id, damage);
+                        player_damage_event_t* ev = ServerPlayerDamageEvent_new(target_id, SERVER_STATE->conns[conn_i].player_id, weapon_id, damage);
                         world_queue_event(&SERVER_STATE->world, (event_t*) ev);
                     } else if (strncmp(cmd, CLIENT_COMMAND_FIRE, 4) == 0) {
                         int8_t weapon_id;

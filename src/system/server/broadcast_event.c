@@ -199,6 +199,16 @@ int broadcast_event(world_t* world, event_t* event) {
             broadcast_except(&sock, conns, SERVER_STATE->conn_count, ev->entity_id, buf, len);
             break;
         }
+        case SERVER_SCOREBOARD_UPDATE_EVENT_TAG: {
+            scoreboard_update_event_t* ev = (scoreboard_update_event_t*) event;
+            char* entries[10] = {0};
+            for (int i = 0; i < ev->entries_count; i++) {
+                entries[i] = ev->entries[i];
+            }
+            len = server_scoreboard_update(buf, ev->entries_count, entries, ev->deaths, ev->kills);
+            broadcast(&sock, conns, SERVER_STATE->conn_count, buf, len);
+            break;
+        }
         default:
             printf("Unimplemented event tag: %d\n", event->tag);
             break;

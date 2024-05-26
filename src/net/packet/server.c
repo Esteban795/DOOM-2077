@@ -160,11 +160,11 @@ int server_player_health(uint8_t *buf, uint64_t player_id, float health, float m
 
 int server_player_kill(uint8_t *buf, uint64_t player_id, uint64_t src_player_id, int8_t weapon_id) {
     memcpy(buf, SERVER_COMMAND_KILL, 4);
-    write_uint16be(buf + 4, 8 + 8);
     write_uint64be(buf + 6, player_id);
     write_uint64be(buf + 14, src_player_id);
     write_uint8be(buf + 22, weapon_id);
     buf[23] = '\n';
+    write_uint16be(buf + 4, 8 + 8 + 1);
     return 4 + 2 + 8 + 8 + 1 + 1;
 }
 

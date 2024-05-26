@@ -389,7 +389,7 @@ void fire_bullet(entity_t **players, int num_players, player *player_,
             (min(y1, y_final) < -position_get_y(pos_pj)) &&
             (min(y1, y_final) < -position_get_y(pos_pj))) {
           // Apply damage to player
-          remote_damage_player(SHARED_ENGINE, players[j]->id, weapon->active_weapon, (float) -damage);
+          remote_damage_player(SHARED_ENGINE, players[j]->id, weapon->active_weapon, (float) damage);
         }
       }
     }
