@@ -570,11 +570,14 @@ void process_keys(player *p) {
 
   bool is_attacking = keys[get_key_from_action(p->keybinds, "ATTACK")];
   if (is_attacking && weapon_get_active_bullets_left(weapon) > 0) {
-    fire_bullet(p->engine->players, 1, p, wa);
+    fire_bullet(p->engine->players, NUM_PLAYERS, p, wa);
   }
   // DEBUG OPTION TO GO THROUGH WALLS
   if (keys[SDL_GetScancodeFromKey(SDL_GetKeyFromName("M"))]) {
     SHOULD_COLLIDE = !SHOULD_COLLIDE;
+  }
+  if (keys[SDL_GetScancodeFromKey(SDL_GetKeyFromName("N"))]) {
+    ALLOWED_TO_TURN = !ALLOWED_TO_TURN;
   }
 }
 
