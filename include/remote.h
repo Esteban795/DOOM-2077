@@ -46,4 +46,18 @@ void client_lift_trigger(engine* e, uint64_t lift_id);
 ///
 /// \remark If the client is not connected to a server, this function will trigger a chat event locally.
 void remote_send_chat(engine* e, char *message);
+
+/// Fire a bullet and transmit it to the server
+///
+/// This function will broadcast the firing event to the server and emit a firing event locally.
+///
+/// \remark if the client is not connected to a server, this function is only going to emit a firing event locally.
+void remote_fire_bullet(engine* e, uint8_t weapon_id);
+
+/// Damage a player and transmit it to the server
+///
+/// This function will broadcast the damage event to the server.
+///
+/// \remark if the client is not connected to a server, this function will emit a damage event locally.
+void remote_damage_player(engine* e, uint64_t player_id, int8_t weapon_id, float damage);
 #endif

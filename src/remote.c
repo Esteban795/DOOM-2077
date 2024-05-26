@@ -501,3 +501,39 @@ void remote_send_chat(engine* e, char *message) {
     fprintf(stderr, "SDLNet_UDP_Send: chat command: %s\n", SDLNet_GetError());
   }
 }
+
+void remote_fire_bullet(engine* e, uint8_t weapon_id) {
+  remote_server_t *r = e->remote;
+
+  player_fire_event_t* ev = (player_fire_event_t*)ClientPlayerFireEvent_new(e->p->entity->id, weapon_id);
+  world_queue_event(e->world, (event_t*)ev);
+
+  if (r->connected < 2) {
+    return;
+  }
+
+  int len = client_fire(r->packet->data, weapon_id);
+  r->packet->len = len;
+  r->packet->address.host = r->addr.host;
+  r->packet->address.port = r->addr.port;
+  if (SDLNet_UDP_Send(r->socket, -1, r->packet) == 0) {
+    fprintf(stderr, "SDLNet_UDP_Send: fire command: %s\n", SDLNet_GetError());
+  }
+}
+
+void remote_damage_player(engine* e, uint64_t player_id, int8_t weapon_id, float damage) {
+  remote_server_t *r = e->remote;
+  if (r->connected < 2) {
+    event_t* ev = (event_t*) ClientPlayerDamageEvent_new(player_id, e->p->entity->id, weapon_id, damage);
+    world_queue_event(e->world, ev);
+    return;
+  }
+
+  int len = client_damage(r->packet->data, player_id, e->p->entity->id, weapon_id, damage);
+  r->packet->len = len;
+  r->packet->address.host = r->addr.host;
+  r->packet->address.port = r->addr.port;
+  if (SDLNet_UDP_Send(r->socket, -1, r->packet) == 0) {
+    fprintf(stderr, "SDLNet_UDP_Send: damage command: %s\n", SDLNet_GetError());
+  }
+}

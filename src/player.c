@@ -13,6 +13,8 @@
 #include "../include/ecs/world.h"
 #include "../include/player.h"
 #include "../include/settings.h"
+#include "../include/shared.h"
+#include "../include/remote.h"
 
 #define SIGN(x) (int)(x > 0) ? 1 : ((x < 0) ? -1 : 0)
 #define DOT(a, b) (a.x * b.x) + (a.y * b.y)
@@ -368,14 +370,15 @@ void fire_bullet(entity_t **players, int num_players, player *player_,
       }
     }
 
+    // Fire on network
+    remote_fire_bullet(SHARED_ENGINE, weapon->active_weapon);
+
     // TODO: Déplacer coté serveur le calcul des dégats sur un joueur.
     for (int j = 0; j < num_players; j++) {
       if (players[j] == NULL)
         continue;
       position_ct *pos_pj = (position_ct *)world_get_component(
           player_->engine->world, players[j], COMPONENT_TAG_POSITION);
-      health_ct *health_pj = (health_ct *)world_get_component(
-          player_->engine->world, players[j], COMPONENT_TAG_HEALTH);
 
       double dist_to_hitscan =
           (fabs(a * (position_get_x(pos_pj)) + (position_get_y(pos_pj)) + b)) /
@@ -385,7 +388,8 @@ void fire_bullet(entity_t **players, int num_players, player *player_,
             (max(x1, x_final) > position_get_x(pos_pj)) &&
             (min(y1, y_final) < -position_get_y(pos_pj)) &&
             (min(y1, y_final) < -position_get_y(pos_pj))) {
-          health_sub(health_pj, damage);
+          // Apply damage to player
+          remote_damage_player(SHARED_ENGINE, players[j]->id, weapon->active_weapon, (float) -damage);
         }
       }
     }
