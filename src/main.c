@@ -50,31 +50,11 @@ int main() {
   SDL_SetRelativeMouseMode(SDL_TRUE); // Set to false for debug
   engine *e = init_engine("maps/DOOM1-NET.WAD",renderer);
   
-  // Waiting for connection to server
-  old = SDL_GetTicks();
-  while(SDL_GetTicks() - old < 5000) {
-    int status = remote_update(e, e->remote);
-    if (e->remote->connected == 1) {
-      e->remote->connected = 2;
-      break; // Connection established
-    } else if (e->remote->connected == -2) {
-      printf("Error at remote connection\n");
-      break;
-    } else if (e->remote->connected == -1) {
-      break; // Solo mode
-    }
-    if (status < 0) {
-      printf("Error while initializing the remote sync...");
-    }
-  }
-  if (e->remote->connected < 2) {
-    printf("Connection to server failed! Pursuing in solo...\n");
-    e->remote->connected = -1;
-    e->remote->player_id = 0;
-    read_map(e, "MAP01");
-  } else {
-    printf("Connection to server successful!\n");
-  }
+  // Start the client in solo mode.
+  // Connection might happen later, if the user decides to join a server.
+  e->remote->connected = -1;
+  e->remote->player_id = 0;
+  read_map(e, "E1M3");
   int dt = 0;
   while (running) {
     now = SDL_GetTicks();

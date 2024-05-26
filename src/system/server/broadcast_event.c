@@ -174,10 +174,10 @@ int broadcast_event(world_t* world, event_t* event) {
         case SERVER_DOOR_OPEN_EVENT_TAG: {
             door_open_event_t* ev = (door_open_event_t*) event;
             if (ev->is_lift) {
-                printf("Lift %d is ascending.\n", ev->door_id);
+                printf("Lift %ld is ascending.\n", ev->door_id);
                 len = server_lift_ascend(buf, ev->door_id);
             } else {
-                printf("Door %d is opening.\n", ev->door_id);
+                printf("Door %ld is opening.\n", ev->door_id);
                 len = server_door_open(buf, ev->door_id);
             }
             broadcast(&sock, conns, SERVER_STATE->conn_count, buf, len);
@@ -186,10 +186,10 @@ int broadcast_event(world_t* world, event_t* event) {
         case SERVER_DOOR_CLOSE_EVENT_TAG: {
             door_close_event_t* ev = (door_close_event_t*) event;
             if (ev->is_lift) {
-                printf("Lift %d is descending.\n", ev->door_id);
+                printf("Lift %ld is descending.\n", ev->door_id);
                 len = server_lift_descend(buf, ev->door_id);
             } else {
-                printf("Door %d is closing.\n", ev->door_id);
+                printf("Door %ld is closing.\n", ev->door_id);
                 len = server_door_close(buf, ev->door_id);
             }
             broadcast(&sock, conns, SERVER_STATE->conn_count, buf, len);

@@ -112,20 +112,16 @@ int server_scoreboard_update(uint8_t* buf, uint16_t entries_count, char** names,
     int plen = 2;
     for (int i = 0; i < entries_count; i++) {
         plen += write_cstring(buf + 6 + plen, names[i]);
-        plen += write_cstring(buf + 6 + plen, names[i]);
     }
     for (int i = 0; i < entries_count; i++) {
-        write_uint16be(buf + 6 + plen, deaths[i]);
         write_uint16be(buf + 6 + plen, deaths[i]);
         plen += 2;
     }
     for (int i = 0; i < entries_count; i++) {
-        write_uint16be(buf + 6 + plen, kills[i]);
         write_uint16be(buf + 6 + plen, kills[i]);
         plen += 2;
     }
     write_uint16be(buf + 4, plen);
-    buf[6 + plen] = '\n';
     buf[6 + plen] = '\n';
     return 4 + 2 + plen + 1;
 }
@@ -304,8 +300,9 @@ int server_scoreboard_update_from(uint8_t* buf, uint16_t* entries_count, char***
     for (int i = 0; i < *entries_count; i++) {
         int clen = strnlen((char*) buf + 6 + plen, 127);
         (*names)[i] = malloc((clen+1) * sizeof(char));
+        memcpy((*names)[i], buf + 6 + plen, clen);
         (*names)[i][clen] = '\0';
-        plen += clen;
+        plen += clen + 1;
     }
     *deaths = malloc(*entries_count * sizeof(uint16_t));
     for (int i = 0; i < *entries_count; i++) {

@@ -16,9 +16,10 @@ void uifeed_free(UIFeed* uif){
 }
 
 void uifeed_append(UIFeed* f, char* message){
+
   for (int i = f->feed_length-2; i >= 0; i--)
   {
-    f->associated_labels[i+1]->string = f->associated_labels[i]->string;
+    uilabel_set_content(f->associated_labels[i+1], f->associated_labels[i]->string);
   }
-  f->associated_labels[0]->string = message;
+  uilabel_set_content(f->associated_labels[0], message);
 }

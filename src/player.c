@@ -22,8 +22,6 @@
 #define M_PI 3.14159265358979323846
 #define MAX_INTERACT_COOLDOWN 100
 
-
-
 bool SHOULD_COLLIDE = true;
 int INTERACT_CD = 0;
 
@@ -48,7 +46,7 @@ player *player_init(engine *e) {
   comps[0] = position_create(coords, p->thing.angle + 180.0);
   comps[1] = health_create(100.0, 100.0);
   comps[2] = weapon_create(ammo,mags);
-  comps[3] = display_name_create(PLAYER_USERNAME);
+  comps[3] = display_name_create((char*) e->player_name);
   p->entity = world_insert_entity(e->world, e->remote->player_id, comps, 4);
   free(comps);
 

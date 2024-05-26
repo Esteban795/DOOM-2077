@@ -1,9 +1,12 @@
 #include "../../../include/system/client/apply_event.h"
 #include "../../../include/event/all.h"
 #include "../../../include/component/position.h"
+#include "../../../include/component/display_name.h"
 #include "../../../include/ecs/world.h"
 #include "../../../include/component/health.h"
-
+#include "../../../include/ui/linker.h"
+#include "../../../include/player.h"
+#include "../../../include/shared.h"
 
 const system_t APPLY_EVENT_SYSTEM = {
     .fn = apply_event,
@@ -52,6 +55,56 @@ int apply_event(world_t* world, event_t* event) {
             health_ct* health = (health_ct*) world_get_component(world, &pid, COMPONENT_TAG_HEALTH);
             if (health == NULL) return -1; // If the player does not have health, we cannot apply the event, cancel it.
             health_set(health, 0);
+            break;
+        }
+        case CLIENT_PLAYER_CHAT_EVENT_TAG: {
+            player_chat_event_t* ev = (player_chat_event_t*)event;
+
+            char fmt_msg[1024 + 128 + 2] = {0};
+            int pind = player_find_by_id(SHARED_ENGINE->players, ev->entity_id);
+            display_name_ct* name_ct;
+            char* name;
+            if (pind >= 0) {
+                name_ct = (display_name_ct*) world_get_component(world, SHARED_ENGINE->players[pind], COMPONENT_TAG_DISPLAY_NAME);
+                name = name_ct->name;
+            } else {
+                if (ev->entity_id == SHARED_ENGINE->p->entity->id) {
+                    name = SHARED_ENGINE->player_name;
+                } else {
+                    name = "Unknown";
+                }
+            }
+            snprintf(fmt_msg, 1024 + 128 + 1, "%s: %s", name, ev->message);
+            UILINK_FEED_CHAT(SHARED_ENGINE->uimodules, fmt_msg);
+            break;
+        }
+        case CLIENT_SERVER_CHAT_EVENT_TAG: {
+            server_chat_event_t* ev = (server_chat_event_t*)event;
+
+            char fmt_msg[1024 + 128 + 2] = {0};
+            if (ev->is_title) {
+                UILINK_FEED_KILL(SHARED_ENGINE->uimodules, ev->message);
+            } else {
+                if (ev->is_broadcast) {
+                    snprintf(fmt_msg, 1024 + 128, "[SERVER] %s", ev->message);
+                } else {
+                    snprintf(fmt_msg, 1024 + 128, "Server to you: %s", ev->message);
+                }
+                UILINK_FEED_CHAT(SHARED_ENGINE->uimodules, fmt_msg);
+            }
+            break;
+        }
+        case CLIENT_SCOREBOARD_UPDATE_EVENT_TAG: {
+            scoreboard_update_event_t* ev = (scoreboard_update_event_t*)event;
+            char fmt_msg[256] = {0};
+            for (int i = 0; i < 4; i++) {
+                if (i < ev->entries_count) {
+                    snprintf(fmt_msg, 256, "%i - %s [%d/%d]", i+1, ev->entries[i], ev->kills[i], ev->deaths[i]);
+                } else {
+                    snprintf(fmt_msg, 256, "%i - free slot", i+1);
+                }
+                UILINK_SET_SB_N(SHARED_ENGINE->uimodules, i, fmt_msg);
+            }
             break;
         }
         default:
