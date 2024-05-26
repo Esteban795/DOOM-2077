@@ -3,6 +3,14 @@
 #include "../../../include/ecs/world.h"
 #include "../../../include/server/state.h"
 #include "../../../include/server/task.h"
+#include "../../../include/ecs/entity.h"
+#include "../../../include/net/packet/server.h"
+#include "../../../include/component/weapon.h"
+#include "../../../include/component/health.h"
+#include "../../../include/component/position.h"
+#include "../../../include/component/statistic.h"
+#include "../../../include/spawnpoints.h"
+#include "../../../include/event/scoreboard_update.h"
 
 const system_t GAME_MANAGING_SYSTEM = {
     .fn = game_managing,
@@ -133,12 +141,87 @@ int game_managing(world_t* world, event_t* event) {
             }
             break;
         }
-        // case SERVER_GAME_START_IN_EVENT_TAG: {
-        //     break;
-        // }
-        // case SERVER_GAME_END_IN_EVENT_TAG: {
-        //     break;
-        // }
+        case SERVER_GAME_START_EVENT_TAG: {
+            uint8_t buf_all[2048] = {0};
+            int len_all = 0;
+            uint8_t* buf = SERVER_STATE->outgoing->data;
+            int len = 0;
+
+            game_start_event_t* ev = (game_start_event_t*)event;
+            if (ev->countdown == 0) {
+                for (int i = 0; i < SERVER_STATE->conn_count; i++) {
+                    uint64_t pid = SERVER_STATE->conns[i].player_id;
+                    entity_t player = ENTITY_BY_ID(pid);
+                    len = 0;
+
+                    // Reset the weapons of all players.
+                    weapon_ct* weapon = (weapon_ct*)world_get_component(world, &player, COMPONENT_TAG_WEAPON);
+                    if (weapon == NULL) {
+                        continue;
+                    }
+                    weapon->ammunitions[0] = -2;
+                    weapon->mags[0] = 0;
+                    for (int j = 1; j < WEAPONS_NUMBER; j++) {
+                        weapon->ammunitions[j] = 10;
+                        weapon->mags[j] = 10;
+                    }
+                    len += server_player_weapon_update(buf + len, weapon->ammunitions, weapon->mags, weapon->cooldowns);
+
+                    // Reset the health of all players.
+                    health_ct* health = (health_ct*)world_get_component(world, &player, COMPONENT_TAG_HEALTH);
+                    if (health == NULL) {
+                        continue;
+                    }
+                    health->health = 100.0;
+                    health->max_health = 100.0;
+                    len_all += server_player_health(buf_all + len_all, pid, health->health, health->max_health);
+
+                    // Reset the position of all players.
+                    position_ct* position = (position_ct*)world_get_component(world, &player, COMPONENT_TAG_POSITION);
+                    if (position == NULL) {
+                        continue;
+                    }
+                    spawnpoint sp = get_random_spawnpoint();
+                    position->x = sp.x;
+                    position->y = sp.y;
+                    position->z = sp.z;
+                    position->angle = sp.angle;
+                    printf("Player %lu spawned at (%f, %f, %f) with angle %f\n", pid, position->x, position->y, position->z, position->angle);
+                    len_all += server_player_move(buf_all + len_all, pid, position->x, position->y, position->z, position->angle);
+
+                    // Reset the statistics of all players.
+                    statistic_ct* statistic = (statistic_ct*)world_get_component(world, &player, COMPONENT_TAG_STATISTIC);
+                    if (statistic == NULL) {
+                        continue;
+                    }
+                    statistic->deaths = 0;
+                    statistic->kills = 0;
+
+                    // Send the player packet
+                    SERVER_STATE->outgoing->len = len;
+                    int pind = find_conn_by_id(SERVER_STATE->conns, SERVER_STATE->conn_count, pid);
+                    if (pind >= 0) {
+                        SERVER_STATE->outgoing->address = SERVER_STATE->conns[pind].ip;
+                        SDLNet_UDP_Send(SERVER_STATE->sock, -1, SERVER_STATE->outgoing);
+                    }
+                }
+                
+                // Reset the scoreboard.
+                char* entries[10] = {0};
+                uint16_t deaths[10] = {0};
+                uint16_t kills[10] = {0};
+                int count = scoreboard_generate(world, entries, deaths, kills);
+                event_t* scoreboard_event = (event_t*) ServerScoreboardUpdateEvent_new(count, entries, deaths, kills);
+                world_queue_event(world, scoreboard_event);
+
+                // Send the broadcast packet
+                broadcast(&SERVER_STATE->sock, SERVER_STATE->conns, SERVER_STATE->conn_count, buf_all, len_all);
+            }
+            break;
+        }
+        case SERVER_GAME_END_EVENT_TAG: {
+            break;
+        }
         default:
             break;
     }

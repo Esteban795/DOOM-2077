@@ -36,7 +36,7 @@ CLIENT_LDFLAGS = -lSDL2 -lSDL2_ttf -lSDL2_image -lSDL2_mixer -lSDL2_net
 SERVER_SRC = server.c \
 	blockmap.c byte_reader.c color.c door.c flat.c geometry.c header.c lift.c \
 	linedef.c lump.c node.c patch.c sector.c segment.c sidedef.c sound.c \
-	subsector.c texture.c thing.c util.c vertex.c wad_data.c \
+	subsector.c texture.c thing.c util.c vertex.c wad_data.c spawnpoints.c \
 	$(patsubst $(srcdir)/%, %, $(wildcard $(srcdir)/server/*.c)) \
  	$(patsubst $(srcdir)/%, %, $(wildcard $(srcdir)/event/*.c)) \
 	$(patsubst $(srcdir)/%, %, $(wildcard $(srcdir)/system/server/*.c)) \
