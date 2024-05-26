@@ -2,14 +2,14 @@
 #include <time.h>
 
 spawnpoint SPAWNPOINTS[SPAWNPOINTS_COUNT] = {
-    (spawnpoint){.x =-3072, .y = 768,.z = 264,.angle = 45.0},   
-    (spawnpoint){.x = -1792, .y = -64,.z = 280,.angle = 0.0},
-    (spawnpoint){.x = -1216, .y = -1344,.z = 8, .angle = 225.0}, 
-    (spawnpoint){.x = -256, .y = -832,.z = 8, .angle = 90.0},
-    (spawnpoint){.x = 256, .y = -832,.z = 8, .angle = 270.0},    
-    (spawnpoint){.x = 1216, .y = 1344,.z = 8, .angle = 45.0},
-    (spawnpoint){.x = 1792, .y = 64,.z = 280,.angle = 180.0},
-    (spawnpoint){.x = 3072, .y = -768,.z = 264,.angle = 225.0}
+    {-3072,768,264,45.0},   
+    {-1792,  -64, 280, 0.0},
+    { -1216,  -1344, 8,  225.0}, 
+    { -256,  -832, 8,  90.0},
+    { 256,  -832, 8,  270.0},    
+    { 1216,  1344, 8,  45.0},
+    { 1792,  64, 280, 180.0},
+    { 3072,  -768, 264, 225.0}
 };
 
 time_t t;
