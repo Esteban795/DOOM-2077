@@ -311,9 +311,22 @@ void fire_bullet(
   if (weapon_get_active_cooldown(weapon_ecs) <= 0) {
     weapon *weapon_used = weapons_list->weapons[weapon_ecs->active_weapon];
     *weapon_get_mut_active_cooldown(weapon_ecs) = 1000 / weapon_used->fire_rate;
-  
-    add_sound_to_play(SHOTGUN_SOUND, pos->x + 10 * cos(deg_to_rad(pos->angle)),
-                      pos->y - 10 * sin(deg_to_rad(pos->angle)));
+    double forward_x = pos->x + 10 * cos(deg_to_rad(position_get_angle(pos)));
+    double forward_y = pos->y - 10 * sin(deg_to_rad(position_get_angle(pos)));
+    switch (weapon_ecs->active_weapon) {
+    case 0:
+      add_sound_to_play(PUNCH_SOUND, forward_x, forward_y);
+      break;
+    case 1:
+      add_sound_to_play(PISTOL_SOUND, forward_x, forward_y);
+      break;
+    case 2:
+      add_sound_to_play(CHAINGUN_SOUND, forward_x, forward_y);
+      break;
+    case 3:
+      add_sound_to_play(SHOTGUN_SOUND, forward_x, forward_y);
+      break;
+    }
     int damage = weapon_used->max_damage;
     int weapon_number = weapon_used->id;
     double cs =
@@ -521,8 +534,10 @@ void process_keys(player *p) {
   bool is_interacting = keys[get_key_from_action(p->keybinds, "INTERACT")];
   // to avoid spamming the interact key and crashing the audio lmao
   INTERACT_CD -= p->engine->DT;
-  weapon->cooldowns[weapon->active_weapon] -= p->engine->DT;
-  printf("cooldown: %d\n", weapon->cooldowns[weapon->active_weapon]);
+  for (int i = 0; i < WEAPONS_NUMBER; i++) {
+    weapon->cooldowns[i] = max(-1, weapon->cooldowns[i] - p->engine->DT);
+  }
+  
   if (is_interacting && INTERACT_CD <= 0) {
     linedef *trigger_linedef = cast_ray(
         p->engine->wData->linedefs, p->engine->wData->len_linedefs,
