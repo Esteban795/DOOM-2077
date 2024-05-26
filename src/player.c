@@ -311,8 +311,12 @@ void fire_bullet(
   if (weapon_get_active_cooldown(weapon_ecs) <= 0) {
     weapon *weapon_used = weapons_list->weapons[weapon_ecs->active_weapon];
     *weapon_get_mut_active_cooldown(weapon_ecs) = 1000 / weapon_used->fire_rate;
+    weapon_decrease_active_bullets(weapon_ecs);
+
+    // SOUND 
     double forward_x = pos->x + 10 * cos(deg_to_rad(position_get_angle(pos)));
     double forward_y = pos->y - 10 * sin(deg_to_rad(position_get_angle(pos)));
+   
     switch (weapon_ecs->active_weapon) {
     case 0:
       add_sound_to_play(PUNCH_SOUND, forward_x, forward_y);
@@ -327,6 +331,8 @@ void fire_bullet(
       add_sound_to_play(SHOTGUN_SOUND, forward_x, forward_y);
       break;
     }
+
+    //////
     int damage = weapon_used->max_damage;
     int is_ranged; // 0 correspond a une arme de melée sinon une arme a distance
     if (weapon_used->type == -1) {
@@ -335,9 +341,13 @@ void fire_bullet(
       is_ranged = 1;
     }
     // gestion du tir jusqu'au mur
-    if (is_ranged==0||weapon_ecs->ammunitions[weapon_ecs->active_weapon]) { // On véfrifie d'un coté que le temps de cooldown est
-                    // respecté et ensuite que si l'arme est a distance elle
-                    // dispose d'assez de muntitions
+    if (is_ranged == 0 ||
+        weapon_ecs
+            ->ammunitions[weapon_ecs->active_weapon]) { // On véfrifie d'un coté
+                                                        // que le temps de
+                                                        // cooldown est
+      // respecté et ensuite que si l'arme est a distance elle
+      // dispose d'assez de muntitions
       linedef **linedefs = player_->engine->wData->linedefs;
       double x1 = position_get_x(pos);
       double y1 = -position_get_y(pos);
@@ -431,8 +441,8 @@ void fire_bullet(
           }
         }
       }
-      if(is_ranged==1){
-        weapon_ecs->ammunitions[weapon_ecs->active_weapon]-=1;
+      if (is_ranged == 1) {
+        weapon_ecs->ammunitions[weapon_ecs->active_weapon] -= 1;
       }
     }
   }
@@ -520,7 +530,7 @@ void process_keys(player *p) {
   for (int i = 0; i < WEAPONS_NUMBER; i++) {
     weapon->cooldowns[i] = max(-1, weapon->cooldowns[i] - p->engine->DT);
   }
-  
+
   if (is_interacting && INTERACT_CD <= 0) {
     linedef *trigger_linedef = cast_ray(
         p->engine->wData->linedefs, p->engine->wData->len_linedefs,
@@ -556,24 +566,11 @@ void process_keys(player *p) {
   }
 
   bool is_reloading = keys[get_key_from_action(p->keybinds, "RELOAD")];
-  printf("%i\n",weapon->ammunitions[weapon->active_weapon]);
+  printf("%i\n", weapon->mags[weapon->active_weapon]);
   if (is_reloading) { // cannot reload fists..
-    int ammos_left = weapon_get_active_ammos_left(weapon);
-    int mags_left = weapon_get_active_bullets_left(weapon);
-    int room_left = WEAPON_AMMO_CAPACITY - mags_left;
-    if (ammos_left < room_left) {
-      weapon->ammunitions[weapon->active_weapon] = 0;
-      weapon->mags[weapon->active_weapon] += ammos_left;
-    } else {
-      weapon->ammunitions[weapon->active_weapon] -= room_left;
-      weapon->mags[weapon->active_weapon] = WEAPON_AMMO_CAPACITY;
-    }
+    weapon->mags[weapon->active_weapon] = wa->weapons[weapon->active_weapon]->magsize;
   }
 
-  // bool is_attacking = keys[get_key_from_action(p->keybinds, "ATTACK")];
-  // if (is_attacking && weapon_get_active_bullets_left(weapon) > 0) {
-  //   fire_bullet(p->engine->players, NUM_PLAYERS, p, wa);
-  // }
   // DEBUG OPTION TO GO THROUGH WALLS
   if (keys[SDL_GetScancodeFromKey(SDL_GetKeyFromName("M"))]) {
     SHOULD_COLLIDE = !SHOULD_COLLIDE;
