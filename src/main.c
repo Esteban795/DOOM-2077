@@ -57,7 +57,7 @@ int main() {
 
   // Waiting for connection to server
   old = SDL_GetTicks();
-  while (SDL_GetTicks() - old < 5000) {
+  while (SDL_GetTicks() - old < 500) {
     int status = remote_update(e, e->remote);
     if (e->remote->connected == 1) {
       e->remote->connected = 2;

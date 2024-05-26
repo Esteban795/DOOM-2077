@@ -9,6 +9,7 @@
 
 #define ANIMATION_WIDTH 100
 #define ANIMATION_HEIGTH 50
+#define DEFAULT_ANIM_DURATION 100
 
 void set_origin(animation_sprite *as){
     patch sprite = as->animation_sprite;
@@ -20,41 +21,61 @@ void set_origin(animation_sprite *as){
     as->wanim_speed.y = 0;
 }
 
-void init_animation_sprite(animation_sprite *as, patch sprite, bool (*linked_function)(engine *e)){
+void init_animation_sprite(animation_sprite *as, patch sprite, bool (*linked_function)(engine *e),weapon *w){
     as->animation_sprite = sprite;
     as->linked_function = linked_function;
     as->y_difference = HEIGHT - sprite.header.height * Y_SCALE + sprite.header.y_offset * Y_SCALE;
     set_origin(as);
     as->layer_index_len = 0;
     as -> layers_index = NULL;
-    if (strcmp(sprite.patchname, "PUNGB0") == 0){
-        as->duration = 50;
+    int cooldown = 1000/(w->fire_rate);
+    if(strcmp(sprite.patchname,"PUNGB0") == 0){
+            as->duration = 0.10*cooldown;
+            return;
+    }
+    if(strcmp(sprite.patchname,"PUNGC0") == 0){
+            as->duration = 0.15*cooldown;
+            return;
+    }
+    if (strcmp(sprite.patchname,"PUNGD0") == 0){
+            as->duration = 0.75*cooldown;
+            return;
+    } 
+    if(strcmp(sprite.patchname,"SHTGB0") == 0){
+        as->duration = 0.083*cooldown;
         return;
     }
-    if(strcmp(sprite.patchname, "PUNGC0") == 0){
-        as->duration = 25;
+    if(strcmp(sprite.patchname,"SHTGC0") == 0){
+        as->duration = 0.25*cooldown;
         return;
     }
-    if(strcmp(sprite.patchname, "PUNGD0") == 0){
-        as->duration = 200;
+    if(strcmp(sprite.patchname,"SHTGD0") == 0){
+        as->duration = 0.25*cooldown;
         return;
     }
-    if(strcmp(sprite.patchname, "SHTGC0") == 0){
-        as->duration = 300;
+    if(strcmp(sprite.patchname,"SHTFA0") == 0){
+        as->duration = 0.083*cooldown;
         return;
     }
-    if(strcmp(sprite.patchname, "SHTGD0") == 0){
-        as->duration = 300;
+    if(strcmp(sprite.patchname,"SHTFB0") == 0){
+        as->duration = 0.083*cooldown;
         return;
     }
-    as->duration = 100;
+    if(strcmp(sprite.patchname,"PISFA0") == 0){
+        as->duration = 0.25*cooldown;
+        return;
+    }
+    as->duration = 0;
     //printf("Default init of %s with duration %d\n",sprite.patchname,as->duration);
     return;
 }
 
-animations_array *init_animations_array(engine* e,char *abbreviation, json_t *fire_frames, json_t *fire_layers){
+animations_array *init_animations_array(engine* e,char *abbreviation, json_t *fire_frames, json_t *fire_layers,weapon *w){
     animations_array *ar = malloc(3*sizeof(animations_array)); // A priori pas besoin de plus vu qu'on a que 2 animations 
                                                             //pour les armes : IDLE et animation + la partie qui se rajoute sur l'animation
+    
+    int cooldown = 1000/(w->fire_rate);
+    
     // PREMIERE PARTIE : RECUPERE LES INDEX TOUS LES SPRITES RELATIF A L'ARME + LA LONGUEUR DE L'ANIMATION
     int m = strlen(abbreviation);
     int indexes[10]; // J'ai supposé qu'on aurait pas plus de 10 sprites pour l'animation
@@ -109,14 +130,17 @@ animations_array *init_animations_array(engine* e,char *abbreviation, json_t *fi
 
     //Crée la partie IDLE
     animation_sprite *idle_animation_sprites_array = malloc(sizeof(animation_sprite));
-    init_animation_sprite(idle_animation_sprites_array,sprites[indexes[0]],NULL);
+    init_animation_sprite(idle_animation_sprites_array,sprites[indexes[0]],NULL,w);
     animations_array idle_anim = {.animation_sprites_array = idle_animation_sprites_array,.animation_len = 1};
     ar[IDLE] = idle_anim;
 
     //Crée la partie d'animation de l'animation array
     animation_sprite *fire_anim_sprites = malloc(sizeof(animation_sprite)*(animation_len-1));
     for(int j = 1; j<animation_len;j++){
-        init_animation_sprite(&fire_anim_sprites[j-1],sprites[indexes[j]],NULL);
+        init_animation_sprite(&fire_anim_sprites[j-1],sprites[indexes[j]],NULL,w);
+        if(fire_anim_sprites[j-1].duration == 0){
+            fire_anim_sprites[j-1].duration = cooldown/(animation_len-1);
+        }
     }
 
 
@@ -132,7 +156,11 @@ animations_array *init_animations_array(engine* e,char *abbreviation, json_t *fi
         animation_sprite *layer_sprites = malloc(sizeof(animation_sprite)*(all_sprites_len - animation_len));
         //Initialise les cases du tableau avec les sprites correspondants
         for(int j = animation_len; j<all_sprites_len;j++){
-            init_animation_sprite(&layer_sprites[j-animation_len],sprites[indexes[j]],NULL);
+            init_animation_sprite(&layer_sprites[j-animation_len],sprites[indexes[j]],NULL,w);
+            printf("Layer %s\n duration %d\n",layer_sprites[j-animation_len].animation_sprite.patchname,layer_sprites[j-animation_len].duration);
+            if(layer_sprites[j-animation_len].duration == 0){
+                layer_sprites[j-animation_len].duration = cooldown/(all_sprites_len - animation_len);
+            }
         }
         //Ajoute le tableau dans l'animation array
         animations_array fire_layer = {.animation_sprites_array = layer_sprites,.animation_len = all_sprites_len - animation_len};
@@ -179,7 +207,6 @@ animations_array *init_animations_array(engine* e,char *abbreviation, json_t *fi
             }
         }
     }
-
     //Initialise les positions des layers de l'animation et les décale comme il faut
     animation_sprite as = ar[IDLE].animation_sprites_array[0];
     for(int k = 0; k<as.layer_index_len;k++){
@@ -200,6 +227,8 @@ animations_array *init_animations_array(engine* e,char *abbreviation, json_t *fi
         }
         ar->animation_duration += ar[ANIMATION].animation_sprites_array[i].duration;
     }
+
+
     free(to_cmp);
     return ar;
 }
@@ -210,7 +239,6 @@ weapon* init_one_weapon(engine* e,int id, char* weapon_name, char* abbreviation,
     w->id = id;
     w->weapon_name = strdup(weapon_name);
     w->abbreviation = strdup(abbreviation);
-    w->sprites = init_animations_array(e,abbreviation,fire_frames,fire_layers);
     w->magsize = magsize;
     w->max_damage = max_damage;
     w->min_damage = min_damage;
@@ -219,6 +247,7 @@ weapon* init_one_weapon(engine* e,int id, char* weapon_name, char* abbreviation,
     w->ammo_bounce = ammo_bounce;
     w->ammo_id = ammo_id;
     w->type = type;
+    w->sprites = init_animations_array(e,abbreviation,fire_frames,fire_layers,w);
     return w;
 }
 
