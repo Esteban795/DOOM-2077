@@ -149,7 +149,7 @@ void fire_bullet(
       }
       // Update des etats du joueur
       player_->cooldowns_sprays->cs[weapon_number] = time;
-       printf("final x: %f, final y: %f\n", x_final, y_final);
+      //  printf("final x: %f, final y: %f\n", x_final, y_final);
     }
     
   }
