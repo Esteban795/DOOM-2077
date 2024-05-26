@@ -61,7 +61,7 @@ int apply_event(world_t* world, event_t* event) {
             player_fire_event_t* client_player_fire_event = (player_fire_event_t*)event;
             pid = ENTITY_BY_ID(client_player_fire_event->entity_id);
             position_ct* position = (position_ct*) world_get_component(world, &pid, COMPONENT_TAG_POSITION);
-            if (position == NULL) return -1; // If the player does not have a position, we cannot apply the event, cancel it.
+            if (position == NULL) return 0; // sound are not essential, if the player does not have a position, we can still apply the event.
             double x = position->x;
             double y = position->y;
             switch (client_player_fire_event->weapon_id) {
