@@ -82,7 +82,7 @@ int run_server(uint16_t port)
     world_register_active_systems(&SERVER_STATE->world);
 
     // Load the WAD data and map
-    SERVER_STATE->map_name = "E1M3";
+    SERVER_STATE->map_name = "E1M2";
     SERVER_STATE->wad_data = server_load_wad("maps/DOOM1.WAD", SERVER_STATE->map_name);
     if (SERVER_STATE->wad_data == NULL)
     {

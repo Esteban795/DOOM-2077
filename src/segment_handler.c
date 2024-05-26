@@ -1,3 +1,4 @@
+#include <stdbool.h>
 #include <stdio.h>
 
 #include "../include/segment_handler.h"
@@ -53,12 +54,17 @@ void draw_solid_walls_range(segment_handler *sh, int x1, int x2) {
 
   
   double rw_scale_step = 0.0;
-  double scale1 = scale_from_global_angle(sh, x1, normal_angle, raw_dist);
+  double scale1 =
+      scale_from_global_angle(sh, x1, normal_angle, raw_dist);
+  double scale2 = scale1;
   if (x1 < x2) {
-    double scale2 = scale_from_global_angle(sh, x2, normal_angle, raw_dist);
+    scale2 = scale_from_global_angle(sh, x2, normal_angle,
+                                     raw_dist);
     rw_scale_step =
         (scale2 - scale1) /
         (x2 - x1); // interpolation to find the scale for second vertex
+  } else {
+    return;
   }
 
   // manage texture vertical alignment
@@ -89,7 +95,7 @@ void draw_solid_walls_range(segment_handler *sh, int x1, int x2) {
   double wall_y2_step =
       -rw_scale_step *
       world_front_z2; // step to find the next y position of bottom of the wall
-
+  double prev_scale1 = scale1;
   for (int i = x1; i < x2; i++) {
     int draw_wall_y1 = (int)(wall_y1)-1;
     int draw_wall_y2 = (int)wall_y2;
@@ -102,10 +108,9 @@ void draw_solid_walls_range(segment_handler *sh, int x1, int x2) {
     }
 
     if (draw_wall) {
-      int wy1 =
-          (int)fmax(draw_wall_y1, sh->upper_clip[i] + 1); // max(0, upper_clip)
-      int wy2 = (int)fmin(draw_wall_y2,
-                          sh->lower_clip[i] - 1); // min(HEIGHT, lower_clip)
+      int wy1 = max(draw_wall_y1, sh->upper_clip[i] + 1); // max(0, upper_clip)
+      int wy2 = min(draw_wall_y2,
+                    sh->lower_clip[i] - 1); // min(HEIGHT, lower_clip)
       if (wy1 < wy2) {
         double angle =
             center_angle - rad_to_deg(atan((HALF_WIDTH - i) / SCREEN_DISTANCE));
@@ -127,6 +132,8 @@ void draw_solid_walls_range(segment_handler *sh, int x1, int x2) {
     wall_y2 += wall_y2_step;
     scale1 += rw_scale_step;
   }
+  // log entry used later for sprite rendering
+  drawseg_add(seg, x1, x2, prev_scale1, scale2, rw_scale_step, NULL,NULL,DRAWSEG_SOLID_WALL);
 }
 
 void draw_portal_walls_range(segment_handler *sh, int x1, int x2) {
@@ -134,7 +141,8 @@ void draw_portal_walls_range(segment_handler *sh, int x1, int x2) {
   linedef *ld = seg->linedef;
   sector *front_sector = seg->front_sector;
   sector *back_sector = seg->back_sector;
-  sidedef *front_sidedef = seg->direction ? seg->linedef->back_sidedef : seg->linedef->front_sidedef;
+  sidedef *front_sidedef =
+      seg->direction ? seg->linedef->back_sidedef : seg->linedef->front_sidedef;
 
   texture_map *upper_wall_texture = front_sidedef->upper_texture;
   texture_map *lower_wall_texture = front_sidedef->lower_texture;
@@ -155,7 +163,8 @@ void draw_portal_walls_range(segment_handler *sh, int x1, int x2) {
       front_sector->hash_ceiling != back_sector->hash_ceiling) {
     draw_upper_wall = front_sidedef->hash_upper != NO_TEXTURE_HASH &&
                       world_back_z1 < world_front_z1;
-    draw_ceiling = world_front_z1 >= 0 || front_sector->hash_ceiling == SKY_TEXTURE_HASH;
+    draw_ceiling =
+        world_front_z1 >= 0 || front_sector->hash_ceiling == SKY_TEXTURE_HASH;
   }
 
   bool draw_lower_wall = false;
@@ -186,9 +195,13 @@ void draw_portal_walls_range(segment_handler *sh, int x1, int x2) {
       hyp * cos(deg_to_rad(offset_angle)); // distance from player to wall
 
   double rw_scale_step = 0.0;
-  double scale1 = scale_from_global_angle(sh, x1, normal_angle, raw_dist);
+  double scale1 =
+      scale_from_global_angle(sh, x1, normal_angle, raw_dist);
+  double scale2 = scale1;
+  double prev_scale1 = scale1;
   if (x1 < x2) {
-    double scale2 = scale_from_global_angle(sh, x2, normal_angle, raw_dist);
+    scale2 = scale_from_global_angle(sh, x2, normal_angle,
+                                     raw_dist);
     rw_scale_step =
         (scale2 - scale1) /
         (x2 - x1); // interpolation to find the scale for second vertex
@@ -268,10 +281,18 @@ void draw_portal_walls_range(segment_handler *sh, int x1, int x2) {
     }
   }
 
+  // keep tracks of the top and bottom clips for sprite rendering
+  double* top_clips = malloc(sizeof(double) * (x2 - x1));
+  double* bottom_clips = malloc(sizeof(double) * (x2 - x1));
+  for (int i = 0; i < x2 - x1; i++) {
+    top_clips[i] = -1;
+    bottom_clips[i] = HEIGHT;
+  }
   // lets start actually rendering
   double angle = 0;
   double texture_column = 0;
   double inverted_scale = 1.0 / scale1;
+
   for (int i = x1; i < x2; i++) {
     double draw_wall_y1 = wall_y1 - 1;
     double draw_wall_y2 = wall_y2;
@@ -301,6 +322,7 @@ void draw_portal_walls_range(segment_handler *sh, int x1, int x2) {
                        inverted_scale, light_level);
       if (sh->upper_clip[i] < wy2) {
         sh->upper_clip[i] = wy2;
+        top_clips[i - x1] = wy2;
       }
       portal_y1 += portal_y1_step;
     }
@@ -312,6 +334,7 @@ void draw_portal_walls_range(segment_handler *sh, int x1, int x2) {
                 cy2, world_front_z1);
       if (sh->upper_clip[i] < cy2) {
         sh->upper_clip[i] = cy2;
+        top_clips[i - x1] = cy2;
       }
     }
 
@@ -331,6 +354,7 @@ void draw_portal_walls_range(segment_handler *sh, int x1, int x2) {
                        inverted_scale, light_level);
       if (sh->lower_clip[i] > wy1) {
         sh->lower_clip[i] = wy1;
+        bottom_clips[i - x1] = wy1;
       }
       portal_y2 += portal_y2_step;
     }
@@ -341,13 +365,18 @@ void draw_portal_walls_range(segment_handler *sh, int x1, int x2) {
       draw_flat(sh->engine, floor_texture, light_level, i, fy1,
                 fy2, world_front_z2);
 
-      if (sh->lower_clip[i] > draw_wall_y2)
+      if (sh->lower_clip[i] > draw_wall_y2) {
         sh->lower_clip[i] = fy1;
+        bottom_clips[i - x1] = fy1;
+      }
     }
     wall_y1 += wall_y1_step; // we're working with linear interpolation, don't forget to update the y_1 and y_2 positions
     wall_y2 += wall_y2_step;
     scale1 += rw_scale_step;
   }
+
+  // log entry of what we've just drawn, used later for rendering sprites
+  drawseg_add(seg, x1, x2, prev_scale1, scale2, rw_scale_step, top_clips,bottom_clips,DRAWSEG_PORTAL_WALL);
 }
 
 // Given x1 and x2, clip the solid wall with what is already existing on the screen
