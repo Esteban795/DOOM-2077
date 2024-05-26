@@ -1,6 +1,7 @@
 #ifndef SETTINGS_H
 #define SETTINGS_H
 
+#include "vec2.h"
 #include <stdint.h>
 
 #define M_PI 3.14159265358979323846

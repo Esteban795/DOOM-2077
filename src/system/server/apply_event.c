@@ -50,7 +50,7 @@ int apply_event(world_t* world, event_t* event) {
             if (health == NULL) return -1; // If the player does not have health, we cannot apply the event, cancel it.
             health_sub(health, player_damage_event->damage);
             if (health_get(health) <= 0) {
-                event_t* kill_event = (event_t*) ServerPlayerKillEvent_new(player_damage_event->entity_id, player_damage_event->source_entity_id);
+                event_t* kill_event = (event_t*) ServerPlayerKillEvent_new(player_damage_event->entity_id, player_damage_event->source_entity_id, player_damage_event->weapon_id);
                 world_queue_event(world, kill_event);
                 return -1; // If the player is dead, it is a kill event that we need to send, so we cancel this event.
             }

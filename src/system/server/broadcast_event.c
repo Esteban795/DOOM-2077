@@ -49,9 +49,8 @@ int broadcast_event(world_t* world, event_t* event) {
             printf("%s joined the server.\n", server_player_join_event->name);
 
             // Broadcast the other players!
-            char msg[256] = {0};
-            strncat(msg, server_player_join_event->name, 128);
-            strcat(msg, " joined the server.");
+            char msg[256];
+            snprintf(msg, 255, "%s joined the server.", server_player_join_event->name);
             len = server_join(buf, server_player_join_event->entity_id, server_player_join_event->name);
             len += server_server_chat(buf + len, msg, true, false);
             pid = ENTITY_BY_ID(server_player_join_event->entity_id);
@@ -103,9 +102,8 @@ int broadcast_event(world_t* world, event_t* event) {
             server_player_quit_event_t* server_player_quit_event = (server_player_quit_event_t*)event;
             printf("%s left the server.\n", server_player_quit_event->name);
 
-            char msg[256] = {0};
-            strncat(msg, server_player_quit_event->name, 128);
-            strcat(msg, " left the server.");
+            char msg[256];
+            snprintf(msg, 255, "%s left the server.", server_player_quit_event->name);
             len = server_quit(buf, server_player_quit_event->entity_id);
             len += server_server_chat(buf + len, msg, true, false);
             broadcast(&sock, conns, SERVER_STATE->conn_count, buf, len);
@@ -127,7 +125,7 @@ int broadcast_event(world_t* world, event_t* event) {
             pid = ENTITY_BY_ID(player_damage_event->entity_id);
             health_ct* health = (health_ct*) world_get_component(world, &pid, COMPONENT_TAG_HEALTH);
             if (health == NULL) break;
-            len = server_player_damage(buf, player_damage_event->entity_id, player_damage_event->source_entity_id, player_damage_event->damage);
+            len = server_player_damage(buf, player_damage_event->entity_id, player_damage_event->source_entity_id, player_damage_event->weapon_id, player_damage_event->damage);
             broadcast(&sock, conns, SERVER_STATE->conn_count, buf, len);
             break;
         }
@@ -166,7 +164,7 @@ int broadcast_event(world_t* world, event_t* event) {
                 strncat(death_msg, display_name_get(killer_name), 128);
             }
             printf("%s\n", death_msg);
-            len = server_player_kill(buf, player_kill_event->entity_id, player_kill_event->source_entity_id);
+            len = server_player_kill(buf, player_kill_event->entity_id, player_kill_event->source_entity_id, player_kill_event->weapon_id);
             len += server_server_chat(buf + len, death_msg, true, true);
             broadcast(&sock, conns, SERVER_STATE->conn_count, buf, len);
             break;
@@ -174,10 +172,10 @@ int broadcast_event(world_t* world, event_t* event) {
         case SERVER_DOOR_OPEN_EVENT_TAG: {
             door_open_event_t* ev = (door_open_event_t*) event;
             if (ev->is_lift) {
-                printf("Lift %d is ascending.\n", ev->door_id);
+                printf("Lift %ld is ascending.\n", ev->door_id);
                 len = server_lift_ascend(buf, ev->door_id);
             } else {
-                printf("Door %d is opening.\n", ev->door_id);
+                printf("Door %ld is opening.\n", ev->door_id);
                 len = server_door_open(buf, ev->door_id);
             }
             broadcast(&sock, conns, SERVER_STATE->conn_count, buf, len);
@@ -186,10 +184,10 @@ int broadcast_event(world_t* world, event_t* event) {
         case SERVER_DOOR_CLOSE_EVENT_TAG: {
             door_close_event_t* ev = (door_close_event_t*) event;
             if (ev->is_lift) {
-                printf("Lift %d is descending.\n", ev->door_id);
+                printf("Lift %ld is descending.\n", ev->door_id);
                 len = server_lift_descend(buf, ev->door_id);
             } else {
-                printf("Door %d is closing.\n", ev->door_id);
+                printf("Door %ld is closing.\n", ev->door_id);
                 len = server_door_close(buf, ev->door_id);
             }
             broadcast(&sock, conns, SERVER_STATE->conn_count, buf, len);
@@ -220,6 +218,22 @@ int broadcast_event(world_t* world, event_t* event) {
             printf("%s\n", msg);
             len = server_game_end(buf, ev->countdown);
             len += server_server_chat(buf + len, msg, true, true);
+            broadcast(&sock, conns, SERVER_STATE->conn_count, buf, len);
+            break;
+        }
+        case SERVER_PLAYER_FIRE_EVENT_TAG: {
+            player_fire_event_t* ev = (player_fire_event_t*) event;
+            len = server_player_fire(buf, ev->entity_id, ev->weapon_id);
+            broadcast_except(&sock, conns, SERVER_STATE->conn_count, ev->entity_id, buf, len);
+            break;
+        }
+        case SERVER_SCOREBOARD_UPDATE_EVENT_TAG: {
+            scoreboard_update_event_t* ev = (scoreboard_update_event_t*) event;
+            char* entries[10] = {0};
+            for (int i = 0; i < ev->entries_count; i++) {
+                entries[i] = ev->entries[i];
+            }
+            len = server_scoreboard_update(buf, ev->entries_count, entries, ev->deaths, ev->kills);
             broadcast(&sock, conns, SERVER_STATE->conn_count, buf, len);
             break;
         }

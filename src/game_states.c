@@ -1,5 +1,9 @@
 #include "../include/game_states.h"
+#include "../include/component/weapon.h"
+#include "../include/player.h"
+#include "../include/ui/linker.h"
 #include <stdio.h>
+//#include "../include/events.h"
 
 bool firstTimeLaunching = true;
 
@@ -9,14 +13,45 @@ void switch_scene(engine *e, int scene) {
   game_states_init[e->state](e);
 }
 
-void init_menu_state(engine *e) {}
-void init_ingame_state(engine *e) {}
+void init_menu_state(engine *e) {
+  SDL_ShowCursor(SDL_ENABLE);
+  SDL_SetRelativeMouseMode(SDL_FALSE);
+  e->substate = 0;
+  e->uimodules = get_ui_menu(e->renderer, &e->nuimodules);
+}
+void init_ingame_state(engine *e) {
+  SDL_ShowCursor(SDL_DISABLE);
+  SDL_SetRelativeMouseMode(SDL_TRUE);
+  e->substate = 0;
+  e->uimodules = get_ui_ingame(e->renderer, &e->nuimodules);
+}
 
 void update_menu_state(engine *e) {
-  // faire les trucs du menu
+
 }
 
 void update_ingame_state(engine *e) {
+  if (keys[SDL_SCANCODE_TAB] && e->substate == SUBSTATE_INGAME_PLAYING){
+    e->substate = SUBSTATE_INGAME_SCOREBOARD;
+  } else if (!keys[SDL_SCANCODE_TAB] && e->substate == SUBSTATE_INGAME_SCOREBOARD) {
+    e->substate = SUBSTATE_INGAME_PLAYING;
+  }
+
+  // Update the HUD
+  health_ct* hth = player_get_health(e->p);
+  weapon_ct* wp = player_get_weapon(e->p);
+  if (hth != NULL && wp != NULL) {
+    char health[10] = {0};
+    char ammo[10] = {0};
+    char mags[10] = {0};
+    sprintf(health, "%.0f", health_get(hth));
+    sprintf(ammo, "%i", weapon_get_active_bullets_left(wp));
+    sprintf(mags, "%i", weapon_get_active_ammos_left(wp));
+    UILINK_SET_HEALTH(e->uimodules, health);
+    UILINK_SET_AMMO(e->uimodules, ammo);
+    UILINK_SET_AMMO_MAX(e->uimodules, mags);
+  }
+
   update_player(e->p);
   update_height(e->p);
   process_keys(e->p);
@@ -46,7 +81,7 @@ void update_ingame_state(engine *e) {
             0) { // make sure enemy really was moved and that the sound cooldown
                  // is over
       vec2 enemy_pos2d = position_get_pos(enemy_pos);
-      add_sound_to_play(TEMP_WALKING_SOUND, enemy_pos2d.x, enemy_pos2d.y);
+      add_sound_to_play(FOOTSTEP_SOUND, enemy_pos2d.x, enemy_pos2d.y);
       position_set_walk_cooldown(enemy_pos, WALK_SOUND_COOLDOWN);
     }
   }
@@ -71,8 +106,8 @@ void update_ingame_state(engine *e) {
   return;
 }
 
-void free_menu_state(engine *e) {}
-void free_ingame_state(engine *e) {}
+void free_menu_state(engine *e) { free_ui(e->uimodules, e->nuimodules); }
+void free_ingame_state(engine *e) { free_ui(e->uimodules, e->nuimodules); }
 
 GameStateFunction game_states_init[] = {init_menu_state, init_ingame_state};
 

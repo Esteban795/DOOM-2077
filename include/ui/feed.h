@@ -1,0 +1,19 @@
+#ifndef UI_FEED_H
+#define UI_FEED_H
+
+#include "label.h"
+
+#define UIFEED_LIMIT 128
+
+typedef struct _UIFeed {
+  int feed_length;
+  UILabel** associated_labels;
+  bool reversed;
+} UIFeed;
+
+UIFeed* uifeed_create(UILabel** uil, int fl, bool reversed);
+void uifeed_free(UIFeed* f);
+
+void uifeed_append(UIFeed* f, char* message);
+
+#endif

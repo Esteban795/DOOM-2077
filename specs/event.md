@@ -2,7 +2,7 @@
 
 | Date of creation | Latest edit      | Version | Status (adopted?) |
 |------------------|------------------|---------|-------------------|
-| 27/04/2024       | 17/05/2024       | beta   | Experimental      |
+| 27/04/2024       | 24/05/2024       | beta   | Experimental      |
 
 ## Global events
 
@@ -18,7 +18,8 @@
 * [x] 0x0042 - PlayerHealEvent {CS} - a player has been healed
 * [x] 0x0043 - PlayerHealthUpdateEvent {CS} - a player's health has been changed.
 * [x] 0x0044 - PlayerKilledEvent {CS} - a player has been killed
-* [ ] 0x0045 - PlayerFireEvent {S} - a player fires a weapon
+* [x] 0x0045 - PlayerFireEvent {CS} - a player fires a weapon
+* [x] 0x0046 - PlayerWeaponUpdateEvent {S} - set the ammunitions, mags and cooldowns of weapons owned by a player
 
 ## Door/Elevator events
 

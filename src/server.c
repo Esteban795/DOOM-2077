@@ -22,12 +22,7 @@
 #include "../include/net/packet/server.h"
 #include "../include/net/packet/client.h"
 #include "../include/ecs/world.h"
-#include "../include/event/server_chat.h"
-#include "../include/event/server_join.h"
-#include "../include/event/server_quit.h"
-#include "../include/event/player_chat.h"
-#include "../include/event/player_move.h"
-#include "../include/event/door.h"
+#include "../include/event/all.h"
 #include "../include/system/server/active.h"
 #include "../include/wad_data.h"
 #include "../include/server/door.h"
@@ -221,6 +216,18 @@ int run_server(uint16_t port)
                         uint64_t door_id;
                         client_lift_descend_from(sdata + cursor, &door_id);
                         door_close_event_t* ev = ServerDoorCloseEvent_new(door_id, true);
+                        world_queue_event(&SERVER_STATE->world, (event_t*) ev);
+                    } else if (strncmp(cmd, CLIENT_COMMAND_DAMG, 4) == 0) {
+                        uint64_t target_id;
+                        int8_t weapon_id;
+                        float damage;
+                        client_damage_from(sdata + cursor, &target_id, &weapon_id, &damage);
+                        player_damage_event_t* ev = ServerPlayerDamageEvent_new(target_id, SERVER_STATE->conns[conn_i].player_id, weapon_id, damage);
+                        world_queue_event(&SERVER_STATE->world, (event_t*) ev);
+                    } else if (strncmp(cmd, CLIENT_COMMAND_FIRE, 4) == 0) {
+                        int8_t weapon_id;
+                        client_fire_from(sdata + cursor, &weapon_id);
+                        player_fire_event_t* ev = ServerPlayerFireEvent_new(SERVER_STATE->conns[conn_i].player_id, weapon_id);
                         world_queue_event(&SERVER_STATE->world, (event_t*) ev);
                     } else {
                         printf("Unknown command: %s\n", cmd);

@@ -29,6 +29,8 @@ const char *SERVER_COMMAND_LDSC = "LDSC";
 const char *SERVER_COMMAND_L_ST = "L_ST";
 const char *SERVER_COMMAND_GAME_START = "GSTR";
 const char *SERVER_COMMAND_GAME_END = "GEND";
+const char *SERVER_COMMAND_FIRE = "FIRE";
+const char *SERVER_COMMAND_WEAP = "WEAP";
 
 int server_acpt(uint8_t* buf, uint64_t player_id) {
     memcpy(buf, SERVER_COMMAND_ACPT, 4);
@@ -114,32 +116,29 @@ int server_scoreboard_update(uint8_t* buf, uint16_t entries_count, char** names,
     int plen = 2;
     for (int i = 0; i < entries_count; i++) {
         plen += write_cstring(buf + 6 + plen, names[i]);
-        plen += write_cstring(buf + 6 + plen, names[i]);
     }
     for (int i = 0; i < entries_count; i++) {
-        write_uint16be(buf + 6 + plen, deaths[i]);
         write_uint16be(buf + 6 + plen, deaths[i]);
         plen += 2;
     }
     for (int i = 0; i < entries_count; i++) {
-        write_uint16be(buf + 6 + plen, kills[i]);
         write_uint16be(buf + 6 + plen, kills[i]);
         plen += 2;
     }
     write_uint16be(buf + 4, plen);
     buf[6 + plen] = '\n';
-    buf[6 + plen] = '\n';
     return 4 + 2 + plen + 1;
 }
 
-int server_player_damage(uint8_t *buf, uint64_t player_id, uint64_t src_player_id, float damage) {
+int server_player_damage(uint8_t *buf, uint64_t player_id, uint64_t src_player_id, int8_t weapon_id, float damage) {
     memcpy(buf, SERVER_COMMAND_DAMG, 4);
     write_uint16be(buf + 4, 8 + 8 + 4);
     write_uint64be(buf + 6, player_id);
     write_uint64be(buf + 14, src_player_id);
-    write_uint32be(buf + 22, damage*1000);
-    buf[26] = '\n';
-    return 4 + 2 + 8 + 8 + 4 + 1;
+    write_uint8be(buf + 22, weapon_id);
+    write_uint32be(buf + 23, damage*1000);
+    buf[27] = '\n';
+    return 4 + 2 + 8 + 8 + 1 + 4 + 1;
 }
 
 int server_player_heal(uint8_t *buf, uint64_t player_id, float gain) {
@@ -161,13 +160,14 @@ int server_player_health(uint8_t *buf, uint64_t player_id, float health, float m
     return 4 + 2 + 8 + 4 + 4 + 1;
 }
 
-int server_player_kill(uint8_t *buf, uint64_t player_id, uint64_t src_player_id) {
+int server_player_kill(uint8_t *buf, uint64_t player_id, uint64_t src_player_id, int8_t weapon_id) {
     memcpy(buf, SERVER_COMMAND_KILL, 4);
-    write_uint16be(buf + 4, 8 + 8);
     write_uint64be(buf + 6, player_id);
     write_uint64be(buf + 14, src_player_id);
-    buf[22] = '\n';
-    return 4 + 2 + 8 + 8 + 1;
+    write_uint8be(buf + 22, weapon_id);
+    buf[23] = '\n';
+    write_uint16be(buf + 4, 8 + 8 + 1);
+    return 4 + 2 + 8 + 8 + 1 + 1;
 }
 
 int server_load_map(uint8_t* buf, char* map_name) {
@@ -240,6 +240,27 @@ int server_game_end(uint8_t* buf, int16_t countdown) {
     write_uint16be(buf + 6, countdown);
     buf[8] = '\n';
     return 4 + 2 + 2 + 1;
+}
+
+int server_player_fire(uint8_t *buf, uint64_t player_id, int8_t weapon_id) {
+    memcpy(buf, SERVER_COMMAND_FIRE, 4);
+    write_uint16be(buf + 4, 8 + 1);
+    write_uint64be(buf + 6, player_id);
+    write_uint8be(buf + 14, weapon_id);
+    buf[15] = '\n';
+    return 4 + 2 + 8 + 1 + 1;
+}
+
+int server_player_weapon_update(uint8_t *buf, int ammunitions[WEAPONS_NUMBER], int mags[WEAPONS_NUMBER], int cooldowns[WEAPONS_NUMBER]) {
+    memcpy(buf, SERVER_COMMAND_WEAP, 4);
+    write_uint16be(buf + 4, 4*WEAPONS_NUMBER*3);
+    for (int i = 0; i < WEAPONS_NUMBER; i++) {
+        write_uint32be(buf + 6 + (i*3*4), ammunitions[i]);
+        write_uint32be(buf + 6 + (i*3*4) + 4, mags[i]);
+        write_uint32be(buf + 6 + (i*3*4) + 8, cooldowns[i]);
+    }
+    buf[6 + (WEAPONS_NUMBER*3*4)] = '\n';
+    return 4 + 2 + 4*WEAPONS_NUMBER*3 + 1;
 }
 
 int server_acpt_from(uint8_t* buf, uint64_t* player_id) {
@@ -322,8 +343,9 @@ int server_scoreboard_update_from(uint8_t* buf, uint16_t* entries_count, char***
     for (int i = 0; i < *entries_count; i++) {
         int clen = strnlen((char*) buf + 6 + plen, 127);
         (*names)[i] = malloc((clen+1) * sizeof(char));
+        memcpy((*names)[i], buf + 6 + plen, clen);
         (*names)[i][clen] = '\0';
-        plen += clen;
+        plen += clen + 1;
     }
     *deaths = malloc(*entries_count * sizeof(uint16_t));
     for (int i = 0; i < *entries_count; i++) {
@@ -338,11 +360,12 @@ int server_scoreboard_update_from(uint8_t* buf, uint16_t* entries_count, char***
     return 4 + 2 + plen + 1;
 }
 
-int server_player_damage_from(uint8_t *buf, uint64_t *player_id, uint64_t *src_player_id, float *damage) {
+int server_player_damage_from(uint8_t *buf, uint64_t *player_id, uint64_t *src_player_id, int8_t* weapon_id, float *damage) {
     *player_id = read_uint64be(buf + 6);
     *src_player_id = read_uint64be(buf + 14);
-    *damage = ((float) read_int32be(buf + 22)) / 1000.0;
-    return 4 + 2 + 8 + 8 + 4 + 1;
+    *weapon_id = read_int8be(buf + 22);
+    *damage = ((float) read_int32be(buf + 23)) / 1000.0;
+    return 4 + 2 + 8 + 8 + 1 + 4 + 1;
 }
 
 int server_player_heal_from(uint8_t *buf, uint64_t *player_id, float *gain) {
@@ -358,10 +381,11 @@ int server_player_health_from(uint8_t *buf, uint64_t *player_id, float *health, 
     return 4 + 2 + 8 + 4 + 4 + 1;
 }
 
-int server_player_kill_from(uint8_t *buf, uint64_t *player_id, uint64_t *src_player_id) {
+int server_player_kill_from(uint8_t *buf, uint64_t *player_id, uint64_t *src_player_id, int8_t* weapon_id) {
     *player_id = read_uint64be(buf + 6);
     *src_player_id = read_uint64be(buf + 14);
-    return 4 + 2 + 8 + 8 + 1;
+    *weapon_id = read_int8be(buf + 22);
+    return 4 + 2 + 8 + 8 + 1 + 1;
 }
 
 int server_load_map_from(uint8_t* buf, char** map_name) {
@@ -411,6 +435,21 @@ int server_lift_states_from(uint8_t *buf, uint16_t *lifts_count, bool** lifts_st
         (*lifts_states)[i] = buf[6 + i] != 0;
     }
     return 4 + 2 + *lifts_count + 1;
+}
+
+int server_player_fire_from(uint8_t *buf, uint64_t *player_id, int8_t *weapon_id) {
+    *player_id = read_uint64be(buf + 6);
+    *weapon_id = read_uint8be(buf + 14);
+    return 4 + 2 + 8 + 1 + 1;
+}
+
+int server_player_weapon_update_from(uint8_t *buf, int *ammunitions, int *mags, int *cooldowns) {
+    for (int i = 0; i < WEAPONS_NUMBER; i++) {
+        ammunitions[i] = read_int32be(buf + 6 + (i*3*4));
+        mags[i] = read_int32be(buf + 6 + (i*3*4) + 4);
+        cooldowns[i] = read_int32be(buf + 6 + (i*3*4) + 8);
+    }
+    return 4 + 2 + 4*WEAPONS_NUMBER*3 + 1;
 }
 
 int server_game_start_from(uint8_t* buf, int16_t* countdown) {
