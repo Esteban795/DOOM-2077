@@ -70,6 +70,8 @@ int apply_event(world_t* world, event_t* event) {
             memcpy(weapon->mags, ev->mags, sizeof(int) * WEAPONS_NUMBER);
             memcpy(weapon->cooldowns, ev->cooldowns, sizeof(int) * WEAPONS_NUMBER);
             weapon->active_weapon = 0;
+            break;
+        }
         case CLIENT_PLAYER_CHAT_EVENT_TAG: {
             player_chat_event_t* ev = (player_chat_event_t*)event;
 
