@@ -50,8 +50,7 @@ int broadcast_event(world_t* world, event_t* event) {
 
             // Broadcast the other players!
             char msg[256];
-            strncat(msg, server_player_join_event->name, 128);
-            strcat(msg, " joined the server.");
+            snprintf(msg, 255, "%s joined the server.", server_player_join_event->name);
             len = server_join(buf, server_player_join_event->entity_id, server_player_join_event->name);
             len += server_server_chat(buf + len, msg, true, false);
             pid = ENTITY_BY_ID(server_player_join_event->entity_id);
@@ -104,8 +103,7 @@ int broadcast_event(world_t* world, event_t* event) {
             printf("%s left the server.\n", server_player_quit_event->name);
 
             char msg[256];
-            strncat(msg, server_player_quit_event->name, 128);
-            strcat(msg, " left the server.");
+            snprintf(msg, 255, "%s left the server.", server_player_quit_event->name);
             len = server_quit(buf, server_player_quit_event->entity_id);
             len += server_server_chat(buf + len, msg, true, false);
             broadcast(&sock, conns, SERVER_STATE->conn_count, buf, len);
