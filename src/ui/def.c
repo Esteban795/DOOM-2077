@@ -543,8 +543,8 @@ UIModule **get_ui_ingame(SDL_Renderer *r, int *nuimodules)
   as[0] = 1;
 
   font = TTF_OpenFont("fonts/jersey25.ttf", 40);
-
-  UILabel *sb_1st = uilabel_create(0.1, 0.1, 0.8, 0.1, UIAP_TOP_LEFT, as, 1, UIAP_BOTTOM_LEFT, "1 - Username [69]", 0xff, 0xff, 0xff, 0xff, font);
+  
+  UILabel *sb_1st = uilabel_create(0.1, 0.1, 0.8, 0.1, UIAP_TOP_LEFT, as, 1, UIAP_BOTTOM_LEFT, " -- empty slot -- ", 0xff, 0xff, 0xff, 0xff, font);
 
   uimodule_set_element(modules[4], 0, UIET_Label, sb_1st);
 
@@ -553,7 +553,7 @@ UIModule **get_ui_ingame(SDL_Renderer *r, int *nuimodules)
 
   font = TTF_OpenFont("fonts/jersey25.ttf", 40);
 
-  UILabel *sb_2nd = uilabel_create(0.1, 0.2, 0.8, 0.1, UIAP_TOP_LEFT, as, 1, UIAP_BOTTOM_LEFT, "2 - Username [42]", 0xff, 0xff, 0xff, 0xff, font);
+  UILabel *sb_2nd = uilabel_create(0.1, 0.2, 0.8, 0.1, UIAP_TOP_LEFT, as, 1, UIAP_BOTTOM_LEFT, " -- empty slot -- ", 0xff, 0xff, 0xff, 0xff, font);
 
   uimodule_set_element(modules[4], 1, UIET_Label, sb_2nd);
 
@@ -562,7 +562,7 @@ UIModule **get_ui_ingame(SDL_Renderer *r, int *nuimodules)
 
   font = TTF_OpenFont("fonts/jersey25.ttf", 40);
 
-  UILabel *sb_3rd = uilabel_create(0.1, 0.3, 0.8, 0.1, UIAP_TOP_LEFT, as, 1, UIAP_BOTTOM_LEFT, "3 - Username [12]", 0xff, 0xff, 0xff, 0xff, font);
+  UILabel *sb_3rd = uilabel_create(0.1, 0.3, 0.8, 0.1, UIAP_TOP_LEFT, as, 1, UIAP_BOTTOM_LEFT, " -- empty slot -- ", 0xff, 0xff, 0xff, 0xff, font);
 
   uimodule_set_element(modules[4], 2, UIET_Label, sb_3rd);
 
@@ -571,7 +571,7 @@ UIModule **get_ui_ingame(SDL_Renderer *r, int *nuimodules)
 
   font = TTF_OpenFont("fonts/jersey25.ttf", 40);
 
-  UILabel *sb_4th = uilabel_create(0.1, 0.4, 0.8, 0.1, UIAP_TOP_LEFT, as, 1, UIAP_BOTTOM_LEFT, "4 - Username [-8]", 0xff, 0xff, 0xff, 0xff, font);
+  UILabel *sb_4th = uilabel_create(0.1, 0.4, 0.8, 0.1, UIAP_TOP_LEFT, as, 1, UIAP_BOTTOM_LEFT, " -- empty slot -- ", 0xff, 0xff, 0xff, 0xff, font);
 
   uimodule_set_element(modules[4], 3, UIET_Label, sb_4th);
 

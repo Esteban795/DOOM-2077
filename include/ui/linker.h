@@ -20,11 +20,7 @@
 #define UILINK_FEED_KILL(uimodules,msg) uifeed_append(((UIFeed*)uimodules[2]->elements[0]->element), msg)
 #define UILINK_FEED_CHAT(uimodules,msg) uifeed_append(((UIFeed*)uimodules[3]->elements[5]->element), msg)
 
-#define UILINK_SB_N(uimodules,nth,player_name,kills,deaths) sprintf(((UILabel*)uimodules[4]->elements[nth]->element)->string, "%d - %s [%i/%i]", nth+1, player_name, kills, deaths)
-#define UILINK_SB_1(uimodules,player_name,kills,deaths) sprintf(((UILabel*)uimodules[4]->elements[0]->element)->string, "1 - %s [%i/%i]", player_name, kills, deaths)
-#define UILINK_SB_2(uimodules,player_name,kills,deaths) sprintf(((UILabel*)uimodules[4]->elements[1]->element)->string, "2 - %s [%i/%i]", player_name, kills, deaths)
-#define UILINK_SB_3(uimodules,player_name,kills,deaths) sprintf(((UILabel*)uimodules[4]->elements[2]->element)->string, "3 - %s [%i/%i]", player_name, kills, deaths)
-#define UILINK_SB_4(uimodules,player_name,kills,deaths) sprintf(((UILabel*)uimodules[4]->elements[3]->element)->string, "4 - %s [%i/%i]", player_name, kills, deaths)
+#define UILINK_SET_SB_N(uimodules,nth,content) uilabel_set_content(((UILabel*)uimodules[4]->elements[nth]->element), content)
 // #endregion
 
 #endif

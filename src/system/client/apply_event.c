@@ -95,10 +95,16 @@ int apply_event(world_t* world, event_t* event) {
             break;
         }
         case CLIENT_SCOREBOARD_UPDATE_EVENT_TAG: {
-            /*scoreboard_update_event_t* ev = (scoreboard_update_event_t*)event;
-            for (int i = 0; i < 4 && i < ev->entries_count; i++) {
-                UILINK_SB_N(SHARED_ENGINE->uimodules, i, ev->entries[i], ev->kills[i], ev->deaths[i]);
-            }*/
+            scoreboard_update_event_t* ev = (scoreboard_update_event_t*)event;
+            char fmt_msg[256] = {0};
+            for (int i = 0; i < 4; i++) {
+                if (i < ev->entries_count) {
+                    snprintf(fmt_msg, 256, "%i - %s [%d/%d]", i+1, ev->entries[i], ev->kills[i], ev->deaths[i]);
+                } else {
+                    snprintf(fmt_msg, 256, "%i - free slot", i+1);
+                }
+                UILINK_SET_SB_N(SHARED_ENGINE->uimodules, i, fmt_msg);
+            }
             break;
         }
         default:
