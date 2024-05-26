@@ -414,7 +414,7 @@ void fire_weapon_animation(engine* e,weapon *w){
             y = fire_anim[i - 1].wanim_origin.y;
             draw_weapon(e,fire_anim[i-1].animation_sprite,x,y);
             add_fire_layer(fire_layer,fire_anim[i-1],fire_time_elapsed,e);
-            fire_bullet(e->players, NUM_PLAYERS, p, wa);
+            // fire_bullet(e->players, NUM_PLAYERS, p, wa);
         }
     }
 }

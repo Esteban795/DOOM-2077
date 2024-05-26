@@ -58,9 +58,9 @@
 
 #define SPAWNPOINTS_COUNT 8
 
-const vec2 SPAWNPOINTS[SPAWNPOINTS_COUNT] = {
-    (vec2){.x = -3072, .y = 768},   (vec2){.x = -1792, .y = -64},
-    (vec2){.x = -1216, .y = -1344}, (vec2){.x = -256, .y = -832},
-    (vec2){.x = 256, .y = -832},    (vec2){.x = 1216, .y = 1344},
-    (vec2){.x = 1792, .y = 64},     (vec2){.x = 3072, .y = -768}};
+// const vec2 SPAWNPOINTS[SPAWNPOINTS_COUNT] = {
+//     (vec2){.x = -3072, .y = 768},   (vec2){.x = -1792, .y = -64},
+//     (vec2){.x = -1216, .y = -1344}, (vec2){.x = -256, .y = -832},
+//     (vec2){.x = 256, .y = -832},    (vec2){.x = 1216, .y = 1344},
+//     (vec2){.x = 1792, .y = 64},     (vec2){.x = 3072, .y = -768}};
 #endif

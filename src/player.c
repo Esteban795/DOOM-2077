@@ -308,9 +308,12 @@ void fire_bullet(
   position_ct *pos = player_get_position(player_);
   weapon_ct *weapon_ecs = player_get_weapon(player_);
   double distance_finale = 10000;
-  if (weapon_get_active_cooldown(weapon_ecs) < 80) {
-    *weapon_get_mut_active_cooldown(weapon_ecs) += 100;
+  if (weapon_get_active_cooldown(weapon_ecs) <= 0) {
     weapon *weapon_used = weapons_list->weapons[weapon_ecs->active_weapon];
+    *weapon_get_mut_active_cooldown(weapon_ecs) = 1000 / weapon_used->fire_rate;
+  
+    add_sound_to_play(SHOTGUN_SOUND, pos->x + 10 * cos(deg_to_rad(pos->angle)),
+                      pos->y - 10 * sin(deg_to_rad(pos->angle)));
     int damage = weapon_used->max_damage;
     int weapon_number = weapon_used->id;
     double cs =
@@ -519,7 +522,7 @@ void process_keys(player *p) {
   // to avoid spamming the interact key and crashing the audio lmao
   INTERACT_CD -= p->engine->DT;
   weapon->cooldowns[weapon->active_weapon] -= p->engine->DT;
-  // printf("cooldown: %d\n", weapon->cooldowns[weapon->active_weapon]);
+  printf("cooldown: %d\n", weapon->cooldowns[weapon->active_weapon]);
   if (is_interacting && INTERACT_CD <= 0) {
     linedef *trigger_linedef = cast_ray(
         p->engine->wData->linedefs, p->engine->wData->len_linedefs,
@@ -568,10 +571,10 @@ void process_keys(player *p) {
     }
   }
 
-  bool is_attacking = keys[get_key_from_action(p->keybinds, "ATTACK")];
-  if (is_attacking && weapon_get_active_bullets_left(weapon) > 0) {
-    fire_bullet(p->engine->players, NUM_PLAYERS, p, wa);
-  }
+  // bool is_attacking = keys[get_key_from_action(p->keybinds, "ATTACK")];
+  // if (is_attacking && weapon_get_active_bullets_left(weapon) > 0) {
+  //   fire_bullet(p->engine->players, NUM_PLAYERS, p, wa);
+  // }
   // DEBUG OPTION TO GO THROUGH WALLS
   if (keys[SDL_GetScancodeFromKey(SDL_GetKeyFromName("M"))]) {
     SHOULD_COLLIDE = !SHOULD_COLLIDE;
