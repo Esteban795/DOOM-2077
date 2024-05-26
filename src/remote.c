@@ -362,7 +362,7 @@ int remote_update(engine *e, remote_server_t *r) {
       } else if (strncmp(cmd, SERVER_COMMAND_OPEN, 4) == 0) {
         uint64_t door_id;
         server_door_open_from(sdata + offset, &door_id);
-        if (door_id < e->num_doors && e->doors[door_id]->state == false) {
+        if ((int) door_id < e->num_doors && e->doors[door_id]->state == false) {
           door_trigger_switch(e->doors[door_id]);
         }
         event_t *event = (event_t *)ClientDoorOpenEvent_new(door_id, false);
@@ -370,7 +370,7 @@ int remote_update(engine *e, remote_server_t *r) {
       } else if (strncmp(cmd, SERVER_COMMAND_CLOS, 4) == 0) {
         uint64_t door_id;
         server_door_close_from(sdata + offset, &door_id);
-        if (door_id < e->num_doors && e->doors[door_id]->state == true) {
+        if ((int) door_id < e->num_doors && e->doors[door_id]->state == true) {
           door_trigger_switch(e->doors[door_id]);
         }
         event_t *event = (event_t *)ClientDoorCloseEvent_new(door_id, false);
@@ -378,7 +378,7 @@ int remote_update(engine *e, remote_server_t *r) {
       } else if (strncmp(cmd, SERVER_COMMAND_LASC, 4) == 0) {
         uint64_t lift_id;
         server_lift_ascend_from(sdata + offset, &lift_id);
-        if (lift_id < e->len_lifts && e->lifts[lift_id]->state == false) {
+        if ((int) lift_id < e->len_lifts && e->lifts[lift_id]->state == false) {
           lift_trigger_switch(e->lifts[lift_id]);
         }
         event_t *event = (event_t *)ClientDoorOpenEvent_new(lift_id, true);
@@ -386,7 +386,7 @@ int remote_update(engine *e, remote_server_t *r) {
       } else if (strncmp(cmd, SERVER_COMMAND_LDSC, 4) == 0) {
         uint64_t lift_id;
         server_lift_descend_from(sdata + offset, &lift_id);
-        if (lift_id < e->len_lifts && e->lifts[lift_id]->state == true) {
+        if ((int) lift_id < e->len_lifts && e->lifts[lift_id]->state == true) {
           lift_trigger_switch(e->lifts[lift_id]);
         }
         event_t *event = (event_t *)ClientDoorCloseEvent_new(lift_id, true);

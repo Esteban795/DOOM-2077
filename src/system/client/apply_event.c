@@ -74,7 +74,7 @@ int apply_event(world_t* world, event_t* event) {
                     name = "Unknown";
                 }
             }
-            snprintf(fmt_msg, 1024 + 128, "%s: %s", name, ev->message);
+            snprintf(fmt_msg, 1024 + 128 + 1, "%s: %s", name, ev->message);
             UILINK_FEED_CHAT(SHARED_ENGINE->uimodules, fmt_msg);
             break;
         }
