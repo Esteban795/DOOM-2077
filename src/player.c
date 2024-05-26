@@ -527,7 +527,7 @@ void process_keys(player *p) {
   }
 
   bool is_attacking = keys[get_key_from_action(p->keybinds, "ATTACK")];
-  if (is_attacking && weapon_get_active_bullets_left(weapon) > 0) {
+  if (is_attacking && (weapon_get_active_bullets_left(weapon) > 0 || weapon_get_active_ammos_left(weapon) == -2)) {
     fire_bullet(p->engine->players, 1, p, 10);
   }
   // DEBUG OPTION TO GO THROUGH WALLS

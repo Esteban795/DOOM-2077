@@ -529,7 +529,7 @@ void remote_damage_player(engine* e, uint64_t player_id, int8_t weapon_id, float
     return;
   }
 
-  int len = client_damage(r->packet->data, player_id, e->p->entity->id, weapon_id, damage);
+  int len = client_damage(r->packet->data, player_id, weapon_id, damage);
   r->packet->len = len;
   r->packet->address.host = r->addr.host;
   r->packet->address.port = r->addr.port;

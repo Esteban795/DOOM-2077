@@ -58,7 +58,9 @@ int apply_event(world_t* world, event_t* event) {
             break;
         }
         case CLIENT_PLAYER_FIRE_EVENT_TAG: {
-            // For future use.
+            // For future uses.
+            player_fire_event_t* ev = (player_fire_event_t*)event;
+            printf("entity %d is firing a weapon %d\n", ev->entity_id, ev->weapon_id);
             break;
         }
         case CLIENT_PLAYER_WEAPON_UPDATE_EVENT_TAG: {
