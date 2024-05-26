@@ -1,4 +1,7 @@
 #include "../include/game_states.h"
+#include "../include/component/weapon.h"
+#include "../include/player.h"
+#include "../include/ui/linker.h"
 #include <stdio.h>
 
 uint64_t t0;
@@ -33,7 +36,7 @@ void init_ingame_state(engine *e) {
 }
 
 void update_menu_state(engine *e) {
-  
+
 }
 
 void update_ingame_state(engine *e) {
@@ -42,6 +45,21 @@ void update_ingame_state(engine *e) {
     e->substate = SUBSTATE_INGAME_SCOREBOARD;
   } else if (!keys[SDL_SCANCODE_TAB] && e->substate == SUBSTATE_INGAME_SCOREBOARD) {
     e->substate = SUBSTATE_INGAME_PLAYING;
+  }
+
+  // Update the HUD
+  health_ct* hth = player_get_health(e->p);
+  weapon_ct* wp = player_get_weapon(e->p);
+  if (hth != NULL && wp != NULL) {
+    char health[10] = {0};
+    char ammo[10] = {0};
+    char mags[10] = {0};
+    sprintf(health, "%.0f", health_get(hth));
+    sprintf(ammo, "%i", weapon_get_active_bullets_left(wp));
+    sprintf(mags, "%i", weapon_get_active_ammos_left(wp));
+    UILINK_SET_HEALTH(e->uimodules, health);
+    UILINK_SET_AMMO(e->uimodules, ammo);
+    UILINK_SET_AMMO_MAX(e->uimodules, mags);
   }
 
   update_player(e->p);

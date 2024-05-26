@@ -7,27 +7,19 @@
 #include "../include/remote.h"
 #include "../include/settings.h"
 #include "../include/system/client/active.h"
-
-#ifndef SERVER_ADDR
-#define SERVER_ADDR ""
-#endif
-
-#ifndef SERVER_PORT
-#define SERVER_PORT 6942
-#endif
+#include "../include/shared.h"
 
 engine *init_engine(const char *wadPath, SDL_Renderer *renderer) {
-  engine *e = malloc(sizeof(engine));
+  engine *e = SHARED_ENGINE;
   e->wadPath = wadPath;
-  e->state = STATE_INGAME;
-  e->substate = STATE_INGAME;
+  e->state = STATE_MENU;
+  e->substate = SUBSTATE_MENU_MAIN;
   e->uinextevent = 0;
   e->DT = 0;
   e->texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
                                  SDL_TEXTUREACCESS_STREAMING, WIDTH,
                                  HEIGHT); // texture we will be rendering to
-  e->remote = malloc(sizeof(remote_server_t));
-  remote_init(e->remote, SERVER_ADDR, SERVER_PORT);
+  e->remote = calloc(1, sizeof(remote_server_t));
   e->wData = init_wad_data(renderer,wadPath);
   e->mixer = NULL;
   e->mixer = audiomixer_init();
@@ -40,6 +32,7 @@ engine *init_engine(const char *wadPath, SDL_Renderer *renderer) {
   e->len_lifts = 0;
   e->doors = NULL;
   e->num_doors = 0;
+  strncpy(e->player_name, "Player", 127);
 
   wa = init_weapons_array(e);
   return e;
@@ -60,6 +53,29 @@ void read_map(engine *e, char *map_name) {
   e->doors = get_doors(e->wData->linedefs, e->wData->len_linedefs,
                        &e->num_doors, e->wData->sectors, e->wData->len_sectors);
   game_states_init[e->state](e);
+}
+
+void engine_reset(engine *e) {
+  free_map(e->wData);
+  bsp_free(e->bsp);
+  player_free(e->p);
+  segment_handler_free(e->seg_handler);
+  free(e->players);
+  lifts_free(e->lifts, e->len_lifts);
+  doors_free(e->doors, e->num_doors);
+  remote_destroy(e->remote);
+  world_destroy(e->world);
+  free(e->world);
+  e->p = NULL;
+  e->bsp = NULL;
+  e->seg_handler = NULL;
+  e->players = NULL;
+  e->lifts = NULL;
+  e->len_lifts = 0;
+  e->doors = NULL;
+  e->num_doors = 0;
+  e->world = NULL;
+  e->remote = calloc(1, sizeof(remote_server_t));
 }
 
 int update_engine(engine *e, int dt) {
@@ -119,5 +135,4 @@ void engine_free(engine *e) {
   SDL_DestroyRenderer(e->renderer);
   world_destroy(e->world);
   free(e->world);
-  free(e);
 }

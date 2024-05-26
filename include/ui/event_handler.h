@@ -15,7 +15,6 @@ typedef enum _UIEVENTCallback {
 } UIEVENTCallback;
 
 void ui_handle_events(engine *e);
-
 void UIECJoinServer(engine *e);
 void UIECSendChat(engine *e);
 void UIECSaveSettings(engine *e);

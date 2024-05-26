@@ -24,8 +24,8 @@ CLIENT_SRC = audio/mixer.c audio/emitter.c blockmap.c bsp.c byte_reader.c color.
     engine.c events.c flat.c game_states.c \
 	geometry.c header.c keybindings.c linedef.c lump.c main.c map_renderer.c node.c \
 	patch.c player.c remote.c sector.c segment.c segment_handler.c sidedef.c sound.c subsector.c \
-	textarea.c texture.c thing.c timer.c util.c vertex.c wad_data.c weapons.c lift.c door.c drawseg.c vssprite.c player_animation.c \
-	ui/def.c ui/module.c ui/common.c ui/label.c ui/button.c ui/image.c ui/textbox.c ui/event_handler.c ui/feed.c \
+	textarea.c texture.c thing.c timer.c util.c vertex.c wad_data.c weapons.c lift.c door.c drawseg.c vssprite.c player_animation.c spawnpoints.c \
+	ui/def.c ui/module.c ui/common.c ui/label.c ui/button.c ui/image.c ui/textbox.c ui/event_handler.c ui/feed.c shared.c \
 	$(patsubst $(srcdir)/%, %, $(wildcard $(srcdir)/component/*.c)) \
 	$(patsubst $(srcdir)/%, %, $(wildcard $(srcdir)/event/*.c)) \
 	$(patsubst $(srcdir)/%, %, $(wildcard $(srcdir)/system/client/*.c))

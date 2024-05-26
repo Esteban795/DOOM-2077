@@ -14,7 +14,9 @@
 #include "../include/ecs/entity.h"
 #include "../include/ecs/world.h"
 #include "../include/player.h"
+#include "../include/remote.h"
 #include "../include/settings.h"
+#include "../include/shared.h"
 
 #define SPRAY_DECREATE_RATE 0.25
 #define SIGN(x) (int)(x > 0) ? 1 : ((x < 0) ? -1 : 0)
@@ -56,7 +58,7 @@ player *player_init(engine *e) {
   comps[0] = position_create(coords, p->thing.angle + 180.0);
   comps[1] = health_create(100.0, 100.0);
   comps[2] = weapon_create(ammo, mags);
-  comps[3] = display_name_create(PLAYER_USERNAME);
+  comps[3] = display_name_create((char *)e->player_name);
   size_t player_subsector_id =
       get_subsector_id_from_pos(e->wData->len_nodes - 1, e->wData->nodes,
                                 (vec2){.x = p->thing.x, .y = p->thing.y});
@@ -313,10 +315,10 @@ void fire_bullet(
     *weapon_get_mut_active_cooldown(weapon_ecs) = 1000 / weapon_used->fire_rate;
     weapon_decrease_active_bullets(weapon_ecs);
 
-    // SOUND 
+    // SOUND
     double forward_x = pos->x + 10 * cos(deg_to_rad(position_get_angle(pos)));
     double forward_y = pos->y - 10 * sin(deg_to_rad(position_get_angle(pos)));
-   
+
     switch (weapon_ecs->active_weapon) {
     case 0:
       add_sound_to_play(PUNCH_SOUND, forward_x, forward_y);
@@ -413,16 +415,15 @@ void fire_bullet(
         }
       }
 
+      // Fire on network
+      remote_fire_bullet(SHARED_ENGINE, weapon_ecs->active_weapon);
+
       // TODO: Déplacer coté serveur le calcul des dégats sur un joueur.
-      // Gestion de la collison du tir avec les joueurs
       for (int j = 0; j < num_players; j++) {
         if (players[j] == NULL)
           continue;
         position_ct *pos_pj = (position_ct *)world_get_component(
             player_->engine->world, players[j], COMPONENT_TAG_POSITION);
-
-        health_ct *health_pj = (health_ct *)world_get_component(
-            player_->engine->world, players[j], COMPONENT_TAG_HEALTH);
 
         double dist_to_hitscan = (fabs(a * (position_get_x(pos_pj)) +
                                        (position_get_y(pos_pj)) + b)) /
@@ -433,10 +434,9 @@ void fire_bullet(
               (min(y1, y_final) < -position_get_y(pos_pj)) &&
               (min(y1, y_final) < -position_get_y(pos_pj))) {
             if ((dist_to_hitscan < MELEE_RADIUS)) {
-              health_sub(health_pj, damage);
-              player_
-                  ->ammo[weapon_ecs->ammunitions[weapon_ecs->active_weapon]] -=
-                  1;
+              // Apply damage to player
+              remote_damage_player(SHARED_ENGINE, players[j]->id,
+                                   weapon_ecs->active_weapon, (float)damage);
             }
           }
         }
@@ -549,7 +549,8 @@ void process_keys(player *p) {
 
   bool is_reloading = keys[get_key_from_action(p->keybinds, "RELOAD")];
   if (is_reloading) { // cannot reload fists..
-    weapon->mags[weapon->active_weapon] = wa->weapons[weapon->active_weapon]->magsize;
+    weapon->mags[weapon->active_weapon] =
+        wa->weapons[weapon->active_weapon]->magsize;
   }
 
   // DEBUG OPTION TO GO THROUGH WALLS

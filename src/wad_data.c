@@ -155,5 +155,6 @@ void server_free_wad(wad_data *wd) {
     free(wd->directory[i].lump_name);
   }
   free(wd->directory);
+  free(wd->header.wad_type);
   free(wd);
 }

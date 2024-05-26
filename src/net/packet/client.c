@@ -18,6 +18,8 @@ const char* CLIENT_COMMAND_OPEN = "OPEN";
 const char* CLIENT_COMMAND_CLOS = "CLOS";
 const char* CLIENT_COMMAND_LASC = "LASC";
 const char* CLIENT_COMMAND_LDSC = "LDSC";
+const char* CLIENT_COMMAND_FIRE = "FIRE";
+const char* CLIENT_COMMAND_DAMG = "DAMG";
 
 int client_join(uint8_t* buf, char* player_name) {
     memcpy(buf, CLIENT_COMMAND_JOIN, 4);
@@ -92,6 +94,24 @@ int client_lift_descend(uint8_t* buf, uint64_t lift_id) {
     return client_door_state_change(buf, CLIENT_COMMAND_LDSC, lift_id);
 }
 
+int client_fire(uint8_t* buf, int8_t weapon_id) {
+    memcpy(buf, CLIENT_COMMAND_FIRE, 4);
+    write_uint16be(buf + 4, 1);
+    buf[6] = weapon_id;
+    buf[7] = '\n';
+    return 4 + 2 + 1 + 1;
+}
+
+int client_damage(uint8_t* buf, uint64_t player_id, int8_t weapon_id, float damage) {
+    memcpy(buf, CLIENT_COMMAND_DAMG, 4);
+    write_uint16be(buf + 4, 8 + 1 + 4);
+    write_uint64be(buf + 6, player_id);
+    buf[14] = weapon_id;
+    write_uint32be(buf + 15, damage*1000);
+    buf[19] = '\n';
+    return 4 + 2 + 8 + 1 + 4 + 1;
+}
+
 int client_join_from(uint8_t* buf, char** player_name) {
     int clen = read_uint16be(buf + 4);
     int clen_ = clen;
@@ -147,4 +167,16 @@ int client_lift_ascend_from(uint8_t* buf, uint64_t* lift_id) {
 
 int client_lift_descend_from(uint8_t* buf, uint64_t* lift_id) {
     return client_door_state_change_from(buf, lift_id);
+}
+
+int client_fire_from(uint8_t* buf, int8_t* weapon_id) {
+    *weapon_id = buf[6];
+    return 4 + 2 + 1 + 1;
+}
+
+int client_damage_from(uint8_t* buf, uint64_t* player_id, int8_t* weapon_id, float* damage) {
+    *player_id = read_uint64be(buf + 6);
+    *weapon_id = buf[14];
+    *damage = ((float) read_int32be(buf + 15)) / 1000.0;
+    return 4 + 2 + 8 + 1 + 4 + 1;
 }
