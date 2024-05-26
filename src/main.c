@@ -45,7 +45,10 @@ int main() {
 
   uint64_t now;
   uint64_t old = SDL_GetTicks();
-  engine *e = init_engine("maps/DOOM1.WAD", renderer);
+  // DEV: How to disable pointer/mousecapture
+  SDL_ShowCursor(SDL_DISABLE); // Set to true for debug
+  SDL_SetRelativeMouseMode(SDL_TRUE); // Set to false for debug
+  engine *e = init_engine("maps/DOOM1-NET.WAD",renderer);
   
   // Start the client in solo mode.
   // Connection might happen later, if the user decides to join a server.

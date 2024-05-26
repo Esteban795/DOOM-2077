@@ -4,12 +4,12 @@
 #include "../../include/remote.h"
 #include <string.h>
 
-#define GET_KEYBIND_LEFT SDL_GetScancodeFromName(((UITextBox*)e->uimodules[2]->elements[6]->element)->text)
-#define GET_KEYBIND_RIGHT SDL_GetScancodeFromName(((UITextBox*)e->uimodules[2]->elements[8]->element)->text)
-#define GET_KEYBIND_UP SDL_GetScancodeFromName(((UITextBox*)e->uimodules[2]->elements[10]->element)->text)
-#define GET_KEYBIND_DOWN SDL_GetScancodeFromName(((UITextBox*)e->uimodules[2]->elements[12]->element)->text)
-#define GET_KEYBIND_RELOAD SDL_GetScancodeFromName(((UITextBox*)e->uimodules[2]->elements[14]->element)->text)
-#define GET_KEYBIND_INTERACT SDL_GetScancodeFromName(((UITextBox*)e->uimodules[2]->elements[16]->element)->text)
+#define GET_KEYBIND_LEFT ((UITextBox*)e->uimodules[2]->elements[6]->element)->text
+#define GET_KEYBIND_RIGHT ((UITextBox*)e->uimodules[2]->elements[8]->element)->text
+#define GET_KEYBIND_UP ((UITextBox*)e->uimodules[2]->elements[10]->element)->text
+#define GET_KEYBIND_DOWN ((UITextBox*)e->uimodules[2]->elements[12]->element)->text
+#define GET_KEYBIND_RELOAD ((UITextBox*)e->uimodules[2]->elements[14]->element)->text
+#define GET_KEYBIND_INTERACT ((UITextBox*)e->uimodules[2]->elements[16]->element)->text
 
 #define GET_PLAYER_NAME (((UITextBox*)e->uimodules[3]->elements[6]->element)->text)
 #define GET_SERVER_IP (((UITextBox*)e->uimodules[3]->elements[8]->element)->text)
@@ -104,6 +104,12 @@ void UIECSendChat(engine *e){
 }
 
 void UIECSaveSettings(engine *e){
-
+  keybind_modify(e->p->keybinds,"MOVE_LEFT",GET_KEYBIND_LEFT);
+  keybind_modify(e->p->keybinds,"MOVE_RIGHT",GET_KEYBIND_RIGHT);
+  keybind_modify(e->p->keybinds,"MOVE_FORWARD",GET_KEYBIND_UP);
+  keybind_modify(e->p->keybinds,"MOVE_BACKWARD",GET_KEYBIND_DOWN);
+  keybind_modify(e->p->keybinds,"RELOAD",GET_KEYBIND_RELOAD);
+  keybind_modify(e->p->keybinds,"INTERACT",GET_KEYBIND_INTERACT);
+  keybinds_write(KEYBINDS_FILE,e->p->keybinds);
 }
 
