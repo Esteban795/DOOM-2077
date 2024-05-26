@@ -473,7 +473,7 @@ void update_animation(engine* e){
     uint64_t casted_cooldown = (uint64_t) w->sprites->animation_duration + w->sprites[IDLE].animation_sprites_array[0].duration;
     
     if(p->has_attacked){
-        if(time_elapsed_in_game - p->t_last_shot <= casted_cooldown){
+        if(time_elapsed_in_game - p->t_last_shot <= casted_cooldown&&weapon_ecs->ammunitions[weapon_ecs->active_weapon]>0){
             fire_weapon_animation(e,w);
         }
         if(time_elapsed_in_game - p->t_last_shot > casted_cooldown){

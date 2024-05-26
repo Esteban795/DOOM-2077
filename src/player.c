@@ -328,31 +328,14 @@ void fire_bullet(
       break;
     }
     int damage = weapon_used->max_damage;
-    int weapon_number = weapon_used->id;
-    double cs =
-        player_->cooldowns_sprays
-            ->cs[weapon_number]; // temps depuis le dernier tir de cette arme
-    double time = SDL_GetTicks();
     int is_ranged; // 0 correspond a une arme de melée sinon une arme a distance
     if (weapon_used->type == -1) {
       is_ranged = 0;
     } else {
       is_ranged = 1;
     }
-    // gestion du spray
-    if (is_ranged == 1) {
-      int spray = 0;
-      if (spray % 2 == 0) {
-        pos->angle += spray;
-      } else {
-        pos->angle -= spray; // le spray fait bouger la caméra
-      }
-    }
     // gestion du tir jusqu'au mur
-    if ((cs < time) &&
-        (!((is_ranged == 1) &&
-           (player_->ammo[weapon_ecs->active_weapon] ==
-            0)))) { // On véfrifie d'un coté que le temps de cooldown est
+    if (is_ranged==0||weapon_ecs->ammunitions[weapon_ecs->active_weapon]) { // On véfrifie d'un coté que le temps de cooldown est
                     // respecté et ensuite que si l'arme est a distance elle
                     // dispose d'assez de muntitions
       linedef **linedefs = player_->engine->wData->linedefs;
@@ -448,9 +431,9 @@ void fire_bullet(
           }
         }
       }
-      // Update des etats du joueur
-      player_->cooldowns_sprays->cs[weapon_number] = time;
-      //  printf("final x: %f, final y: %f\n", x_final, y_final);
+      if(is_ranged==1){
+        weapon_ecs->ammunitions[weapon_ecs->active_weapon]-=1;
+      }
     }
   }
 }
@@ -573,7 +556,8 @@ void process_keys(player *p) {
   }
 
   bool is_reloading = keys[get_key_from_action(p->keybinds, "RELOAD")];
-  if (weapon->active_weapon != 0 && is_reloading) { // cannot reload fists..
+  printf("%i\n",weapon->ammunitions[weapon->active_weapon]);
+  if (is_reloading) { // cannot reload fists..
     int ammos_left = weapon_get_active_ammos_left(weapon);
     int mags_left = weapon_get_active_bullets_left(weapon);
     int room_left = WEAPON_AMMO_CAPACITY - mags_left;
