@@ -13,6 +13,13 @@
 #include "../include/net/packet/server.h"
 #include "../include/net/util.h"
 #include "../include/player.h"
+#include "../include/component/position.h"
+#include "../include/component/health.h"
+#include "../include/component/weapon.h"
+#include "../include/component/display_name.h"
+#include "../include/component/subsector_id.h"
+#include "../include/engine.h"
+
 #include "../include/remote.h"
 #include "../include/settings.h"
 #include "../include/structs.h"
@@ -212,12 +219,14 @@ int remote_update(engine *e, remote_server_t *r) {
 
           // Add player to the ECS world
           double coords[3] = {0.0, 0.0, PLAYER_HEIGHT};
-          component_t **comps = malloc(sizeof(component_t *) * 4);
+          component_t **comps = malloc(sizeof(component_t *) * 5);
           comps[0] = position_create(coords, 180.0);
           comps[1] = health_create(100.0, 100.0);
           comps[2] = weapon_create(ammo,mags);
           comps[3] = display_name_create(player_name);
-          entity_t *entity = world_insert_entity(e->world, player_id, comps, 4);
+                    i16 player_subsector_id = get_subsector_id_from_pos(e->wData->len_nodes - 1, e->wData->nodes, (vec2){.x = 0.0, .y = 0.0});
+                    comps[4] = subsector_id_create(player_subsector_id);
+          entity_t *entity = world_insert_entity(e->world, player_id, comps, 5);
           // If entity == NULL, an entity already exists with this id, replacing
           // it.
           if (entity == NULL) {
