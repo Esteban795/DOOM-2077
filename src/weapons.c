@@ -6,7 +6,6 @@
 
 #include "../include/weapons.h"
 #include "../include/player.h"
-#include "../include/component/position.h"
 
 #define ANIMATION_WIDTH 100
 #define ANIMATION_HEIGTH 50
