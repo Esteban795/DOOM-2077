@@ -2,7 +2,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 
-door *door_create(entity_t *id, enum DoorTransitionSpeed speed,
+door *door_create(uint64_t id, enum DoorTransitionSpeed speed,
                   enum DoorFunction function, int wait_time, sector *sector,
                   bool init_state) {
   door *d = malloc(sizeof(door));
@@ -22,20 +22,24 @@ door *door_create(entity_t *id, enum DoorTransitionSpeed speed,
 }
 
 // trigger switch for all doors in the list, but they need to not be switching and be in their initial state (closed or open)
-void door_trigger_switch(door *d) {
+bool door_trigger_switch(door *d) {
   if (d != NULL) {
+    bool switched = false;
     if (!d->is_switching && d->state == d->init_state) {
       d->is_switching = true;
+      switched = true;
+      add_sound_to_play(DOOR_OPEN_SOUND,d->sector->center_pos.x,d->sector->center_pos.y);
     }
     if (d->next_door != NULL) {
-      door_trigger_switch(d->next_door);
+      switched = switched || door_trigger_switch(d->next_door);
     }
+    return switched;
   }
+  return false;
 }
 
-// Update door state
 void door_update(door *d, int DT) {
-  if (d->speed == NO_SPEED) { // door is not moving
+  if (d->speed == NO_SPEED) {
     return;
   }
 
@@ -44,6 +48,7 @@ void door_update(door *d, int DT) {
     if (d->time_elapsed >= d->wait_time) { // time's up, switch door
       d->time_elapsed = 0;
       d->is_switching = true;
+      add_sound_to_play(DOOR_OPEN_SOUND, d->sector->center_pos.x, d->sector->center_pos.y);
     }
   }
   if (d->is_switching) {

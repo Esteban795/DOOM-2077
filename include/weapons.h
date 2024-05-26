@@ -9,6 +9,7 @@
 #include "events.h"
 
 extern weapons_array *wa;
+#define WEAPONS_NUMBER 4
 
 weapons_array* init_weapons_array(engine* e);
 void switch_weapon(player* p, int weapon_id);

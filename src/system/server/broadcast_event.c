@@ -62,6 +62,14 @@ int broadcast_event(world_t* world, event_t* event) {
             } else {
                 len += server_player_move(buf + len, server_player_join_event->entity_id, pos->x, pos->y, pos->z, pos->angle);
                 len += server_player_health(buf + len, server_player_join_event->entity_id, health->health, health->max_health);
+                bool* doors_states = (bool*) malloc(sizeof(bool) * SERVER_STATE->door_count);
+                door_states_generate(world, SERVER_STATE->doors, doors_states, SERVER_STATE->door_count);
+                bool* lifts_states = (bool*) malloc(sizeof(bool) * SERVER_STATE->lift_count);
+                lift_states_generate(world, SERVER_STATE->lifts, lifts_states, SERVER_STATE->lift_count);
+                len += server_door_states(buf + len, SERVER_STATE->door_count, doors_states);
+                len += server_lift_states(buf + len, SERVER_STATE->lift_count, lifts_states);
+                free(doors_states);
+                free(lifts_states);
                 char* entries[10] = {0};
                 uint16_t deaths[10] = {0};
                 uint16_t kills[10] = {0};
@@ -82,7 +90,7 @@ int broadcast_event(world_t* world, event_t* event) {
                 position_ct* pos = (position_ct*) world_get_component(world, &pid, COMPONENT_TAG_POSITION);
                 health_ct* health = (health_ct*) world_get_component(world, &pid, COMPONENT_TAG_HEALTH);
                 if (display_name == NULL) continue;
-                outgoing->len += server_join(outgoing->data, conns[i].player_id, display_name_get(display_name));
+                outgoing->len += server_join(outgoing->data + outgoing->len, conns[i].player_id, display_name_get(display_name));
                 if (pos == NULL) continue;
                 outgoing->len += server_player_move(outgoing->data + outgoing->len, conns[i].player_id, pos->x, pos->y, pos->z, pos->angle);
                 if (health == NULL) continue;
@@ -160,6 +168,30 @@ int broadcast_event(world_t* world, event_t* event) {
             printf("%s\n", death_msg);
             len = server_player_kill(buf, player_kill_event->entity_id, player_kill_event->source_entity_id);
             len += server_server_chat(buf + len, death_msg, true, true);
+            broadcast(&sock, conns, SERVER_STATE->conn_count, buf, len);
+            break;
+        }
+        case SERVER_DOOR_OPEN_EVENT_TAG: {
+            door_open_event_t* ev = (door_open_event_t*) event;
+            if (ev->is_lift) {
+                printf("Lift %d is ascending.\n", ev->door_id);
+                len = server_lift_ascend(buf, ev->door_id);
+            } else {
+                printf("Door %d is opening.\n", ev->door_id);
+                len = server_door_open(buf, ev->door_id);
+            }
+            broadcast(&sock, conns, SERVER_STATE->conn_count, buf, len);
+            break;
+        }
+        case SERVER_DOOR_CLOSE_EVENT_TAG: {
+            door_close_event_t* ev = (door_close_event_t*) event;
+            if (ev->is_lift) {
+                printf("Lift %d is descending.\n", ev->door_id);
+                len = server_lift_descend(buf, ev->door_id);
+            } else {
+                printf("Door %d is closing.\n", ev->door_id);
+                len = server_door_close(buf, ev->door_id);
+            }
             broadcast(&sock, conns, SERVER_STATE->conn_count, buf, len);
             break;
         }

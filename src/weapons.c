@@ -7,7 +7,7 @@
 #include "../include/weapons.h"
 #include "../include/player.h"
 #include "../include/component/position.h"
-#include "../include/hitscan.h"
+
 #define ANIMATION_WIDTH 100
 #define ANIMATION_HEIGTH 50
 

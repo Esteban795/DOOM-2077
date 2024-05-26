@@ -35,7 +35,8 @@ scoreboard_update_event_t* ServerScoreboardUpdateEvent_new(uint16_t entries_coun
 int scoreboard_generate(world_t* world, char* entries[10], uint16_t deaths[10], uint16_t kills[10]) {
     // Get at most 10 players (the older ones).
     entity_t* players[10] = {0};
-    int i, j = 0;
+    int i = 0;
+    int j = 0;
     while (j < 10 && i < (int) vec_length(&world->entities)) {
         entity_t* player = vec_get(&world->entities, i);
         if (!world_entity_has_component(world, player, COMPONENT_TAG_STATISTIC)) {

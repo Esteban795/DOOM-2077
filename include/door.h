@@ -6,6 +6,10 @@
 #include "sector.h"
 #include "geometry.h"
 #include "sidedef.h"
+#include "sound.h"
+#include "audio/mixer.h"
+
+#define MINIMUM_FLOOR_HEIGHT -512
 
 // By default, P1 / PR and W1 / WR will still be activated in deathmatch 
 // OWC = open wait close
@@ -77,7 +81,7 @@ enum DoorFunction { //how the door behaves
 };
 
 struct Door {
-    entity_t* id; // used by ECS
+    uint64_t id; // used by ECS
     enum DoorTransitionSpeed speed;
     enum DoorFunction function;
     int wait_time; // wait time until the door switches to the next state
@@ -99,11 +103,11 @@ void door_update(door *d, int DT);
 
 void door_update_height(door *d, int high_height);
 
-void door_trigger_switch(door *d);
+bool door_trigger_switch(door *d);
 
 void doors_free(door** doors,int len_doors);
 
-door *door_create(entity_t *id, enum DoorTransitionSpeed speed,
+door *door_create(uint64_t id, enum DoorTransitionSpeed speed,
                   enum DoorFunction function, int wait_time,sector *sector,bool init_state);
 
 door* add_door(door* head, door* new_door);

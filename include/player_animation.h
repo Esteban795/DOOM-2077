@@ -10,7 +10,7 @@ enum AnimationType {
     SHOOTING,
     DYING,
     EXTREME_DYING,
-    IDLE
+    PLAYER_IDLE
 };
 
 #define NUMBER_ORIENTATION 8

@@ -187,8 +187,10 @@ void render_bsp_node(bsp *b, size_t node_id) {
         }
       }
     } else {
+      position_ct* player_pos = player_get_position(b->player);
+      vec2 pos2d = position_get_pos(player_pos);
       node n = b->nodes[node_id];
-      bool is_back_side = is_on_back_side(n, player_pos2d);
+      bool is_back_side = is_on_back_side(n, pos2d);
       if (is_back_side) {
         render_bsp_node(b, n.back_child_id);
         if (check_if_bbox_visible(n.front_bbox,

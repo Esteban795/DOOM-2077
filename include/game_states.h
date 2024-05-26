@@ -6,6 +6,7 @@
 #include "segment_handler.h"
 #include "structs.h"
 #include "weapons.h"
+#include "ui/def.h"
 #include <SDL2/SDL.h>
 #include <stdbool.h>
 

@@ -7,6 +7,7 @@
 #include "structs.h"
 #include "events.h"
 #include "node.h"
+#include "weapons.h"
 #include "component/position.h"
 #include "component/health.h"
 #include "component/weapon.h"
@@ -15,13 +16,21 @@
 #ifndef PLAYER_USERNAME
 #define PLAYER_USERNAME "player"
 #endif
-#include "door.h"
+#include "settings.h"
+
+#define PLAYER_HITBOX_SIZE 50
+#define HITSCAN_PRECISION 10
+#define WEAPON_AMMO_CAPACITY 10
 
 player *player_init(engine *e);
 
 void update_player(player *p);
 
 void player_free(player *p);
+
+void update_height(player *p);
+
+void process_keys(player* p);
 
 // Get the player's position component
 position_ct* player_get_position(player* p);
@@ -44,4 +53,8 @@ void free_cooldowns_sprays(player* p);
 WACS * create_cooldowns_sprays(player* p);
 
 WACS* update_cooldowns_sprays(WACS* w);
+
+void fire_bullet(
+    entity_t **players, int num_players, player *player_,
+    weapons_array *weapons_list);
 #endif

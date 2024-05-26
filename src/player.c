@@ -5,16 +5,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "../include/settings.h"
-#include "../include/player.h"
-#include "../include/ecs/world.h"
-#include "../include/ecs/entity.h"
-#include "../include/ecs/component.h"
-#include "../include/component/position.h"
-#include "../include/component/health.h"
-#include "../include/component/weapon.h"
 #include "../include/component/display_name.h"
+#include "../include/component/health.h"
+#include "../include/component/position.h"
 #include "../include/component/subsector_id.h"
+#include "../include/component/weapon.h"
+#include "../include/ecs/component.h"
+#include "../include/ecs/entity.h"
+#include "../include/ecs/world.h"
+#include "../include/player.h"
+#include "../include/settings.h"
 
 #define SPRAY_DECREATE_RATE 0.25
 #define SIGN(x) (int)(x > 0) ? 1 : ((x < 0) ? -1 : 0)
@@ -23,16 +23,27 @@
 #define TRIGGER_ACTIVATION_RANGE 100
 #define PLAYER_LIFE 100
 #define M_PI 3.14159265358979323846
+#define MAX_INTERACT_COOLDOWN 100
+
+#define PLAYER_HITBOX_SIZE 50
+#define HITSCAN_PRECISION 10
+#define MELEE_RADIUS 20
+#define MAX_SPRAY 50
+#define SPRAY_COEFF 5 // Vitesse a laquelle le spray augmente
 
 bool SHOULD_COLLIDE = true;
 bool ALLOWED_TO_TURN = true;
+int INTERACT_CD = 0;
 
 player *player_init(engine *e) {
   player *p = malloc(sizeof(player));
-  int *ammo = malloc(WEAPONS_NUMBER * sizeof(int));
+  int ammo[WEAPONS_NUMBER];
+  int mags[WEAPONS_NUMBER];
   ammo[0] = -2;
+  mags[0] = 0;
   for (int i = 1; i < WEAPONS_NUMBER; i++) {
-    ammo[i] = -1;
+    ammo[i] = 10;
+    mags[i] = 10;
   }
   p->engine = e;
   p->thing = e->wData->things[0];
@@ -41,20 +52,22 @@ player *player_init(engine *e) {
 
   // Add player to the ECS world
   double coords[3] = {p->thing.x, p->thing.y, PLAYER_HEIGHT};
-  component_t** comps = malloc(sizeof(component_t*) * 5);
+  component_t **comps = malloc(sizeof(component_t *) * 5);
   comps[0] = position_create(coords, p->thing.angle + 180.0);
   comps[1] = health_create(100.0, 100.0);
-  comps[2] = weapon_create(ammo);
+  comps[2] = weapon_create(ammo, mags);
   comps[3] = display_name_create(PLAYER_USERNAME);
-  size_t player_subsector_id = get_subsector_id_from_pos(e->wData->len_nodes - 1, e->wData->nodes, (vec2){.x = p->thing.x, .y = p->thing.y});
+  size_t player_subsector_id =
+      get_subsector_id_from_pos(e->wData->len_nodes - 1, e->wData->nodes,
+                                (vec2){.x = p->thing.x, .y = p->thing.y});
   comps[4] = subsector_id_create(player_subsector_id);
   p->entity = world_insert_entity(e->world, e->remote->player_id, comps, 5);
   free(comps);
-  
+
   p->ammo = ammo;
   p->t_last_shot = 0;
   p->has_attacked = false;
-  p->life=PLAYER_LIFE;
+  p->life = PLAYER_LIFE;
   p->active_weapon = 0;
   p->cooldowns_sprays = create_cooldowns_sprays(e->p);
   return p;
@@ -62,13 +75,14 @@ player *player_init(engine *e) {
 
 linedef **get_linedefs_in_active_blocks(player *p, int *nlinedefs) {
   blockmap *bmap = p->engine->wData->blockmap;
-  position_ct* pos = player_get_position(p);
+  position_ct *pos = player_get_position(p);
 
   for (int x = -1; x <= 1; x++) {
     for (int y = -1; y <= 1; y++) {
-      int block_index = blockmap_get_block_index(bmap, position_get_x(pos) + x * 128,
-                                                 position_get_y(pos) + y * 128);
-      if (block_index < 0 || block_index >= (int)bmap->nblocks) continue;
+      int block_index = blockmap_get_block_index(
+          bmap, position_get_x(pos) + x * 128, position_get_y(pos) + y * 128);
+      if (block_index < 0 || block_index >= (int)bmap->nblocks)
+        continue;
       (*nlinedefs) += bmap->blocks[block_index].nlinedefs;
     }
   }
@@ -78,9 +92,10 @@ linedef **get_linedefs_in_active_blocks(player *p, int *nlinedefs) {
 
   for (int x = -1; x <= 1; x++) {
     for (int y = -1; y <= 1; y++) {
-      int block_index = blockmap_get_block_index(bmap, position_get_x(pos) + x * 128,
-                                                 position_get_y(pos) + y * 128);
-      if (block_index < 0 || block_index >= (int)bmap->nblocks) continue;
+      int block_index = blockmap_get_block_index(
+          bmap, position_get_x(pos) + x * 128, position_get_y(pos) + y * 128);
+      if (block_index < 0 || block_index >= (int)bmap->nblocks)
+        continue;
       for (int i = 0; i < (int)bmap->blocks[block_index].nlinedefs; i++) {
         linedefs[offset] = bmap->blocks[block_index].linedefs[i];
         offset++;
@@ -135,9 +150,6 @@ void get_projections(linedef *line, vec2 pos, vec2 *projected,
   double norm_projection =
       sqrt(pow((projected->x - pos.x), 2) + pow((projected->y - pos.y), 2));
 
-  // printf("%f\n", pos.x + ((projected->x - pos.x)/norm_projection) *
-  // PLAYER_RADIUS);
-
   projected_hitbox->x =
       pos.x + ((projected->x - pos.x) / norm_projection) * PLAYER_RADIUS * 2;
   projected_hitbox->y =
@@ -147,14 +159,6 @@ void get_projections(linedef *line, vec2 pos, vec2 *projected,
       pos.x - ((projected->x - pos.x) / norm_projection) * PLAYER_RADIUS * 2;
   projected_hitbox_back->y =
       pos.y - ((projected->y - pos.y) / norm_projection) * PLAYER_RADIUS * 2;
-
-  // printf("projecting...\n");
-  // printf("po: x=%f,y=%f\n", pos.x, pos.y);
-  // printf("v1: x=%f,y=%f\n", (double)v1.x, (double)v1.y);
-  // printf("v2: x=%f,y=%f\n", (double)v2.x, (double)v2.y);
-  // printf("pr: x=%f,y=%f\n", projected->x, projected->y);
-  // printf("no: %f\n", norm_projection);
-  // printf("ph: x=%f,y=%f\n", projected_hitbox->x, projected_hitbox->y);
 }
 
 void slide_against_wall(vec2 *pos_inside_wall, vec2 projected) {
@@ -187,10 +191,6 @@ bool can_collide_with_wall(double cp_after, linedef *linedef) {
     if (cp_after > 0) {
       from = linedef->back_sidedef->sector;
       to = linedef->front_sidedef->sector;
-      // from =
-      // p->engine->wData->sectors[p->engine->wData->sidedefs[linedefs[i].back_sidedef_id].sector];
-      // to =
-      // p->engine->wData->sectors[p->engine->wData->sidedefs[linedefs[i].front_sidedef_id].sector];
     } else {
       from = linedef->front_sidedef->sector;
       to = linedef->back_sidedef->sector;
@@ -210,11 +210,12 @@ bool can_collide_with_wall(double cp_after, linedef *linedef) {
 }
 
 void move_and_slide(player *p, double *velocity) {
-  position_ct* pos = player_get_position(p);
+  position_ct *pos = player_get_position(p);
 
   int nlinedefs = 0;
   linedef **linedefs = get_linedefs_in_active_blocks(p, &nlinedefs);
-  vec2 next_pos = {.x = position_get_x(pos) + velocity[0], .y = position_get_y(pos) + velocity[1]};
+  vec2 next_pos = {.x = position_get_x(pos) + velocity[0],
+                   .y = position_get_y(pos) + velocity[1]};
   for (int ii = 0; ii < 2 * nlinedefs; ii++) {
 
     int i = ii % nlinedefs;
@@ -249,7 +250,7 @@ void move_and_slide(player *p, double *velocity) {
       // else: use the first linedef (first linedef faces "clockwise")
       if (linedefs[i]->has_doors && linedefs[i]->is_collidable) {
         if (!linedefs[i]->used) {
-          door_trigger_switch(linedefs[i]->door);
+          client_door_trigger(p->engine, linedefs[i]->door->id);
           if (!linedefs[i]->is_repeatable) {
             linedefs[i]->used = true;
           }
@@ -257,7 +258,7 @@ void move_and_slide(player *p, double *velocity) {
       }
       if (linedefs[i]->has_lifts && linedefs[i]->is_collidable) {
         if (!linedefs[i]->used) {
-          lift_trigger_switch(linedefs[i]->lifts);
+          client_lift_trigger(p->engine, linedefs[i]->lifts->id);
           if (!linedefs[i]->is_repeatable) {
             linedefs[i]->used = true;
           }
@@ -275,16 +276,9 @@ void move_and_slide(player *p, double *velocity) {
   free(linedefs);
 }
 
-void update_height(player *p,i16 subsector_id) {
-  bsp* b = p->engine->bsp;
-  position_ct* pos = player_get_position(p);
-  subsector player_ssector = b->subsectors[subsector_id];
-  segment seg = player_ssector.segs[0];
-  double floor_height = seg.front_sector->floor_height;
-  double target_height = floor_height + PLAYER_HEIGHT;
-  double grav_height = position_get_z(pos) - G * 10e-3 * p->engine->DT * p->engine->DT / 2.0;
-  position_set_z(pos, fmax(grav_height, target_height));
-}
+// END COLLISION HANDLING /////////////////////////////////////////////////
+
+////////// SHOOTING AND INTERACTING LOGIC /////////////////////////////////
 
 int correct_height(linedef *wall, int height) {
   if (!(wall->has_back_sidedef)) {
@@ -304,6 +298,143 @@ int correct_height(linedef *wall, int height) {
       } else {
         return 0;
       }
+    }
+  }
+}
+
+void fire_bullet(
+    entity_t **players, int num_players, player *player_,
+    weapons_array *weapons_list) { // toutes les valeurs de y sont négatives
+  position_ct *pos = player_get_position(player_);
+  weapon_ct *weapon_ecs = player_get_weapon(player_);
+  double distance_finale = 10000;
+  if (weapon_get_active_cooldown(weapon_ecs) < 80) {
+    *weapon_get_mut_active_cooldown(weapon_ecs) += 100;
+    weapon *weapon_used = weapons_list->weapons[weapon_ecs->active_weapon];
+    int damage = weapon_used->max_damage;
+    int weapon_number = weapon_used->id;
+    double cs =
+        player_->cooldowns_sprays
+            ->cs[weapon_number]; // temps depuis le dernier tir de cette arme
+    double time = SDL_GetTicks();
+    int is_ranged; // 0 correspond a une arme de melée sinon une arme a distance
+    if (weapon_used->type == -1) {
+      is_ranged = 0;
+    } else {
+      is_ranged = 1;
+    }
+    // gestion du spray
+    if (is_ranged == 1) {
+      int spray = 0;
+      if (spray % 2 == 0) {
+        pos->angle += spray;
+      } else {
+        pos->angle -= spray; // le spray fait bouger la caméra
+      }
+    }
+    // gestion du tir jusqu'au mur
+    if ((cs < time) &&
+        (!((is_ranged == 1) &&
+           (player_->ammo[weapon_ecs->active_weapon] ==
+            0)))) { // On véfrifie d'un coté que le temps de cooldown est
+                    // respecté et ensuite que si l'arme est a distance elle
+                    // dispose d'assez de muntitions
+      linedef **linedefs = player_->engine->wData->linedefs;
+      double x1 = position_get_x(pos);
+      double y1 = -position_get_y(pos);
+      double x2 = x1 + 100 * cos(deg_to_rad(position_get_angle(pos)));
+      double y2 = y1 + 100 * sin(deg_to_rad(position_get_angle(pos)));
+      double a = 0;
+      double x_final = 0;
+      double y_final = 0;
+      int direction = 1; // 0 = ni gauche ni droite, 1 = gauche, 2 = droite
+      double height = position_get_z(pos);
+      if (x1 != x2) {
+        a = (y2 - y1) / (x2 - x1);
+        if (x1 > x2) {
+          direction = 1; // vers la gauche
+        } else {
+          direction = 2; // vers la droite
+        }
+      }
+      double b = y1 - a * x1;
+      for (int i = 0; i < player_->engine->wData->len_linedefs; i++) {
+        double x = 0;
+        double y = 0;
+        if ((!(linedefs[i]->has_back_sidedef)) ||
+            (correct_height(linedefs[i], height))) {
+          double x1a = linedefs[i]->start_vertex->x;
+          double y1a = -linedefs[i]->start_vertex->y;
+          double x2a = linedefs[i]->end_vertex->x;
+          double y2a = -linedefs[i]->end_vertex->y;
+          double c = 0;
+          double d = 0;
+          if (x1a != x2a) {
+            c = (y2a - y1a) / (x2a - x1a);
+            d = y1a - c * x1a;
+            x = (d - b) / (a - c);
+            y = a * x + b;
+            if (distance(x1, y1, x, y) < 100) {
+            }
+            if (((x1a <= x) && (x <= x2a)) || ((x2a <= x) && (x <= x1a))) {
+              if (((direction == 1) && (x1 > x)) ||
+                  ((direction == 2) && (x1 < x))) {
+                if (distance(x1, y1, x, y) < distance_finale) {
+                  distance_finale = distance(x1, y1, x, y);
+                  x_final = x;
+                  y_final = y;
+                }
+              }
+            }
+
+          } else {
+            x = x1a;
+            y = a * x + b;
+            if (((y1a <= y) && (y <= y2a)) || ((y2a <= y) && (y <= y1a))) {
+              if (((direction == 1) && (x1 >= x)) ||
+                  ((direction == 2) && (x1 <= x))) {
+                if (distance(x1, y1, x, y) < distance_finale) {
+                  distance_finale = distance(x1, y1, x, y);
+                  x_final = x;
+                  y_final = y;
+                }
+              }
+            }
+          }
+        }
+      }
+
+      // TODO: Déplacer coté serveur le calcul des dégats sur un joueur.
+      // Gestion de la collison du tir avec les joueurs
+      for (int j = 0; j < num_players; j++) {
+        if (players[j] == NULL)
+          continue;
+        position_ct *pos_pj = (position_ct *)world_get_component(
+            player_->engine->world, players[j], COMPONENT_TAG_POSITION);
+
+        health_ct *health_pj = (health_ct *)world_get_component(
+            player_->engine->world, players[j], COMPONENT_TAG_HEALTH);
+
+        double dist_to_hitscan = (fabs(a * (position_get_x(pos_pj)) +
+                                       (position_get_y(pos_pj)) + b)) /
+                                 (sqrt(pow(a, 2) + pow(-1, 2)));
+        if (dist_to_hitscan < PLAYER_HITBOX_SIZE) {
+          if ((min(x1, x_final) < position_get_x(pos_pj)) &&
+              (max(x1, x_final) > position_get_x(pos_pj)) &&
+              (min(y1, y_final) < -position_get_y(pos_pj)) &&
+              (min(y1, y_final) < -position_get_y(pos_pj))) {
+            if ((dist_to_hitscan < MELEE_RADIUS)) {
+              health_sub(health_pj, damage);
+              player_
+                  ->ammo[weapon_ecs->ammunitions[weapon_ecs->active_weapon]] -=
+                  1;
+            }
+          }
+        }
+      }
+      // Update des etats du joueur
+      player_->cooldowns_sprays->cs[weapon_number] = time;
+      //  printf("final x: %f, final y: %f\n", x_final, y_final);
     }
   }
 }
@@ -379,33 +510,94 @@ linedef *cast_ray(linedef **linedefs, int len_linedefs, vec2 player_pos,
   return target_linedef;
 }
 
-void update_player(player *p) {
-  position_ct* pos = player_get_position(p);
-  int DT = p->engine->DT;
-  if (keys[SDL_GetScancodeFromKey(SDL_GetKeyFromName("M"))]) {
-    SHOULD_COLLIDE = !SHOULD_COLLIDE;
-  }
-  bool interact = keys[get_key_from_action(p->keybinds, "INTERACT")];
-  if (interact) {
-    linedef *trigger_linedef =
-        cast_ray(p->engine->wData->linedefs, p->engine->wData->len_linedefs,
-                 position_get_pos(pos), position_get_angle(pos), position_get_z(pos));
+////////// END SHOOTING AND INTERACTING LOGIC /////////////////////////////////
+
+void process_keys(player *p) {
+  position_ct *pos = player_get_position(p);
+  weapon_ct *weapon = player_get_weapon(p);
+  bool is_interacting = keys[get_key_from_action(p->keybinds, "INTERACT")];
+  // to avoid spamming the interact key and crashing the audio lmao
+  INTERACT_CD -= p->engine->DT;
+  weapon->cooldowns[weapon->active_weapon] -= p->engine->DT;
+  // printf("cooldown: %d\n", weapon->cooldowns[weapon->active_weapon]);
+  if (is_interacting && INTERACT_CD <= 0) {
+    linedef *trigger_linedef = cast_ray(
+        p->engine->wData->linedefs, p->engine->wData->len_linedefs,
+        position_get_pos(pos), position_get_angle(pos), position_get_z(pos));
     if (trigger_linedef != NULL) {
       if (trigger_linedef->door != NULL) {
-        door_trigger_switch(trigger_linedef->door);
+        client_door_trigger(p->engine, trigger_linedef->door->id);
       }
       if (trigger_linedef->lifts != NULL) {
-        lift_trigger_switch(trigger_linedef->lifts);
+        client_lift_trigger(p->engine, trigger_linedef->lifts->id);
       }
+      add_sound_to_play(SWITCH_USE_SOUND, pos->x, pos->y);
+      INTERACT_CD = MAX_INTERACT_COOLDOWN;
     }
   }
+
+  // WEAPON SWITCHING
+  bool switch_to_fists = keys[get_key_from_action(p->keybinds, "FISTS")];
+  bool switch_to_shotgun = keys[get_key_from_action(p->keybinds, "SHOTGUN")];
+  bool switch_to_pistol = keys[get_key_from_action(p->keybinds, "PISTOL")];
+  bool switch_to_chaingun = keys[get_key_from_action(p->keybinds, "CHAINGUN")];
+  if (switch_to_fists) {
+    weapon->active_weapon = 0;
+  }
+  if (switch_to_pistol) {
+    weapon->active_weapon = 1;
+  }
+  if (switch_to_chaingun) {
+    weapon->active_weapon = 2;
+  }
+  if (switch_to_shotgun) {
+    weapon->active_weapon = 3;
+  }
+
+  bool is_reloading = keys[get_key_from_action(p->keybinds, "RELOAD")];
+  if (weapon->active_weapon != 0 && is_reloading) { // cannot reload fists..
+    int ammos_left = weapon_get_active_ammos_left(weapon);
+    int mags_left = weapon_get_active_bullets_left(weapon);
+    int room_left = WEAPON_AMMO_CAPACITY - mags_left;
+    if (ammos_left < room_left) {
+      weapon->ammunitions[weapon->active_weapon] = 0;
+      weapon->mags[weapon->active_weapon] += ammos_left;
+    } else {
+      weapon->ammunitions[weapon->active_weapon] -= room_left;
+      weapon->mags[weapon->active_weapon] = WEAPON_AMMO_CAPACITY;
+    }
+  }
+
+  bool is_attacking = keys[get_key_from_action(p->keybinds, "ATTACK")];
+  if (is_attacking && weapon_get_active_bullets_left(weapon) > 0) {
+    fire_bullet(p->engine->players, 1, p, wa);
+  }
+  // DEBUG OPTION TO GO THROUGH WALLS
   if (keys[SDL_GetScancodeFromKey(SDL_GetKeyFromName("M"))]) {
     SHOULD_COLLIDE = !SHOULD_COLLIDE;
   }
+}
 
-  if (keys[SDL_GetScancodeFromKey(SDL_GetKeyFromName("N"))]) {
-    ALLOWED_TO_TURN = !ALLOWED_TO_TURN;
-  }
+void update_height(player *p) {
+  position_ct *pos = player_get_position(p);
+  i16 subsector_id = get_subsector_id_from_pos(
+      p->engine->wData->len_nodes - 1, p->engine->wData->nodes,
+      (vec2){.x = position_get_x(pos), .y = position_get_y(pos)});
+  subsector subsector = p->engine->wData->subsectors[subsector_id];
+  segment seg = subsector.segs[0];
+  double floor_height = seg.front_sector->floor_height;
+
+  double target_height = floor_height + PLAYER_HEIGHT;
+  pos->z = target_height;
+
+  // double grav_height =
+  //     p->height - G * 10e-2 / 2.0 * p->engine->DT * p->engine->DT / 2;
+  // p->height = fmax(grav_height, target_height);
+}
+
+void update_player(player *p) {
+  position_ct *pos = player_get_position(p);
+  int DT = p->engine->DT;
   bool forward = keys[get_key_from_action(p->keybinds, "MOVE_FORWARD")];
   bool left = keys[get_key_from_action(p->keybinds, "MOVE_LEFT")];
   bool backward = keys[get_key_from_action(p->keybinds, "MOVE_BACKWARD")];
@@ -413,10 +605,12 @@ void update_player(player *p) {
   double speed = DT * PLAYER_SPEED;
   double rot_speed = DT * PLAYER_ROTATION_SPEED;
   if (ALLOWED_TO_TURN) {
-    position_set_angle(pos, norm(position_get_angle(pos) + rot_speed * ((double)mouse[NUM_MOUSE_BUTTONS])));
+    position_set_angle(pos,
+                       norm(position_get_angle(pos) +
+                            rot_speed * ((double)mouse[NUM_MOUSE_BUTTONS])));
   }
-  
-  //p->cooldowns_sprays=update_cooldowns_sprays(p->cooldowns_sprays);
+
+  // p->cooldowns_sprays=update_cooldowns_sprays(p->cooldowns_sprays);
   double vec[2] = {0.0, 0.0};
   int count_dir = 0;
   int count_strafe = 0;
@@ -444,16 +638,20 @@ void update_player(player *p) {
     vec[0] *= DIAGONAL_CORRECTION;
     vec[1] *= DIAGONAL_CORRECTION;
   }
-  if (SHOULD_COLLIDE) {
+  if (SHOULD_COLLIDE) { // debug options to go through walls (prevent from
+                        // triggering doors, lifts etc)
     move_and_slide(p, vec);
   } else {
     pos->x += vec[0];
     pos->y += vec[1];
   }
-  subsector_id_ct* subsector_id_ecs = (subsector_id_ct*)world_get_component(p->engine->world, p->entity, COMPONENT_TAG_SUBSECTOR_ID);
-  i16 subsector_id = get_subsector_id_from_pos(p->engine->wData->len_nodes - 1, p->engine->wData->nodes, (vec2){.x = position_get_x(pos), .y = position_get_y(pos)});
+  subsector_id_ct *subsector_id_ecs = (subsector_id_ct *)world_get_component(
+      p->engine->world, p->entity, COMPONENT_TAG_SUBSECTOR_ID);
+  i16 subsector_id = get_subsector_id_from_pos(
+      p->engine->wData->len_nodes - 1, p->engine->wData->nodes,
+      (vec2){.x = position_get_x(pos), .y = position_get_y(pos)});
   subsector_id_set(subsector_id_ecs, subsector_id);
-  update_height(p,subsector_id);
+  update_height(p);
 }
 
 void player_free(player *p) {
@@ -461,15 +659,14 @@ void player_free(player *p) {
   settings_free(p->settings);
   world_remove_entity(p->engine->world, p->entity);
   free_cooldowns_sprays(p);
-  free(p->ammo);
   free(p);
 }
 
-int player_find(entity_t** list, entity_t* p) {
-  return player_find_by_id(list, p->id); 
+int player_find(entity_t **list, entity_t *p) {
+  return player_find_by_id(list, p->id);
 }
 
-int player_find_by_id(entity_t** list, uint64_t id) {
+int player_find_by_id(entity_t **list, uint64_t id) {
   for (int i = 0; i < PLAYER_MAXIMUM; i++) {
     if (list[i] != NULL && list[i]->id == id) {
       return i;
@@ -478,48 +675,40 @@ int player_find_by_id(entity_t** list, uint64_t id) {
   return -1;
 }
 
-position_ct* player_get_position(player* p) {
-  engine* e = p->engine;
-  return (position_ct*)world_get_component(e->world, p->entity, COMPONENT_TAG_POSITION);
+position_ct *player_get_position(player *p) {
+  engine *e = p->engine;
+  return (position_ct *)world_get_component(e->world, p->entity,
+                                            COMPONENT_TAG_POSITION);
 }
 
-health_ct* player_get_health(player* p) {
-  engine* e = p->engine;
-  return (health_ct*)world_get_component(e->world, p->entity, COMPONENT_TAG_HEALTH);
+health_ct *player_get_health(player *p) {
+  engine *e = p->engine;
+  return (health_ct *)world_get_component(e->world, p->entity,
+                                          COMPONENT_TAG_HEALTH);
 }
 
-weapon_ct* player_get_weapon(player* p) {
-  engine* e = p->engine;
-  return (weapon_ct*)world_get_component(e->world, p->entity, COMPONENT_TAG_WEAPON);
+weapon_ct *player_get_weapon(player *p) {
+  engine *e = p->engine;
+  return (weapon_ct *)world_get_component(e->world, p->entity,
+                                          COMPONENT_TAG_WEAPON);
 }
 
-void players_free(player **players, int num_players) {
-  for (int i = 0; i < num_players; i++) {
-    player_free(players[i]);
-  }
-  free(players);
-}
-
-WACS * create_cooldowns_sprays(player* p){
-  WACS * w=malloc(sizeof(WACS));
-  w->p=p;
+WACS *create_cooldowns_sprays(player *p) {
+  WACS *w = malloc(sizeof(WACS));
+  w->p = p;
   double a[WEAPONS_NUMBER];
-  w->cs=a;
-  for(int i=0;i<WEAPONS_NUMBER;i++){
-    w->cs[i]=0;
+  w->cs = a;
+  for (int i = 0; i < WEAPONS_NUMBER; i++) {
+    w->cs[i] = 0;
   }
   return w;
 }
 
-void free_cooldowns_sprays(player* p){
-  free(p->cooldowns_sprays);
-}
+void free_cooldowns_sprays(player *p) { free(p->cooldowns_sprays); }
 
-WACS* update_cooldowns_sprays(WACS* w){
-  for(int i=0;i<WEAPONS_NUMBER;i++){
-    w->cs[i]=0;//SPRAY_DECREATE_RATE;
+WACS *update_cooldowns_sprays(WACS *w) {
+  for (int i = 0; i < WEAPONS_NUMBER; i++) {
+    w->cs[i] = 0; // SPRAY_DECREATE_RATE;
   }
   return w;
 }
-
-

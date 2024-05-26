@@ -2,7 +2,7 @@
 
 char ANIMATION_NAME[9] = {'P','L','A','Y','A','1','A','1','\0'};
 int CURRENT_ANIMATION_PROGRESS[NUM_PLAYERS] = {0};
-enum AnimationType CURRENT_ANIMATION[NUM_PLAYERS] = {IDLE, IDLE, IDLE};
+enum AnimationType CURRENT_ANIMATION[NUM_PLAYERS] = {PLAYER_IDLE, PLAYER_IDLE, PLAYER_IDLE};
 int ANIMATION_COOLDOWNS[NUM_PLAYERS] = {0};
 
 // RETURNS A NUMBER BETWEEN 1-8 depending on the orientation of the sprite relative to the player
@@ -41,13 +41,13 @@ void set_orientation(int sprite_orientation) {
 bool set_correct_animation_name(int i,vec2 origin_pos,double origin_angle, vec2 pos,double angle,enum AnimationType type) {
     int sprite_orientation = get_sprite_orientation(origin_pos,origin_angle, pos, angle);
     // int sprite_orientation = calculate_sprite_orientation(origin_pos.x, origin_pos.y, origin_angle, pos.x, pos.y, angle);
-    if (type == IDLE){
+    if (type == PLAYER_IDLE){
         set_orientation(sprite_orientation);
         ANIMATION_NAME[4] = ANIMATION_IDLE_INIT;
         if (sprite_orientation != 1 && sprite_orientation != 5) {
             ANIMATION_NAME[6] = ANIMATION_IDLE_INIT;
         }
-        CURRENT_ANIMATION[i] = IDLE;
+        CURRENT_ANIMATION[i] = PLAYER_IDLE;
         CURRENT_ANIMATION_PROGRESS[i] = 0;
     } else if (type == DYING){
         if (CURRENT_ANIMATION[i] != DYING){

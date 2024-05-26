@@ -35,6 +35,12 @@ int main() {
     printf("Error at SDLNet startup");
     exit(-2);
   }
+  status = TTF_Init();
+  if (status == 1) {
+    printf("Error at SDL_TTF startup");
+    exit(-1);
+  }
+  IMG_Init(IMG_INIT_PNG || IMG_INIT_JPG);
   status = Mix_Init(MIX_INIT_MOD);
   if (status == 1) {
     printf("Error at Mix startup\n");
@@ -47,7 +53,7 @@ int main() {
   SDL_ShowCursor(SDL_DISABLE);        // Set to true for debug
   SDL_SetRelativeMouseMode(SDL_TRUE); // Set to false for debug
   SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
-  engine *e = init_engine("maps/DOOM1.WAD", renderer);
+  engine *e = init_engine("maps/DOOM1-NET.WAD", renderer);
 
   // Waiting for connection to server
   old = SDL_GetTicks();
@@ -70,7 +76,7 @@ int main() {
     printf("Connection to server failed! Pursuing in solo...\n");
     e->remote->connected = -1;
     e->remote->player_id = 0;
-    read_map(e, "E1M3");
+    read_map(e, "MAP01");
   } else {
     printf("Connection to server successful!\n");
   }
@@ -80,7 +86,7 @@ int main() {
   }
   // print_animations_patches(wa->weapons[1]);
   int dt = 0;
-  while (e->running) {
+  while (running) {
     now = SDL_GetTicks();
     dt = now - old;
     int res = update_engine(e, dt);
@@ -88,8 +94,7 @@ int main() {
     if (res == 1)
       break;
 
-    // printf("%f\n",e->p->spray);
-    //  printf("FPS: %f\n",1000/dt);
+    //  printf("FPS: %f\n", 1000.0 / dt);
     old = now;
     // break;
   }
@@ -102,6 +107,8 @@ int main() {
   free_weapons_array(wa);
   engine_free(e);
   SDLNet_Quit();
+  IMG_Quit();
+  TTF_Quit();
   Mix_Quit();
   return 0;
 }
