@@ -547,26 +547,7 @@ void process_keys(player *p) {
     }
   }
 
-  // WEAPON SWITCHING
-  bool switch_to_fists = keys[get_key_from_action(p->keybinds, "FISTS")];
-  bool switch_to_shotgun = keys[get_key_from_action(p->keybinds, "SHOTGUN")];
-  bool switch_to_pistol = keys[get_key_from_action(p->keybinds, "PISTOL")];
-  bool switch_to_chaingun = keys[get_key_from_action(p->keybinds, "CHAINGUN")];
-  if (switch_to_fists) {
-    weapon->active_weapon = 0;
-  }
-  if (switch_to_pistol) {
-    weapon->active_weapon = 1;
-  }
-  if (switch_to_chaingun) {
-    weapon->active_weapon = 2;
-  }
-  if (switch_to_shotgun) {
-    weapon->active_weapon = 3;
-  }
-
   bool is_reloading = keys[get_key_from_action(p->keybinds, "RELOAD")];
-  printf("%i\n", weapon->mags[weapon->active_weapon]);
   if (is_reloading) { // cannot reload fists..
     weapon->mags[weapon->active_weapon] = wa->weapons[weapon->active_weapon]->magsize;
   }

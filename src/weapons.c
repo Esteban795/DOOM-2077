@@ -179,9 +179,6 @@ animations_array *init_animations_array(engine *e, char *abbreviation,
     for (int j = animation_len; j < all_sprites_len; j++) {
       init_animation_sprite(&layer_sprites[j - animation_len],
                             sprites[indexes[j]], NULL, w);
-      printf("Layer %s\n duration %d\n",
-             layer_sprites[j - animation_len].animation_sprite.patchname,
-             layer_sprites[j - animation_len].duration);
       if (layer_sprites[j - animation_len].duration == 0) {
         layer_sprites[j - animation_len].duration =
             cooldown / (all_sprites_len - animation_len);
