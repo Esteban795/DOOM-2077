@@ -16,7 +16,9 @@ UILabel *uilabel_create(float x, float y, float w, float h,
   uilabel->common.n_active_substates = nas;
 
   uilabel->text_anchor = text_anchor;
-  uilabel->string = string;
+  int len = strlen(string);
+  uilabel->string = malloc(len + 1);
+  strcpy(uilabel->string, string);
 
   uilabel->color.r = r;
   uilabel->color.g = g;
@@ -28,7 +30,14 @@ UILabel *uilabel_create(float x, float y, float w, float h,
   return uilabel;
 }
 
+void uilabel_set_content(UILabel *uilabel, char *string) {
+  int len = strlen(string);
+  uilabel->string = realloc(uilabel->string, len + 1);
+  strcpy(uilabel->string, string);
+}
+
 void uilabel_free(UILabel *uilabel) {
+  free(uilabel->string);
   if (uilabel->common.active_substates) {
     free(uilabel->common.active_substates);
   }

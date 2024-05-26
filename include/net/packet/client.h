@@ -17,6 +17,8 @@ extern const char* CLIENT_COMMAND_OPEN;
 extern const char* CLIENT_COMMAND_CLOS;
 extern const char* CLIENT_COMMAND_LASC;
 extern const char* CLIENT_COMMAND_LDSC;
+extern const char* CLIENT_COMMAND_FIRE;
+extern const char* CLIENT_COMMAND_DAMG;
 
 int client_join(uint8_t* buf, char* player_name);
 int client_keep_alive(uint8_t* buf);
@@ -28,6 +30,8 @@ int client_door_open(uint8_t* buf, uint64_t door_id);
 int client_door_close(uint8_t* buf, uint64_t door_id);
 int client_lift_ascend(uint8_t* buf, uint64_t door_id);
 int client_lift_descend(uint8_t* buf, uint64_t door_id);
+int client_fire(uint8_t* buf, int8_t weapon_id);
+int client_damage(uint8_t* buf, uint64_t player_id, int8_t weapon_id, float damage);
 
 int client_join_from(uint8_t* buf, char** player_name);
 int client_ping_from(uint8_t* buf, uint64_t* data);
@@ -37,4 +41,6 @@ int client_door_open_from(uint8_t* buf, uint64_t* door_id);
 int client_door_close_from(uint8_t* buf, uint64_t* door_id);
 int client_lift_ascend_from(uint8_t* buf, uint64_t* door_id);
 int client_lift_descend_from(uint8_t* buf, uint64_t* door_id);
+int client_fire_from(uint8_t* buf, int8_t* weapon_id);
+int client_damage_from(uint8_t* buf, uint64_t* player_id, int8_t* weapon_id, float* damage);
 #endif

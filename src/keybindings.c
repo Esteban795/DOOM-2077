@@ -59,12 +59,13 @@ static player_keybind *keybind_add(player_keybind *keybinds, char *name,
 // The format is "action=key"
 player_keybind *keybinds_read(FILE *f, size_t nlines) {
   size_t line_len = 0;
-  player_keybind *keybinds = malloc(sizeof(player_keybind));
-  keybinds = NULL;
+  player_keybind *keybinds = NULL;
   char *lineptr = NULL;
   for (size_t i = 0; i < nlines; i++) {
     ssize_t char_read = getline(&lineptr, &line_len, f);
     if (char_read == -1) {
+      // If the last line is empty, we don't want to exit, just ignore it.
+      if (i == nlines - 1) break;
       printf("Error reading line in the keybinds config file.\n");
       exit(1);
     }
