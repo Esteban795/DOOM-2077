@@ -58,9 +58,32 @@ int apply_event(world_t* world, event_t* event) {
             break;
         }
         case CLIENT_PLAYER_FIRE_EVENT_TAG: {
-            // For future uses.
-            player_fire_event_t* ev = (player_fire_event_t*)event;
-            printf("entity %d is firing a weapon %d\n", ev->entity_id, ev->weapon_id);
+            player_fire_event_t* client_player_fire_event = (player_fire_event_t*)event;
+            pid = ENTITY_BY_ID(client_player_fire_event->entity_id);
+            position_ct* position = (position_ct*) world_get_component(world, &pid, COMPONENT_TAG_POSITION);
+            if (position == NULL) return -1; // If the player does not have a position, we cannot apply the event, cancel it.
+            double x = position->x;
+            double y = position->y;
+            switch (client_player_fire_event->weapon_id) {
+                case 0: {
+                    add_sound_to_play(PUNCH_SOUND,x,y);
+                    break;
+                }
+                case 1: {
+                    add_sound_to_play(PISTOL_SOUND,x,y);
+                    break;
+                }
+                case 2: {
+                    add_sound_to_play(SHOTGUN_SOUND,x,y); // todo: change to shotgun sound
+                    break;
+                }
+                case 3: {
+                    add_sound_to_play(SHOTGUN_SOUND,x,y);
+                    break;
+                }
+                default:
+                    break;
+            }
             break;
         }
         case CLIENT_PLAYER_WEAPON_UPDATE_EVENT_TAG: {
