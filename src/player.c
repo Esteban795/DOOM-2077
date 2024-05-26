@@ -344,10 +344,9 @@ void fire_bullet(
     }
     // gestion du tir jusqu'au mur
     if (is_ranged == 0 ||
-        weapon_ecs
-            ->mags[weapon_ecs->active_weapon]) { // On véfrifie d'un coté
-                                                        // que le temps de
-                                                        // cooldown est
+        weapon_ecs->mags[weapon_ecs->active_weapon]) { // On véfrifie d'un coté
+                                                       // que le temps de
+                                                       // cooldown est
       // respecté et ensuite que si l'arme est a distance elle
       // dispose d'assez de muntitions
       linedef **linedefs = player_->engine->wData->linedefs;
@@ -437,15 +436,15 @@ void fire_bullet(
               (min(y1, y_final) < -position_get_y(pos_pj))) {
             if (is_ranged) {
               health_sub(health_pj, damage);
-              printf("Health of player %d: %f\n", players[j]->id,health_pj->health);
               remote_damage_player(SHARED_ENGINE, players[j]->id,
                                    weapon_ecs->active_weapon, (float)damage);
             } else {
-              
-            }
-            if (dist_to_hitscan < MELEE_RADIUS) {
-              // Apply damage to player
-
+              if (dist_to_hitscan < MELEE_RADIUS) {
+                // Apply damage to player
+                health_sub(health_pj, damage);
+                remote_damage_player(SHARED_ENGINE, players[j]->id,
+                                     weapon_ecs->active_weapon, (float)damage);
+              }
             }
           }
         }
