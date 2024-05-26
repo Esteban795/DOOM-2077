@@ -19,6 +19,7 @@ typedef struct _UITextBox {
   SDL_Scancode scancode;
 
   bool scancode_helper;
+  bool backspace_helper;
 } UITextBox;
 
 UITextBox *uitextbox_create(float x, float y, float w, float h,

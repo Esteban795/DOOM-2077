@@ -13,6 +13,8 @@
 #include "../include/ecs/world.h"
 #include "../include/player.h"
 #include "../include/settings.h"
+#include "../include/shared.h"
+#include "../include/remote.h"
 
 #define SIGN(x) (int)(x > 0) ? 1 : ((x < 0) ? -1 : 0)
 #define DOT(a, b) (a.x * b.x) + (a.y * b.y)
@@ -21,8 +23,6 @@
 
 #define M_PI 3.14159265358979323846
 #define MAX_INTERACT_COOLDOWN 100
-
-
 
 bool SHOULD_COLLIDE = true;
 int INTERACT_CD = 0;
@@ -48,7 +48,7 @@ player *player_init(engine *e) {
   comps[0] = position_create(coords, p->thing.angle + 180.0);
   comps[1] = health_create(100.0, 100.0);
   comps[2] = weapon_create(ammo,mags);
-  comps[3] = display_name_create(PLAYER_USERNAME);
+  comps[3] = display_name_create((char*) e->player_name);
   p->entity = world_insert_entity(e->world, e->remote->player_id, comps, 4);
   free(comps);
 
@@ -370,14 +370,15 @@ void fire_bullet(entity_t **players, int num_players, player *player_,
       }
     }
 
+    // Fire on network
+    remote_fire_bullet(SHARED_ENGINE, weapon->active_weapon);
+
     // TODO: Déplacer coté serveur le calcul des dégats sur un joueur.
     for (int j = 0; j < num_players; j++) {
       if (players[j] == NULL)
         continue;
       position_ct *pos_pj = (position_ct *)world_get_component(
           player_->engine->world, players[j], COMPONENT_TAG_POSITION);
-      health_ct *health_pj = (health_ct *)world_get_component(
-          player_->engine->world, players[j], COMPONENT_TAG_HEALTH);
 
       double dist_to_hitscan =
           (fabs(a * (position_get_x(pos_pj)) + (position_get_y(pos_pj)) + b)) /
@@ -387,7 +388,8 @@ void fire_bullet(entity_t **players, int num_players, player *player_,
             (max(x1, x_final) > position_get_x(pos_pj)) &&
             (min(y1, y_final) < -position_get_y(pos_pj)) &&
             (min(y1, y_final) < -position_get_y(pos_pj))) {
-          health_sub(health_pj, damage);
+          // Apply damage to player
+          remote_damage_player(SHARED_ENGINE, players[j]->id, weapon->active_weapon, (float) damage);
         }
       }
     }
@@ -525,7 +527,7 @@ void process_keys(player *p) {
   }
 
   bool is_attacking = keys[get_key_from_action(p->keybinds, "ATTACK")];
-  if (is_attacking && weapon_get_active_bullets_left(weapon) > 0) {
+  if (is_attacking && (weapon_get_active_bullets_left(weapon) > 0 || weapon_get_active_ammos_left(weapon) == -2)) {
     fire_bullet(p->engine->players, 1, p, 10);
   }
   // DEBUG OPTION TO GO THROUGH WALLS

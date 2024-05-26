@@ -102,6 +102,7 @@ struct Engine {
   lift** lifts;
   int len_lifts;
   world_t *world;
+  char player_name[128];
 };
 
 struct BSP {
