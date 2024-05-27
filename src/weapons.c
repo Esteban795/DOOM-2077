@@ -6,6 +6,7 @@
 
 #include "../include/player.h"
 #include "../include/weapons.h"
+#include "../include/ui/linker.h"
 
 #define ANIMATION_WIDTH 100
 #define ANIMATION_HEIGTH 50
@@ -541,6 +542,8 @@ void fire_weapon_animation(engine *e, weapon *w) {
 }
 
 void update_animation(engine *e) {
+  bool is_textbox_focused = UILINK_CHAT_FOCUSED(e->uimodules);
+  if (is_textbox_focused) return;
   player *p = e->p;
   weapon_ct *weapon_ecs = player_get_weapon(p);
   weapon *w = wa->weapons[weapon_ecs->active_weapon];
