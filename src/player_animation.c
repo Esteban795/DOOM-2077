@@ -1,4 +1,5 @@
 #include "../include/player_animation.h"
+#include <stdio.h>
 
 char ANIMATION_NAME[9] = {'P','L','A','Y','A','1','A','1','\0'};
 int CURRENT_ANIMATION_PROGRESS[NUM_PLAYERS] = {0};
@@ -38,10 +39,10 @@ void set_orientation(int sprite_orientation) {
     }
 }
 
-bool set_correct_animation_name(int i,vec2 origin_pos,double origin_angle, vec2 pos,double angle,enum AnimationType type) {
+bool set_correct_animation_name(int i,vec2 origin_pos,double origin_angle, vec2 pos,double angle,enum AnimationType* type) {
     int sprite_orientation = get_sprite_orientation(origin_pos,origin_angle, pos, angle);
-    // int sprite_orientation = calculate_sprite_orientation(origin_pos.x, origin_pos.y, origin_angle, pos.x, pos.y, angle);
-    if (type == PLAYER_IDLE){
+    if (*type == PLAYER_IDLE){
+        idle:
         set_orientation(sprite_orientation);
         ANIMATION_NAME[4] = ANIMATION_IDLE_INIT;
         if (sprite_orientation != 1 && sprite_orientation != 5) {
@@ -49,35 +50,50 @@ bool set_correct_animation_name(int i,vec2 origin_pos,double origin_angle, vec2 
         }
         CURRENT_ANIMATION[i] = PLAYER_IDLE;
         CURRENT_ANIMATION_PROGRESS[i] = 0;
-    } else if (type == DYING){
+        *type = PLAYER_IDLE;
+    } else if (*type == DYING){
         if (CURRENT_ANIMATION[i] != DYING){
             ANIMATION_NAME[4] = ANIMATION_DEATH_INIT;
             ANIMATION_NAME[5] = '0';
             ANIMATION_NAME[6] = '\0';
             CURRENT_ANIMATION[i] = DYING;
             CURRENT_ANIMATION_PROGRESS[i] = 0;
+            *type = DYING;
         } else {
             if (ANIMATION_COOLDOWNS[i] < 0) {
                 ANIMATION_COOLDOWNS[i] = ANIMATION_COOLDOWN;
                 CURRENT_ANIMATION_PROGRESS[i] = (CURRENT_ANIMATION_PROGRESS[i] + 1) % ANIMATION_DEATH_FRAME_COUNT;
+                if (CURRENT_ANIMATION_PROGRESS[i] == 0) {
+                    goto idle;
+                }
             }
             ANIMATION_NAME[4] = ANIMATION_DEATH_INIT + CURRENT_ANIMATION_PROGRESS[i];
+            ANIMATION_NAME[5] = '0';
+            ANIMATION_NAME[6] = '\0';
+            *type = DYING;
         }
-    } else if (type == EXTREME_DYING) {
+    } else if (*type == EXTREME_DYING) {
         if (CURRENT_ANIMATION[i] != EXTREME_DYING){
             ANIMATION_NAME[4] = ANIMATION_EXTREME_DEATH_INIT;
             ANIMATION_NAME[5] = '0';
             ANIMATION_NAME[6] = '\0';
             CURRENT_ANIMATION[i] = EXTREME_DYING;
-            CURRENT_ANIMATION_PROGRESS[i] = 0;  
+            CURRENT_ANIMATION_PROGRESS[i] = 0;
+            *type = EXTREME_DYING;
         } else {
             if (ANIMATION_COOLDOWNS[i] < 0) {
                 ANIMATION_COOLDOWNS[i] = 50;
                 CURRENT_ANIMATION_PROGRESS[i] = (CURRENT_ANIMATION_PROGRESS[i] + 1) % ANIMATION_EXTREME_DEATH_FRAME_COUNT;
+                if (CURRENT_ANIMATION_PROGRESS[i] == 0) {
+                    goto idle;
+                }
             }
             ANIMATION_NAME[4] = ANIMATION_EXTREME_DEATH_INIT + CURRENT_ANIMATION_PROGRESS[i];
+            ANIMATION_NAME[5] = '0';
+            ANIMATION_NAME[6] = '\0';
+            *type = EXTREME_DYING;
         }
-    } else if (type == MOVING) {
+    } else if (*type == MOVING) {
         if (CURRENT_ANIMATION[i] != MOVING) {
             set_orientation(sprite_orientation);
             ANIMATION_NAME[4] = ANIMATION_WALK_INIT;
@@ -86,18 +102,24 @@ bool set_correct_animation_name(int i,vec2 origin_pos,double origin_angle, vec2 
             }
             CURRENT_ANIMATION[i] = MOVING;
             CURRENT_ANIMATION_PROGRESS[i] = 0;
+            *type = MOVING;
         } else {
             set_orientation(sprite_orientation);
             if (ANIMATION_COOLDOWNS[i] < 0) {
                 ANIMATION_COOLDOWNS[i] = ANIMATION_COOLDOWN;
                 CURRENT_ANIMATION_PROGRESS[i] = (CURRENT_ANIMATION_PROGRESS[i] + 1) % ANIMATION_WALK_FRAME_COUNT;
+                if (CURRENT_ANIMATION_PROGRESS[i] == 0) {
+                    printf("going idle\n");
+                    goto idle;
+                }
             }
             ANIMATION_NAME[4] = ANIMATION_WALK_INIT + CURRENT_ANIMATION_PROGRESS[i];
             if (sprite_orientation != 1 && sprite_orientation != 5) {
                 ANIMATION_NAME[6] = ANIMATION_WALK_INIT + CURRENT_ANIMATION_PROGRESS[i];
             }
+            *type = MOVING;
         }
-    } else if (type == SHOOTING) {
+    } else if (*type == SHOOTING) {
         if (CURRENT_ANIMATION[i] != SHOOTING) {
             set_orientation(sprite_orientation);
             ANIMATION_NAME[4] = ANIMATION_SHOOT_INIT;
@@ -106,17 +128,25 @@ bool set_correct_animation_name(int i,vec2 origin_pos,double origin_angle, vec2 
             }
             CURRENT_ANIMATION[i] = SHOOTING;
             CURRENT_ANIMATION_PROGRESS[i] = 0;
+            *type = SHOOTING;
         } else {
             set_orientation(sprite_orientation);
             if (ANIMATION_COOLDOWNS[i] < 0) {
                 ANIMATION_COOLDOWNS[i] = ANIMATION_COOLDOWN;
                 CURRENT_ANIMATION_PROGRESS[i] = (CURRENT_ANIMATION_PROGRESS[i] + 1) % ANIMATION_SHOOT_FRAME_COUNT;
+                if (CURRENT_ANIMATION_PROGRESS[i] == 0) {
+                    printf("going idle\n");
+                    goto idle;
+                }
             }
             ANIMATION_NAME[4] = ANIMATION_SHOOT_INIT + CURRENT_ANIMATION_PROGRESS[i];
             if (sprite_orientation != 1 && sprite_orientation != 5) {
                 ANIMATION_NAME[6] = ANIMATION_SHOOT_INIT + CURRENT_ANIMATION_PROGRESS[i];
             }
+            *type = SHOOTING;
         }
+    } else {
+        goto idle;
     }
     return (5 < sprite_orientation && sprite_orientation < NUMBER_ORIENTATION + 1); // should we use the mirror 
 }

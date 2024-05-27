@@ -8,6 +8,7 @@
 #include "../include/component/health.h"
 #include "../include/component/position.h"
 #include "../include/component/weapon.h"
+#include "../include/component/animation.h"
 #include "../include/engine.h"
 #include "../include/net/packet/client.h"
 #include "../include/net/packet/server.h"
@@ -219,14 +220,15 @@ int remote_update(engine *e, remote_server_t *r) {
 
           // Add player to the ECS world
           double coords[3] = {0.0, 0.0, PLAYER_HEIGHT};
-          component_t **comps = malloc(sizeof(component_t *) * 5);
+          component_t **comps = malloc(sizeof(component_t *) * 6);
           comps[0] = position_create(coords, 180.0);
           comps[1] = health_create(100.0, 100.0);
           comps[2] = weapon_create(ammo,mags);
           comps[3] = display_name_create(player_name);
-                    i16 player_subsector_id = get_subsector_id_from_pos(e->wData->len_nodes - 1, e->wData->nodes, (vec2){.x = 0.0, .y = 0.0});
-                    comps[4] = subsector_id_create(player_subsector_id);
-          entity_t *entity = world_insert_entity(e->world, player_id, comps, 5);
+          i16 player_subsector_id = get_subsector_id_from_pos(e->wData->len_nodes - 1, e->wData->nodes, (vec2){.x = 0.0, .y = 0.0});
+          comps[4] = subsector_id_create(player_subsector_id);
+          comps[5] = animation_create(PLAYER_IDLE);
+          entity_t *entity = world_insert_entity(e->world, player_id, comps, 6);
           // If entity == NULL, an entity already exists with this id, replacing
           // it.
           if (entity == NULL) {
