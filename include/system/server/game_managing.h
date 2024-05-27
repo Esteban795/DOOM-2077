@@ -7,9 +7,9 @@
 /// Minimum required players to start a game.
 #define SERVER_MINIMUM_PLAYERS 2
 /// Game duration in seconds.
-#define SERVER_GAME_DURATION 10 // in seconds
+#define SERVER_GAME_DURATION 600 // in seconds
 /// Cooldown before restarting the game in seconds.
-#define SERVER_GAME_COOLDOWN_BEFORE_RESTART 15 // in seconds
+#define SERVER_GAME_COOLDOWN_BEFORE_RESTART 45 // in seconds
 
 extern const system_t GAME_MANAGING_SYSTEM;
 
