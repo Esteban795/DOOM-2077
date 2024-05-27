@@ -61,7 +61,9 @@ Uint32 *transform_to_row_based(Uint32 *pixels, int width, int height) {
   return row_based;
 }
 
-int find_nb_of_columns(FILE *f, patch_header ph, int offset) { // see the comment in patch.h about nb_columns
+int find_nb_of_columns(
+    FILE *f, patch_header ph,
+    int offset) { // see the comment in patch.h about nb_columns
   int actual_number_of_columns = 0;
   int cln_offset = 0;
   for (int i = 0; i < ph.width; i++) {
@@ -109,14 +111,18 @@ Uint32 *get_pixels_from_patch(patch p) {
   Uint32 code_c;
   for (int j = 0; j < p.nb_columns; j++) {
     patch_column column = p.columns[j];
-    if (column.top_delta == NO_PIXELS) { // column is actually filled, even if there were holes between part of the sprite
+    if (column.top_delta ==
+        NO_PIXELS) { // column is actually filled, even if there were holes
+                     // between part of the sprite
       ix++;
       continue;
     }
-    for (int iy = 0; iy < column.length; iy++) { // we read at least a segment of what will actually be in the columns[ix] !
+    for (int iy = 0; iy < column.length;
+         iy++) { // we read at least a segment of what will actually be in the
+                 // columns[ix] !
       color_idx = column.data[iy];
       c = p.palette[color_idx];
-      code_c = SDL_MapRGBA(fmt, c.r, c.g, c.b, 255);
+      code_c = SDL_MapRGBA(fmt, c.r, c.g, c.b, c.a);
       pixels[ix * p.header.height + iy + column.top_delta] = code_c;
     }
   }
@@ -125,7 +131,27 @@ Uint32 *get_pixels_from_patch(patch p) {
   return row_based;
 }
 
-patch create_patch(FILE *f, int patch_offset, char *patchname, color *palette) {
+Uint32 *mirror_pixels(Uint32 *pixels, int width, int height) {
+  Uint32 *mirrored = malloc(sizeof(Uint32) * width * height);
+  for (int i = 0; i < height; i++) {
+    for (int j = 0; j < width; j++) {
+      mirrored[i * width + j] = pixels[i * width + width - j - 1];
+    }
+  }
+  return mirrored;
+}
+
+SDL_Texture *get_texture_from_pixels(SDL_Renderer *renderer, Uint32 *pixels,
+                                     int width, int height) {
+  SDL_Texture *tex = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
+                                       SDL_TEXTUREACCESS_STATIC, width, height);
+  SDL_SetTextureBlendMode(tex, SDL_BLENDMODE_BLEND);
+  SDL_UpdateTexture(tex, NULL, pixels, width * sizeof(Uint32));
+  return tex;
+}
+
+patch create_patch(FILE *f, SDL_Renderer *renderer, int patch_offset,
+                   char *patchname, color *palette) {
   patch p;
   p.patchname = patchname;
   p.palette = palette;
@@ -134,7 +160,13 @@ patch create_patch(FILE *f, int patch_offset, char *patchname, color *palette) {
   p.nb_columns = actual_number_of_columns;
   p.columns =
       read_patch_columns(f, p.header, patch_offset, actual_number_of_columns);
-  p.pixels = get_pixels_from_patch(p);
+  Uint32 *pixels = get_pixels_from_patch(p);
+  p.pixels = malloc(sizeof(Uint32) * p.header.width * p.header.height);
+  memcpy(p.pixels, pixels, sizeof(Uint32) * p.header.width * p.header.height);
+  p.mirror_pixels = mirror_pixels(pixels, p.header.width, p.header.height);
+  p.tex = get_texture_from_pixels(renderer, p.pixels, p.header.width,
+                                  p.header.height);
+  free(pixels);
   return p;
 }
 
@@ -146,6 +178,7 @@ void sprite_free(patch p) {
     free(p.columns[i].data);
   }
   free(p.pixels);
+  free(p.mirror_pixels);
   free(p.columns);
 }
 
@@ -164,6 +197,7 @@ void texture_patch_free(patch p) {
     free(p.columns[i].data);
   }
   free(p.pixels);
+  free(p.mirror_pixels);
   free(p.columns);
   free(p.patchname);
 }
@@ -175,8 +209,8 @@ void textures_patches_free(patch *patches, int patch_count) {
   free(patches);
 }
 
-patch *get_sprites(lump *directory, header *header, FILE *f, color *palette,
-                   int *patch_count) {
+patch *get_sprites(SDL_Renderer *renderer, lump *directory, header *header,
+                   FILE *f, color *palette, int *patch_count) {
   int start_patches =
       get_lump_index(directory, PATCHES_START, header->lump_count);
   int end_patches = get_lump_index(directory, PATCHES_END, header->lump_count);
@@ -185,14 +219,15 @@ patch *get_sprites(lump *directory, header *header, FILE *f, color *palette,
   for (int i = 0; i < *patch_count;
        i++) { // skip start_patches because it's only the marker
     patches[i] =
-        create_patch(f, directory[start_patches + i + 1].lump_offset,
+        create_patch(f, renderer, directory[start_patches + i + 1].lump_offset,
                      directory[start_patches + i + 1].lump_name, palette);
   }
   return patches;
 }
 
-patch *get_texture_patches(lump *directory, header *header, FILE *f,
-                           color *palette, int *len_textures_patches) {
+patch *get_texture_patches(SDL_Renderer *renderer, lump *directory,
+                           header *header, FILE *f, color *palette,
+                           int *len_textures_patches) {
   int PNAMES_lump_index =
       get_lump_index(directory, "PNAMES", header->lump_count);
   lump PNAMES_lump = directory[PNAMES_lump_index];
@@ -201,21 +236,37 @@ patch *get_texture_patches(lump *directory, header *header, FILE *f,
   offset += 4;
   *len_textures_patches = (int)num_patches;
   patch *texture_patches = malloc(sizeof(patch) * num_patches);
-  int patch_count = 0; // for some weird reasons, a texture can be listed as part of the PNAMES lump but not actually exist in the file..
+  int patch_count =
+      0; // for some weird reasons, a texture can be listed as part of the
+         // PNAMES lump but not actually exist in the file..
   for (int i = 0; i < *len_textures_patches; i++) {
     char *patch_name = read_texture_name(f, offset + i * 8, 8);
-    char* upper_patch_name = malloc(sizeof(char) * 9);
-    strtoupper(upper_patch_name, patch_name);  // for some reasons, some names were read in lowercase :D
+    char *upper_patch_name = malloc(sizeof(char) * 9);
+    strtoupper(
+        upper_patch_name,
+        patch_name); // for some reasons, some names were read in lowercase :D
     free(patch_name);
-    i16 patch_index = get_lump_index(directory, upper_patch_name, header->lump_count);
+    i16 patch_index =
+        get_lump_index(directory, upper_patch_name, header->lump_count);
     if (patch_index == -1) {
       free(upper_patch_name);
       continue;
     }
-    texture_patches[patch_count] = create_patch(f, directory[patch_index].lump_offset,
-                                      upper_patch_name, palette);
+    texture_patches[patch_count] =
+        create_patch(f, renderer, directory[patch_index].lump_offset,
+                     upper_patch_name, palette);
     patch_count++;
   }
-  *len_textures_patches = patch_count; // update the actual number of textures lol
+  *len_textures_patches =
+      patch_count; // update the actual number of textures lol
   return texture_patches;
+}
+
+patch *get_patch_from_name(patch *patches, int len_patches, char *name) {
+  for (int i = 0; i < len_patches; i++) {
+    if (!strcasecmp(patches[i].patchname, name)) {
+      return &patches[i];
+    }
+  }
+  return NULL;
 }

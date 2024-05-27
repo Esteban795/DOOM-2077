@@ -5,11 +5,14 @@
 #include "player.h"
 #include "segment_handler.h"
 #include "structs.h"
+#include "weapons.h"
 #include "ui/def.h"
 #include <SDL2/SDL.h>
 #include <stdbool.h>
 
 extern bool firstTimeLaunching;
+extern uint64_t t0;
+extern uint64_t time_elapsed_in_game;
 
 typedef void (*GameStateFunction)(engine *e);
 
