@@ -37,7 +37,9 @@ extern const char* CLIENT_COMMAND_CLOS;
 extern const char* CLIENT_COMMAND_LASC;
 /// @brief The command for the client lift descend packet, whose command is "LDSC".
 extern const char* CLIENT_COMMAND_LDSC;
+/// @brief The command for the client fire packet, whose command is "FIRE".
 extern const char* CLIENT_COMMAND_FIRE;
+/// @brief The command for the client damage packet, whose command is "DAMG".
 extern const char* CLIENT_COMMAND_DAMG;
 
 /// @brief client_join creates a new client join packet.
@@ -101,7 +103,17 @@ int client_lift_ascend(uint8_t* buf, uint64_t door_id);
 /// @param door_id the id of the lift to be descended.
 /// @return length of the packet.
 int client_lift_descend(uint8_t* buf, uint64_t door_id);
+
+/// @brief client_fire creates a new client fire packet.
+/// @param weapon_id the weapon used for the shot.
+/// @return length of the packet
 int client_fire(uint8_t* buf, int8_t weapon_id);
+
+/// @brief client_damage creates a new client damage packet.
+/// @param player_id the ID of the targetted player.
+/// @param weapon_id the weapon used for the shot.
+/// @param damage the damage taken by the target.
+/// @return length of the packet
 int client_damage(uint8_t* buf, uint64_t player_id, int8_t weapon_id, float damage);
 
 /// @brief client_join_from reads a client join packet.
@@ -156,6 +168,17 @@ int client_lift_ascend_from(uint8_t* buf, uint64_t* door_id);
 /// @param door_id the id of the lift that is being descended.
 /// @return length of the packet.
 int client_lift_descend_from(uint8_t* buf, uint64_t* door_id);
+
+/// @brief client_fire_from reads a client fire packet.
+/// @param buf the incoming packet buffer, where the packet will be read.
+/// @param weapon_id the weapon id buffer, it will contain the weapon used for the shot.
+/// @return length of the packet.
 int client_fire_from(uint8_t* buf, int8_t* weapon_id);
+
+/// @brief client_damage_from reads a client damage packet.
+/// @param buf the incoming packet buffer, where the packet will be read.
+/// @param player_id the player id buffer, it will contain the target.
+/// @param weapon_id the weapon id buffer, it will contain the weapon used for the shot.
+/// @param damage the damage taken by the target.
 int client_damage_from(uint8_t* buf, uint64_t* player_id, int8_t* weapon_id, float* damage);
 #endif

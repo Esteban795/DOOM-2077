@@ -59,7 +59,9 @@ extern const char *SERVER_COMMAND_LASC;
 extern const char *SERVER_COMMAND_LDSC;
 /// @brief The command for the server lift states packet, whose command is "LIST".
 extern const char *SERVER_COMMAND_L_ST;
+/// @brief The command for the server fire packet, whose command is "FIRE".
 extern const char *SERVER_COMMAND_FIRE;
+/// @brief The command for the server weapon update packet, whose command is "WEAP".
 extern const char *SERVER_COMMAND_WEAP;
 
 /// @brief server_acpt creates a new server accept packet.
@@ -210,7 +212,20 @@ int server_lift_descend(uint8_t *buf, uint64_t lift_id);
 /// @param lifts_states the states of the lifts in the map.
 /// @return length of the packet.
 int server_lift_states(uint8_t *buf, uint16_t lifts_count, bool *lifts_states);
+
+/// @brief server_player_fire creates a new server player fire packet.
+/// @param buf the outgoing packet buffer, where the packet will be written.
+/// @param player_id ID of the player firing a bullet.
+/// @param weapon_id ID of the weapon used.
+/// @return length of the packet.
 int server_player_fire(uint8_t *buf, uint64_t player_id, int8_t weapon_id);
+
+/// @brief server_player_weapon_update cratees a new server player weapon update packet.
+/// @param buf the outgoing packet buffer, where the packet will be written.
+/// @param ammunitions new state of ammunitions of the player
+/// @param mags new state of magazines of the player
+/// @param cooldowns new state of cooldowns of the player
+/// @return length of the packet.
 int server_player_weapon_update(uint8_t *buf, int ammunitions[WEAPONS_NUMBER], int mags[WEAPONS_NUMBER], int cooldowns[WEAPONS_NUMBER]);
 
 /// @brief server_acpt_from reads a server accept packet.
@@ -363,6 +378,19 @@ int server_lift_descend_from(uint8_t *buf, uint64_t *lift_id);
 /// @param lifts_states the buffer where the lifts_states will be written.
 /// @return the length of the packet read.
 int server_lift_states_from(uint8_t *buf, uint16_t *lifts_count, bool **lifts_states);
+
+/// @brief server_player_fire_from reads a server player fire packet
+/// @param buf the incoming packet buffer, where the packet will be read.
+/// @param player_id ID of the player firing a bullet.
+/// @param weapon_id ID of the weapon used.
+/// @return the length of the packet read.
 int server_player_fire_from(uint8_t *buf, uint64_t *player_id, int8_t *weapon_id);
+
+/// @brief server_player_fire_from reads a server player fire packet
+/// @param buf the incoming packet buffer, where the packet will be read.
+/// @param ammunitions new state of ammunitions of the player
+/// @param mags new state of magazines of the player
+/// @param cooldowns new state of cooldowns of the player
+/// @return the length of the packet read.
 int server_player_weapon_update_from(uint8_t *buf, int *ammunitions, int *mags, int *cooldowns);
 #endif
