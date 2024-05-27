@@ -2,6 +2,7 @@
 #include "../../../include/event/all.h"
 #include "../../../include/component/position.h"
 #include "../../../include/component/display_name.h"
+#include "../../../include/component/animation.h"
 #include "../../../include/ecs/world.h"
 #include "../../../include/component/health.h"
 #include "../../../include/ui/linker.h"
@@ -21,7 +22,11 @@ int apply_event(world_t* world, event_t* event) {
     entity_t pid;
     switch (event->tag) {
         case CLIENT_PLAYER_MOVE_EVENT_TAG: {
-            // On the client side, this event is handled on remote_update.
+            player_move_event_t* client_player_move_event = (player_move_event_t*)event;
+            pid = ENTITY_BY_ID(client_player_move_event->entity_id);
+            animation_ct* animation = (animation_ct*) world_get_component(world, &pid, COMPONENT_TAG_ANIMATION);
+            if (animation == NULL) return -1; // If the player does not have an animation, we cannot apply the event, cancel it.
+            animation_set(animation, MOVING);
             break;
         }
         case CLIENT_PLAYER_HEALTH_EVENT_TAG: {
@@ -55,6 +60,17 @@ int apply_event(world_t* world, event_t* event) {
             health_ct* health = (health_ct*) world_get_component(world, &pid, COMPONENT_TAG_HEALTH);
             if (health == NULL) return -1; // If the player does not have health, we cannot apply the event, cancel it.
             health_set(health, 0);
+
+            animation_ct* animation = (animation_ct*) world_get_component(world, &pid, COMPONENT_TAG_ANIMATION);
+            switch (client_player_kill_event->weapon_id) {
+                case 3: {
+                    animation_set(animation, EXTREME_DYING);
+                    break;
+                }
+                default:
+                    animation_set(animation, DYING);
+                    break;
+            }
             break;
         }
         case CLIENT_PLAYER_FIRE_EVENT_TAG: {
@@ -84,6 +100,9 @@ int apply_event(world_t* world, event_t* event) {
                 default:
                     break;
             }
+            animation_ct* animation = (animation_ct*) world_get_component(world, &pid, COMPONENT_TAG_ANIMATION);
+            if (animation == NULL) return -1; // If the player does not have an animation, we cannot apply the event, cancel it.
+            animation_set(animation, SHOOTING);
             break;
         }
         case CLIENT_PLAYER_WEAPON_UPDATE_EVENT_TAG: {
