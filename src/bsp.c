@@ -178,8 +178,8 @@ void render_bsp_node(bsp *b, size_t node_id) {
             exit(1);
           }
           
-          vssprite_add(player_pos2d, player_pos->angle, position_get_pos(pos),
-                       player_sprite,use_mirror,i);
+          vssprite_add(player_pos2d, player_pos->angle, pos2d,
+                       player_sprite,use_mirror,i,animation_get_shot_filter_duration_left(player_animation) > 0);
         }
       }
       for (i16 i = 0; i < ss.num_segs; i++) {
