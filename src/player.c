@@ -10,6 +10,8 @@
 #include "../include/component/position.h"
 #include "../include/component/subsector_id.h"
 #include "../include/component/weapon.h"
+#include "../include/component/animation.h"
+
 #include "../include/ecs/component.h"
 #include "../include/ecs/entity.h"
 #include "../include/ecs/world.h"
@@ -55,7 +57,7 @@ player *player_init(engine *e) {
 
   // Add player to the ECS world
   double coords[3] = {p->thing.x, p->thing.y, PLAYER_HEIGHT};
-  component_t **comps = malloc(sizeof(component_t *) * 5);
+  component_t **comps = malloc(sizeof(component_t *) * 6);
   comps[0] = position_create(coords, p->thing.angle + 180.0);
   comps[1] = health_create(100.0, 100.0);
   comps[2] = weapon_create(ammo, mags);
@@ -64,7 +66,8 @@ player *player_init(engine *e) {
       get_subsector_id_from_pos(e->wData->len_nodes - 1, e->wData->nodes,
                                 (vec2){.x = p->thing.x, .y = p->thing.y});
   comps[4] = subsector_id_create(player_subsector_id);
-  p->entity = world_insert_entity(e->world, e->remote->player_id, comps, 5);
+  comps[5] = animation_create(PLAYER_IDLE);
+  p->entity = world_insert_entity(e->world, e->remote->player_id, comps, 6);
   free(comps);
 
   p->ammo = ammo;
