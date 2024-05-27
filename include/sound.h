@@ -18,6 +18,7 @@
 #define PISTOL_SOUND "DSPISTOL"
 #define SHOTGUN_SOUND "DSSHOTGN"
 #define PUNCH_SOUND "DSPUNCH"
+#define CHAINGUN_SOUND "DCHAINGN"
 
 #define FOOTSTEP_SOUND "DFTSTEP"
 // https://doomwiki.org/wiki/Sound

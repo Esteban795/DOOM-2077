@@ -1,7 +1,7 @@
 #include "../include/wad_data.h"
 #include <stdio.h>
 
-void load_textures(wad_data *wd, const char *path) {
+void load_textures(wad_data *wd, SDL_Renderer* renderer,const char *path) {
   FILE *file = fopen(path, "rb");
   if (file == NULL) {
     printf("Error opening file\n");
@@ -11,10 +11,10 @@ void load_textures(wad_data *wd, const char *path) {
       get_lump_index(wd->directory, "PLAYPAL", wd->header.lump_count);
   wd->color_palette =
       get_color_palette_from_lump(file, wd->directory, PLAYPAL, 3, 0);
-  wd->sprites = get_sprites(wd->directory, &wd->header, file, wd->color_palette,
+  wd->sprites = get_sprites(renderer,wd->directory, &wd->header, file, wd->color_palette,
                             &wd->len_sprites);
   wd->texture_patches =
-      get_texture_patches(wd->directory, &wd->header, file, wd->color_palette,
+      get_texture_patches(renderer,wd->directory, &wd->header, file, wd->color_palette,
                           &wd->len_texture_patches);
   wd->texture_maps =
       get_texture_maps(file, wd->directory, &wd->header, wd->texture_patches,
@@ -88,7 +88,7 @@ void load_map(wad_data *wd, const char *path, char *map_name) {
 
 // loads only textures and flats to allow for hot reloading of maps in the same
 // WAD file
-wad_data *init_wad_data(const char *path) {
+wad_data *init_wad_data(SDL_Renderer* renderer,const char *path) {
   FILE *file = fopen(path, "rb");
   if (file == NULL) {
     printf("Error opening file\n");
@@ -98,7 +98,7 @@ wad_data *init_wad_data(const char *path) {
   wd->header = read_header(file);
   wd->directory = read_directory(file, wd->header);
   wd->vertexes = NULL;
-  load_textures(wd, path);
+  load_textures(wd, renderer,path);
   load_sounds(wd, path);
   fclose(file);
   return wd;
