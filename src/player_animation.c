@@ -42,7 +42,7 @@ void set_orientation(int sprite_orientation) {
 }
 
 // SETS THE ANIMATION NAME BASED ON THE ORIENTATION OF THE SPRITE   s
-bool set_correct_animation_name(int i,vec2 origin_pos,double origin_angle, vec2 pos,double angle,enum AnimationType* type) {
+bool set_correct_animation_name(int i,vec2 origin_pos,double origin_angle, vec2 pos,double angle,enum AnimationType* type,bool has_moved) {
     int sprite_orientation = get_sprite_orientation(origin_pos,origin_angle, pos, angle);
     if (*type == PLAYER_IDLE){
         idle: // useful for other functions
@@ -96,7 +96,7 @@ bool set_correct_animation_name(int i,vec2 origin_pos,double origin_angle, vec2 
             ANIMATION_NAME[6] = '\0';
             *type = EXTREME_DYING;
         }
-    } else if (*type == MOVING) {
+    } else if (*type == MOVING && has_moved) {
         if (CURRENT_ANIMATION[i] != MOVING) { // switch to moving
             set_orientation(sprite_orientation); // set the orientation of the sprite in ANIMATION_NAME
             ANIMATION_NAME[4] = ANIMATION_WALK_INIT;

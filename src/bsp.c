@@ -170,7 +170,7 @@ void render_bsp_node(bsp *b, size_t node_id) {
         if (player_subsector_id->subsector_id == subsector_id &&
             is_point_in_FOV(player_pos->x, player_pos->y, player_pos->angle,
                             FOV, pos->x, pos->y)) {
-          bool use_mirror = set_correct_animation_name(i, player_pos2d, player_angle, pos2d, angle, &player_animation->animation);
+          bool use_mirror = set_correct_animation_name(i, player_pos2d, player_angle, pos2d, angle, &player_animation->animation,position_has_moved(pos));
           patch* player_sprite = get_patch_from_name(b->engine->wData->sprites, b->engine->wData->len_sprites, ANIMATION_NAME);
           
           if (player_sprite == NULL) {
