@@ -106,7 +106,7 @@ int update_engine(engine *e, int dt) {
     if (e->players[i] == NULL) continue;
     ANIMATION_COOLDOWNS[i] -= dt;
   }
-  // memset(e->pixels, 0, WIDTH * HEIGHT * sizeof(Uint32)); // resets the screen
+  memset(e->pixels, 0, WIDTH * HEIGHT * sizeof(Uint32)); // resets the screen
   handle_events(e->DT); // process key presses and mouse movements
   game_states_update[e->state](e);
   for (int i = 0; i < e->nuimodules; i++) {
