@@ -102,7 +102,7 @@ UIModule **get_ui_menu(SDL_Renderer *r, int *nuimodules)
   as = malloc(1 * sizeof(int));
   as[0] = 0;
 
-  float mm_connect_y = 0.7;
+  float mm_connect_y = 0.65;
 
   UIButton *mm_connect_button = uibutton_create(
       mm_settings_x, mm_connect_y, mm_settings_w, mm_settings_h, UIAP_TOP_LEFT,
