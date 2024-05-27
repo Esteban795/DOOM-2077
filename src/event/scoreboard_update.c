@@ -95,4 +95,4 @@ int scoreboard_generate(world_t* world, char* entries[10], uint16_t deaths[10], 
         count++;
     }
     return count;
-}   
+}    

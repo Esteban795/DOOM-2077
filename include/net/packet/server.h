@@ -7,6 +7,8 @@
 #include <string.h>
 #include <stdint.h>
 
+#include "../../component/weapon.h"
+
 /** \file
  * This file contains the definitions for the server packets.  
  * All bytes send to the server should be defined in those functions.
@@ -57,6 +59,8 @@ extern const char *SERVER_COMMAND_LASC;
 extern const char *SERVER_COMMAND_LDSC;
 /// @brief The command for the server lift states packet, whose command is "LIST".
 extern const char *SERVER_COMMAND_L_ST;
+extern const char *SERVER_COMMAND_FIRE;
+extern const char *SERVER_COMMAND_WEAP;
 
 /// @brief server_acpt creates a new server accept packet.
 /// @param buf the outgoing packet buffer, where the packet will be written.
@@ -134,9 +138,10 @@ int server_scoreboard_update(uint8_t *buf, uint16_t entries_count, char **names,
 /// @param buf the outgoing packet buffer, where the packet will be written.
 /// @param player_id the player_id of the player that is taking damage.
 /// @param src_player_id the player_id of the player that is dealing damage.
+/// @param weapon_id the id of the weapon used.
 /// @param damage the amount of damage taken.
 /// @return length of the packet.
-int server_player_damage(uint8_t *buf, uint64_t player_id, uint64_t src_player_id, float damage);
+int server_player_damage(uint8_t *buf, uint64_t player_id, uint64_t src_player_id, int8_t weapon_id, float damage);
 
 /// @brief server_player_heal creates a new server player heal packet.
 /// @param buf the outgoing packet buffer, where the packet will be written.
@@ -157,8 +162,9 @@ int server_player_health(uint8_t *buf, uint64_t player_id, float health, float m
 /// @param buf the outgoing packet buffer, where the packet will be written.
 /// @param player_id the player_id of the player that is being killed.
 /// @param src_player_id the player_id of the player that is killing.
+/// @param weapon_id the id of the weapon used.
 /// @return length of the packet.
-int server_player_kill(uint8_t *buf, uint64_t player_id, uint64_t src_player_id);
+int server_player_kill(uint8_t *buf, uint64_t player_id, uint64_t src_player_id, int8_t weapon_id);
 
 /// @brief server_load_map creates a new server load map packet.
 /// @remark The map_name should be at most 127 characters long and NUL-terminated.
@@ -184,7 +190,7 @@ int server_door_close(uint8_t *buf, uint64_t door_id);
 /// @param doors_count the number of doors in the map.
 /// @param doors_states the states of the doors in the map.
 /// @return length of the packet.
-int server_door_states(uint8_t *buf, uint16_t doors_count, bool* doors_states);
+int server_door_states(uint8_t *buf, uint16_t doors_count, bool *doors_states);
 
 /// @brief server_lift_ascend creates a new server lift ascend packet.
 /// @param buf the outgoing packet buffer, where the packet will be written.
@@ -203,7 +209,9 @@ int server_lift_descend(uint8_t *buf, uint64_t lift_id);
 /// @param lifts_count the number of lifts in the map.
 /// @param lifts_states the states of the lifts in the map.
 /// @return length of the packet.
-int server_lift_states(uint8_t *buf, uint16_t lifts_count, bool* lifts_states);
+int server_lift_states(uint8_t *buf, uint16_t lifts_count, bool *lifts_states);
+int server_player_fire(uint8_t *buf, uint64_t player_id, int8_t weapon_id);
+int server_player_weapon_update(uint8_t *buf, int ammunitions[WEAPONS_NUMBER], int mags[WEAPONS_NUMBER], int cooldowns[WEAPONS_NUMBER]);
 
 /// @brief server_acpt_from reads a server accept packet.
 /// @param buf the incoming packet buffer, where the packet will be read.
@@ -281,8 +289,9 @@ int server_scoreboard_update_from(uint8_t *buf, uint16_t *entries_count, char **
 /// @param player_id player_id buffer of the player that is taking damage.
 /// @param src_player_id src_player_id buffer of the player that is dealing damage.
 /// @param damage damage buffer of the player that is taking damage.
+/// @param weapon_id the id buffer of the weapon used.
 /// @return the length of the packet read.
-int server_player_damage_from(uint8_t *buf, uint64_t *player_id, uint64_t *src_player_id, float *damage);
+int server_player_damage_from(uint8_t *buf, uint64_t *player_id, uint64_t *src_player_id, int8_t *weapon_id, float *damage);
 
 /// @brief server_player_heal_from reads a server player heal packet.
 /// @param buf the incoming packet buffer, where the packet will be read.
@@ -303,8 +312,10 @@ int server_player_health_from(uint8_t *buf, uint64_t *player_id, float *health, 
 /// @param buf the incoming packet buffer, where the packet will be read.
 /// @param player_id player_id buffer of the player that is being killed.
 /// @param src_player_id src_player_id buffer of the player that is killing.
+/// @param weapon_id the id buffer of the weapon used.
+
 /// @return the length of the packet read.
-int server_player_kill_from(uint8_t *buf, uint64_t *player_id, uint64_t *src_player_id);
+int server_player_kill_from(uint8_t *buf, uint64_t *player_id, uint64_t *src_player_id, int8_t *weapon_id);
 
 /// @brief server_load_map_from reads a server load map packet.
 /// @remark `map_name` should be a valid char buffer of at least 128 chars.
@@ -331,7 +342,7 @@ int server_door_close_from(uint8_t *buf, uint64_t *door_id);
 /// @param doors_count the buffer where the number of doors will be written.
 /// @param doors_states the buffer where the doors_states will be written.
 /// @return the length of the packet read.
-int server_door_states_from(uint8_t *buf, uint16_t *doors_count, bool** doors_states);
+int server_door_states_from(uint8_t *buf, uint16_t *doors_count, bool **doors_states);
 
 /// @brief server_lift_ascend_from reads a server lift ascend packet
 /// @param buf the incoming packet buffer, where the packet will be read.
@@ -351,5 +362,7 @@ int server_lift_descend_from(uint8_t *buf, uint64_t *lift_id);
 /// @param lifts_count the buffer where the number of lifts will be written.
 /// @param lifts_states the buffer where the lifts_states will be written.
 /// @return the length of the packet read.
-int server_lift_states_from(uint8_t *buf, uint16_t *lifts_count, bool** lifts_states);
+int server_lift_states_from(uint8_t *buf, uint16_t *lifts_count, bool **lifts_states);
+int server_player_fire_from(uint8_t *buf, uint64_t *player_id, int8_t *weapon_id);
+int server_player_weapon_update_from(uint8_t *buf, int *ammunitions, int *mags, int *cooldowns);
 #endif

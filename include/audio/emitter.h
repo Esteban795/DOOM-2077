@@ -15,7 +15,7 @@ typedef struct _AudioEmitter {
                 // plays positionally
   float volume; // used as priority when there are too many sounds playing.
   Mix_Chunk *chunk;
-  int sample_position;
+  u32 sample_position;
   int channel;
 } AudioEmitter;
 

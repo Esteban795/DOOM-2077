@@ -6,10 +6,12 @@
 #include "geometry.h"
 #include "structs.h"
 #include "events.h"
+#include "node.h"
 #include "weapons.h"
 #include "component/position.h"
 #include "component/health.h"
 #include "component/weapon.h"
+#include "component/subsector_id.h"
 
 #ifndef PLAYER_USERNAME
 #define PLAYER_USERNAME "player"
@@ -45,10 +47,13 @@ int player_find(entity_t** list, entity_t* p);
 /// Find a player by id in the player list.
 int player_find_by_id(entity_t** list, uint64_t id);
 
-/// Get the player's angle and xy position
-///
-/// \param p The main player
-/// \param res The resulting XY position as a vec2
-/// \param angle The resulting angle as a double
-void get_position_angle(player* p,vec2* res,double* angle);
+void free_cooldowns_sprays(player* p);
+
+WACS * create_cooldowns_sprays(player* p);
+
+WACS* update_cooldowns_sprays(WACS* w);
+
+void fire_bullet(
+    entity_t **players, int num_players, player *player_,
+    weapons_array *weapons_list);
 #endif

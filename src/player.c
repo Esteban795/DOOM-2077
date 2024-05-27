@@ -1,5 +1,6 @@
+#include "../include/weapons.h"
+#include <SDL2/SDL_keyboard.h>
 #include <SDL2/SDL_render.h>
-#include <SDL2/SDL_scancode.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -7,24 +8,33 @@
 #include "../include/component/display_name.h"
 #include "../include/component/health.h"
 #include "../include/component/position.h"
+#include "../include/component/subsector_id.h"
 #include "../include/component/weapon.h"
 #include "../include/ecs/component.h"
 #include "../include/ecs/entity.h"
 #include "../include/ecs/world.h"
 #include "../include/player.h"
+#include "../include/remote.h"
 #include "../include/settings.h"
+#include "../include/shared.h"
 
+#define SPRAY_DECREATE_RATE 0.25
 #define SIGN(x) (int)(x > 0) ? 1 : ((x < 0) ? -1 : 0)
 #define DOT(a, b) (a.x * b.x) + (a.y * b.y)
 #define DISTANCE_VEC_VER(a, b) (sqrt(pow(b->x - a.x, 2) + pow(b->y - a.y, 2)))
 #define TRIGGER_ACTIVATION_RANGE 100
-
+#define PLAYER_LIFE 100
 #define M_PI 3.14159265358979323846
 #define MAX_INTERACT_COOLDOWN 100
 
-
+#define PLAYER_HITBOX_SIZE 50
+#define HITSCAN_PRECISION 10
+#define MELEE_RADIUS 20
+#define MAX_SPRAY 50
+#define SPRAY_COEFF 5 // Vitesse a laquelle le spray augmente
 
 bool SHOULD_COLLIDE = true;
+bool ALLOWED_TO_TURN = true;
 int INTERACT_CD = 0;
 
 player *player_init(engine *e) {
@@ -34,7 +44,7 @@ player *player_init(engine *e) {
   ammo[0] = -2;
   mags[0] = 0;
   for (int i = 1; i < WEAPONS_NUMBER; i++) {
-    ammo[i] = 10;
+    ammo[i] = 0;
     mags[i] = 10;
   }
   p->engine = e;
@@ -44,14 +54,24 @@ player *player_init(engine *e) {
 
   // Add player to the ECS world
   double coords[3] = {p->thing.x, p->thing.y, PLAYER_HEIGHT};
-  component_t **comps = malloc(sizeof(component_t *) * 4);
+  component_t **comps = malloc(sizeof(component_t *) * 5);
   comps[0] = position_create(coords, p->thing.angle + 180.0);
   comps[1] = health_create(100.0, 100.0);
-  comps[2] = weapon_create(ammo,mags);
-  comps[3] = display_name_create(PLAYER_USERNAME);
-  p->entity = world_insert_entity(e->world, e->remote->player_id, comps, 4);
+  comps[2] = weapon_create(ammo, mags);
+  comps[3] = display_name_create((char *)e->player_name);
+  size_t player_subsector_id =
+      get_subsector_id_from_pos(e->wData->len_nodes - 1, e->wData->nodes,
+                                (vec2){.x = p->thing.x, .y = p->thing.y});
+  comps[4] = subsector_id_create(player_subsector_id);
+  p->entity = world_insert_entity(e->world, e->remote->player_id, comps, 5);
   free(comps);
 
+  p->ammo = ammo;
+  p->t_last_shot = 0;
+  p->has_attacked = false;
+  p->life = PLAYER_LIFE;
+  p->active_weapon = 0;
+  p->cooldowns_sprays = create_cooldowns_sprays(e->p);
   return p;
 }
 
@@ -262,14 +282,6 @@ void move_and_slide(player *p, double *velocity) {
 
 ////////// SHOOTING AND INTERACTING LOGIC /////////////////////////////////
 
-// void update_height(player* p,double z){
-//   position_ct* pos = player_get_position(p);
-
-//   double target_height = z + PLAYER_HEIGHT;
-//   double grav_height = position_get_z(pos) - G * 10e-2 / 2.0 * p->engine->DT
-//   * p->engine->DT / 2; position_set_z(pos, fmax(grav_height, target_height));
-// }
-
 int correct_height(linedef *wall, int height) {
   if (!(wall->has_back_sidedef)) {
     return 0;
@@ -292,102 +304,149 @@ int correct_height(linedef *wall, int height) {
   }
 }
 
-void fire_bullet(entity_t **players, int num_players, player *player_,
-                 int damage) { // toutes les valeurs de y sont négatives
-
+void fire_bullet(
+    entity_t **players, int num_players, player *player_,
+    weapons_array *weapons_list) { // toutes les valeurs de y sont négatives
   position_ct *pos = player_get_position(player_);
-  weapon_ct *weapon = player_get_weapon(player_);
-
+  weapon_ct *weapon_ecs = player_get_weapon(player_);
   double distance_finale = 10000;
-  if (weapon_get_active_cooldown(weapon) < 0) {
-    *weapon_get_mut_active_cooldown(weapon) = 100;
-    weapon_decrease_active_bullets(weapon);
-    add_sound_to_play(SHOTGUN_SOUND, pos->x + 10 * cos(deg_to_rad(pos->angle)),
-                      pos->y - 10 * sin(deg_to_rad(pos->angle)));
-    linedef **linedefs = player_->engine->wData->linedefs;
-    double x1 = position_get_x(pos);
-    double y1 = -position_get_y(pos);
-    double x2 = x1 + 100 * cos(deg_to_rad(position_get_angle(pos)));
-    double y2 = y1 + 100 * sin(deg_to_rad(position_get_angle(pos)));
-    double a = 0;
-    double x_final = 0;
-    double y_final = 0;
-    int direction =
-        1; // 0 correspond a ni droite ni auche 1 a gauche 2 a droite
-    double height = position_get_z(pos);
-    if (x1 != x2) {
-      a = (y2 - y1) / (x2 - x1);
-      if (x1 > x2) {
-        direction = 1; // vers la gauche
-      } else {
-        direction = 2; // vers la droite
-      }
+  if (weapon_get_active_cooldown(weapon_ecs) <= 0) {
+    weapon *weapon_used = weapons_list->weapons[weapon_ecs->active_weapon];
+    *weapon_get_mut_active_cooldown(weapon_ecs) = 1000 / weapon_used->fire_rate;
+    weapon_decrease_active_bullets(weapon_ecs);
+
+    // SOUND
+    double forward_x = pos->x + 10 * cos(deg_to_rad(position_get_angle(pos)));
+    double forward_y = pos->y - 10 * sin(deg_to_rad(position_get_angle(pos)));
+
+    switch (weapon_ecs->active_weapon) {
+    case 0:
+      add_sound_to_play(PUNCH_SOUND, forward_x, forward_y);
+      break;
+    case 1:
+      add_sound_to_play(PISTOL_SOUND, forward_x, forward_y);
+      break;
+    case 2:
+      add_sound_to_play(CHAINGUN_SOUND, forward_x, forward_y);
+      break;
+    case 3:
+      add_sound_to_play(SHOTGUN_SOUND, forward_x, forward_y);
+      break;
     }
-    double b = y1 - a * x1;
-    for (int i = 0; i < player_->engine->wData->len_linedefs; i++) {
-      double x = 0;
-      double y = 0;
-      if ((!(linedefs[i]->has_back_sidedef)) ||
-          (correct_height(linedefs[i], height))) {
-        double x1a = linedefs[i]->start_vertex->x;
-        double y1a = -linedefs[i]->start_vertex->y;
-        double x2a = linedefs[i]->end_vertex->x;
-        double y2a = -linedefs[i]->end_vertex->y;
-        double c = 0;
-        double d = 0;
-        if (x1a != x2a) {
-          c = (y2a - y1a) / (x2a - x1a);
-          d = y1a - c * x1a;
-          x = (d - b) / (a - c);
-          y = a * x + b;
-          if (distance(x1, y1, x, y) < 100) {
-          }
-          if (((x1a <= x) && (x <= x2a)) || ((x2a <= x) && (x <= x1a))) {
-            if (((direction == 1) && (x1 > x)) ||
-                ((direction == 2) && (x1 < x))) {
-              if (distance(x1, y1, x, y) < distance_finale) {
-                distance_finale = distance(x1, y1, x, y);
-                x_final = x;
-                y_final = y;
+
+    //////
+    int damage = weapon_used->max_damage;
+    int is_ranged; // 0 correspond a une arme de melée sinon une arme a distance
+    if (weapon_used->type == -1) {
+      is_ranged = 0;
+    } else {
+      is_ranged = 1;
+    }
+    // gestion du tir jusqu'au mur
+    if (is_ranged == 0 ||
+        weapon_ecs->mags[weapon_ecs->active_weapon]) { // On véfrifie d'un coté
+                                                       // que le temps de
+                                                       // cooldown est
+      // respecté et ensuite que si l'arme est a distance elle
+      // dispose d'assez de muntitions
+      linedef **linedefs = player_->engine->wData->linedefs;
+      double x1 = position_get_x(pos);
+      double y1 = -position_get_y(pos);
+      double x2 = x1 + 100 * cos(deg_to_rad(position_get_angle(pos)));
+      double y2 = y1 + 100 * sin(deg_to_rad(position_get_angle(pos)));
+      double a = 0;
+      double x_final = 0;
+      double y_final = 0;
+      int direction = 1; // 0 = ni gauche ni droite, 1 = gauche, 2 = droite
+      double height = position_get_z(pos);
+      if (x1 != x2) {
+        a = (y2 - y1) / (x2 - x1);
+        if (x1 > x2) {
+          direction = 1; // vers la gauche
+        } else {
+          direction = 2; // vers la droite
+        }
+      }
+      double b = y1 - a * x1;
+      for (int i = 0; i < player_->engine->wData->len_linedefs; i++) {
+        double x = 0;
+        double y = 0;
+        if ((!(linedefs[i]->has_back_sidedef)) ||
+            (correct_height(linedefs[i], height))) {
+          double x1a = linedefs[i]->start_vertex->x;
+          double y1a = -linedefs[i]->start_vertex->y;
+          double x2a = linedefs[i]->end_vertex->x;
+          double y2a = -linedefs[i]->end_vertex->y;
+          double c = 0;
+          double d = 0;
+          if (x1a != x2a) {
+            c = (y2a - y1a) / (x2a - x1a);
+            d = y1a - c * x1a;
+            x = (d - b) / (a - c);
+            y = a * x + b;
+            if (distance(x1, y1, x, y) < 100) {
+            }
+            if (((x1a <= x) && (x <= x2a)) || ((x2a <= x) && (x <= x1a))) {
+              if (((direction == 1) && (x1 > x)) ||
+                  ((direction == 2) && (x1 < x))) {
+                if (distance(x1, y1, x, y) < distance_finale) {
+                  distance_finale = distance(x1, y1, x, y);
+                  x_final = x;
+                  y_final = y;
+                }
               }
             }
-          }
 
-        } else {
-          x = x1a;
-          y = a * x + b;
-          if (((y1a <= y) && (y <= y2a)) || ((y2a <= y) && (y <= y1a))) {
-            if (((direction == 1) && (x1 >= x)) ||
-                ((direction == 2) && (x1 <= x))) {
-              if (distance(x1, y1, x, y) < distance_finale) {
-                distance_finale = distance(x1, y1, x, y);
-                x_final = x;
-                y_final = y;
+          } else {
+            x = x1a;
+            y = a * x + b;
+            if (((y1a <= y) && (y <= y2a)) || ((y2a <= y) && (y <= y1a))) {
+              if (((direction == 1) && (x1 >= x)) ||
+                  ((direction == 2) && (x1 <= x))) {
+                if (distance(x1, y1, x, y) < distance_finale) {
+                  distance_finale = distance(x1, y1, x, y);
+                  x_final = x;
+                  y_final = y;
+                }
               }
             }
           }
         }
       }
-    }
 
-    // TODO: Déplacer coté serveur le calcul des dégats sur un joueur.
-    for (int j = 0; j < num_players; j++) {
-      if (players[j] == NULL)
-        continue;
-      position_ct *pos_pj = (position_ct *)world_get_component(
-          player_->engine->world, players[j], COMPONENT_TAG_POSITION);
-      health_ct *health_pj = (health_ct *)world_get_component(
-          player_->engine->world, players[j], COMPONENT_TAG_HEALTH);
+      // Fire on network
+      remote_fire_bullet(SHARED_ENGINE, weapon_ecs->active_weapon);
 
-      double dist_to_hitscan =
-          (fabs(a * (position_get_x(pos_pj)) + (position_get_y(pos_pj)) + b)) /
-          (sqrt(pow(a, 2) + pow(-1, 2)));
-      if (dist_to_hitscan < PLAYER_HITBOX_SIZE) {
-        if ((min(x1, x_final) < position_get_x(pos_pj)) &&
-            (max(x1, x_final) > position_get_x(pos_pj)) &&
-            (min(y1, y_final) < -position_get_y(pos_pj)) &&
-            (min(y1, y_final) < -position_get_y(pos_pj))) {
-          health_sub(health_pj, damage);
+      // TODO: Déplacer coté serveur le calcul des dégats sur un joueur.
+      for (int j = 0; j < num_players; j++) {
+        if (players[j] == NULL)
+          continue;
+        position_ct *pos_pj = (position_ct *)world_get_component(
+            player_->engine->world, players[j], COMPONENT_TAG_POSITION);
+        health_ct *health_pj = (health_ct *)world_get_component(
+            player_->engine->world, players[j], COMPONENT_TAG_HEALTH);
+
+        double dist_to_hitscan = (fabs(a * (position_get_x(pos_pj)) +
+                                       (position_get_y(pos_pj)) + b)) /
+                                 (sqrt(pow(a, 2) + pow(-1, 2)));
+        if (dist_to_hitscan < PLAYER_HITBOX_SIZE) {
+          if ((min(x1, x_final) < position_get_x(pos_pj)) &&
+              (max(x1, x_final) > position_get_x(pos_pj)) &&
+              (min(y1, y_final) < -position_get_y(pos_pj)) &&
+              (min(y1, y_final) < -position_get_y(pos_pj))) {
+            if (is_ranged) {
+              health_sub(health_pj, damage);
+              remote_damage_player(SHARED_ENGINE, players[j]->id,
+                                   weapon_ecs->active_weapon, (float)damage);
+            } else {
+              if (dist_to_hitscan < MELEE_RADIUS) {
+                // Apply damage to player
+                health_sub(health_pj, damage);
+                remote_damage_player(SHARED_ENGINE, players[j]->id,
+                                     weapon_ecs->active_weapon, (float)damage);
+              }
+            }
+          }
         }
       }
     }
@@ -473,8 +532,10 @@ void process_keys(player *p) {
   bool is_interacting = keys[get_key_from_action(p->keybinds, "INTERACT")];
   // to avoid spamming the interact key and crashing the audio lmao
   INTERACT_CD -= p->engine->DT;
-  weapon->cooldowns[weapon->active_weapon] -= p->engine->DT;
-  // printf("cooldown: %d\n", weapon->cooldowns[weapon->active_weapon]);
+  for (int i = 0; i < WEAPONS_NUMBER; i++) {
+    weapon->cooldowns[i] = max(-1, weapon->cooldowns[i] - p->engine->DT);
+  }
+
   if (is_interacting && INTERACT_CD <= 0) {
     linedef *trigger_linedef = cast_ray(
         p->engine->wData->linedefs, p->engine->wData->len_linedefs,
@@ -491,47 +552,36 @@ void process_keys(player *p) {
     }
   }
 
-  // WEAPON SWITCHING
-  bool switch_to_fists = keys[get_key_from_action(p->keybinds, "FISTS")];
-  bool switch_to_shotgun =
-      keys[get_key_from_action(p->keybinds, "SHOTGUN")];
-  bool switch_to_pistol = keys[get_key_from_action(p->keybinds, "PISTOL")];
-  bool switch_to_chaingun = keys[get_key_from_action(p->keybinds, "CHAINGUN")];
-  if (switch_to_fists) {
-    weapon->active_weapon = 0;
-  }
-  if (switch_to_pistol) {
-    weapon->active_weapon = 1;
-  }
-  if (switch_to_chaingun) {
-    weapon->active_weapon = 2;
-  }
-  if (switch_to_shotgun) {
-    weapon->active_weapon = 3;
-  }
-
   bool is_reloading = keys[get_key_from_action(p->keybinds, "RELOAD")];
-  if (weapon->active_weapon != 0 && is_reloading) { // cannot reload fists..
-    int ammos_left = weapon_get_active_ammos_left(weapon);
-    int mags_left = weapon_get_active_bullets_left(weapon);
-    int room_left = WEAPON_AMMO_CAPACITY - mags_left;
-    if (ammos_left < room_left) {
-      weapon->ammunitions[weapon->active_weapon] = 0;
-      weapon->mags[weapon->active_weapon] += ammos_left;
-    } else {
-      weapon->ammunitions[weapon->active_weapon] -= room_left;
-      weapon->mags[weapon->active_weapon] = WEAPON_AMMO_CAPACITY;
-    }
+  if (is_reloading) { // cannot reload fists..
+    weapon->mags[weapon->active_weapon] =
+        wa->weapons[weapon->active_weapon]->magsize;
   }
 
-  bool is_attacking = keys[get_key_from_action(p->keybinds, "ATTACK")];
-  if (is_attacking && weapon_get_active_bullets_left(weapon) > 0) {
-    fire_bullet(p->engine->players, 1, p, 10);
-  }
   // DEBUG OPTION TO GO THROUGH WALLS
   if (keys[SDL_GetScancodeFromKey(SDL_GetKeyFromName("M"))]) {
     SHOULD_COLLIDE = !SHOULD_COLLIDE;
   }
+  if (keys[SDL_GetScancodeFromKey(SDL_GetKeyFromName("N"))]) {
+    ALLOWED_TO_TURN = !ALLOWED_TO_TURN;
+  }
+}
+
+void update_height(player *p) {
+  position_ct *pos = player_get_position(p);
+  i16 subsector_id = get_subsector_id_from_pos(
+      p->engine->wData->len_nodes - 1, p->engine->wData->nodes,
+      (vec2){.x = position_get_x(pos), .y = position_get_y(pos)});
+  subsector subsector = p->engine->wData->subsectors[subsector_id];
+  segment seg = subsector.segs[0];
+  double floor_height = seg.front_sector->floor_height;
+
+  double target_height = floor_height + PLAYER_HEIGHT;
+  pos->z = target_height;
+
+  // double grav_height =
+  //     p->height - G * 10e-2 / 2.0 * p->engine->DT * p->engine->DT / 2;
+  // p->height = fmax(grav_height, target_height);
 }
 
 void update_player(player *p) {
@@ -543,8 +593,13 @@ void update_player(player *p) {
   bool right_d = keys[get_key_from_action(p->keybinds, "MOVE_RIGHT")];
   double speed = DT * PLAYER_SPEED;
   double rot_speed = DT * PLAYER_ROTATION_SPEED;
-  position_set_angle(pos, norm(position_get_angle(pos) +
-                               rot_speed * ((double)mouse[NUM_MOUSE_BUTTONS])));
+  if (ALLOWED_TO_TURN) {
+    position_set_angle(pos,
+                       norm(position_get_angle(pos) +
+                            rot_speed * ((double)mouse[NUM_MOUSE_BUTTONS])));
+  }
+
+  // p->cooldowns_sprays=update_cooldowns_sprays(p->cooldowns_sprays);
   double vec[2] = {0.0, 0.0};
   int count_dir = 0;
   int count_strafe = 0;
@@ -579,12 +634,20 @@ void update_player(player *p) {
     pos->x += vec[0];
     pos->y += vec[1];
   }
+  subsector_id_ct *subsector_id_ecs = (subsector_id_ct *)world_get_component(
+      p->engine->world, p->entity, COMPONENT_TAG_SUBSECTOR_ID);
+  i16 subsector_id = get_subsector_id_from_pos(
+      p->engine->wData->len_nodes - 1, p->engine->wData->nodes,
+      (vec2){.x = position_get_x(pos), .y = position_get_y(pos)});
+  subsector_id_set(subsector_id_ecs, subsector_id);
+  update_height(p);
 }
 
 void player_free(player *p) {
   keybinds_free(p->keybinds);
   settings_free(p->settings);
   world_remove_entity(p->engine->world, p->entity);
+  free_cooldowns_sprays(p);
   free(p);
 }
 
@@ -618,39 +681,23 @@ weapon_ct *player_get_weapon(player *p) {
   return (weapon_ct *)world_get_component(e->world, p->entity,
                                           COMPONENT_TAG_WEAPON);
 }
-i16 get_ssector_floor_height(bsp *b) {
-  position_ct *pos = player_get_position(b->player);
-  vec2 player_pos = position_get_pos(pos);
-  size_t node_id = b->root_node_id;
-  while (node_id < SUBSECTOR_IDENTIFIER) {
-    node n = b->nodes[node_id];
-    bool is_back_side = is_on_back_side(n, player_pos);
-    if (is_back_side) {
-      node_id = n.back_child_id;
-    } else {
-      node_id = n.front_child_id;
-    }
+
+WACS *create_cooldowns_sprays(player *p) {
+  WACS *w = malloc(sizeof(WACS));
+  w->p = p;
+  double a[WEAPONS_NUMBER];
+  w->cs = a;
+  for (int i = 0; i < WEAPONS_NUMBER; i++) {
+    w->cs[i] = 0;
   }
-  i16 subsector_id = node_id - SUBSECTOR_IDENTIFIER;
-  subsector subsector = b->subsectors[subsector_id];
-  segment seg = subsector.segs[0];
-  return seg.front_sector->floor_height;
+  return w;
 }
 
-void update_height(player *p) {
-  position_ct *pos = player_get_position(p);
-  double floor_height = (double)get_ssector_floor_height(p->engine->bsp);
-  double target_height = floor_height + PLAYER_HEIGHT;
-  pos->z = target_height;
+void free_cooldowns_sprays(player *p) { free(p->cooldowns_sprays); }
 
-  // double grav_height =
-  //     p->height - G * 10e-2 / 2.0 * p->engine->DT * p->engine->DT / 2;
-  // p->height = fmax(grav_height, target_height);
-}
-
-void get_position_angle(player *p, vec2 *res, double *angle) {
-  position_ct *pos = player_get_position(p);
-  res->x = pos->x;
-  res->y = pos->y;
-  *angle = pos->angle;
+WACS *update_cooldowns_sprays(WACS *w) {
+  for (int i = 0; i < WEAPONS_NUMBER; i++) {
+    w->cs[i] = 0; // SPRAY_DECREATE_RATE;
+  }
+  return w;
 }

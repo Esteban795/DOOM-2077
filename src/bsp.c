@@ -1,6 +1,7 @@
 #include "../include/bsp.h"
-#include "../include/player.h"
 #include "../include/component/position.h"
+#include "../include/player.h"
+#include <stdio.h>
 
 bsp *bsp_init(engine *e, player *p) {
   bsp *b = malloc(sizeof(bsp));
@@ -34,7 +35,7 @@ static bool check_if_bbox_visible(bbox bb, player *p) {
   vec2 d = {.x = bb.right, .y = bb.bottom};
   vec2 possibly_visible_bb_sides[4];
 
-  position_ct* player_pos = player_get_position(p);
+  position_ct *player_pos = player_get_position(p);
 
   double x = position_get_x(player_pos);
   double y = position_get_y(player_pos);
@@ -90,8 +91,7 @@ static bool check_if_bbox_visible(bbox bb, player *p) {
   vec2 pos = position_get_pos(player_pos);
   for (size_t i = 0; i < 2 * counter; i += 2) {
     double angle1 = point_to_angle(pos, possibly_visible_bb_sides[i]);
-    double angle2 =
-        point_to_angle(pos, possibly_visible_bb_sides[i + 1]);
+    double angle2 = point_to_angle(pos, possibly_visible_bb_sides[i + 1]);
     double span = norm(angle1 - angle2);
     angle1 += position_get_angle(player_pos);
     double span1 = norm(angle1 + HALF_FOV);
@@ -113,10 +113,12 @@ bool is_segment_in_fov(player *p, segment seg, int *x1, int *x2,
   vec2 v1v = {.x = v1->x, .y = v1->y};
   vec2 v2v = {.x = v2->x, .y = v2->y};
 
-  position_ct* player_pos = player_get_position(p);
+  position_ct *player_pos = player_get_position(p);
 
-  double angle1 = point_to_angle(position_get_pos(player_pos), v1v); // angle from player to v1
-  double angle2 = point_to_angle(position_get_pos(player_pos), v2v); // angle from player to v2
+  double angle1 = point_to_angle(position_get_pos(player_pos),
+                                 v1v); // angle from player to v1
+  double angle2 = point_to_angle(position_get_pos(player_pos),
+                                 v2v); // angle from player to v2
   double span = norm(angle1 - angle2);
   if (span >= 180.0) // segment is not facing us
     return false;
@@ -137,7 +139,8 @@ bool is_segment_in_fov(player *p, segment seg, int *x1, int *x2,
     else
       angle2 = -HALF_FOV;
   }
-  *x1 = angle_to_x_pos(angle1); // get the screen x coordinates for v_start and v_end after projection
+  *x1 = angle_to_x_pos(angle1); // get the screen x coordinates for v_start and
+                                // v_end after projection
   *x2 = angle_to_x_pos(angle2);
   return true;
 }
@@ -145,11 +148,38 @@ bool is_segment_in_fov(player *p, segment seg, int *x1, int *x2,
 // BSP traveral algorithm
 void render_bsp_node(bsp *b, size_t node_id) {
   if (BSP_TRAVERSE) {
-    if (node_id >= SUBSECTOR_IDENTIFIER) {
+    position_ct *player_pos = player_get_position(b->player);
+    vec2 player_pos2d = position_get_pos(player_pos);
+    double player_angle = position_get_angle(player_pos);
+    if (node_id >= SUBSECTOR_IDENTIFIER) { // leaf reached
       i16 subsector_id = node_id - SUBSECTOR_IDENTIFIER;
       subsector ss = b->subsectors[subsector_id];
       int x1, x2;
       double raw_angle_1;
+      for (int i = 0; i < NUM_PLAYERS; i++) {
+        entity_t *player = b->engine->players[i];
+        if (player == NULL)
+          continue;
+        position_ct *pos = (position_ct *)world_get_component(
+            b->engine->world, player, COMPONENT_TAG_POSITION);
+        vec2 pos2d = position_get_pos(pos);
+        double angle = position_get_angle(pos);
+        subsector_id_ct *player_subsector_id = (subsector_id_ct *)world_get_component(b->engine->world, player,COMPONENT_TAG_SUBSECTOR_ID);
+        if (player_subsector_id->subsector_id == subsector_id &&
+            is_point_in_FOV(player_pos->x, player_pos->y, player_pos->angle,
+                            FOV, pos->x, pos->y)) {
+          bool use_mirror = set_correct_animation_name(i, player_pos2d, player_angle, pos2d, angle, SHOOTING);
+          patch* player_sprite = get_patch_from_name(b->engine->wData->sprites, b->engine->wData->len_sprites, ANIMATION_NAME);
+          
+          if (player_sprite == NULL) {
+            printf("Error: sprite %s not found\n", ANIMATION_NAME);
+            exit(1);
+          }
+          
+          vssprite_add(player_pos2d, player_pos->angle, position_get_pos(pos),
+                       player_sprite,use_mirror,i);
+        }
+      }
       for (i16 i = 0; i < ss.num_segs; i++) {
         segment seg = ss.segs[i];
         if (is_segment_in_fov(b->player, seg, &x1, &x2, &raw_angle_1)) {
@@ -163,7 +193,9 @@ void render_bsp_node(bsp *b, size_t node_id) {
       bool is_back_side = is_on_back_side(n, pos2d);
       if (is_back_side) {
         render_bsp_node(b, n.back_child_id);
-        if (check_if_bbox_visible(n.front_bbox, b->player)) { // avoid exploring branches where BB is not visible
+        if (check_if_bbox_visible(n.front_bbox,
+                                  b->player)) { // avoid exploring branches
+                                                // where BB is not visible
           render_bsp_node(b, n.front_child_id);
         }
       } else {
@@ -178,7 +210,23 @@ void render_bsp_node(bsp *b, size_t node_id) {
 
 void update_bsp(bsp *b) {
   BSP_TRAVERSE = true;
+  VSSPRITES_INDEX = 0;
   render_bsp_node(b, b->root_node_id);
 }
 
 void bsp_free(bsp *b) { free(b); }
+
+void update_players_subsectors(bsp *b) {
+  for (int i = 0; i < NUM_PLAYERS; i++) {
+    entity_t *player = b->engine->players[i];
+    if (player == NULL)
+      continue;
+    position_ct *pos = (position_ct *)world_get_component(
+        b->engine->world, player, COMPONENT_TAG_POSITION);
+    vec2 pos_v = position_get_pos(pos);
+    i16 subsector_id = get_subsector_id_from_pos(b->root_node_id, b->nodes, pos_v);
+    subsector_id_ct *subsector_id_ecs = (subsector_id_ct *)world_get_component(
+        b->engine->world, player, COMPONENT_TAG_SUBSECTOR_ID);
+    subsector_id_set(subsector_id_ecs, subsector_id);
+  }
+}

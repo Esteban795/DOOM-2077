@@ -57,7 +57,7 @@ struct WADData {
 
 typedef struct WADData wad_data;
 
-wad_data *init_wad_data(const char *path);
+wad_data *init_wad_data(SDL_Renderer* renderer,const char *path);
 
 void load_map(wad_data *wd, const char *path, char *map_name);
 

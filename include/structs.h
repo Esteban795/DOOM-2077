@@ -13,6 +13,8 @@
 #include "keybindings.h"
 #include "settings.h"
 #include "remote.h"
+#include "ui/common.h"
+#include "ui/module.h"
 #include "vec2.h"
 #include "wad_data.h"
 #include "ecs/world.h"
@@ -24,6 +26,7 @@ typedef enum {
   STATE_INGAME,
 } GameState;
 
+struct AnimationsArray;
 struct Player;
 struct BSP;
 struct Engine;
@@ -31,11 +34,33 @@ struct SegmentHandler;
 struct Weapon;
 struct WeaponsArray;
 
+typedef struct AnimationSprite{
+  patch animation_sprite; //sprite de l'animation
+  int y_difference; //Pour ajuster le sprite et ses layers par rapport à la nouvelle position de l'animation
+  vec2 wanim_origin; //origine de l'animation
+  vec2 wanim_pos;
+  vec2 wanim_speed;
+  int *layers_index; //tableau des index des layers de l'animation
+  int layer_index_len; //longueur du tableau des layers
+  bool (*linked_function)(struct Engine *e); /*fonction liée à l'animation,
+       par exemple si il faut vérifier que le joueur a encore des munitions avant de charger le super shotgun */
+  int duration; //durée de l'animation
+} animation_sprite;
+
+typedef struct AnimationsArray{
+  animation_sprite *animation_sprites_array; //tableau de sprites
+  int animation_len; //longueur de l'animation
+  int animation_duration; //durée de l'animation
+} animations_array;
+
 struct Weapon {
   /*Identification de l'arme*/
-  int id;            /**Identifie précisement l'arme*/
-  char *weapon_name; /**Nom de l'arme du coup*/
-  char *sprite;      /**Fichier contenant le/les sprite de l'arme*/
+  int id;                     /**Identifie précisement l'arme*/
+  char *weapon_name;          /**Nom de l'arme du coup*/
+  char *abbreviation;         /**Abbréviation utilisée dans les fichiers WAD*/
+  
+  /*Animation*/
+  animations_array *sprites;  /**Tableau avec en i tous les sprites pour l'animation x*/
 
   /*Spécification de l'arme*/
   int magsize;      /**Taille du chargeur*/
@@ -54,12 +79,29 @@ struct WeaponsArray {
   struct Weapon **weapons;
 };
 
+typedef struct weaponsArray_Cooldown_spray {
+  double * cs;
+  struct Player * p;
+}WACS; 
+
 struct Player {
   struct Engine *engine;
   thing thing;
   entity_t* entity;
   struct PlayerSetting *settings;
   struct PlayerKeybind *keybinds;
+  double height;
+  int *ammo; /**Array of size weapon_number that indicates the number of ammo by
+                weapon (id)*/
+  int t_last_shot; 
+  bool has_attacked;
+  int active_weapon;
+  /*Animation de l'arme*/
+  int life;
+  //int cooldown; //nombre d'unités de temps nécéssaires avant de tirer , 0 indique qu'on peut tirer
+  //double spray; //nombre d'unités de temps nécéssaires avant de ne plus avoir de spray, 0 indique que le tir sera parfaitement droit
+  i16 subsector_id;
+  WACS* cooldowns_sprays;
 };
 
 /// Structure handling the remote connection to the server
@@ -91,7 +133,6 @@ struct RemoteServer {
 struct Engine {
   SDL_Renderer *renderer;
   const char *wadPath;
-  bool running;
   int DT; /// time used to render last frame
 
   struct WADData *wData;
@@ -107,11 +148,18 @@ struct Engine {
   
   
   door** doors;
+  int substate;
+  // INFO: substate is used for UI stuff
+  // substates are defined in ui/def.c for each state!
   int num_doors;
+  UIModule **uimodules;
+  int nuimodules;
+  int uinextevent;
   
   lift** lifts;
   int len_lifts;
   world_t *world;
+  char player_name[128];
 };
 
 struct BSP {

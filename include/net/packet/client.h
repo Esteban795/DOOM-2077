@@ -37,6 +37,8 @@ extern const char* CLIENT_COMMAND_CLOS;
 extern const char* CLIENT_COMMAND_LASC;
 /// @brief The command for the client lift descend packet, whose command is "LDSC".
 extern const char* CLIENT_COMMAND_LDSC;
+extern const char* CLIENT_COMMAND_FIRE;
+extern const char* CLIENT_COMMAND_DAMG;
 
 /// @brief client_join creates a new client join packet.
 /// @param buf the outgoing packet buffer, where the packet will be written.
@@ -99,6 +101,8 @@ int client_lift_ascend(uint8_t* buf, uint64_t door_id);
 /// @param door_id the id of the lift to be descended.
 /// @return length of the packet.
 int client_lift_descend(uint8_t* buf, uint64_t door_id);
+int client_fire(uint8_t* buf, int8_t weapon_id);
+int client_damage(uint8_t* buf, uint64_t player_id, int8_t weapon_id, float damage);
 
 /// @brief client_join_from reads a client join packet.
 /// @param buf the incoming packet buffer, where the packet will be read.
@@ -152,4 +156,6 @@ int client_lift_ascend_from(uint8_t* buf, uint64_t* door_id);
 /// @param door_id the id of the lift that is being descended.
 /// @return length of the packet.
 int client_lift_descend_from(uint8_t* buf, uint64_t* door_id);
+int client_fire_from(uint8_t* buf, int8_t* weapon_id);
+int client_damage_from(uint8_t* buf, uint64_t* player_id, int8_t* weapon_id, float* damage);
 #endif

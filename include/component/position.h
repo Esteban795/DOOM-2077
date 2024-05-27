@@ -5,7 +5,7 @@
 #include "../vec2.h"
 #include <stdbool.h>
 
-#define WALK_SOUND_COOLDOWN 1000
+#define WALK_SOUND_COOLDOWN 400
 
 /// The tag of the position component
 extern const int COMPONENT_TAG_POSITION;
