@@ -17,6 +17,7 @@
 #include "../include/remote.h"
 #include "../include/settings.h"
 #include "../include/shared.h"
+#include "../include/ui/linker.h"
 
 #define SPRAY_DECREATE_RATE 0.25
 #define SIGN(x) (int)(x > 0) ? 1 : ((x < 0) ? -1 : 0)
@@ -529,13 +530,18 @@ linedef *cast_ray(linedef **linedefs, int len_linedefs, vec2 player_pos,
 void process_keys(player *p) {
   position_ct *pos = player_get_position(p);
   weapon_ct *weapon = player_get_weapon(p);
-  bool is_interacting = keys[get_key_from_action(p->keybinds, "INTERACT")];
+  
   // to avoid spamming the interact key and crashing the audio lmao
   INTERACT_CD -= p->engine->DT;
   for (int i = 0; i < WEAPONS_NUMBER; i++) {
     weapon->cooldowns[i] = max(-1, weapon->cooldowns[i] - p->engine->DT);
   }
+  
+  bool is_focused_text_box = UILINK_CHAT_FOCUSED(p->engine->uimodules);
+  if (is_focused_text_box) return;
 
+  
+  bool is_interacting = keys[get_key_from_action(p->keybinds, "INTERACT")];
   if (is_interacting && INTERACT_CD <= 0) {
     linedef *trigger_linedef = cast_ray(
         p->engine->wData->linedefs, p->engine->wData->len_linedefs,

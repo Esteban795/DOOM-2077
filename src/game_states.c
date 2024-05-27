@@ -61,10 +61,14 @@ void update_ingame_state(engine *e) {
     UILINK_SET_AMMO(e->uimodules, ammo);
     UILINK_SET_AMMO_MAX(e->uimodules, mags);
   }
-
-  update_player(e->p);
+  bool is_focused_on_textbox = UILINK_CHAT_FOCUSED(e->uimodules);
+  if (!is_focused_on_textbox) {
+    update_player(e->p);
+  }
   update_height(e->p);
-  process_keys(e->p);
+  if (!is_focused_on_textbox) {
+    process_keys(e->p);
+  }
   position_ct *player_pos = player_get_position(e->p);
   vec2 pos2d = position_get_pos(player_pos);
   double angle = position_get_angle(player_pos);

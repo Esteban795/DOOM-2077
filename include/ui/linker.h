@@ -21,6 +21,7 @@
 #define UILINK_FEED_CHAT(uimodules,msg) uifeed_append(((UIFeed*)uimodules[3]->elements[5]->element), msg)
 
 #define UILINK_SET_SB_N(uimodules,nth,content) uilabel_set_content(((UILabel*)uimodules[4]->elements[nth]->element), content)
+#define UILINK_CHAT_FOCUSED(uimodules) (((UITextBox*)uimodules[3]->elements[3]->element)->focused)
 // #endregion
 
 #endif
