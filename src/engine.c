@@ -19,7 +19,7 @@
 engine *init_engine(const char *wadPath, SDL_Renderer *renderer) {
   engine *e = malloc(sizeof(engine));
   e->wadPath = wadPath;
-  e->state = STATE_MENU;
+  e->state = STATE_INGAME;
   e->substate = SUBSTATE_MENU_MAIN;
   e->uinextevent = 0;
   e->DT = 0;
@@ -88,7 +88,7 @@ int update_engine(engine *e, int dt) {
   game_states_update[e->state](e);
   for (int i = 0; i < e->nuimodules; i++) {
     update_uimodule(e->renderer, e->substate, e->uimodules[i],
-                    &(e->uinextevent));
+                    &(e->uinextevent), e->DT);
   }
   ui_handle_events(e);
   audiomixer_update(e->mixer, dt);
