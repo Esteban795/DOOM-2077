@@ -529,9 +529,6 @@ UIModule **get_ui_ingame(SDL_Renderer *r, int *nuimodules)
 
   UIFeed *hud_chat_feed = uifeed_create(hud_chat_labels, 3, 10000);
 
-  uifeed_append(hud_chat_feed, "testmessageA");
-  uifeed_append(hud_chat_feed, "testmessageB");
-
   uimodule_set_element(modules[3], 5, UIET_Feed, hud_chat_feed);
 
   // INFO: Module 4: Scoreboard
