@@ -12,6 +12,8 @@
 #include "../../../include/server/task.h"
 #include "../../../include/server/state.h"
 #include "../../../include/spawnpoints.h"
+#include "../../../include/net/tracked_connection.h"
+#include "../../../include/net/packet/server.h"
 
 const system_t APPLY_EVENT_SYSTEM = {
     .fn = apply_event,
@@ -31,8 +33,14 @@ void respawn_task(void* _entity_id) {
     spawnpoint sp = get_random_spawnpoint();
     player_move_event_t* move_ev = ServerPlayerMoveEvent_new(entity_id, sp.x, sp.y, sp.z, sp.angle);
     player_health_event_t* health_ev = ServerPlayerHealthEvent_new(entity_id, 100.0, 100.0);
-    world_queue_event(&SERVER_STATE->world, (event_t*) move_ev);
     world_queue_event(&SERVER_STATE->world, (event_t*) health_ev);
+    world_queue_event(&SERVER_STATE->world, (event_t*) move_ev);
+
+    // Send the move event to the player before it can spam us the death coords.
+    SERVER_STATE->outgoing->len = server_player_move(SERVER_STATE->outgoing->data, entity_id, sp.x, sp.y, sp.z, sp.angle);
+    int pind = find_conn_by_id(SERVER_STATE->conns, SERVER_STATE->conn_count, entity_id);
+    if (pind < 0) return;
+    SDLNet_UDP_Send(SERVER_STATE->sock, -1, SERVER_STATE->outgoing);
 }
 
 /*
