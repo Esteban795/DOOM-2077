@@ -1,4 +1,5 @@
 #include "../../include/ui/def.h"
+#include <SDL2/SDL_scancode.h>
 #include <SDL2/SDL_ttf.h>
 
 #define NMODULES_MENU 4
@@ -178,7 +179,7 @@ UIModule **get_ui_menu(SDL_Renderer *r, int *nuimodules)
   UIButton *se_save_button = uibutton_create(
       gl_back_x - 0.1 - gl_back_w / 2, gl_back_y, gl_back_w, gl_back_h, UIAP_TOP_LEFT, as, 1,
       mm_settings_button_bg, mm_settings_button_bo, mm_settings_button_bg,
-      mm_settings_button_bo, UIEC_SetSubstate0, SDL_SCANCODE_F14);
+      mm_settings_button_bo, UIEC_SaveSettings, SDL_SCANCODE_S);
   uimodule_set_element(modules[2], 3, UIET_Button, se_save_button);
 
   // back label
@@ -233,7 +234,7 @@ UIModule **get_ui_menu(SDL_Renderer *r, int *nuimodules)
   UIButton *se_back_button = uibutton_create(
       gl_back_x, gl_back_y, gl_back_w, gl_back_h, UIAP_TOP_LEFT, as, 1,
       mm_settings_button_bg, mm_settings_button_bo, mm_settings_button_bg,
-      mm_settings_button_bo, UIEC_SetSubstate0, SDL_SCANCODE_F14);
+      mm_settings_button_bo, UIEC_SetSubstate0, SDL_SCANCODE_F13);
   uimodule_set_element(modules[3], 1, UIET_Button, se_back_button);
 
   // back label
@@ -289,7 +290,7 @@ UIModule **get_ui_menu(SDL_Renderer *r, int *nuimodules)
 
   font = TTF_OpenFont("fonts/jersey25.ttf", 30);
 
-  UITextBox *co_name_tb = uitextbox_create(0.35, 0.35, 0.5, 0.07, UIAP_TOP_LEFT, as, 1, font, UIAP_TOP_LEFT, 16, mm_settings_button_bg, mm_settings_button_bo, white, SDL_SCANCODE_LSHIFT);
+  UITextBox *co_name_tb = uitextbox_create(0.35, 0.35, 0.5, 0.07, UIAP_TOP_LEFT, as, 1, font, UIAP_TOP_LEFT, 24, mm_settings_button_bg, mm_settings_button_bo, white, SDL_SCANCODE_LSHIFT);
 
   uimodule_set_element(modules[3], 6, UIET_Textbox, co_name_tb);
 
@@ -309,7 +310,10 @@ UIModule **get_ui_menu(SDL_Renderer *r, int *nuimodules)
 
   font = TTF_OpenFont("fonts/jersey25.ttf", 30);
 
-  UITextBox *co_ip_tb = uitextbox_create(0.35, 0.5, 0.5, 0.07, UIAP_TOP_LEFT, as, 1, font, UIAP_TOP_LEFT, 16, mm_settings_button_bg, mm_settings_button_bo, white, SDL_SCANCODE_LSHIFT);
+  UITextBox *co_ip_tb = uitextbox_create(0.35, 0.5, 0.5, 0.07, UIAP_TOP_LEFT, as, 1, font, UIAP_TOP_LEFT, 22, mm_settings_button_bg, mm_settings_button_bo, white, SDL_SCANCODE_LSHIFT);
+  char *default_ip = "127.0.0.1";
+  int len = strlen(default_ip);
+  memcpy(co_ip_tb->text, default_ip, len+1);
 
   uimodule_set_element(modules[3], 8, UIET_Textbox, co_ip_tb);
 
@@ -539,8 +543,8 @@ UIModule **get_ui_ingame(SDL_Renderer *r, int *nuimodules)
   as[0] = 1;
 
   font = TTF_OpenFont("fonts/jersey25.ttf", 40);
-
-  UILabel *sb_1st = uilabel_create(0.1, 0.1, 0.8, 0.1, UIAP_TOP_LEFT, as, 1, UIAP_BOTTOM_LEFT, "1 - Username [69]", 0xff, 0xff, 0xff, 0xff, font);
+  
+  UILabel *sb_1st = uilabel_create(0.1, 0.1, 0.8, 0.1, UIAP_TOP_LEFT, as, 1, UIAP_BOTTOM_LEFT, " -- empty slot -- ", 0xff, 0xff, 0xff, 0xff, font);
 
   uimodule_set_element(modules[4], 0, UIET_Label, sb_1st);
 
@@ -549,7 +553,7 @@ UIModule **get_ui_ingame(SDL_Renderer *r, int *nuimodules)
 
   font = TTF_OpenFont("fonts/jersey25.ttf", 40);
 
-  UILabel *sb_2nd = uilabel_create(0.1, 0.2, 0.8, 0.1, UIAP_TOP_LEFT, as, 1, UIAP_BOTTOM_LEFT, "2 - Username [42]", 0xff, 0xff, 0xff, 0xff, font);
+  UILabel *sb_2nd = uilabel_create(0.1, 0.2, 0.8, 0.1, UIAP_TOP_LEFT, as, 1, UIAP_BOTTOM_LEFT, " -- empty slot -- ", 0xff, 0xff, 0xff, 0xff, font);
 
   uimodule_set_element(modules[4], 1, UIET_Label, sb_2nd);
 
@@ -558,7 +562,7 @@ UIModule **get_ui_ingame(SDL_Renderer *r, int *nuimodules)
 
   font = TTF_OpenFont("fonts/jersey25.ttf", 40);
 
-  UILabel *sb_3rd = uilabel_create(0.1, 0.3, 0.8, 0.1, UIAP_TOP_LEFT, as, 1, UIAP_BOTTOM_LEFT, "3 - Username [12]", 0xff, 0xff, 0xff, 0xff, font);
+  UILabel *sb_3rd = uilabel_create(0.1, 0.3, 0.8, 0.1, UIAP_TOP_LEFT, as, 1, UIAP_BOTTOM_LEFT, " -- empty slot -- ", 0xff, 0xff, 0xff, 0xff, font);
 
   uimodule_set_element(modules[4], 2, UIET_Label, sb_3rd);
 
@@ -567,7 +571,7 @@ UIModule **get_ui_ingame(SDL_Renderer *r, int *nuimodules)
 
   font = TTF_OpenFont("fonts/jersey25.ttf", 40);
 
-  UILabel *sb_4th = uilabel_create(0.1, 0.4, 0.8, 0.1, UIAP_TOP_LEFT, as, 1, UIAP_BOTTOM_LEFT, "4 - Username [-8]", 0xff, 0xff, 0xff, 0xff, font);
+  UILabel *sb_4th = uilabel_create(0.1, 0.4, 0.8, 0.1, UIAP_TOP_LEFT, as, 1, UIAP_BOTTOM_LEFT, " -- empty slot -- ", 0xff, 0xff, 0xff, 0xff, font);
 
   uimodule_set_element(modules[4], 3, UIET_Label, sb_4th);
 

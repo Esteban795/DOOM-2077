@@ -131,4 +131,5 @@ void world_remove_components(world_t* world, entity_t* entity, int* component_ta
 */
 void world_update(world_t* world);
 
+bool world_entity_has_component(world_t* world, entity_t* entity, int tag);
 #endif

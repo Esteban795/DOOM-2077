@@ -98,7 +98,6 @@ void uitextbox_update(SDL_Renderer *r, int substate, UITextBox *tb) {
   }
 
   if (tb->focused && !tb->backspace_helper && keys[SDL_SCANCODE_BACKSPACE]) {
-    printf("remove\n");
     uitextbox_char_remove(tb);
   }
   tb->backspace_helper = keys[SDL_SCANCODE_BACKSPACE];

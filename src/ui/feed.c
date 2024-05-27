@@ -17,27 +17,27 @@ UIFeed* uifeed_create(UILabel** uil, int fl, int delay){
 
 void uifeed_free(UIFeed* uif){
   free(uif->associated_labels);
+  free(uif->associated_delays);
   free(uif);
 }
 
 void uifeed_append(UIFeed* f, char* message){
+
   for (int i = f->feed_length-2; i >= 0; i--)
   {
-    f->associated_labels[i+1]->string = f->associated_labels[i]->string;
+    uilabel_set_content(f->associated_labels[i+1], f->associated_labels[i]->string);
     f->associated_delays[i+1] = f->associated_delays[i];
   }
-  f->associated_labels[0]->string = message;
+  uilabel_set_content(f->associated_labels[0], message);
   f->associated_delays[0] = f->default_delay;
 }
 
 void uifeed_update(UIFeed* f, int dt){
   for (int i = 0; i < f->feed_length; i++){
-    printf("%i,%i\n", i, f->associated_delays[i]);
     if (f->associated_delays[i] >= 0){
       f->associated_delays[i] -= dt;
-      printf("%i,%i\n", i, f->associated_delays[i]);
       if (f->associated_delays[i] < 0){
-        f->associated_labels[i]->string[0] = '\0';
+        uilabel_set_content(f->associated_labels[i], "");
       }
     }
   }

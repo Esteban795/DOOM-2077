@@ -10,6 +10,7 @@
 #include "segment_handler.h"
 #include "structs.h"
 #include "timer.h"
+#include "player_animation.h"
 #include "ui/linker.h"
 
 #include "ui/def.h"
@@ -21,5 +22,14 @@ int update_engine(engine *e, int dt);
 // reads `map_name` from the wad file and initializes the wadData properly
 void read_map(engine *e, char *map_name);
 
+/// Reset the engine to its initial state, freeing all resources and reinitializing
+///
+/// It will deallocate all resources and reinitialize the loaded map, player, bsp, segment handler,
+/// players, lifts, and doors.
+///
+/// \remark the game_start will not be destroyed by this function, the caller should take care of it.
+void engine_reset(engine *e);
+
 void engine_free(engine *e);
+
 #endif

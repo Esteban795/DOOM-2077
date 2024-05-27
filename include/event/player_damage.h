@@ -25,14 +25,16 @@ typedef struct {
     // entity_id of the player that caused the damage.
     // 0 if the damage was not caused by another player.
     uint64_t source_entity_id;
+    // weapon id of the weapon that caused the damage. -1 if the damage was not caused by a weapon.
+    int8_t weapon_id;
     // damage in health points.
     int damage;
 } player_damage_event_t;
 
 // ClientPlayerDamageEvent creates a new ClientPlayerDamageEvent.
-player_damage_event_t* ClientPlayerDamageEvent_new(uint64_t entity_id, uint64_t source_entity_id, int damage);
+player_damage_event_t* ClientPlayerDamageEvent_new(uint64_t entity_id, uint64_t source_entity_id, int8_t weapon_id, int damage);
 
 // ServerPlayerDamageEvent_new creates a new ServerPlayerDamageEvent.
-player_damage_event_t* ServerPlayerDamageEvent_new(uint64_t entity_id,  uint64_t source_entity_id, int damage);
+player_damage_event_t* ServerPlayerDamageEvent_new(uint64_t entity_id,  uint64_t source_entity_id, int8_t weapon_id, int damage);
 
 #endif
