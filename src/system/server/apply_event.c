@@ -37,10 +37,9 @@ void respawn_task(void* _entity_id) {
     world_queue_event(&SERVER_STATE->world, (event_t*) move_ev);
 
     // Send the move event to the player before it can spam us the death coords.
-    SERVER_STATE->outgoing->len = server_player_move(SERVER_STATE->outgoing->data, entity_id, sp.x, sp.y, sp.z, sp.angle);
-    int pind = find_conn_by_id(SERVER_STATE->conns, SERVER_STATE->conn_count, entity_id);
-    if (pind < 0) return;
-    SDLNet_UDP_Send(SERVER_STATE->sock, -1, SERVER_STATE->outgoing);
+    uint8_t buf[256] = {0};
+    int len = server_player_move(buf, entity_id, sp.x, sp.y, sp.z, sp.angle);
+    broadcast(&SERVER_STATE->sock, SERVER_STATE->conns, SERVER_STATE->conn_count, buf, len);
 }
 
 /*
