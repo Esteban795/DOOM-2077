@@ -17,3 +17,7 @@ inline enum AnimationType animation_set(animation_ct* animation, enum AnimationT
     }
     return animation->animation;
 }
+
+extern inline int animation_reset_shot_filter_duration(animation_ct* animation);
+
+extern inline int animation_get_shot_filter_duration_left(animation_ct* animation);

@@ -6,6 +6,8 @@
 #include <stdlib.h>
 #include "../player_animation.h"
 
+#define SHOT_FILTER_DURATION 400
+
 extern const int COMPONENT_TAG_ANIMATION;
 
 /*
@@ -17,6 +19,7 @@ The goal is to able to synchronize the animations through the network for better
 typedef struct {
     int tag;
     enum AnimationType animation;
+    int shot_filter_duration;
 } animation_ct;
 
 component_t* animation_create(enum AnimationType animation);
@@ -32,4 +35,12 @@ EXTREME_DYING > DYING> SHOOTING > MOVING > PLAYER_IDLE
 */
 enum AnimationType animation_set(animation_ct* animation, enum AnimationType animation_value);
 
+inline int animation_get_shot_filter_duration_left(animation_ct* animation) {
+    return animation->shot_filter_duration;
+}
+
+inline int animation_reset_shot_filter_duration(animation_ct* animation) {
+    animation->shot_filter_duration = SHOT_FILTER_DURATION;
+    return animation->shot_filter_duration;
+}
 #endif
