@@ -461,7 +461,7 @@ UIModule **get_ui_ingame(SDL_Renderer *r, int *nuimodules)
   hud_killfeed_labels[0] = hud_killfeed_label_a;
   hud_killfeed_labels[1] = hud_killfeed_label_b;
   hud_killfeed_labels[2] = hud_killfeed_label_c;
-  UIFeed *hud_killfeed_feed = uifeed_create(hud_killfeed_labels, 3, 5);
+  UIFeed *hud_killfeed_feed = uifeed_create(hud_killfeed_labels, 3, 5000);
 
   uimodule_set_element(modules[2], 0, UIET_Feed, hud_killfeed_feed);
 

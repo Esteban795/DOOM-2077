@@ -60,5 +60,5 @@ extern int CURRENT_ANIMATION_PROGRESS[NUM_PLAYERS];
 
 extern int ANIMATION_COOLDOWNS[NUM_PLAYERS];
 
-bool set_correct_animation_name(int i,vec2 origin_pos,double origin_angle, vec2 pos,double angle,enum AnimationType* type);
+bool set_correct_animation_name(int i,vec2 origin_pos,double origin_angle, vec2 pos,double angle,enum AnimationType* type,bool has_moved);
 #endif
