@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-/*
+/**
  * Entity representation
  *
  * An entity is basically just an identifier. It is used to retrieve its components easily.

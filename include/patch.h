@@ -21,22 +21,30 @@
 // https://doomwiki.org/wiki/TEXTURE1_and_TEXTURE2
 
 struct PatchHeader {
-  i16 width;    // width of the patch
-  i16 height;   // height of the patch
-  i16 x_offset; // left offset of the patch (related to original doom screen)
-  i16 y_offset; // top offset of the patch (related to the original doom screen)
+  /// width of the patch
+  i16 width;
+  /// height of the patch
+  i16 height; 
+  /// left offset of the patch (related to original doom screen)
+  i16 x_offset;
+  /// top offset of the patch (related to the original doom screen) 
+  i16 y_offset;
   u32 *column_offsets;
 };
 
 typedef struct PatchHeader patch_header;
 
 struct PatchColumn {
-  u8 top_delta; // determines how many transparent pixels are from the top of
-                // the column
-  u8 length;       // length of the column
-  u8 padding_pre;  // unused
-  u8 *data;        // rgb data of the column
-  u8 padding_post; // unused
+  /// determines how many transparent pixels are from the top of the column
+  u8 top_delta; 
+  /// length of the column
+  u8 length;
+  /// unused
+  u8 padding_pre; 
+  /// rgb data of the column
+  u8 *data; 
+  /// unused
+  u8 padding_post; 
 };
 
 typedef struct PatchColumn patch_column;

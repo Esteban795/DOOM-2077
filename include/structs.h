@@ -55,23 +55,22 @@ typedef struct AnimationsArray{
 
 struct Weapon {
   /*Identification de l'arme*/
-  int id;            /*Identifie précisement l'arme*/
-  char *weapon_name; /*Nom de l'arme du coup*/
-  char *abbreviation; /*Abbréviation utilisée dans les fichiers WAD*/
+  int id;                     /**Identifie précisement l'arme*/
+  char *weapon_name;          /**Nom de l'arme du coup*/
+  char *abbreviation;         /**Abbréviation utilisée dans les fichiers WAD*/
   
   /*Animation*/
-  animations_array *sprites; /*Tableau avec en i tous les sprites pour l'animation x*/
-
+  animations_array *sprites;  /**Tableau avec en i tous les sprites pour l'animation x*/
 
   /*Spécification de l'arme*/
-  int magsize;      /*Taille du chargeur*/
-  int max_damage;   /*Dégats max possible par balle*/
-  int min_damage;   /*Dégats min possible*/
-  double fire_rate; /*Nombre de balle tirées/s*/
-  double spray;     /*Potentiel rayon de dispersion*/
-  int ammo_bounce;  /*Nombre de rebond sur les murs*/
-  int ammo_id;      /*ID des (types de) munitions utilisées */
-  int type; /*Eventuellement si on veut rajouter/classifier les armes (melee vs
+  int magsize;      /**Taille du chargeur*/
+  int max_damage;   /**Dégats max possible par balle*/
+  int min_damage;   /**Dégats min possible*/
+  double fire_rate; /**Nombre de balle tirées/s*/
+  double spray;     /**Potentiel rayon de dispersion*/
+  int ammo_bounce;  /**Nombre de rebond sur les murs*/
+  int ammo_id;      /**ID des (types de) munitions utilisées */
+  int type; /**Eventuellement si on veut rajouter/classifier les armes (melee vs
                range, hitscan vs projectile....)*/
 };
 
@@ -92,7 +91,7 @@ struct Player {
   struct PlayerSetting *settings;
   struct PlayerKeybind *keybinds;
   double height;
-  int *ammo; /*Array of size weapon_number that indicates the number of ammo by
+  int *ammo; /**Array of size weapon_number that indicates the number of ammo by
                 weapon (id)*/
   int t_last_shot; 
   bool has_attacked;
@@ -103,22 +102,38 @@ struct Player {
   //double spray; //nombre d'unités de temps nécéssaires avant de ne plus avoir de spray, 0 indique que le tir sera parfaitement droit
   i16 subsector_id;
   WACS* cooldowns_sprays;
-
 };
 
+/// Structure handling the remote connection to the server
+///
+/// All the data needed to handle the connection to the server is stored in this
+/// structure. remote_*/ functions will require a pointer to this structure to
+/// work.
 struct RemoteServer {
-    IPaddress addr;
-    UDPsocket socket;
-    UDPpacket* packet;
-    struct timespec next_tick;
-    int connected; // 0: not connected (waiting for connection), 1: handshake completed, 2: connected, -1: disconnected, -2: error
-    uint64_t player_id;
+  /// The server's IP address and port
+  IPaddress addr;
+  /// The socket used to communicate with the server
+  UDPsocket socket;
+  /// Allocated packet to receive/send data. This packet is reused for most
+  /// packet received/sent.
+  UDPpacket* packet;
+  /// The time of the last tick
+  struct timespec next_tick;
+  /// Connection status  
+  /// 0: not connected (waiting for connection)  
+  /// 1: handshake completed  
+  /// 2: connected  
+  /// -1: disconnected  
+  /// -2: error
+  int connected;
+  /// The client player's id
+  uint64_t player_id;
 };
 
 struct Engine {
   SDL_Renderer *renderer;
   const char *wadPath;
-  int DT; // time used to render last frame
+  int DT; /// time used to render last frame
 
   struct WADData *wData;
   struct Player *p;

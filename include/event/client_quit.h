@@ -9,16 +9,19 @@
 
 #include "event.h"
 
+/// Event tag for the client player quit event.
 #define CLIENT_PLAYER_QUIT_EVENT_TAG 0x0002
 
-// client_player_quit_event_t is an event that is triggered when a player quits the server.
+/// client_player_quit_event_t is an event that is triggered when a player quits the server.
 typedef struct {
+    /// The tag of the event.  
+    /// This should be CLIENT_PLAYER_QUIT_EVENT_TAG
     uint16_t tag;
-    // entity_id of the player that quitted the server.
+    /// entity_id of the player that quitted the server.
     uint64_t entity_id;
 } client_player_quit_event_t;
 
-// ClientPlayerQuitEvent_new creates a new ClientPlayerQuitEvent.
+/// ClientPlayerQuitEvent_new creates a new ClientPlayerQuitEvent.
 client_player_quit_event_t* ClientPlayerQuitEvent_new(uint64_t entity_id);
 
 #endif

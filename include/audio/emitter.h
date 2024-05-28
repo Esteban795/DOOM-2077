@@ -23,7 +23,7 @@ AudioEmitter *audioemitter_create(sound *sound, float angle, float volume,
                                   int channel);
 void audioemitter_free(AudioEmitter **ae);
 
-// returns true if the sound is done playing
+/// returns true if the sound is done playing
 bool audioemitter_update(AudioEmitter *ae, int dt);
 
 #endif

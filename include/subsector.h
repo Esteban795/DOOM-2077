@@ -5,7 +5,7 @@
 #include "lump.h"
 #include "segment.h"
 
-// https://doomwiki.org/wiki/Subsector
+/// Ref: https://doomwiki.org/wiki/Subsector
 
 struct Subsector {
   i16 num_segs;

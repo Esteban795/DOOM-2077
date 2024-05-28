@@ -4,7 +4,7 @@
 #include "byte_reader.h"
 #include "patch.h"
 
-// https://doomwiki.org/wiki/Flat
+/// Ref: https://doomwiki.org/wiki/Flat
 
 struct Flat {
   char *name;
