@@ -42,8 +42,12 @@ int apply_event(world_t* world, event_t* event) {
             player_damage_event_t* client_player_damage_event = (player_damage_event_t*)event;
             pid = ENTITY_BY_ID(client_player_damage_event->entity_id);
             health_ct* health = (health_ct*) world_get_component(world, &pid, COMPONENT_TAG_HEALTH);
+            
             if (health == NULL) return -1; // If the player does not have health, we cannot apply the event, cancel it.
             health_sub(health, client_player_damage_event->damage);
+            animation_ct* anim = (animation_ct*) world_get_component(world, &pid, COMPONENT_TAG_ANIMATION);
+            if (anim == NULL) return -1; // If the player does not have an animation, we cannot apply the event, cancel it
+            animation_reset_shot_filter_duration(anim);
             break;
         }
         case CLIENT_PLAYER_HEAL_EVENT_TAG: {

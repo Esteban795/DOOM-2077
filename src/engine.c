@@ -8,6 +8,7 @@
 #include "../include/settings.h"
 #include "../include/system/client/active.h"
 #include "../include/shared.h"
+#include "../include/component/animation.h"
 
 engine *init_engine(const char *wadPath, SDL_Renderer *renderer) {
   engine *e = SHARED_ENGINE;
@@ -93,8 +94,10 @@ int update_engine(engine *e, int dt) {
       continue;
     position_ct *pos = (position_ct *)world_get_component(
         e->world, e->players[i], COMPONENT_TAG_POSITION);
+    animation_ct* animation = (animation_ct*) world_get_component(e->world, e->players[i], COMPONENT_TAG_ANIMATION);
     pos->was_updated = false;
     pos->walk_cooldown = max(-1, pos->walk_cooldown - dt);
+    animation->shot_filter_duration = max(-1, animation->shot_filter_duration - dt);
   }
 
   remote_update(e, e->remote);
