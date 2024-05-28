@@ -99,9 +99,16 @@ void draw_crosshair(engine *e, color c, int size) {
                      middle_y);
 }
 
+
+Uint32 apply_red_filter(Uint32 pixel) {
+  SDL_GetRGBA(pixel, fmt, &r, &g, &b, &a);
+  r = max(255, (int)1.2 * r);
+  return SDL_MapRGBA(fmt, r, g, b, a);
+}
+
 void draw_sprite_column_full(engine *engine, patch *sprite, int sprite_column,
                              int screen_x, int y1, int y2,
-                             double inverted_scale, bool use_mirror, int i) {
+                             double inverted_scale, bool use_mirror, int i,bool shot) {
   double sprite_y = y1 < 0 ? -y1 * inverted_scale : 0;
   y1 = max(y1, 0); // clipping
   y2 = min(y2, HEIGHT - 1);
@@ -116,7 +123,11 @@ void draw_sprite_column_full(engine *engine, patch *sprite, int sprite_column,
       continue;
     }
     SDL_GetRGBA(pixel, fmt, &r, &g, &b, &a);
-    pixel = AdjustHSL(r, g, b, a, i);
+    if (shot) {
+      pixel = apply_red_filter(pixel);
+    } else {
+      pixel = AdjustHSL(r, g, b, a, i);
+    }
     engine->pixels[top * WIDTH + screen_x] = pixel;
     sprite_y += inverted_scale;
   }
@@ -125,7 +136,7 @@ void draw_sprite_column_full(engine *engine, patch *sprite, int sprite_column,
 void draw_sprite_column_partial(engine *engine, patch *sprite,
                                 int sprite_column, int screen_x, int y1, int y2,
                                 double *upper_clip, double *lower_clip,
-                                double inverted_scale, bool use_mirror, int i) {
+                                double inverted_scale, bool use_mirror, int i,bool shot) {
   int top_clip = (int)upper_clip[screen_x];
   int bot_clip = (int)lower_clip[screen_x];
   double sprite_y = y1 < top_clip ? -(y1 - top_clip) * inverted_scale : 0;
@@ -143,7 +154,12 @@ void draw_sprite_column_partial(engine *engine, patch *sprite,
     }
 
     SDL_GetRGBA(pixel, fmt, &r, &g, &b, &a);
-    pixel = AdjustHSL(r, g, b, a, i);
+    if (shot) {
+      pixel = apply_red_filter(pixel);
+    } else {
+      pixel = AdjustHSL(r, g, b, a, i);
+    }
+    // pixel = AdjustHSL(r, g, b, a, i);
     engine->pixels[top * WIDTH + screen_x] = pixel;
     sprite_y += inverted_scale;
   }
@@ -186,7 +202,7 @@ void render_vssprite(engine *e, vs_sprite vssprite) {
       sprite_column_int = (int)sprite_column;
       draw_sprite_column_full(e, sprite, sprite_column_int, screen_x, top,
                               top + height, inverted_scale, vssprite.use_mirror,
-                              vssprite.shift);
+                              vssprite.shift,vssprite.shot);
       sprite_column += inverted_scale;
     }
   } else { // something is obscuring the sprite
@@ -225,7 +241,7 @@ void render_vssprite(engine *e, vs_sprite vssprite) {
       }
       draw_sprite_column_partial(
           e, sprite, sprite_column_int, screen_x, top, top + height, upper_clip,
-          lower_clip, inverted_scale, vssprite.use_mirror, vssprite.shift);
+          lower_clip, inverted_scale, vssprite.use_mirror, vssprite.shift,vssprite.shot);
       sprite_column += inverted_scale;
     }
   }

@@ -72,8 +72,8 @@ int broadcast_event(world_t* world, event_t* event) {
                 char* entries[10] = {0};
                 uint16_t deaths[10] = {0};
                 uint16_t kills[10] = {0};
-                // int entity_count = scoreboard_generate(world, entries, deaths, kills);
-                // len += server_scoreboard_update(buf + len, entity_count, entries, deaths, kills);
+                int entity_count = scoreboard_generate(world, entries, deaths, kills);
+                len += server_scoreboard_update(buf + len, entity_count, entries, deaths, kills);
             }
             broadcast(&sock, conns, SERVER_STATE->conn_count, buf, len);
 
@@ -190,6 +190,34 @@ int broadcast_event(world_t* world, event_t* event) {
                 printf("Door %ld is closing.\n", ev->door_id);
                 len = server_door_close(buf, ev->door_id);
             }
+            broadcast(&sock, conns, SERVER_STATE->conn_count, buf, len);
+            break;
+        }
+        case SERVER_GAME_START_EVENT_TAG: {
+            game_start_event_t* ev = (game_start_event_t*) event;
+            char msg[256] = {0};
+            if (ev->countdown == 0) {
+                sprintf(msg, "Game starts!");
+            } else {
+                sprintf(msg, "Game starting in %d seconds...", ev->countdown);
+            }
+            printf("%s\n", msg);
+            len = server_game_start(buf, ev->countdown);
+            len += server_server_chat(buf + len, msg, true, true);
+            broadcast(&sock, conns, SERVER_STATE->conn_count, buf, len);
+            break;
+        }
+        case SERVER_GAME_END_EVENT_TAG: {
+            game_end_event_t* ev = (game_end_event_t*) event;
+            char msg[256] = {0};
+            if (ev->countdown == 0) {
+                sprintf(msg, "Game ends!");
+            } else {
+                sprintf(msg, "Game ending in %d seconds...", ev->countdown);
+            }
+            printf("%s\n", msg);
+            len = server_game_end(buf, ev->countdown);
+            len += server_server_chat(buf + len, msg, true, true);
             broadcast(&sock, conns, SERVER_STATE->conn_count, buf, len);
             break;
         }

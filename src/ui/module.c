@@ -51,7 +51,7 @@ void uimodule_set_element(UIModule *module, int index, UIElementType type,
 }
 
 void update_uimodule(SDL_Renderer *r, int substate, UIModule *module,
-                     int *uinextevent) {
+                     int *uinextevent, int DT) {
   for (int i = 0; i < module->nelements; i++) {
     if (module->elements[i] != 0) {
       switch (module->elements[i]->type) {
@@ -66,6 +66,9 @@ void update_uimodule(SDL_Renderer *r, int substate, UIModule *module,
         break;
       case UIET_Textbox:
         uitextbox_update(r, substate, module->elements[i]->element);
+        break;
+      case UIET_Feed:
+        uifeed_update(module->elements[i]->element, DT);
         break;
       default:
         break;

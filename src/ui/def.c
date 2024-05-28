@@ -103,7 +103,7 @@ UIModule **get_ui_menu(SDL_Renderer *r, int *nuimodules)
   as = malloc(1 * sizeof(int));
   as[0] = 0;
 
-  float mm_connect_y = 0.7;
+  float mm_connect_y = 0.65;
 
   UIButton *mm_connect_button = uibutton_create(
       mm_settings_x, mm_connect_y, mm_settings_w, mm_settings_h, UIAP_TOP_LEFT,
@@ -431,7 +431,7 @@ UIModule **get_ui_ingame(SDL_Renderer *r, int *nuimodules)
 
   UILabel *hud_killfeed_label_a =
       uilabel_create(0.01, 0, 0.5, 0.5, UIAP_TOP_LEFT, as, 1,
-                     UIAP_TOP_LEFT, "", 0xFF, 0xFF, 0xFF, 0xFF, font);
+                     UIAP_TOP_LEFT, "\0", 0xFF, 0xFF, 0xFF, 0xFF, font);
 
   uimodule_set_element(modules[2], 1, UIET_Label, hud_killfeed_label_a);
 
@@ -442,7 +442,7 @@ UIModule **get_ui_ingame(SDL_Renderer *r, int *nuimodules)
 
   UILabel *hud_killfeed_label_b =
       uilabel_create(0.02, 0.047, 0.5, 0.5, UIAP_TOP_LEFT, as, 1,
-                     UIAP_TOP_LEFT, "", 0xFF, 0xFF, 0xFF, 0xFF, font);
+                     UIAP_TOP_LEFT, "\0", 0xFF, 0xFF, 0xFF, 0xFF, font);
 
   uimodule_set_element(modules[2], 2, UIET_Label, hud_killfeed_label_b);
 
@@ -453,7 +453,7 @@ UIModule **get_ui_ingame(SDL_Renderer *r, int *nuimodules)
 
   UILabel *hud_killfeed_label_c =
       uilabel_create(0.03, 0.09, 0.5, 0.5, UIAP_TOP_LEFT, as, 1,
-                     UIAP_TOP_LEFT, "", 0xFF, 0xFF, 0xFF, 0xFF, font);
+                     UIAP_TOP_LEFT, "\0", 0xFF, 0xFF, 0xFF, 0xFF, font);
 
   uimodule_set_element(modules[2], 3, UIET_Label, hud_killfeed_label_c);
 
@@ -461,7 +461,7 @@ UIModule **get_ui_ingame(SDL_Renderer *r, int *nuimodules)
   hud_killfeed_labels[0] = hud_killfeed_label_a;
   hud_killfeed_labels[1] = hud_killfeed_label_b;
   hud_killfeed_labels[2] = hud_killfeed_label_c;
-  UIFeed *hud_killfeed_feed = uifeed_create(hud_killfeed_labels, 3, false);
+  UIFeed *hud_killfeed_feed = uifeed_create(hud_killfeed_labels, 3, 5000);
 
   uimodule_set_element(modules[2], 0, UIET_Feed, hud_killfeed_feed);
 
@@ -477,7 +477,7 @@ UIModule **get_ui_ingame(SDL_Renderer *r, int *nuimodules)
 
   UILabel *hud_chat_label_a =
       uilabel_create(0.01, 0.8, 0.5, 0.1, UIAP_BOTTOM_LEFT, as, 1,
-                     UIAP_BOTTOM_LEFT, "", 0xFF, 0xFF, 0xFF, 0xFF, font);
+                     UIAP_BOTTOM_LEFT, "\0", 0xFF, 0xFF, 0xFF, 0xFF, font);
 
   uimodule_set_element(modules[3], 0, UIET_Label, hud_chat_label_a);
 
@@ -489,7 +489,7 @@ UIModule **get_ui_ingame(SDL_Renderer *r, int *nuimodules)
 
   UILabel *hud_chat_label_b =
       uilabel_create(0.01, 0.76, 0.5, 0.1, UIAP_BOTTOM_LEFT, as, 1,
-                     UIAP_BOTTOM_LEFT, "", 0xFF, 0xFF, 0xFF, 0xFF, font);
+                     UIAP_BOTTOM_LEFT, "\0", 0xFF, 0xFF, 0xFF, 0xFF, font);
 
   uimodule_set_element(modules[3], 1, UIET_Label, hud_chat_label_b);
 
@@ -501,7 +501,7 @@ UIModule **get_ui_ingame(SDL_Renderer *r, int *nuimodules)
 
   UILabel *hud_chat_label_c =
       uilabel_create(0.01, 0.72, 0.5, 0.1, UIAP_BOTTOM_LEFT, as, 1,
-                     UIAP_BOTTOM_LEFT, "", 0xFF, 0xFF, 0xFF, 0xFF, font);
+                     UIAP_BOTTOM_LEFT, "\0", 0xFF, 0xFF, 0xFF, 0xFF, font);
 
   uimodule_set_element(modules[3], 2, UIET_Label, hud_chat_label_c);
 
@@ -531,7 +531,7 @@ UIModule **get_ui_ingame(SDL_Renderer *r, int *nuimodules)
   hud_chat_labels[1] = hud_chat_label_b;
   hud_chat_labels[2] = hud_chat_label_c;
 
-  UIFeed *hud_chat_feed = uifeed_create(hud_chat_labels, 3, false);
+  UIFeed *hud_chat_feed = uifeed_create(hud_chat_labels, 3, 10000);
 
   uimodule_set_element(modules[3], 5, UIET_Feed, hud_chat_feed);
 

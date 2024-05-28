@@ -5,6 +5,7 @@
 #include "../net/tracked_connection.h"
 #include "../settings.h"
 #include "../wad_data.h"
+#include "task.h"
 
 #ifndef _LIB_SDL_NET_H
 #define _LIB_SDL_NET_H
@@ -31,6 +32,23 @@
 
 typedef struct timespec Instant;
 
+/// The game state, determining the current state of the party.
+typedef enum {
+    /// The game is waiting for players to join.
+    GAME_STATE_WAITING,
+    /// The game is in cooldown, waiting for the game to start.  
+    /// This state is used to allow the clients to prepare for the game,
+    /// and to allow the server to wait for other players to join.
+    GAME_STATE_COOLDOWN,
+    /// The game is running.
+    GAME_STATE_RUNNING,
+    /// The game is ending, or has ended.  
+    /// This state is used to allow a small delay before the game restarts, and 
+    /// let the clients take a breath before the next game.
+    GAME_STATE_ENDING,
+} game_state_t;
+
+// The server state
 /// @brief Represents the state of the server.
 typedef struct {
     /// @brief The server ECS world.
@@ -50,6 +68,11 @@ typedef struct {
     wad_data* wad_data;
     /// @brief The current loaded map's name.
     char* map_name;
+    // The task executor
+    task_executor_t task_executor;
+    // The game state
+    game_state_t game_state;
+    // Door-mappings and lift-mappings
     /// @brief The entities representing the doors.
     entity_t** doors;
     int door_count;

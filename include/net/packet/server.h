@@ -59,6 +59,10 @@ extern const char *SERVER_COMMAND_LASC;
 extern const char *SERVER_COMMAND_LDSC;
 /// @brief The command for the server lift states packet, whose command is "LIST".
 extern const char *SERVER_COMMAND_L_ST;
+/// @brief The command for the server game start packet, whose command is "GSTA".
+extern const char *SERVER_COMMAND_GSTA;
+/// @brief The command for the server game end packet, whose command is "GEND".
+extern const char *SERVER_COMMAND_GEND;
 /// @brief The command for the server fire packet, whose command is "FIRE".
 extern const char *SERVER_COMMAND_FIRE;
 /// @brief The command for the server weapon update packet, whose command is "WEAP".
@@ -211,7 +215,19 @@ int server_lift_descend(uint8_t *buf, uint64_t lift_id);
 /// @param lifts_count the number of lifts in the map.
 /// @param lifts_states the states of the lifts in the map.
 /// @return length of the packet.
-int server_lift_states(uint8_t *buf, uint16_t lifts_count, bool *lifts_states);
+int server_lift_states(uint8_t *buf, uint16_t lifts_count, bool* lifts_states);
+
+/// @brief server_game_start creates a new server game start packet.
+/// @param buf the outgoing packet buffer, where the packet will be written.
+/// @param countdown the countdown to the game start.
+/// @return length of the packet.
+int server_game_start(uint8_t *buf, int16_t countdown);
+
+/// @brief server_game_start creates a new server game end packet.
+/// @param buf the outgoing packet buffer, where the packet will be written.
+/// @param countdown the countdown to the game end.
+/// @return length of the packet.
+int server_game_end(uint8_t *buf, int16_t countdown);
 
 /// @brief server_player_fire creates a new server player fire packet.
 /// @param buf the outgoing packet buffer, where the packet will be written.
@@ -377,7 +393,19 @@ int server_lift_descend_from(uint8_t *buf, uint64_t *lift_id);
 /// @param lifts_count the buffer where the number of lifts will be written.
 /// @param lifts_states the buffer where the lifts_states will be written.
 /// @return the length of the packet read.
-int server_lift_states_from(uint8_t *buf, uint16_t *lifts_count, bool **lifts_states);
+int server_lift_states_from(uint8_t *buf, uint16_t *lifts_count, bool** lifts_states);
+
+/// @brief server_game_start_from reads a server game start packet
+/// @param buf the incoming packet buffer, where the packet will be read.
+/// @param countdown the countdown before the game starts.
+/// @return the length of the paccket read.
+int server_game_start_from(uint8_t *buf, int16_t *countdown);
+
+/// @brief server_game_end_from reads a server game end packet
+/// @param buf the incoming packet buffer, where the packet will be read.
+/// @param countdown the countdown before the game ends.
+/// @return the length of the paccket read.
+int server_game_end_from(uint8_t *buf, int16_t *countdown);
 
 /// @brief server_player_fire_from reads a server player fire packet
 /// @param buf the incoming packet buffer, where the packet will be read.

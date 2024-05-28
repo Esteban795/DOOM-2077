@@ -8,11 +8,13 @@
 typedef struct _UIFeed {
   int feed_length;
   UILabel** associated_labels;
-  bool reversed;
+  int *associated_delays;
+  int default_delay;
 } UIFeed;
 
-UIFeed* uifeed_create(UILabel** uil, int fl, bool reversed);
+UIFeed* uifeed_create(UILabel** uil, int fl, int delay);
 void uifeed_free(UIFeed* f);
+void uifeed_update(UIFeed* f, int dt);
 
 void uifeed_append(UIFeed* f, char* message);
 

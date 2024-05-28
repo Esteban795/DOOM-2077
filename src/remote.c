@@ -8,6 +8,7 @@
 #include "../include/component/health.h"
 #include "../include/component/position.h"
 #include "../include/component/weapon.h"
+#include "../include/component/animation.h"
 #include "../include/engine.h"
 #include "../include/net/packet/client.h"
 #include "../include/net/packet/server.h"
@@ -219,14 +220,15 @@ int remote_update(engine *e, remote_server_t *r) {
 
           // Add player to the ECS world
           double coords[3] = {0.0, 0.0, PLAYER_HEIGHT};
-          component_t **comps = malloc(sizeof(component_t *) * 5);
+          component_t **comps = malloc(sizeof(component_t *) * 6);
           comps[0] = position_create(coords, 180.0);
           comps[1] = health_create(100.0, 100.0);
           comps[2] = weapon_create(ammo,mags);
           comps[3] = display_name_create(player_name);
-                    i16 player_subsector_id = get_subsector_id_from_pos(e->wData->len_nodes - 1, e->wData->nodes, (vec2){.x = 0.0, .y = 0.0});
-                    comps[4] = subsector_id_create(player_subsector_id);
-          entity_t *entity = world_insert_entity(e->world, player_id, comps, 5);
+          i16 player_subsector_id = get_subsector_id_from_pos(e->wData->len_nodes - 1, e->wData->nodes, (vec2){.x = 0.0, .y = 0.0});
+          comps[4] = subsector_id_create(player_subsector_id);
+          comps[5] = animation_create(PLAYER_IDLE);
+          entity_t *entity = world_insert_entity(e->world, player_id, comps, 6);
           // If entity == NULL, an entity already exists with this id, replacing
           // it.
           if (entity == NULL) {
@@ -431,19 +433,23 @@ int remote_update(engine *e, remote_server_t *r) {
 
   // Send the player data for the current frame
   static double x, y, z, angle = 0.0;
+  health_ct *hth = player_get_health(e->p);
   position_ct *pos = player_get_position(e->p);
   if (x == pos->x && y == pos->y && z == pos->z && angle == pos->angle) {
     return 0;
   }
-  int len =
-      client_move(r->packet->data, position_get_x(pos), position_get_y(pos),
-                  position_get_z(pos), position_get_angle(pos));
-  r->packet->len = len;
-  r->packet->address.host = r->addr.host;
-  r->packet->address.port = r->addr.port;
-  if (SDLNet_UDP_Send(r->socket, -1, r->packet) == 0) {
-    fprintf(stderr, "SDLNet_UDP_Send: move command: %s\n", SDLNet_GetError());
-    return -1;
+  if (hth != NULL && health_get(hth) > 0) {
+    // If alive, send the move the server
+    int len =
+        client_move(r->packet->data, position_get_x(pos), position_get_y(pos),
+                    position_get_z(pos), position_get_angle(pos));
+    r->packet->len = len;
+    r->packet->address.host = r->addr.host;
+    r->packet->address.port = r->addr.port;
+    if (SDLNet_UDP_Send(r->socket, -1, r->packet) == 0) {
+      fprintf(stderr, "SDLNet_UDP_Send: move command: %s\n", SDLNet_GetError());
+      return -1;
+    }
   }
 
   x = pos->x;

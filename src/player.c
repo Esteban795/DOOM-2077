@@ -10,6 +10,8 @@
 #include "../include/component/position.h"
 #include "../include/component/subsector_id.h"
 #include "../include/component/weapon.h"
+#include "../include/component/animation.h"
+
 #include "../include/ecs/component.h"
 #include "../include/ecs/entity.h"
 #include "../include/ecs/world.h"
@@ -17,6 +19,7 @@
 #include "../include/remote.h"
 #include "../include/settings.h"
 #include "../include/shared.h"
+#include "../include/ui/linker.h"
 
 #define SPRAY_DECREATE_RATE 0.25
 #define SIGN(x) (int)(x > 0) ? 1 : ((x < 0) ? -1 : 0)
@@ -54,7 +57,7 @@ player *player_init(engine *e) {
 
   // Add player to the ECS world
   double coords[3] = {p->thing.x, p->thing.y, PLAYER_HEIGHT};
-  component_t **comps = malloc(sizeof(component_t *) * 5);
+  component_t **comps = malloc(sizeof(component_t *) * 6);
   comps[0] = position_create(coords, p->thing.angle + 180.0);
   comps[1] = health_create(100.0, 100.0);
   comps[2] = weapon_create(ammo, mags);
@@ -63,7 +66,8 @@ player *player_init(engine *e) {
       get_subsector_id_from_pos(e->wData->len_nodes - 1, e->wData->nodes,
                                 (vec2){.x = p->thing.x, .y = p->thing.y});
   comps[4] = subsector_id_create(player_subsector_id);
-  p->entity = world_insert_entity(e->world, e->remote->player_id, comps, 5);
+  comps[5] = animation_create(PLAYER_IDLE);
+  p->entity = world_insert_entity(e->world, e->remote->player_id, comps, 6);
   free(comps);
 
   p->ammo = ammo;
@@ -529,13 +533,18 @@ linedef *cast_ray(linedef **linedefs, int len_linedefs, vec2 player_pos,
 void process_keys(player *p) {
   position_ct *pos = player_get_position(p);
   weapon_ct *weapon = player_get_weapon(p);
-  bool is_interacting = keys[get_key_from_action(p->keybinds, "INTERACT")];
+  
   // to avoid spamming the interact key and crashing the audio lmao
   INTERACT_CD -= p->engine->DT;
   for (int i = 0; i < WEAPONS_NUMBER; i++) {
     weapon->cooldowns[i] = max(-1, weapon->cooldowns[i] - p->engine->DT);
   }
+  
+  bool is_focused_text_box = UILINK_CHAT_FOCUSED(p->engine->uimodules);
+  if (is_focused_text_box) return;
 
+  
+  bool is_interacting = keys[get_key_from_action(p->keybinds, "INTERACT")];
   if (is_interacting && INTERACT_CD <= 0) {
     linedef *trigger_linedef = cast_ray(
         p->engine->wData->linedefs, p->engine->wData->len_linedefs,

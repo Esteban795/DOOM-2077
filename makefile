@@ -13,7 +13,7 @@ CC = gcc
 CFLAGS = -Wall -Wextra -Wvla -std=gnu17 -pedantic
 CFLAGS += -fsanitize=address,undefined -fno-omit-frame-pointer
 LDFLAGS = -lm 
-CDEBUG = -g -O3 -D 'SERVER_ADDR="127.0.0.1"' -D SERVER_PORT=9999
+CDEBUG = -g -O3 -D 'SERVER_ADDR="0.0.0.0"' -D SERVER_PORT=9999
 # END OF CONFIGURABLE PARAMETERS  #
 
 ALL_CFLAGS = $(CFLAGS) $(shell pkg-config --cflags sdl2 jansson) $(CDEBUG)
@@ -36,7 +36,7 @@ CLIENT_LDFLAGS = -lSDL2 -lSDL2_ttf -lSDL2_image -lSDL2_mixer -lSDL2_net
 SERVER_SRC = server.c \
 	blockmap.c byte_reader.c color.c door.c flat.c geometry.c header.c lift.c \
 	linedef.c lump.c node.c patch.c sector.c segment.c sidedef.c sound.c \
-	subsector.c texture.c thing.c util.c vertex.c wad_data.c drawseg.c vssprite.c \
+	subsector.c texture.c thing.c util.c vertex.c wad_data.c drawseg.c vssprite.c spawnpoints.c \
 	$(patsubst $(srcdir)/%, %, $(wildcard $(srcdir)/server/*.c)) \
  	$(patsubst $(srcdir)/%, %, $(wildcard $(srcdir)/event/*.c)) \
 	$(patsubst $(srcdir)/%, %, $(wildcard $(srcdir)/system/server/*.c)) \

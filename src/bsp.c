@@ -1,5 +1,6 @@
 #include "../include/bsp.h"
 #include "../include/component/position.h"
+#include "../include/component/animation.h"
 #include "../include/player.h"
 #include <stdio.h>
 
@@ -165,10 +166,11 @@ void render_bsp_node(bsp *b, size_t node_id) {
         vec2 pos2d = position_get_pos(pos);
         double angle = position_get_angle(pos);
         subsector_id_ct *player_subsector_id = (subsector_id_ct *)world_get_component(b->engine->world, player,COMPONENT_TAG_SUBSECTOR_ID);
+        animation_ct* player_animation = (animation_ct*)world_get_component(b->engine->world, player, COMPONENT_TAG_ANIMATION);
         if (player_subsector_id->subsector_id == subsector_id &&
             is_point_in_FOV(player_pos->x, player_pos->y, player_pos->angle,
                             FOV, pos->x, pos->y)) {
-          bool use_mirror = set_correct_animation_name(i, player_pos2d, player_angle, pos2d, angle, SHOOTING);
+          bool use_mirror = set_correct_animation_name(i, player_pos2d, player_angle, pos2d, angle, &player_animation->animation,position_has_moved(pos));
           patch* player_sprite = get_patch_from_name(b->engine->wData->sprites, b->engine->wData->len_sprites, ANIMATION_NAME);
           
           if (player_sprite == NULL) {
@@ -176,8 +178,8 @@ void render_bsp_node(bsp *b, size_t node_id) {
             exit(1);
           }
           
-          vssprite_add(player_pos2d, player_pos->angle, position_get_pos(pos),
-                       player_sprite,use_mirror,i);
+          vssprite_add(player_pos2d, player_pos->angle, pos2d,
+                       player_sprite,use_mirror,i,animation_get_shot_filter_duration_left(player_animation) > 0);
         }
       }
       for (i16 i = 0; i < ss.num_segs; i++) {
