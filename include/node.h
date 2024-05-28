@@ -3,6 +3,10 @@
 
 #include "byte_reader.h"
 #include "lump.h"
+#include "vec2.h"
+#include "subsector.h"
+
+#include <stdbool.h>
 // https://doomwiki.org/wiki/Node
 
 struct BBox {
@@ -31,4 +35,8 @@ node read_node(FILE *wad_file, int offset);
 
 node *get_nodes_from_lump(FILE *f, lump *directory, int lump_index,
                           int num_bytes, int header_length, int len_nodes);
+
+bool is_on_back_side(node n, vec2 pos);
+
+i16 get_subsector_id_from_pos(size_t root_node_id,node* nodes,vec2 pos);
 #endif

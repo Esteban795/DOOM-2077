@@ -1,8 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <assert.h>
 
 #include "../../include/collection/vec.h"
 #include "../../include/ecs/archetype.h"
+
+int qsort_compare_int(const void* a, const void* b) {
+    return (*(int*) a - *(int*) b);
+}
 
 int compare_int(const void* a, const void* b) {
     return (**(int**) a - **(int**) b);
@@ -36,6 +41,7 @@ void archetype_init(archetype_t* archetype, int component_count, int component_t
     }
 
     vec_sort(&archetype->tags, compare_int);
+    assert(vec_length(&archetype->components) == vec_length(&archetype->tags));
 }
 
 void archetype_destroy(archetype_t* archetype) {
@@ -139,9 +145,12 @@ bool archetype_remove_entity(archetype_t* archetype, entity_t* entity, bool shou
     if (ind < 0) {
         return false;
     }
+
+    //printf("DEBUG: archetype->remove entity %d/%d\n", ind, vec_length(&archetype->entities));
     vec_remove(&archetype->entities, ind, false);
     for (int i = 0; (size_t) i < vec_length(&archetype->tags); i++) {
         vec_t* component = (vec_t*) vec_get(&archetype->components, i);
+        //printf("DEBUG: archetype->remove component(%d) %d/%d\n", i, ind, vec_length(component));
         vec_remove(component, ind, should_free);
     }
     return true;
@@ -178,6 +187,11 @@ component_t* archetype_get_component(archetype_t* archetype, entity_t* entity, i
 int archetype_match(const void* _archetype_tag, const void* _archetype) {
     archetype_t* archetype = *(archetype_t**) _archetype;
     archetype_tag_t* archetype_tag = *(archetype_tag_t**) _archetype_tag;
+
+    // Sort the component tags of the archetype tag, otherwise it will fail miserably
+    // if the order of the tags is not the same as the archetype.
+    qsort(archetype_tag->component_tags, archetype_tag->component_count, sizeof(int), qsort_compare_int);
+
     int i = 0;
     while (i < (int) vec_length(&archetype->tags) && i < archetype_tag->component_count) {
         int tag = *(int*) vec_get(&archetype->tags, i);

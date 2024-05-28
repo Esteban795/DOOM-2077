@@ -3,10 +3,9 @@
 #include <stdlib.h>
 
 byte read_1_byte(FILE *f, int offset) {
-  byte *b = read_bytes(f, 1, offset);
-  byte temp = b[0];
-  free(b);
-  return temp;
+  fseek(f, offset, 0);
+  byte b = getc(f);
+  return b;
 }
 
 byte *read_bytes(FILE *f, int offset, int num_bytes) {
@@ -21,6 +20,13 @@ byte *read_bytes(FILE *f, int offset, int num_bytes) {
 }
 
 // WAD files use little endianness
+
+i8 read_i8(FILE *f, int offset) {
+  fseek(f, offset, 0);
+  i8 b = (i8)getc(f);
+  return b;
+}
+
 i16 read_i16(FILE *f, int offset) {
   byte *bytes = read_bytes(f, offset, 2);
   i16 temp = 0;
@@ -51,7 +57,7 @@ i32 read_i32(FILE *f, int offset) {
 }
 
 char *read_string(FILE *f, int offset, int num_bytes) {
-  char *str = malloc(sizeof(char) * num_bytes + 1);
+  char *str = malloc(sizeof(char) * (num_bytes + 1));
   str[num_bytes] = '\0';
   byte *bytes = read_bytes(f, offset, num_bytes);
   for (int i = 0; i < num_bytes; i++) {
@@ -61,11 +67,29 @@ char *read_string(FILE *f, int offset, int num_bytes) {
   return str;
 }
 
-void read_texture_name(FILE *f, int offset, int8_t *texture_name) {
+char *read_texture_name(FILE *f, int offset, int length) {
   fseek(f, offset, 0);
-  int bytes_read = (int)fread(texture_name, sizeof(int8_t), 8, f);
-  if (bytes_read < 8) {
-    printf("Error while reading bytes : got fewer bytes than expected");
-    exit(1);
+  char *texture_name = malloc(sizeof(char) * (length + 1));
+  for (int i = 0; i < length; i++) {
+    texture_name[i] = (char)read_i8(f, offset + i);
   }
+  texture_name[length] = '\0';
+  return texture_name;
+}
+
+u8 read_u8(FILE *f, int offset) {
+  fseek(f, offset, 0);
+  u8 b = getc(f);
+  return b;
+}
+
+u32 read_u32(FILE *f, int offset) {
+  byte *bytes = read_bytes(f, offset, 4);
+  u32 temp = 0;
+  temp = bytes[3] << 24;
+  temp |= bytes[2] << 16;
+  temp |= bytes[1] << 8;
+  temp |= bytes[0];
+  free(bytes);
+  return temp;
 }

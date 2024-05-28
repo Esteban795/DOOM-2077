@@ -5,11 +5,12 @@
 #include "structs.h"
 #include "vec2.h"
 #include "segment_handler.h"
+#include "vssprite.h"
+#include "player_animation.h"
 
+extern bool BSP_TRAVERSE; // boolean used to determine if screen is filled and doesn't require anymore traversal
 
-extern bool BSP_TRAVERSE;
-
-#define SUBSECTOR_IDENTIFIER (size_t)0x8000
+#define SUBSECTOR_IDENTIFIER (size_t)0x8000 // identifier used by BSP to determine if the node is a leaf or not
 
 bsp *bsp_init(engine *e, player *p);
 
@@ -19,5 +20,6 @@ void update_bsp(bsp *b);
 
 void bsp_free(bsp *b);
 
-void get_ssector_height(bsp* b);
+double get_ssector_height(bsp* b);
+void update_players_subsectors(bsp *b);
 #endif

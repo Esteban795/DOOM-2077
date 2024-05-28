@@ -27,7 +27,7 @@ void ta_add_char(textarea* ta, char c){
 }
 
 void ta_remove_char(textarea* ta){
-    if (ta->text_index == 0) return; //no char
+    if (ta->text_index == 0) return; // currently no text
     ta->text_index--;
     ta->text[ta->text_index] = '\0';
 }

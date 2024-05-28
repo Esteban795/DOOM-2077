@@ -38,7 +38,7 @@ char *copy_until_char(char *str, char c) {
 
 // Keybinds are stored as linked list with the name of the action and the key
 // that is bound to it
-static player_keybind *add_keybind(player_keybind *keybinds, char *name,
+static player_keybind *keybind_add(player_keybind *keybinds, char *name,
                                    char *key) {
   if (keybinds == NULL) {
     player_keybind *new_keybind = malloc(sizeof(player_keybind));
@@ -57,14 +57,15 @@ static player_keybind *add_keybind(player_keybind *keybinds, char *name,
 
 // Reads keybinds from the config file, line by line.
 // The format is "action=key"
-player_keybind *read_keybinds(FILE *f, size_t nlines) {
+player_keybind *keybinds_read(FILE *f, size_t nlines) {
   size_t line_len = 0;
-  player_keybind *keybinds = malloc(sizeof(player_keybind));
-  keybinds = NULL;
+  player_keybind *keybinds = NULL;
   char *lineptr = NULL;
   for (size_t i = 0; i < nlines; i++) {
     ssize_t char_read = getline(&lineptr, &line_len, f);
     if (char_read == -1) {
+      // If the last line is empty, we don't want to exit, just ignore it.
+      if (i == nlines - 1) break;
       printf("Error reading line in the keybinds config file.\n");
       exit(1);
     }
@@ -78,14 +79,15 @@ player_keybind *read_keybinds(FILE *f, size_t nlines) {
       printf("Error reading keybinds config file : missing keybinds.\n");
       exit(1);
     }
-    keybinds = add_keybind(keybinds, action, key);
+    keybinds = keybind_add(keybinds, action, key);
     free(key);
   }
   free(lineptr);
   return keybinds;
 }
 
-void write_keybinds(const char *fp, player_keybind *settings) {
+// Write the current keybinds in memory to the config file
+void keybinds_write(const char *fp, player_keybind *settings) {
   FILE *f = fopen(fp, "w");
   if (f == NULL) {
     printf("Error opening keybinds config file\n");
@@ -99,7 +101,9 @@ void write_keybinds(const char *fp, player_keybind *settings) {
   fclose(f);
 }
 
-void modify_keybind(player_keybind *keybinds, char *name, char *key) {
+// Modify a keybind in memory
+void keybind_modify(player_keybind *keybinds, char *name, char *key) {
+  if (strcmp(key, "") == 0) return;
   player_keybind *current = keybinds;
   while (current != NULL) {
     if (strcmp(current->name, name) == 0) {
@@ -110,6 +114,7 @@ void modify_keybind(player_keybind *keybinds, char *name, char *key) {
   }
 }
 
+// Given an action, return the key that is bound to it
 SDL_Keycode get_key_from_action(player_keybind *keybinds, char *action) {
   player_keybind *current = keybinds;
   while (current != NULL) {
@@ -129,12 +134,12 @@ player_keybind *get_player_keybinds(const char *fp) {
   }
   int nlines = 1 + count_lines(f);
   rewind(f);
-  player_keybind *keybinds = read_keybinds(f, nlines);
+  player_keybind *keybinds = keybinds_read(f, nlines);
   fclose(f);
   return keybinds;
 }
 
-void free_keybinds(player_keybind *keybinds) {
+void keybinds_free(player_keybind *keybinds) {
   player_keybind *current = keybinds;
   while (current != NULL) {
     player_keybind *next = current->next;
@@ -190,7 +195,7 @@ player_setting *read_settings(FILE *f, size_t nlines) {
   return settings;
 }
 
-void write_settings(const char *fp, player_setting *settings) {
+void settings_write(const char *fp, player_setting *settings) {
   FILE *f = fopen(fp, "w");
   if (f == NULL) {
     printf("Error opening settings config file\n");
@@ -204,7 +209,7 @@ void write_settings(const char *fp, player_setting *settings) {
   fclose(f);
 }
 
-void modify_setting(player_setting *settings, char *name, char *key) {
+void setting_modify(player_setting *settings, char *name, char *key) {
   player_setting *current = settings;
   while (current != NULL) {
     if (strcmp(current->name, name) == 0) {
@@ -239,7 +244,7 @@ double get_setting_from_name(player_setting *settings, char *name) {
   return -1;
 }
 
-void free_settings(player_setting *settings) {
+void settings_free(player_setting *settings) {
   player_setting *current = settings;
   while (current != NULL) {
     player_setting *next = current->next;
@@ -249,6 +254,8 @@ void free_settings(player_setting *settings) {
   }
 }
 
+
+///// DEBUG FUNCTIONS
 void print_keybinds(player_keybind *keybinds) {
   player_keybind *current = keybinds;
   while (current != NULL) {

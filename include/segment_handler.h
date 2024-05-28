@@ -7,11 +7,15 @@
 #include "settings.h"
 #include "structs.h"
 #include "util.h"
+#include "drawseg.h"
 #include <stdlib.h>
+#include <limits.h>
 
 #define MAX_SCALE 64.0
 #define MIN_SCALE 0.00390625
+
 extern bool BSP_TRAVERSE;
+
 void classify_segment(segment_handler *sh, segment *seg, int x1, int x2,
                       double raw_angle_1);
 
