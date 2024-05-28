@@ -5,7 +5,7 @@ Doom2077                         {#mainpage}
 
 Doom2077 is a multiplayer video game that is inspired by the principles of the original Doom, released in 1993. The game features retro graphics similar to Doom, but with modern gameplay mechanics.
 
-In Doom2077, the goal is simple: kill as many enemy players as possible. The game is played online, with 2 to 4 players. The single player mode allows you to discover the different maps.
+In Doom2077, the goal is simple: kill as many enemy players as possible. The game is played online, with 2 to 4 players. The single player mode allows you to discover the map.
 
 The game features mechanics from other popular FPS (first-person shooter) games, such as a killfeed (which displays killed players in real time) and the respawn principle (which allows players to reappear on the map after being killed). You can also communicate with other players using the built-in chat.
 
