@@ -1,11 +1,11 @@
-# Network Protocol
+\page network Network Protocol
 
 | Date of creation | Latest edit      | Version | Status (adopted?) |
 |------------------|------------------|---------|-------------------|
-| 07/03/2024       | 18/05/2024       | RC1     | Release Candidate |
+| 07/03/2024       | 28/05/2024       | 1.0     | Release           |
 
 
-## Introduction
+# Introduction
 
 The goal of this document is to document the exact way the game client is communicating with the game server. It must allow someone unfamiliar with the project but familiar with such protocol to completely reimplement the protocol for its own client or server and to expect it to be compatible with the original game.
 
@@ -40,9 +40,9 @@ premultiplied by a constant. For instance, player coordinate are represented as 
 
 * Command identifiers are **NOT** shared between client and server. A identical identifier can be use for two distinct usage.
 
-## Client->Server Messages
+# Client->Server Messages
 
-### JOIN - Client Join
+## JOIN - Client Join
 
 **Description**: A `JOIN` message is the first message a client should send to the server. It indicates to the server that it wants to connect.
 A `JOIN` message can be acknowledged by an `ACPT` message, meaning the client is now connected to the server and will receive future data. 
@@ -54,7 +54,7 @@ The server can also respond to the request by a `KICK` message that indicates th
 
 The `name` argument is a NUL-terminated string, whose length cannot exceed 100(+1) chars.
 
-### KATC - Keep Alive
+## KATC - Keep Alive
 
 **Description**: Keep-alive message to tell the server the client is still there and listening for any response. Indeed, the server can close the connection if the client do not send any message for 20s. No response is expected.
 
@@ -62,7 +62,7 @@ The `name` argument is a NUL-terminated string, whose length cannot exceed 100(+
 
 No argument is provided.
 
-### PING - ping
+## PING - ping
 
 **Description**: A message to calculate the ping between client and server. This packet is special as it is handled once it is received and not at the end of the server tick. A `PONG` message is expected to be sent back with the same data.
 
@@ -70,7 +70,7 @@ No argument is provided.
 
 * `data`: 8 byte-long data, to identify uniquely the exchange.
 
-### QUIT - Client Quit
+## QUIT - Client Quit
 
 **Description**: A `QUIT` message is the last message a client should send to a server, it indicates that the client is disconnecting from the server and that it will closes its connection. A `QUIT` message is generally acknowledged by a `QUIT` message from the server. It is not necessary to await it.
 
@@ -78,7 +78,7 @@ No argument is provided.
 
 No argument is provided.
 
-### Move - Player Move
+## MOVE - Player Move
 
 **Description**: A `MOVE` message announces the player change in absolute coordinates (and angle).
 
@@ -92,7 +92,7 @@ Example: Player is in (x: 4.567, y: -128.140, z: 47.000, a: 97.000), the argumen
 
 **Len:** 32 bytes
 
-### Chat - Player Chat
+## CHAT - Player Chat
 
 **Description**: Send a message in the chat
 
@@ -100,9 +100,9 @@ Example: Player is in (x: 4.567, y: -128.140, z: 47.000, a: 97.000), the argumen
 * `msg` (cstring), the chat message as a NUL-terminated string.
 
 
-## Server->Client Messages
+# Server->Client Messages
 
-### ACPT - Accept Player
+## ACPT - Accept Player
 
 **Description**: An `ACPT` message sent as a reply to a `JOIN` request. The client is now considered part of the players on the server, and should expect more exchanges.
 
@@ -110,7 +110,7 @@ Example: Player is in (x: 4.567, y: -128.140, z: 47.000, a: 97.000), the argumen
 
 * `player-id`, a 8 byte-long unique identifier for a player. It will be used as a reference for all other messages.
 
-### JOIN - Player Join
+## JOIN - Player Join
 
 **Description**: A `JOIN` message is sent to all players currently on the server when a new player is joining the game.
 
@@ -122,7 +122,7 @@ Example: Player is in (x: 4.567, y: -128.140, z: 47.000, a: 97.000), the argumen
 
 The `name` argument is a NUL-terminated string, whose length cannot exceed 100(+1) chars.
 
-### KICK - Kick Player
+## KICK - Kick Player
 
 **Description**: A `KICK` message is a (spontaneous or not) message that indicates that the server do not want to continue the connection with the client.
 The player, if they were part of the game, is now forced to leave.
@@ -133,7 +133,7 @@ The player, if they were part of the game, is now forced to leave.
 
 The `reason` argument is a NUL-terminated string, whose length cannot exceed 255(+1) chars.
 
-### Pong - pong
+## PONG - pong
 
 **Description**: A message to calculate the ping between client and server, it is a response to a `PING` message.
 
@@ -141,7 +141,7 @@ The `reason` argument is a NUL-terminated string, whose length cannot exceed 255
 
 * `data`: 8 byte-long data, the data of the `PING` request.
 
-### QUIT - Player Quit
+## QUIT - Player Quit
 
 **Description**: A `QUIT` message is sent to all players currently on the server when a player is quitting the game.
 
@@ -149,7 +149,7 @@ The `reason` argument is a NUL-terminated string, whose length cannot exceed 255
 
 * `player-id`, the 8 byte-long unique identifier of the player.
 
-### MOVE - Player Move
+## MOVE - Player Move
 
 **Description**: Indicate the move of a player
 
@@ -161,7 +161,7 @@ The `reason` argument is a NUL-terminated string, whose length cannot exceed 255
 * Z coordinate - double as a int64, expressed in mm (premultiplied by 1000)
 * Angle - double as a int64, expressed in mm (premultiplied by 1000)
 
-### Chat - Player Chat
+## CHAT - Player Chat
 
 **Description**: A player sent a message in the chat
 
@@ -169,7 +169,7 @@ The `reason` argument is a NUL-terminated string, whose length cannot exceed 255
 * `player-id`, the 8 byte-long unique identifier of the player.
 * `msg` (cstring), the chat message as a NUL-terminated string.
 
-### Tell - Server Chat
+## TELL - Server Chat
 
 **Description**: The server sent a message in the chat
 
@@ -179,7 +179,7 @@ The `reason` argument is a NUL-terminated string, whose length cannot exceed 255
 * * 0x02: is_title -> is this chat a title message?
 * `msg` (cstring), the chat message as a NUL-terminated string.
 
-## Scor - Scoreboard Update
+## SCOR - Scoreboard Update
 
 **Description**: The scoreboard has been updated
 
@@ -244,7 +244,7 @@ The `reason` argument is a NUL-terminated string, whose length cannot exceed 255
 **Args:**:
 * `lift_id` (uint64): unique index of the lift ascending/descending
 
-# DOST / L_ST - Door States / Lift States
+## DOST / L_ST - Door States / Lift States
 
 **Description:** States of all doors/lifts (generally sent at join)
 

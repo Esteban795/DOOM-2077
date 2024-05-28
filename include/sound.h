@@ -21,7 +21,8 @@
 #define CHAINGUN_SOUND "DCHAINGN"
 
 #define FOOTSTEP_SOUND "DFTSTEP"
-// https://doomwiki.org/wiki/Sound
+
+/// Ref: https://doomwiki.org/wiki/Sound
 
 struct Sound {
     char* name;

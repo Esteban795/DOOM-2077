@@ -1,8 +1,19 @@
-# Event System
+\page event Event System
 
 | Date of creation | Latest edit      | Version | Status (adopted?) |
 |------------------|------------------|---------|-------------------|
-| 27/04/2024       | 24/05/2024       | beta   | Experimental      |
+| 27/04/2024       | 28/05/2024       | 1.0     | Release           |
+
+# Introduction
+
+This set uses events to perform actions and modify the states of ECS components. Most of these events are also retransmitted over the
+network to be synchronized between clients.
+
+An event generally exists in a server and a client form, which may not contain the same elements, but one is usually
+materialized by the other after synchronization.
+An event is generally linked to a particular command found in \ref network.
+
+# Implemented events
 
 ## Global events
 

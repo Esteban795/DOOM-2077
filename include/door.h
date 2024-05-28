@@ -11,22 +11,25 @@
 
 #define MINIMUM_FLOOR_HEIGHT -512
 
-// By default, P1 / PR and W1 / WR will still be activated in deathmatch 
-// OWC = open wait close
-// OSO = open stay open
-// CSC = close stay closed
-// CWO = close wait open
-// S = slow
-// F = fast
-// SR = switchable, retriggerable
-// S1 = switchable, non-retriggerable
-// WR = walkover, retriggerable
-// W1 = walkover, non-retriggerable
-// GR = gun, retriggerable
-// G1 = gun, non-retriggerable
-// PR = pushed, retriggerable
-// P1 = pushed, non-retriggerable
-// DR = door with key
+/// WAD Door Types  
+/// By default, P1 / PR and W1 / WR will still be activated in deathmatch  
+///
+/// What the abbreviations mean:  
+/// OWC = open wait close  
+/// OSO = open stay open  
+/// CSC = close stay closed  
+/// CWO = close wait open  
+/// S = slow  
+/// F = fast  
+/// SR = switchable, retriggerable  
+/// S1 = switchable, non-retriggerable  
+/// WR = walkover, retriggerable  
+/// W1 = walkover, non-retriggerable  
+/// GR = gun, retriggerable  
+/// G1 = gun, non-retriggerable  
+/// PR = pushed, retriggerable  
+/// P1 = pushed, non-retriggerable  
+/// DR = door with key
 enum DoorTypes {
   CSC_SR_S = 42,
   CSC_SR_F = 116,
@@ -73,26 +76,35 @@ enum DoorTransitionSpeed { // percentage of total height achieved per second
     TURBO = 3,
 };
 
-enum DoorFunction { //how the door behaves
+/// Describes how the door behaves
+enum DoorFunction {
     OPEN_WAIT_CLOSE,
     OPEN_STAY_OPEN,
     CLOSE_STAY_CLOSED,
     CLOSE_WAIT_OPEN
 };
 
+/// Describes the state of an in-game door
 struct Door {
-    uint64_t id; // used by ECS
+    /// The corresponding entity_id of the door in the ECS.  
+    /// This is only used by the server.
+    uint64_t id;
     enum DoorTransitionSpeed speed;
     enum DoorFunction function;
-    int wait_time; // wait time until the door switches to the next state
-    int time_elapsed; // time elapsed since the door switched to this state
-    bool state; // 0 = closed, 1 = open
-    bool init_state; // 0 = closed, 1 = open
+    /// wait time until the door switches to the next state
+    int wait_time;
+    /// time elapsed since the door switched to this state
+    int time_elapsed; 
+    /// 0 = closed, 1 = open
+    bool state; 
+    /// 0 = closed, 1 = open
+    bool init_state; 
     bool is_switching;
     int high_height;
     int low_height;
     sector* sector;
-    struct Door* next_door; // ONLY USED BY LINEDEFS TO STORE SEVERAL DOORS IF THEY CAN ACTIVATE MU
+    /// ONLY USED BY LINEDEFS TO STORE SEVERAL DOORS IF THEY CAN ACTIVATE MULTIPLE DOORS
+    struct Door* next_door; 
 };
 
 typedef struct Door door;

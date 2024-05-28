@@ -21,10 +21,13 @@
 #define MAX_CLIENTS PLAYER_MAXIMUM
 #endif
 
-// 60 ticks per second
+/// Server tick-rate in ms  
+/// Set to 60 ticks per second
 #define SERVER_TICK_MS 16 
 
+/// Set an instant to the current time/date.
 #define INSTANT_NOW(t) clock_gettime(CLOCK_MONOTONIC, t)
+/// Get the difference in milliseconds between two instants.
 #define INSTANT_DIFF_MS(a, b) ((a.tv_sec - b.tv_sec) * 1000 + (a.tv_nsec - b.tv_nsec) / 1000000)
 
 typedef struct timespec Instant;
@@ -46,33 +49,39 @@ typedef enum {
 } game_state_t;
 
 // The server state
+/// @brief Represents the state of the server.
 typedef struct {
-    // The world ECS
+    /// @brief The server ECS world.
     world_t world;
-    // The server socket
+    /// @brief The server socket.
     UDPsocket sock;
-    // Connection sockets to clients
+    /// @brief The player list.
     tracked_connection_t conns[MAX_CLIENTS];
     int conn_count;
-    // The last tick time
+    /// @brief The last tick time executed.
     Instant last_tick;
-    // The incoming and outgoing packets
+    /// @brief The incoming packet, to reuse.
     UDPpacket* incoming;
+    /// @brief The outgoing packet, to reuse.
     UDPpacket* outgoing;
-    // The WAD data & map name
+    /// @brief The WAD data loaded.
     wad_data* wad_data;
+    /// @brief The current loaded map's name.
     char* map_name;
     // The task executor
     task_executor_t task_executor;
     // The game state
     game_state_t game_state;
     // Door-mappings and lift-mappings
+    /// @brief The entities representing the doors.
     entity_t** doors;
     int door_count;
+    /// @brief The entities representing the lifts.
     entity_t** lifts;
     int lift_count;
 } server_state_t;
 
+/// @brief Server state handle.
 #define SERVER_STATE (&server_state)
 extern server_state_t server_state;
 

@@ -6,9 +6,9 @@
 
 extern const system_t BROADCAST_EVENT_SYSTEM;
 
-/*
-* Generally the last system in the chain, the broadcast_event_system will broadcast the event to all the clients.
-* This system is intented to be used on the server side.
+/**
+* Generally the last system in the chain, the broadcast_event_system will broadcast the event to all the clients.  
+* \note This system is intented to be used on the server side.
 */
 int broadcast_event(world_t* world, event_t* event);
 

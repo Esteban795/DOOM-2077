@@ -4,7 +4,7 @@
 #include "byte_reader.h"
 #include <stdio.h>
 
-// https://doom.fandom.com/wiki/WAD
+/// Ref: https://doom.fandom.com/wiki/WAD
 
 struct Header {
   char *wad_type;

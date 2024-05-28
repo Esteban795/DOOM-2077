@@ -19,7 +19,7 @@ engine *init_engine(const char *wadPath, SDL_Renderer *renderer);
 
 int update_engine(engine *e, int dt);
 
-// reads `map_name` from the wad file and initializes the wadData properly
+/// reads `map_name` from the wad file and initializes the wadData properly
 void read_map(engine *e, char *map_name);
 
 /// Reset the engine to its initial state, freeing all resources and reinitializing
