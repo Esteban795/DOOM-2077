@@ -2,7 +2,7 @@
 
 | Date of creation | Latest edit      | Version | Status (adopted?) |
 |------------------|------------------|---------|-------------------|
-| 07/03/2024       | 25/05/2024       | RC1     | Release Candidate |
+| 07/03/2024       | 28/05/2024       | 1.0     | Release           |
 
 
 # Introduction
