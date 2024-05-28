@@ -8,9 +8,8 @@
 
 * [x] 0x0001 - PlayerJoinEvent {CS} - a player has joined the party
 * [x] 0x0002 - PlayerQuitEvent {CS} - a player has quitted the party
-* [ ] 0x0003 - GameStartCooldownEvent {CS} - start the cooldown before the party actually starts
-* [ ] 0x0004 - GameStartEvent {CS} - start the party
-* [ ] 0x0005 - GameEndEvent {CS} - end the party
+* [x] 0x0003 - GameStartsInEvent {S} - the game will begin in XXs (0 -> game launches)
+* [x] 0x0004 - GameEndsInEvent {S} - the game will ends in XXs (0 -> game stops)
 
 ## Player-specific events
 

@@ -433,19 +433,23 @@ int remote_update(engine *e, remote_server_t *r) {
 
   // Send the player data for the current frame
   static double x, y, z, angle = 0.0;
+  health_ct *hth = player_get_health(e->p);
   position_ct *pos = player_get_position(e->p);
   if (x == pos->x && y == pos->y && z == pos->z && angle == pos->angle) {
     return 0;
   }
-  int len =
-      client_move(r->packet->data, position_get_x(pos), position_get_y(pos),
-                  position_get_z(pos), position_get_angle(pos));
-  r->packet->len = len;
-  r->packet->address.host = r->addr.host;
-  r->packet->address.port = r->addr.port;
-  if (SDLNet_UDP_Send(r->socket, -1, r->packet) == 0) {
-    fprintf(stderr, "SDLNet_UDP_Send: move command: %s\n", SDLNet_GetError());
-    return -1;
+  if (hth != NULL && health_get(hth) > 0) {
+    // If alive, send the move the server
+    int len =
+        client_move(r->packet->data, position_get_x(pos), position_get_y(pos),
+                    position_get_z(pos), position_get_angle(pos));
+    r->packet->len = len;
+    r->packet->address.host = r->addr.host;
+    r->packet->address.port = r->addr.port;
+    if (SDLNet_UDP_Send(r->socket, -1, r->packet) == 0) {
+      fprintf(stderr, "SDLNet_UDP_Send: move command: %s\n", SDLNet_GetError());
+      return -1;
+    }
   }
 
   x = pos->x;
