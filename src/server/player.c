@@ -1,7 +1,7 @@
 #include <stdio.h>
 
 #include "../../include/server/player.h"
-#include "../../include/server/state.h"
+#include "../../include/spawnpoints.h"
 
 //TODO : Use the same constants as the client
 #define SERVER_WEAPON_NUMBER 2 
@@ -16,12 +16,10 @@ entity_t* server_create_player(world_t* world, char* name) {
         ammo[i] = 10;
         mags[i] = 10;
     }
-    double xi = SERVER_STATE->wad_data->things[0].x;
-    double yi = SERVER_STATE->wad_data->things[0].y;
-    double anglei = SERVER_STATE->wad_data->things[0].angle;
-    double coords[3] = {xi, yi, SERVER_PLAYER_HEIGHT};
+    
+    double coords[3] = {SPAWNPOINTS[0].x, SPAWNPOINTS[0].y, SPAWNPOINTS[0].z};
     component_t** comps = malloc(sizeof(component_t*) * 5);
-    comps[0] = position_create(coords, anglei);
+    comps[0] = position_create(coords, SPAWNPOINTS[0].angle);
     comps[1] = health_create(100.0, 100.0);
     comps[2] = weapon_create(ammo,mags);
     comps[3] = display_name_create(name);

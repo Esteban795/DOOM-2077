@@ -29,6 +29,8 @@ extern const char *SERVER_COMMAND_DOST;
 extern const char *SERVER_COMMAND_LASC;
 extern const char *SERVER_COMMAND_LDSC;
 extern const char *SERVER_COMMAND_L_ST;
+extern const char *SERVER_COMMAND_GSTA;
+extern const char *SERVER_COMMAND_GEND;
 extern const char *SERVER_COMMAND_FIRE;
 extern const char *SERVER_COMMAND_WEAP;
 
@@ -51,7 +53,9 @@ int server_door_close(uint8_t *buf, uint64_t door_id);
 int server_door_states(uint8_t *buf, uint16_t doors_count, bool *doors_states);
 int server_lift_ascend(uint8_t *buf, uint64_t lift_id);
 int server_lift_descend(uint8_t *buf, uint64_t lift_id);
-int server_lift_states(uint8_t *buf, uint16_t lifts_count, bool *lifts_states);
+int server_lift_states(uint8_t *buf, uint16_t lifts_count, bool* lifts_states);
+int server_game_start(uint8_t *buf, int16_t countdown);
+int server_game_end(uint8_t *buf, int16_t countdown);
 int server_player_fire(uint8_t *buf, uint64_t player_id, int8_t weapon_id);
 int server_player_weapon_update(uint8_t *buf, int ammunitions[WEAPONS_NUMBER], int mags[WEAPONS_NUMBER], int cooldowns[WEAPONS_NUMBER]);
 
@@ -74,7 +78,9 @@ int server_door_close_from(uint8_t *buf, uint64_t *door_id);
 int server_door_states_from(uint8_t *buf, uint16_t *doors_count, bool **doors_states);
 int server_lift_ascend_from(uint8_t *buf, uint64_t *lift_id);
 int server_lift_descend_from(uint8_t *buf, uint64_t *lift_id);
-int server_lift_states_from(uint8_t *buf, uint16_t *lifts_count, bool **lifts_states);
+int server_lift_states_from(uint8_t *buf, uint16_t *lifts_count, bool** lifts_states);
+int server_game_start_from(uint8_t *buf, int16_t *countdown);
+int server_game_end_from(uint8_t *buf, int16_t *countdown);
 int server_player_fire_from(uint8_t *buf, uint64_t *player_id, int8_t *weapon_id);
 int server_player_weapon_update_from(uint8_t *buf, int *ammunitions, int *mags, int *cooldowns);
 #endif

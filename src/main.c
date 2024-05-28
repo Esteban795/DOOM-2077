@@ -58,7 +58,7 @@ int main() {
   // Connection might happen later, if the user decides to join a server.
   e->remote->connected = -1;
   e->remote->player_id = 0;
-  read_map(e, "E1M3");
+  read_map(e, "MAP01");
   SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
 
   for (int i = 1; i < WEAPONS_NUMBER; i++) {
