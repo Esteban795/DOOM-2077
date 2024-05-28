@@ -68,8 +68,8 @@ int apply_event(world_t* world, event_t* event) {
             if (pos == NULL) return -1; // If the player does not have a position, we cannot apply the event, cancel it.
             if (health != NULL && health_get(health) <= 0) {
                 // Cancel the event if the player is dead.
-                player_move_event_t* new_move_ev = ServerPlayerMoveEvent_new(player_move_event->entity_id, pos->x, pos->y, pos->z, pos->angle);
-                world_queue_event(world, (event_t*) new_move_ev);
+                // player_move_event_t* new_move_ev = ServerPlayerMoveEvent_new(player_move_event->entity_id, pos->x, pos->y, pos->z, pos->angle);
+                // world_queue_event(world, (event_t*) new_move_ev);
                 return -1;
             }
             pos->x = player_move_event->x;

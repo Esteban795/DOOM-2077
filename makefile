@@ -13,7 +13,7 @@ CC = gcc
 CFLAGS = -Wall -Wextra -Wvla -std=gnu17 -pedantic
 CFLAGS += -fsanitize=address,undefined -fno-omit-frame-pointer
 LDFLAGS = -lm 
-CDEBUG = -g -O3 -D 'SERVER_ADDR="127.0.0.1"' -D SERVER_PORT=9999
+CDEBUG = -g -O3 -D 'SERVER_ADDR="0.0.0.0"' -D SERVER_PORT=9999
 # END OF CONFIGURABLE PARAMETERS  #
 
 ALL_CFLAGS = $(CFLAGS) $(shell pkg-config --cflags sdl2 jansson) $(CDEBUG)
