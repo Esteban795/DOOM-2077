@@ -100,3 +100,8 @@ double get_angular_distance(double origin_x, double origin_y, double origin_angl
   }
   return delta_theta;
 }
+
+
+int rem(int a, int b) {
+    return a - (a / b) * b;
+}

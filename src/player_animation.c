@@ -1,4 +1,5 @@
 #include "../include/player_animation.h"
+#include <stdio.h>
 
 char ANIMATION_NAME[9] = {'P','L','A','Y','A','1','A','1','\0'};
 int CURRENT_ANIMATION_PROGRESS[NUM_PLAYERS] = {0};
@@ -21,7 +22,7 @@ int get_sprite_orientation(vec2 origin_pos,double origin_angle, vec2 pos,double 
     }
     angle_diff = (angle_diff / 360) + 0.5;
     double direction = 8 * angle_diff + 0.5;
-    int orientation = (int)direction % 8;
+    int orientation = rem((int)direction,8);
     return orientation + 1;
 }
 
