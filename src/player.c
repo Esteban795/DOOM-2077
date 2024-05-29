@@ -39,6 +39,7 @@
 bool SHOULD_COLLIDE = true;
 bool ALLOWED_TO_TURN = true;
 int INTERACT_CD = 0;
+int TIME_SPENT_IN_AIR = 0;
 
 player *player_init(engine *e) {
   player *p = malloc(sizeof(player));
@@ -577,20 +578,26 @@ void process_keys(player *p) {
 }
 
 void update_height(player *p) {
+  
   position_ct *pos = player_get_position(p);
+  
   i16 subsector_id = get_subsector_id_from_pos(
       p->engine->wData->len_nodes - 1, p->engine->wData->nodes,
       (vec2){.x = position_get_x(pos), .y = position_get_y(pos)});
   subsector subsector = p->engine->wData->subsectors[subsector_id];
   segment seg = subsector.segs[0];
-  double floor_height = seg.front_sector->floor_height;
+  double floor_height = (double)seg.front_sector->floor_height;
 
-  double target_height = floor_height + PLAYER_HEIGHT;
-  pos->z = target_height;
-
-  // double grav_height =
-  //     p->height - G * 10e-2 / 2.0 * p->engine->DT * p->engine->DT / 2;
-  // p->height = fmax(grav_height, target_height);
+  if (floor_height + PLAYER_HEIGHT < pos->z) {
+    TIME_SPENT_IN_AIR += p->engine->DT;
+    double grav_height = pos->z - G * 10e-3 * TIME_SPENT_IN_AIR  / 2;
+    double target_height = floor_height + PLAYER_HEIGHT;
+    pos->z = fmax(grav_height, target_height);
+    p->height =pos->z;
+  } else {
+    TIME_SPENT_IN_AIR = 0;
+    pos->z = floor_height + PLAYER_HEIGHT;
+  }
 }
 
 void update_player(player *p) {
