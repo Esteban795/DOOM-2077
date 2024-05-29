@@ -590,7 +590,7 @@ void update_height(player *p) {
 
   if (floor_height + PLAYER_HEIGHT < pos->z) {
     TIME_SPENT_IN_AIR += p->engine->DT;
-    double grav_height = pos->z - G * 10e-3 * TIME_SPENT_IN_AIR  / 2;
+    double grav_height = pos->z - G * 10e-3 * TIME_SPENT_IN_AIR / 5;
     double target_height = floor_height + PLAYER_HEIGHT;
     pos->z = fmax(grav_height, target_height);
     p->height =pos->z;
