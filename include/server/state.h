@@ -4,7 +4,7 @@
 #include "../ecs/world.h"
 #include "../net/tracked_connection.h"
 #include "../settings.h"
-#include "../wad_data.h"
+#include "../WAD/wad_data.h"
 #include "task.h"
 
 #ifndef _LIB_SDL_NET_H

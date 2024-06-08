@@ -6,7 +6,7 @@
 #include <SDL2/SDL_ttf.h>
 #include <stdbool.h>
 
-#include "../events.h"
+#include "../core/events.h"
 #include "../settings.h"
 
 // represents where the UI element sits compared to its positioning values

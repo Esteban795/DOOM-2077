@@ -6,7 +6,7 @@
 #include "../../../include/ecs/world.h"
 #include "../../../include/component/health.h"
 #include "../../../include/ui/linker.h"
-#include "../../../include/player.h"
+#include "../../../include/core/player.h"
 #include "../../../include/shared.h"
 
 const system_t APPLY_EVENT_SYSTEM = {

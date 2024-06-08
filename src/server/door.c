@@ -1,8 +1,7 @@
 #include "../../include/server/door.h"
-#include "../../include/linedef.h"
-#include "../../include/door.h"
-#include "../../include/lift.h"
-#include "../../include/collection/vec.h"
+#include "../../include/WAD/linedef.h"
+#include "../../include/core/door.h"
+#include "../../include/core/lift.h"
 
 entity_t** server_world_load_doors(world_t* world, wad_data* wad, int* door_count) {
     door** doors = get_doors(wad->linedefs, wad->len_linedefs, door_count, wad->sectors, wad->len_sectors);

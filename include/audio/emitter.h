@@ -1,12 +1,12 @@
 #ifndef AUDIO_EMITTER_H
 #define AUDIO_EMITTER_H
 
-#include "../sound.h"
+#include "../WAD/sound.h"
 
 #include "SDL2/SDL_mixer.h"
 #include <math.h>
-#include <stdlib.h>
 #include <stdbool.h>
+#include <stdlib.h>
 
 typedef struct _AudioEmitter {
   int uid;

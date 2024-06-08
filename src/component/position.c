@@ -2,7 +2,7 @@
 
 #include "../../include/component/position.h"
 #include "../../include/ecs/component.h"
-#include "../../include/vec2.h"
+#include "../../include/util/vec2.h"
 
 const int COMPONENT_TAG_POSITION = 2;
 

@@ -24,7 +24,7 @@
 #include "../include/ecs/world.h"
 #include "../include/event/all.h"
 #include "../include/system/server/active.h"
-#include "../include/wad_data.h"
+#include "../include/WAD/wad_data.h"
 #include "../include/server/door.h"
 
 // Interrupt signal handler

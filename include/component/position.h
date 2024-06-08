@@ -2,7 +2,7 @@
 #define _LIB_DOOM_COMPONENT_POSITION_H
 
 #include "../ecs/component.h"
-#include "../vec2.h"
+#include "../util/vec2.h"
 #include <stdbool.h>
 
 #define WALK_SOUND_COOLDOWN 400
@@ -16,7 +16,7 @@ extern const int COMPONENT_TAG_POSITION;
  * well as the angle of the entity.
  */
 typedef struct {
-  /// The tag of the component  
+  /// The tag of the component
   /// This should be COMPONENT_TAG_POSITION
   int tag;
   /// The x coordinate of the entity
@@ -37,7 +37,8 @@ typedef struct {
   double last_angle;
   /// A flag indicating if the position was updated recently.
   bool was_updated;
-  /// The time in milliseconds that must pass before the entity can play a walking sound again.
+  /// The time in milliseconds that must pass before the entity can play a
+  /// walking sound again.
   int walk_cooldown;
 } position_ct;
 
@@ -135,16 +136,16 @@ inline bool position_has_moved(position_ct *component) {
 
 /// Get the walk cooldown of the entity.
 ///
-/// The walk cooldown is the time in milliseconds that must pass before the entity
-/// can play a walking sound again.
+/// The walk cooldown is the time in milliseconds that must pass before the
+/// entity can play a walking sound again.
 inline int position_get_walk_cooldown(position_ct *component) {
   return component->walk_cooldown;
 }
 
 /// Set the walk cooldown of the entity.
 ///
-/// The walk cooldown is the time in milliseconds that must pass before the entity
-/// can play a walking sound again.
+/// The walk cooldown is the time in milliseconds that must pass before the
+/// entity can play a walking sound again.
 inline int position_set_walk_cooldown(position_ct *component, int cooldown) {
   component->walk_cooldown = cooldown;
   return cooldown;

@@ -4,22 +4,17 @@
 #include <stdlib.h>
 #include <time.h>
 
+#include "../include/component/animation.h"
 #include "../include/component/display_name.h"
 #include "../include/component/health.h"
 #include "../include/component/position.h"
+#include "../include/component/subsector_id.h"
 #include "../include/component/weapon.h"
-#include "../include/component/animation.h"
-#include "../include/engine.h"
+#include "../include/core/engine.h"
+#include "../include/core/player.h"
+#include "../include/net//util.h"
 #include "../include/net/packet/client.h"
 #include "../include/net/packet/server.h"
-#include "../include/net/util.h"
-#include "../include/player.h"
-#include "../include/component/position.h"
-#include "../include/component/health.h"
-#include "../include/component/weapon.h"
-#include "../include/component/display_name.h"
-#include "../include/component/subsector_id.h"
-#include "../include/engine.h"
 
 #include "../include/remote.h"
 #include "../include/settings.h"
@@ -51,7 +46,8 @@
 
 typedef struct timespec Instant;
 
-int remote_init(remote_server_t *server, char *addr, int port, char* player_name) {
+int remote_init(remote_server_t *server, char *addr, int port,
+                char *player_name) {
   if (strncat(addr, "", 1) == 0) {
     fprintf(stderr,
             "WARN: No SERVER_ADDR found! No connection will be initiated!\n");
@@ -118,8 +114,10 @@ void remote_disconnect(remote_server_t *r) {
 }
 
 void remote_destroy(remote_server_t *r) {
-  if (r->packet != NULL) SDLNet_FreePacket(r->packet);
-  if (r->socket != NULL) SDLNet_UDP_Close(r->socket);
+  if (r->packet != NULL)
+    SDLNet_FreePacket(r->packet);
+  if (r->socket != NULL)
+    SDLNet_UDP_Close(r->socket);
   r->socket = NULL;
   r->packet = NULL;
   free(r);
@@ -223,9 +221,11 @@ int remote_update(engine *e, remote_server_t *r) {
           component_t **comps = malloc(sizeof(component_t *) * 6);
           comps[0] = position_create(coords, 180.0);
           comps[1] = health_create(100.0, 100.0);
-          comps[2] = weapon_create(ammo,mags);
+          comps[2] = weapon_create(ammo, mags);
           comps[3] = display_name_create(player_name);
-          i16 player_subsector_id = get_subsector_id_from_pos(e->wData->len_nodes - 1, e->wData->nodes, (vec2){.x = 0.0, .y = 0.0});
+          i16 player_subsector_id = get_subsector_id_from_pos(
+              e->wData->len_nodes - 1, e->wData->nodes,
+              (vec2){.x = 0.0, .y = 0.0});
           comps[4] = subsector_id_create(player_subsector_id);
           comps[5] = animation_create(PLAYER_IDLE);
           entity_t *entity = world_insert_entity(e->world, player_id, comps, 6);
@@ -301,7 +301,8 @@ int remote_update(engine *e, remote_server_t *r) {
         uint16_t *deaths = NULL;
         uint16_t *kills = NULL;
         uint16_t entry_count;
-        server_scoreboard_update_from(sdata+offset, &entry_count, &names, &deaths, &kills);
+        server_scoreboard_update_from(sdata + offset, &entry_count, &names,
+                                      &deaths, &kills);
         event_t *event = (event_t *)ClientScoreboardUpdateEvent_new(
             entry_count, names, deaths, kills);
         world_queue_event(e->world, event);
@@ -329,16 +330,17 @@ int remote_update(engine *e, remote_server_t *r) {
       } else if (strncmp(cmd, SERVER_COMMAND_KILL, 4) == 0) {
         uint64_t player_id, src_player_id;
         int8_t weapon_id;
-        server_player_kill_from(sdata + offset, &player_id, &src_player_id, &weapon_id);
-        event_t *event =
-            (event_t *)ClientPlayerKillEvent_new(player_id, src_player_id, weapon_id);
+        server_player_kill_from(sdata + offset, &player_id, &src_player_id,
+                                &weapon_id);
+        event_t *event = (event_t *)ClientPlayerKillEvent_new(
+            player_id, src_player_id, weapon_id);
         world_queue_event(e->world, event);
       } else if (strncmp(cmd, SERVER_COMMAND_DAMG, 4) == 0) {
         uint64_t player_id, src_player_id;
         int8_t weapon_id;
         float damage;
-        server_player_damage_from(sdata + offset, &player_id, &src_player_id, &weapon_id,
-                                  &damage);
+        server_player_damage_from(sdata + offset, &player_id, &src_player_id,
+                                  &weapon_id, &damage);
         event_t *event = (event_t *)ClientPlayerDamageEvent_new(
             player_id, src_player_id, weapon_id, damage);
         world_queue_event(e->world, event);
@@ -375,7 +377,7 @@ int remote_update(engine *e, remote_server_t *r) {
       } else if (strncmp(cmd, SERVER_COMMAND_OPEN, 4) == 0) {
         uint64_t door_id;
         server_door_open_from(sdata + offset, &door_id);
-        if ((int) door_id < e->num_doors && e->doors[door_id]->state == false) {
+        if ((int)door_id < e->num_doors && e->doors[door_id]->state == false) {
           door_trigger_switch(e->doors[door_id]);
         }
         event_t *event = (event_t *)ClientDoorOpenEvent_new(door_id, false);
@@ -383,7 +385,7 @@ int remote_update(engine *e, remote_server_t *r) {
       } else if (strncmp(cmd, SERVER_COMMAND_CLOS, 4) == 0) {
         uint64_t door_id;
         server_door_close_from(sdata + offset, &door_id);
-        if ((int) door_id < e->num_doors && e->doors[door_id]->state == true) {
+        if ((int)door_id < e->num_doors && e->doors[door_id]->state == true) {
           door_trigger_switch(e->doors[door_id]);
         }
         event_t *event = (event_t *)ClientDoorCloseEvent_new(door_id, false);
@@ -391,7 +393,7 @@ int remote_update(engine *e, remote_server_t *r) {
       } else if (strncmp(cmd, SERVER_COMMAND_LASC, 4) == 0) {
         uint64_t lift_id;
         server_lift_ascend_from(sdata + offset, &lift_id);
-        if ((int) lift_id < e->len_lifts && e->lifts[lift_id]->state == false) {
+        if ((int)lift_id < e->len_lifts && e->lifts[lift_id]->state == false) {
           lift_trigger_switch(e->lifts[lift_id]);
         }
         event_t *event = (event_t *)ClientDoorOpenEvent_new(lift_id, true);
@@ -399,7 +401,7 @@ int remote_update(engine *e, remote_server_t *r) {
       } else if (strncmp(cmd, SERVER_COMMAND_LDSC, 4) == 0) {
         uint64_t lift_id;
         server_lift_descend_from(sdata + offset, &lift_id);
-        if ((int) lift_id < e->len_lifts && e->lifts[lift_id]->state == true) {
+        if ((int)lift_id < e->len_lifts && e->lifts[lift_id]->state == true) {
           lift_trigger_switch(e->lifts[lift_id]);
         }
         event_t *event = (event_t *)ClientDoorCloseEvent_new(lift_id, true);
@@ -408,14 +410,18 @@ int remote_update(engine *e, remote_server_t *r) {
         uint64_t player_id;
         int8_t weapon_id;
         server_player_fire_from(sdata + offset, &player_id, &weapon_id);
-        event_t *event = (event_t *)ClientPlayerFireEvent_new(player_id, weapon_id);
+        event_t *event =
+            (event_t *)ClientPlayerFireEvent_new(player_id, weapon_id);
         world_queue_event(e->world, event);
       } else if (strncmp(cmd, SERVER_COMMAND_WEAP, 4) == 0) {
         int ammunitions[WEAPONS_NUMBER];
         int magazines[WEAPONS_NUMBER];
         int cooldowns[WEAPONS_NUMBER];
-        server_player_weapon_update_from(sdata + offset, (int*)ammunitions, (int*)magazines, (int*)cooldowns);
-        event_t *event = (event_t *)ClientPlayerWeaponUpdateEvent_new(e->p->entity->id, (int*)ammunitions, (int*)magazines, (int*)cooldowns);
+        server_player_weapon_update_from(sdata + offset, (int *)ammunitions,
+                                         (int *)magazines, (int *)cooldowns);
+        event_t *event = (event_t *)ClientPlayerWeaponUpdateEvent_new(
+            e->p->entity->id, (int *)ammunitions, (int *)magazines,
+            (int *)cooldowns);
         world_queue_event(e->world, event);
       } else {
         printf("Unknown command: %s\n", cmd);
@@ -500,10 +506,10 @@ void client_lift_trigger(engine *e, uint64_t lift_id) {
   }
 }
 
-void remote_send_chat(engine* e, char *message) {
+void remote_send_chat(engine *e, char *message) {
   remote_server_t *r = e->remote;
   if (r->connected < 2) {
-    event_t* ev = (event_t*) ClientPlayerChatEvent_new(0, message);
+    event_t *ev = (event_t *)ClientPlayerChatEvent_new(0, message);
     world_queue_event(e->world, ev);
     return;
   }
@@ -517,11 +523,12 @@ void remote_send_chat(engine* e, char *message) {
   }
 }
 
-void remote_fire_bullet(engine* e, uint8_t weapon_id) {
+void remote_fire_bullet(engine *e, uint8_t weapon_id) {
   remote_server_t *r = e->remote;
 
-  player_fire_event_t* ev = (player_fire_event_t*)ClientPlayerFireEvent_new(e->p->entity->id, weapon_id);
-  world_queue_event(e->world, (event_t*)ev);
+  player_fire_event_t *ev = (player_fire_event_t *)ClientPlayerFireEvent_new(
+      e->p->entity->id, weapon_id);
+  world_queue_event(e->world, (event_t *)ev);
 
   if (r->connected < 2) {
     return;
@@ -536,10 +543,12 @@ void remote_fire_bullet(engine* e, uint8_t weapon_id) {
   }
 }
 
-void remote_damage_player(engine* e, uint64_t player_id, int8_t weapon_id, float damage) {
+void remote_damage_player(engine *e, uint64_t player_id, int8_t weapon_id,
+                          float damage) {
   remote_server_t *r = e->remote;
   if (r->connected < 2) {
-    event_t* ev = (event_t*) ClientPlayerDamageEvent_new(player_id, e->p->entity->id, weapon_id, damage);
+    event_t *ev = (event_t *)ClientPlayerDamageEvent_new(
+        player_id, e->p->entity->id, weapon_id, damage);
     world_queue_event(e->world, ev);
     return;
   }
