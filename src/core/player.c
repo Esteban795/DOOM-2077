@@ -45,11 +45,11 @@ player *player_init(engine *e) {
   player *p = malloc(sizeof(player));
   int ammo[WEAPONS_NUMBER];
   int mags[WEAPONS_NUMBER];
-  ammo[0] = -2;
+  ammo[0] = 0;
   mags[0] = 0;
   for (int i = 1; i < WEAPONS_NUMBER; i++) {
     ammo[i] = 0;
-    mags[i] = 10;
+    mags[i] = wa->weapons[i]->magsize;
   }
   p->engine = e;
   p->thing = e->wData->things[0];
@@ -318,7 +318,7 @@ void fire_bullet(
   if (weapon_get_active_cooldown(weapon_ecs) <= 0) {
     weapon *weapon_used = weapons_list->weapons[weapon_ecs->active_weapon];
     *weapon_get_mut_active_cooldown(weapon_ecs) = 1000 / weapon_used->fire_rate;
-    weapon_decrease_active_bullets(weapon_ecs);
+    if (weapon_ecs->active_weapon != 0) weapon_decrease_active_bullets(weapon_ecs);
 
     // SOUND
     double forward_x = pos->x + 10 * cos(deg_to_rad(position_get_angle(pos)));
