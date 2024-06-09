@@ -20,20 +20,30 @@ ALL_CFLAGS = $(CFLAGS) $(shell pkg-config --cflags sdl2 jansson) $(CDEBUG)
 ALL_LDFLAGS = $(LDFLAGS) $(shell pkg-config --libs sdl2 jansson)
 
 # -  TARGETS  -  #
-CLIENT_SRC = $(patsubst $(srcdir)/%, %, $(wildcard $(srcdir)/WAD/*.c)) $(patsubst $(srcdir)/%, %, $(wildcard $(srcdir)/core/*.c)) $(patsubst $(srcdir)/%, %, $(wildcard $(srcdir)/render/*.c)) $(patsubst $(srcdir)/%, %, $(wildcard $(srcdir)/util/*.c)) $(patsubst $(srcdir)/%, %, $(wildcard $(srcdir)/component/*.c)) $(patsubst $(srcdir)/%, %, $(wildcard $(srcdir)/event/*.c)) $(patsubst $(srcdir)/%, %, $(wildcard $(srcdir)/system/client/*.c)) $(patsubst $(srcdir)/%, %, $(wildcard $(srcdir)/audio/*.c)) remote.c server.c shared.c 
-	
+CLIENT_SRC = audio/mixer.c audio/emitter.c WAD/blockmap.c core/bsp.c util/byte_reader.c WAD/color.c \
+    core/engine.c core/events.c WAD/flat.c core/game_states.c \
+	util/geometry.c WAD/header.c core/keybindings.c WAD/linedef.c WAD/lump.c main.c render/map_renderer.c WAD/node.c \
+	WAD/patch.c core/player.c remote.c WAD/sector.c WAD/segment.c render/segment_handler.c WAD/sidedef.c WAD/sound.c WAD/subsector.c \
+	WAD/texture.c WAD/thing.c util/timer.c util/util.c WAD/vertex.c WAD/wad_data.c core/weapons.c core/lift.c core/door.c render/drawseg.c render/vssprite.c \
+	render/player_animation.c core/spawnpoints.c \
+	ui/def.c ui/module.c ui/common.c ui/label.c ui/button.c ui/image.c ui/textbox.c ui/event_handler.c ui/feed.c shared.c \
+	$(patsubst $(srcdir)/%, %, $(wildcard $(srcdir)/component/*.c)) \
+	$(patsubst $(srcdir)/%, %, $(wildcard $(srcdir)/event/*.c)) \
+	$(patsubst $(srcdir)/%, %, $(wildcard $(srcdir)/system/client/*.c))
+
 CLIENT_OBJ = $(CLIENT_SRC:%.c=%.o)
 CLIENT_LIB = libnet.a libevent.a libecs.a libcollection.a
 CLIENT_LDFLAGS = -lSDL2 -lSDL2_ttf -lSDL2_image -lSDL2_mixer -lSDL2_net
 
 SERVER_SRC = server.c \
-	WAD/blockmap.c util/byte_reader.c WAD/color.c door.c flat.c geometry.c header.c lift.c \
-	linedef.c lump.c node.c patch.c sector.c segment.c sidedef.c sound.c \
-	subsector.c texture.c thing.c util.c vertex.c wad_data.c drawseg.c vssprite.c spawnpoints.c \
+	WAD/blockmap.c util/byte_reader.c WAD/color.c core/door.c WAD/flat.c util/geometry.c WAD/header.c core/lift.c \
+	WAD/linedef.c WAD/lump.c WAD/node.c WAD/patch.c WAD/sector.c WAD/segment.c WAD/sidedef.c WAD/sound.c \
+	WAD/subsector.c WAD/texture.c WAD/thing.c util/util.c WAD/vertex.c WAD/wad_data.c render/drawseg.c render/vssprite.c core/spawnpoints.c \
 	$(patsubst $(srcdir)/%, %, $(wildcard $(srcdir)/server/*.c)) \
  	$(patsubst $(srcdir)/%, %, $(wildcard $(srcdir)/event/*.c)) \
 	$(patsubst $(srcdir)/%, %, $(wildcard $(srcdir)/system/server/*.c)) \
 	$(patsubst $(srcdir)/%, %, $(wildcard $(srcdir)/component/*.c)) 
+	
 SERVER_OBJ = $(SERVER_SRC:%.c=%.o)
 SERVER_LIB = libnet.a libevent.a libecs.a libcollection.a
 SERVER_LDFLAGS = -lSDL2 -lSDL2_net
@@ -60,6 +70,24 @@ LIBECS_OBJ = $(LIBECS_SRC:%.c=%.o)
 LIBECS_TEST_SRC = $(patsubst $(testdir)/%, %, $(wildcard $(testdir)/ecs/*.c))
 LIBECS_TEST_OBJ = $(LIBECS_TEST_SRC:%.c=%.o)
 LIBECS_LIB = libcollection.a
+
+LIBAUDIO_SRC = $(patsubst $(srcdir)/%, %, $(wildcard $(srcdir)/audio/*.c))
+LIBAUDIO_OBJ = $(LIBAUDIO_SRC:%.c=%.o)
+
+LIBWAD_SRC = $(patsubst $(srcdir)/%, %, $(wildcard $(srcdir)/WAD/*.c))
+LIBWAD_OBJ = $(LIBWAD_SRC:%.c=%.o)
+
+LIBCORE_SRC = $(patsubst $(srcdir)/%, %, $(wildcard $(srcdir)/core/*.c))
+LIBCORE_OBJ = $(LIBCORE_SRC:%.c=%.o)
+
+LIBRENDER_SRC = $(patsubst $(srcdir)/%, %, $(wildcard $(srcdir)/render/*.c))
+LIBRENDER_OBJ = $(LIBRENDER_SRC:%.c=%.o)
+
+LIBUI_SRC = $(patsubst $(srcdir)/%, %, $(wildcard $(srcdir)/ui/*.c))
+LIBUI_OBJ = $(LIBUI_SRC:%.c=%.o)
+
+LIBUTIL_SRC = $(patsubst $(srcdir)/%, %, $(wildcard $(srcdir)/util/*.c))
+LIBUTIL_OBJ = $(LIBUTIL_SRC:%.c=%.o)
 # - END OF TARGETS  -  #
 
 .PHONY: all clean test before_build run_server run_client build_server build_client test test_collection \
@@ -144,5 +172,3 @@ doc:
 
 open_doc: doc
 	xdg-open ./build/doc/html/index.html
-
-
