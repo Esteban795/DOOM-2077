@@ -2,7 +2,7 @@
 #define UI_TEXTBOX_H
 
 #include "common.h"
-#include "../events.h"
+#include "../core/events.h"
 
 typedef struct _UITextBox {
   UICommon common;

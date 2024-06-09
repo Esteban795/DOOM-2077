@@ -1,7 +1,7 @@
 #include "unistd.h"
 
-#include "../include/engine.h"
-#include "../include/weapons.h"
+#include "../include/core/engine.h"
+#include "../include/core/weapons.h"
 #include <stdio.h>
 
 weapons_array *wa;

@@ -7,7 +7,7 @@
 #include "../ecs/world.h"
 #include "../ecs/entity.h"
 #include "../ecs/component.h"
-#include "../wad_data.h"
+#include "../WAD/wad_data.h"
 
 /// Load doors from the WAD data and add them to the world as entity.
 ///

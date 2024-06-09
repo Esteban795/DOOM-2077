@@ -1,10 +1,10 @@
 #ifndef AUDIO_MIXER_H
 #define AUDIO_MIXER_H
 
+#include "../WAD/sound.h"
 #include "../settings.h"
-#include "../sound.h"
+#include "../util/geometry.h"
 #include "emitter.h"
-#include "../geometry.h"
 
 #include "SDL2/SDL_mixer.h"
 
@@ -33,8 +33,8 @@ typedef struct _AudioMixer {
 AudioMixer *audiomixer_init();
 void audiomixer_free(AudioMixer *am);
 void audiomixer_update(AudioMixer *am, int dt);
-/// \remark audiomixer_play returns an integer corresponding the uid of the sound
-/// you can pass it on to audiomixer_kill to stop it
+/// \remark audiomixer_play returns an integer corresponding the uid of the
+/// sound you can pass it on to audiomixer_kill to stop it
 int audiomixer_play(AudioMixer *am, sound *sound, float angle, float volume);
 void audiomixer_kill(AudioMixer *am, int uid);
 

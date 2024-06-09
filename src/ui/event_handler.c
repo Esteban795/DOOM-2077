@@ -1,6 +1,6 @@
 #include "../../include/ui/event_handler.h"
-#include "../../include/game_states.h"
-#include "../../include/engine.h"
+#include "../../include/core/game_states.h"
+#include "../../include/core/engine.h"
 #include "../../include/remote.h"
 #include <string.h>
 

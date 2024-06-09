@@ -1,7 +1,7 @@
 #ifndef UI_BUTTON_H
 #define UI_BUTTON_H
 
-#include "../events.h"
+#include "../core/events.h"
 #include "common.h"
 
 #include <stdlib.h>

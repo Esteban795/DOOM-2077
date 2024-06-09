@@ -1,7 +1,5 @@
-#include <stdio.h>
-
 #include "../../include/server/player.h"
-#include "../../include/spawnpoints.h"
+#include "../../include/core/spawnpoints.h"
 
 //TODO : Use the same constants as the client
 #define SERVER_WEAPON_NUMBER 2 
