@@ -57,8 +57,13 @@ void update_ingame_state(engine *e) {
     sprintf(ammo, "%i", weapon_get_active_bullets_left(wp));
     sprintf(mags, "%i", weapon_get_active_ammos_left(wp));
     UILINK_SET_HEALTH(e->uimodules, health);
-    UILINK_SET_AMMO(e->uimodules, ammo);
-    UILINK_SET_AMMO_MAX(e->uimodules, mags);
+    if (wp->active_weapon != 0) {
+      UILINK_SET_AMMO(e->uimodules, ammo);
+      UILINK_SET_AMMO_MAX(e->uimodules, mags);
+    } else {
+      UILINK_SET_AMMO(e->uimodules, "N/A");
+      UILINK_SET_AMMO_MAX(e->uimodules, "N/A");
+    }
   }
   bool is_focused_on_textbox = UILINK_CHAT_FOCUSED(e->uimodules);
   if (!is_focused_on_textbox) {
