@@ -45,3 +45,6 @@ One additional library is required:
 * You can generate the doc using `make doc`, and open it with `make open_doc` (at least on Linux).
 
 * You can run the test suite with `make test`
+
+https://github.com/user-attachments/assets/9a1c93ea-0847-43dd-9f69-34b286f8213e
+
