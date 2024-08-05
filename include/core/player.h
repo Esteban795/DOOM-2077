@@ -18,7 +18,7 @@
 #endif
 #include "../settings.h"
 
-#define PLAYER_HITBOX_SIZE 50
+#define PLAYER_HITBOX_SIZE 100
 #define HITSCAN_PRECISION 10
 #define WEAPON_AMMO_CAPACITY 10
 
