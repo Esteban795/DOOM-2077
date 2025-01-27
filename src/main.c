@@ -9,7 +9,7 @@ weapons_array *wa;
 // handles all kind of error at SDL startup
 int start_SDL(SDL_Window **window, SDL_Renderer **renderer, int width,
               int height, const char *title) {
-  if (SDL_Init(SDL_INIT_VIDEO) != 0)
+  if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK) != 0)
     return 1;
   *window =
       SDL_CreateWindow(title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
@@ -19,6 +19,7 @@ int start_SDL(SDL_Window **window, SDL_Renderer **renderer, int width,
   *renderer = SDL_CreateRenderer(*window, -1, SDL_RENDERER_ACCELERATED);
   if (*renderer == NULL)
     return 1;
+  SDL_JoystickEventState(SDL_ENABLE);
   return 0;
 }
 
