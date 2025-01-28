@@ -1,5 +1,6 @@
 #include "../../include/core/events.h"
 #include <SDL2/SDL_events.h>
+#include <SDL2/SDL_joystick.h>
 
 uint16_t keys[SDL_NUM_SCANCODES] = {0};
 int mouse[NUM_MOUSE_BUTTONS + 4] = {
@@ -7,6 +8,7 @@ int mouse[NUM_MOUSE_BUTTONS + 4] = {
 char textinput[SDL_TEXTINPUTEVENT_TEXT_SIZE] = {'\0'};
 bool running = 1;
 bool is_controller = false;
+SDL_Joystick* controller = NULL;
 
 void handle_joyaxismotion(SDL_JoyAxisEvent *event) {
   printf("Axis: %d Value: %d\n", event->axis, event->value);
@@ -20,34 +22,7 @@ void handle_joybuttonup(SDL_JoyButtonEvent *event) {
   printf("Button: %d\n", event->button);
 }
 
-void handle_controller(int DT) {
-  SDL_Event event;
-  while (SDL_PollEvent(&event)) {
-    switch (event.type) {
-    case SDL_JOYAXISMOTION:
-      handle_joyaxismotion(&event.jaxis);
-      break;
-    case SDL_JOYBUTTONDOWN:
-      handle_joybuttondown(&event.jbutton);
-      break;
-    case SDL_JOYBUTTONUP:
-      handle_joybuttonup(&event.jbutton);
-      break;
-    case SDL_JOYDEVICEREMOVED:
-      printf("Controller removed\n");
-      is_controller = false;
-      break;
-    default:
-      break;
-    }
-  }
-}
-
 void handle_events(int DT) {
-  if (is_controller) {
-    handle_controller(DT);
-    return;
-  }
   SDL_Event event;
   SDL_Scancode scancode;
   int mouse_x, mouse_y;
@@ -57,10 +32,37 @@ void handle_events(int DT) {
   SDL_GetMouseState(&mouse_x, &mouse_y);
   mouse[NUM_MOUSE_BUTTONS + 2] = mouse_x;
   mouse[NUM_MOUSE_BUTTONS + 3] = mouse_y;
+  SDL_JoystickEventState(SDL_ENABLE);
   while (SDL_PollEvent(&event)) {
     switch (event.type) {
     case SDL_QUIT:
       running = 0;
+      break;
+    case SDL_JOYDEVICEADDED:
+      printf("Plugged in controller\n");
+      controller = SDL_JoystickOpen(0);
+      printf("Controller name: %s\n", SDL_JoystickName(controller));
+      
+      break;
+    case SDL_JOYAXISMOTION:
+      printf("Axis: %d Value: %d\n", event.jaxis.axis, event.jaxis.value);
+      // handle_joyaxismotion(&event.jaxis);
+      fflush(stdout);
+      break;
+    case SDL_JOYBUTTONDOWN:
+      printf("Button: %d\n", event.jbutton.button);
+      // handle_joybuttondown(&event.jbutton);
+      break;
+    case SDL_JOYBUTTONUP:
+      printf("Button: %d\n", event.jbutton.button);
+      // handle_joybuttonup(&event.jbutton);
+      break;
+    case SDL_JOYDEVICEREMOVED:
+      printf("Controller removed\n");
+      is_controller = false;
+      SDL_JoystickClose(controller);
+      controller = NULL;
+      SDL_JoystickEventState(SDL_IGNORE);
       break;
     case SDL_KEYDOWN:
       if (event.key.keysym.sym == SDLK_ESCAPE) {
@@ -87,10 +89,6 @@ void handle_events(int DT) {
       textinput[i + 1] = '\0';
       break;
     }
-    case SDL_JOYDEVICEADDED:
-      printf("Plugged in controller\n");
-      is_controller = true;
-      break;
     default:
       break;
     }
