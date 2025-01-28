@@ -4,6 +4,7 @@
 #include <SDL2/SDL.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include "controller.h"
 
 #define HOLD_DETECTION_DURATION 250 //ms necessary to detect a key hold
 #define NUM_MOUSE_BUTTONS 3

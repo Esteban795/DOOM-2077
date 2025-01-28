@@ -10,17 +10,7 @@ bool running = 1;
 bool is_controller = false;
 SDL_Joystick* controller = NULL;
 
-void handle_joyaxismotion(SDL_JoyAxisEvent *event) {
-  printf("Axis: %d Value: %d\n", event->axis, event->value);
-}
 
-void handle_joybuttondown(SDL_JoyButtonEvent *event) {
-  printf("Button: %d\n", event->button);
-}
-
-void handle_joybuttonup(SDL_JoyButtonEvent *event) {
-  printf("Button: %d\n", event->button);
-}
 
 void handle_events(int DT) {
   SDL_Event event;
@@ -45,17 +35,13 @@ void handle_events(int DT) {
       
       break;
     case SDL_JOYAXISMOTION:
-      printf("Axis: %d Value: %d\n", event.jaxis.axis, event.jaxis.value);
-      // handle_joyaxismotion(&event.jaxis);
-      fflush(stdout);
+      handle_joyaxismotion(&event.jaxis);
       break;
     case SDL_JOYBUTTONDOWN:
-      printf("Button: %d\n", event.jbutton.button);
-      // handle_joybuttondown(&event.jbutton);
+      handle_joybuttondown(&event.jbutton);
       break;
     case SDL_JOYBUTTONUP:
-      printf("Button: %d\n", event.jbutton.button);
-      // handle_joybuttonup(&event.jbutton);
+      handle_joybuttonup(&event.jbutton);
       break;
     case SDL_JOYDEVICEREMOVED:
       printf("Controller removed\n");
