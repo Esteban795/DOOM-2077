@@ -552,16 +552,13 @@ void update_animation(engine *e) {
   bool left = keys[get_key_from_action(kb, "MOVE_LEFT")];
   bool backward = keys[get_key_from_action(kb, "MOVE_BACKWARD")];
   bool right_d = keys[get_key_from_action(kb, "MOVE_RIGHT")];
-  bool attack = keys[get_key_from_action(kb, "ATTACK")];
+  bool attack = is_controller ? controls[11] > CONTROLLER_TRIGGER_THRESHOLD : keys[get_key_from_action(kb, "ATTACK")];
 
   bool move = forward || left || backward || right_d;
   if (attack && (weapon_get_active_bullets_left(weapon_ecs) > 0 ||
                  weapon_ecs->active_weapon == 0)) {
     if (p->has_attacked == false) {
       p->t_last_shot = time_elapsed_in_game;
-      // printf("\n");
-      // printf("Reset t_last_shot\n");
-      // printf("\n");
     }
     p->has_attacked = true;
   }

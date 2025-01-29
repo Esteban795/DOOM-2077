@@ -546,7 +546,6 @@ void process_keys(player *p) {
 
   bool is_interacting = is_controller ? controls[0] : keys[get_key_from_action(p->keybinds, "INTERACT")];
   if (is_interacting && INTERACT_CD <= 0) {
-    printf("Interacting\n");
     linedef *trigger_linedef = cast_ray(
         p->engine->wData->linedefs, p->engine->wData->len_linedefs,
         position_get_pos(pos), position_get_angle(pos), position_get_z(pos));
@@ -603,16 +602,16 @@ void update_height(player *p) {
 void update_player(player *p) {
   position_ct *pos = player_get_position(p);
   int DT = p->engine->DT;
-  bool forward = keys[get_key_from_action(p->keybinds, "MOVE_FORWARD")] || controls[7] < -CONTROLLER_DETECTION_THRESHOLD;
-  bool left = keys[get_key_from_action(p->keybinds, "MOVE_LEFT")] || controls[6] < -CONTROLLER_DETECTION_THRESHOLD;
-  bool backward = keys[get_key_from_action(p->keybinds, "MOVE_BACKWARD")] || controls[7] >CONTROLLER_DETECTION_THRESHOLD;
-  bool right_d = keys[get_key_from_action(p->keybinds, "MOVE_RIGHT")] || controls[6] > CONTROLLER_DETECTION_THRESHOLD;
+  bool forward = keys[get_key_from_action(p->keybinds, "MOVE_FORWARD")] || controls[7] < -CONTROLLER_JOYSTICK_DETECTION_THRESHOLD;
+  bool left = keys[get_key_from_action(p->keybinds, "MOVE_LEFT")] || controls[6] < -CONTROLLER_JOYSTICK_DETECTION_THRESHOLD;
+  bool backward = keys[get_key_from_action(p->keybinds, "MOVE_BACKWARD")] || controls[7] >CONTROLLER_JOYSTICK_DETECTION_THRESHOLD;
+  bool right_d = keys[get_key_from_action(p->keybinds, "MOVE_RIGHT")] || controls[6] > CONTROLLER_JOYSTICK_DETECTION_THRESHOLD;
   double speed = DT * PLAYER_SPEED;
   double rot_speed = DT * PLAYER_ROTATION_SPEED;
   if (ALLOWED_TO_TURN) {
     double rotation_value;
     if (is_controller) {
-      rotation_value = controls[9] > CONTROLLER_DETECTION_THRESHOLD || controls[9] < -CONTROLLER_DETECTION_THRESHOLD ? controls[9] / 32767.0 : 0;
+      rotation_value = controls[9] > CONTROLLER_JOYSTICK_DETECTION_THRESHOLD || controls[9] < -CONTROLLER_JOYSTICK_DETECTION_THRESHOLD ? controls[9] / 32767.0 : 0;
     } else {
       rotation_value = (double)mouse[NUM_MOUSE_BUTTONS];
     }
