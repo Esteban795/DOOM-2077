@@ -29,6 +29,7 @@ void handle_events(int DT) {
       running = 0;
       break;
     case SDL_JOYDEVICEADDED:
+      is_controller = true;
       printf("Plugged in controller\n");
       controller = SDL_JoystickOpen(0);
       printf("Controller name: %s\n", SDL_JoystickName(controller));

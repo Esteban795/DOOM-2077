@@ -5,6 +5,7 @@
 
 #define NUM_CONTROLS_CONTROLLER 12
 #define AXIS_OFFSET 6
+#define CONTROLLER_DETECTION_THRESHOLD 6000
 /*
 Using this controller Microsoft X-Box One S pad
 
@@ -21,8 +22,7 @@ Using this controller Microsoft X-Box One S pad
 10 - right joystick vertical movement
 11 - right trigger
 */
-uint16_t controls[NUM_CONTROLS_CONTROLLER];
-
+extern int16_t controls[NUM_CONTROLS_CONTROLLER];
 
 void handle_joyaxismotion(SDL_JoyAxisEvent *event);
 
@@ -30,5 +30,5 @@ void handle_joybuttondown(SDL_JoyButtonEvent *event);
 
 void handle_joybuttonup(SDL_JoyButtonEvent *event);
 
-
+void print_controls();
 #endif

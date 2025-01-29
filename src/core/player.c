@@ -544,8 +544,9 @@ void process_keys(player *p) {
   if (is_focused_text_box)
     return;
 
-  bool is_interacting = keys[get_key_from_action(p->keybinds, "INTERACT")];
+  bool is_interacting = is_controller ? controls[0] : keys[get_key_from_action(p->keybinds, "INTERACT")];
   if (is_interacting && INTERACT_CD <= 0) {
+    printf("Interacting\n");
     linedef *trigger_linedef = cast_ray(
         p->engine->wData->linedefs, p->engine->wData->len_linedefs,
         position_get_pos(pos), position_get_angle(pos), position_get_z(pos));
@@ -561,7 +562,7 @@ void process_keys(player *p) {
     }
   }
 
-  bool is_reloading = keys[get_key_from_action(p->keybinds, "RELOAD")];
+  bool is_reloading = is_controller ? controls[2] : keys[get_key_from_action(p->keybinds, "RELOAD")];
   if (is_reloading) { // cannot reload fists..
     weapon->mags[weapon->active_weapon] =
         wa->weapons[weapon->active_weapon]->magsize;
@@ -602,40 +603,61 @@ void update_height(player *p) {
 void update_player(player *p) {
   position_ct *pos = player_get_position(p);
   int DT = p->engine->DT;
-  bool forward = keys[get_key_from_action(p->keybinds, "MOVE_FORWARD")];
-  bool left = keys[get_key_from_action(p->keybinds, "MOVE_LEFT")];
-  bool backward = keys[get_key_from_action(p->keybinds, "MOVE_BACKWARD")];
-  bool right_d = keys[get_key_from_action(p->keybinds, "MOVE_RIGHT")];
+  bool forward = keys[get_key_from_action(p->keybinds, "MOVE_FORWARD")] || controls[7] < -CONTROLLER_DETECTION_THRESHOLD;
+  bool left = keys[get_key_from_action(p->keybinds, "MOVE_LEFT")] || controls[6] < -CONTROLLER_DETECTION_THRESHOLD;
+  bool backward = keys[get_key_from_action(p->keybinds, "MOVE_BACKWARD")] || controls[7] >CONTROLLER_DETECTION_THRESHOLD;
+  bool right_d = keys[get_key_from_action(p->keybinds, "MOVE_RIGHT")] || controls[6] > CONTROLLER_DETECTION_THRESHOLD;
   double speed = DT * PLAYER_SPEED;
   double rot_speed = DT * PLAYER_ROTATION_SPEED;
   if (ALLOWED_TO_TURN) {
+    double rotation_value;
+    if (is_controller) {
+      rotation_value = controls[9] > CONTROLLER_DETECTION_THRESHOLD || controls[9] < -CONTROLLER_DETECTION_THRESHOLD ? controls[9] / 32767.0 : 0;
+    } else {
+      rotation_value = (double)mouse[NUM_MOUSE_BUTTONS];
+    }
     position_set_angle(pos,
                        norm(position_get_angle(pos) +
-                            rot_speed * ((double)mouse[NUM_MOUSE_BUTTONS])));
+                            rot_speed * rotation_value));
   }
 
-  // p->cooldowns_sprays=update_cooldowns_sprays(p->cooldowns_sprays);
   double vec[2] = {0.0, 0.0};
   int count_dir = 0;
   int count_strafe = 0;
   if (forward) {
     vec[0] += speed * cos(deg_to_rad(position_get_angle(pos)));
     vec[1] -= speed * sin(deg_to_rad(position_get_angle(pos)));
+    if (is_controller) {
+      vec[0] *= abs(controls[7]) / 32767.0;
+      vec[1] *= abs(controls[7]) / 32767.0 ;
+    }
     count_dir++;
   }
   if (backward) {
     vec[0] -= speed * cos(deg_to_rad(position_get_angle(pos)));
     vec[1] += speed * sin(deg_to_rad(position_get_angle(pos)));
+    if (is_controller) {
+      vec[0] *= abs(controls[7]) / 32767.0;
+      vec[1] *= abs(controls[7]) / 32767.0;
+    }
     count_dir++;
   }
   if (left) {
     vec[0] += speed * sin(deg_to_rad(position_get_angle(pos)));
     vec[1] += speed * cos(deg_to_rad(position_get_angle(pos)));
+    if (is_controller) {
+      vec[0] *= abs(controls[6]) / 32767.0;
+      vec[1] *= abs(controls[6]) / 32767.0;
+    }
     count_strafe++;
   }
   if (right_d) {
     vec[0] -= speed * sin(deg_to_rad(position_get_angle(pos)));
     vec[1] -= speed * cos(deg_to_rad(position_get_angle(pos)));
+    if (is_controller) {
+      vec[0] *= abs(controls[6]) / 32767.0;
+      vec[1] *= abs(controls[6]) / 32767.0;
+    }
     count_strafe++;
   }
   if (count_dir && count_strafe) {
