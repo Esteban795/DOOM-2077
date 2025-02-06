@@ -25,7 +25,7 @@ CLIENT_SRC = audio/mixer.c audio/emitter.c WAD/blockmap.c core/bsp.c util/byte_r
 	util/geometry.c WAD/header.c core/keybindings.c WAD/linedef.c WAD/lump.c main.c render/map_renderer.c WAD/node.c \
 	WAD/patch.c core/player.c remote.c WAD/sector.c WAD/segment.c render/segment_handler.c WAD/sidedef.c WAD/sound.c WAD/subsector.c \
 	WAD/texture.c WAD/thing.c util/timer.c util/util.c WAD/vertex.c WAD/wad_data.c core/weapons.c core/lift.c core/door.c render/drawseg.c render/vssprite.c \
-	render/player_animation.c core/spawnpoints.c \
+	render/player_animation.c core/spawnpoints.c core/controller.c \
 	ui/def.c ui/module.c ui/common.c ui/label.c ui/button.c ui/image.c ui/textbox.c ui/event_handler.c ui/feed.c shared.c \
 	$(patsubst $(srcdir)/%, %, $(wildcard $(srcdir)/component/*.c)) \
 	$(patsubst $(srcdir)/%, %, $(wildcard $(srcdir)/event/*.c)) \

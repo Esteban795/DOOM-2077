@@ -2,6 +2,8 @@
 
 #include "../include/core/engine.h"
 #include "../include/core/weapons.h"
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_hints.h>
 #include <stdio.h>
 
 weapons_array *wa;
@@ -9,7 +11,9 @@ weapons_array *wa;
 // handles all kind of error at SDL startup
 int start_SDL(SDL_Window **window, SDL_Renderer **renderer, int width,
               int height, const char *title) {
-  if (SDL_Init(SDL_INIT_VIDEO) != 0)
+  SDL_SetHint(SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS, "1");
+
+  if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK | SDL_INIT_HAPTIC) != 0)
     return 1;
   *window =
       SDL_CreateWindow(title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
@@ -19,6 +23,7 @@ int start_SDL(SDL_Window **window, SDL_Renderer **renderer, int width,
   *renderer = SDL_CreateRenderer(*window, -1, SDL_RENDERER_ACCELERATED);
   if (*renderer == NULL)
     return 1;
+  SDL_JoystickEventState(SDL_ENABLE);
   return 0;
 }
 
@@ -52,8 +57,8 @@ int main() {
   // DEV: How to disable pointer/mousecapture
   SDL_ShowCursor(SDL_DISABLE);        // Set to true for debug
   SDL_SetRelativeMouseMode(SDL_TRUE); // Set to false for debug
-  engine *e = init_engine("maps/DOOM1-NET.WAD",renderer);
-  
+  engine *e = init_engine("maps/DOOM1-NET.WAD", renderer);
+
   // Start the client in solo mode.
   // Connection might happen later, if the user decides to join a server.
   e->remote->connected = -1;
